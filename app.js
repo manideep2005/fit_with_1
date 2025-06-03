@@ -7,12 +7,18 @@ const { sendWelcomeEmail } = require('./services/emailService');
 
 const app = express();
 
-// Middleware
+// Middleware Configuration
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// View Engine
+// Cache Control Middleware
+app.use((req, res, next) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  next();
+});
+
+// View Engine Setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
@@ -105,15 +111,15 @@ app.get('/CustomOnboarding', (req, res) => {
   });
 });
 
-// Complete Onboarding Route (Fixed to match frontend)
+// Complete Onboarding Route
 app.post('/CustomOnboarding/complete', isAuthenticated, async (req, res) => {
   try {
     const { onboardingData } = req.body;
 
     if (!onboardingData) {
-      return res.status(400).json({
-        success: false,
-        error: 'Onboarding data is required'
+      return res.status(400).render('customonboarding', {
+        error: 'Onboarding data is required',
+        user: req.session.user
       });
     }
 
@@ -122,34 +128,36 @@ app.post('/CustomOnboarding/complete', isAuthenticated, async (req, res) => {
         !onboardingData.personalInfo?.lastName ||
         !onboardingData.bodyMetrics?.height ||
         !onboardingData.bodyMetrics?.weight) {
-      return res.status(400).json({
-        success: false,
-        error: 'Required fields are missing'
+      return res.status(400).render('customonboarding', {
+        error: 'Required fields are missing',
+        user: req.session.user
       });
     }
 
-    // Update user session with onboarding data
-    req.session.user = {
-      ...req.session.user,
-      onboardingCompleted: true,
-      onboardingData: onboardingData
-    };
+    // Update user session
+    req.session.user.onboardingCompleted = true;
+    req.session.user.onboardingData = onboardingData;
 
-    // Here you would typically save to database
-    // await UserService.completeOnboarding(req.session.user.email, onboardingData);
-
-    res.json({ 
-      success: true,
-      redirectUrl: '/dashboard'
+    // Save session and redirect
+    req.session.save(() => {
+      res.redirect('/dashboard');
     });
 
   } catch (error) {
     console.error('Onboarding completion error:', error);
-    res.status(500).json({ 
-      success: false,
-      error: 'Failed to complete onboarding' 
+    res.status(500).render('customonboarding', {
+      error: 'Failed to complete onboarding',
+      user: req.session.user
     });
   }
+});
+
+// Dashboard Route
+app.get('/dashboard', isAuthenticated, checkOnboarding, (req, res) => {
+  res.render('dashboard', {
+    user: req.session.user,
+    currentPath: '/dashboard'
+  });
 });
 
 // Login Route
@@ -170,7 +178,6 @@ app.post('/login', (req, res) => {
 
 // Protected Routes
 const protectedRoutes = [
-  '/dashboard',
   '/workouts',
   '/progress',
   '/nutrition',
@@ -206,8 +213,7 @@ app.use((err, req, res, next) => {
   const statusCode = err.status || 500;
   const message = err.message || 'Something went wrong!';
   
-  res.status(statusCode).json({
-    success: false,
+  res.status(statusCode).render('error', {
     error: message,
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
