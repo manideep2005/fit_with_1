@@ -569,250 +569,258 @@
             </button>
         </div>
     </div>
-
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const nextBtn = document.getElementById('nextBtn');
-            const prevBtn = document.getElementById('prevBtn');
-            const finishBtn = document.getElementById('finishBtn');
-            const formSteps = document.querySelectorAll('.form-step');
-            const steps = document.querySelectorAll('.step');
-            const progressFill = document.getElementById('progressFill');
-            const currentStepText = document.getElementById('currentStep');
-            const stepTitle = document.getElementById('stepTitle');
-            
-            let currentStep = 0;
-            const stepTitles = [
-                "Basic Info",
-                "Body Metrics",
-                "Health Goals",
-                "Health Background",
-                "Complete"
-            ];
-            
-            // Initialize
-            showStep(currentStep);
-            
-            function showStep(step) {
-                formSteps.forEach((formStep, index) => {
-                    formStep.classList.toggle('active', index === step);
-                });
-                
-                steps.forEach((stepIndicator, index) => {
-                    if (index < step) {
-                        stepIndicator.classList.add('completed');
-                        stepIndicator.classList.remove('active');
-                    } else if (index === step) {
-                        stepIndicator.classList.add('active');
-                        stepIndicator.classList.remove('completed');
-                    } else {
-                        stepIndicator.classList.remove('active', 'completed');
-                    }
-                });
-                
-                prevBtn.style.display = step === 0 ? 'none' : 'flex';
-                nextBtn.style.display = step === formSteps.length - 1 ? 'none' : 'flex';
-                
-                currentStepText.textContent = step + 1;
-                stepTitle.textContent = stepTitles[step];
-                
-                updateProgress(step);
-            }
-            
-            function updateProgress(step) {
-                const progress = (step / (formSteps.length - 1)) * 100;
-                progressFill.style.width = `${progress}%`;
-            }
-            
-            nextBtn.addEventListener('click', () => {
-                if (validateStep(currentStep)) {
-                    currentStep++;
-                    showStep(currentStep);
-                }
-            });
-            
-            prevBtn.addEventListener('click', () => {
-                currentStep--;
-                showStep(currentStep);
-            });
-            
-            function validateStep(step) {
-                let isValid = true;
-                const currentFormStep = formSteps[step];
-                const requiredInputs = currentFormStep.querySelectorAll('[required]');
-                
-                requiredInputs.forEach(input => {
-                    if (!input.value.trim()) {
-                        input.style.borderColor = 'var(--danger)';
-                        isValid = false;
-                    } else {
-                        input.style.borderColor = 'var(--light-gray)';
-                    }
-                });
-                
-                // Validate option selections for certain steps
-                if (step === 1) { // Activity level step
-                    const activitySelected = document.querySelector('.options-grid[data-field="activityLevel"] .option-item.selected');
-                    if (!activitySelected) {
-                        alert('Please select your activity level');
-                        return false;
-                    }
-                }
-                
-                if (step === 2) { // Health goals step
-                    const goalsSelected = document.querySelectorAll('.options-grid[data-field="healthGoals"] .option-item.selected');
-                    if (goalsSelected.length === 0) {
-                        alert('Please select at least one health goal');
-                        return false;
-                    }
-                    
-                    const dietRatingSelected = document.querySelector('.rating-scale[data-field="dietRating"] .rating-item.selected');
-                    if (!dietRatingSelected) {
-                        alert('Please rate your current diet');
-                        return false;
-                    }
-                }
-                
-                if (step === 3) { // Medical conditions step
-                    const conditionsSelected = document.querySelectorAll('.options-grid[data-field="medicalConditions"] .option-item.selected');
-                    if (conditionsSelected.length === 0) {
-                        alert('Please select at least one option for medical conditions');
-                        return false;
-                    }
-                }
-                
-                if (!isValid) {
-                    alert('Please fill in all required fields marked with *');
-                    return false;
-                }
-                
-                return true;
-            }
-            
-            // Handle option selection
-            document.querySelectorAll('.option-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    const parent = this.parentElement;
-                    const field = parent.getAttribute('data-field');
-                    
-                    if (parent.classList.contains('options-grid')) {
-                        if (this.dataset.value === 'none') {
-                            parent.querySelectorAll('.option-item').forEach(i => {
-                                i.classList.remove('selected');
-                            });
-                        } else {
-                            const noneOption = parent.querySelector('.option-item[data-value="none"]');
-                            if (noneOption) noneOption.classList.remove('selected');
-                            
-                            if (field === 'healthGoals') {
-                                const selected = parent.querySelectorAll('.option-item.selected');
-                                if (selected.length >= 2 && !this.classList.contains('selected')) {
-                                    alert('Please select no more than 2 primary goals');
-                                    return;
-                                }
-                            }
-                        }
-                        
-                        this.classList.toggle('selected');
-                    }
-                });
-            });
-            
-            // Handle rating scale selection
-            document.querySelectorAll('.rating-scale').forEach(scale => {
-                scale.addEventListener('click', function(e) {
-                    const item = e.target.closest('.rating-item');
-                    if (item && scale.contains(item)) {
-                        scale.querySelectorAll('.rating-item').forEach(i => {
-                            i.classList.remove('selected');
-                        });
-                        item.classList.add('selected');
-                    }
-                });
-            });
-            
-            // Finish button handler
-            finishBtn.addEventListener('click', async () => {
-                if (!validateStep(currentStep)) {
-                    alert('Please complete all required fields before finishing');
-                    return;
-                }
-                
-                // Collect all form data
-                const formData = {
-                    personalInfo: {
-                        firstName: document.getElementById('firstName').value,
-                        lastName: document.getElementById('lastName').value,
-                        age: document.getElementById('age').value,
-                        gender: document.getElementById('gender').value
-                    },
-                    bodyMetrics: {
-                        height: document.getElementById('height').value,
-                        weight: document.getElementById('weight').value,
-                        activityLevel: getSelectedOptions('activityLevel')
-                    },
-                    healthGoals: {
-                        goals: getSelectedOptions('healthGoals'),
-                        dietRating: getSelectedRating('dietRating')
-                    },
-                    medicalInfo: {
-                        conditions: getSelectedOptions('medicalConditions'),
-                        medications: document.getElementById('medications').value,
-                        allergies: document.getElementById('allergies').value
-                    }
-                };
-                
-                console.log('Form data:', formData); // For debugging
-                
-                try {
-                    finishBtn.disabled = true;
-                    finishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-                    
-                    console.log('Sending request to /dashboard/complete...');
-                    
-                    // Send data to server
-                    const response = await fetch('/dashboard/complete', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            onboardingData: formData
-                        })
-                    });
 
-                    console.log('Response status:', response.status);
-                    
-                    if (response.ok) {
-                        // Redirect to dashboard on successful submission
-                        window.location.href = '/dashboard';
-                    } else {
-                        const errorData = await response.json();
-                        throw new Error(errorData.message || 'Failed to complete onboarding');
-                    }
-                    
-                } catch (error) {
-                    console.error('Error completing onboarding:', error);
-                    alert('Error completing onboarding. Please try again.');
-                    finishBtn.disabled = false;
-                    finishBtn.innerHTML = '<i class="fas fa-rocket"></i> Finish & Go to Dashboard';
-                }
-            });
-            
-            function getSelectedOptions(fieldName) {
-                const container = document.querySelector(`[data-field="${fieldName}"]`);
-                if (!container) return [];
-                const selectedItems = container.querySelectorAll('.option-item.selected');
-                return Array.from(selectedItems).map(item => item.dataset.value);
-            }
-            
-            function getSelectedRating(fieldName) {
-                const container = document.querySelector(`[data-field="${fieldName}"]`);
-                if (!container) return null;
-                const selectedItem = container.querySelector('.rating-item.selected');
-                return selectedItem ? selectedItem.dataset.value : null;
+    document.addEventListener('DOMContentLoaded', () => {
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const finishBtn = document.getElementById('finishBtn');
+    const formSteps = document.querySelectorAll('.form-step');
+    const steps = document.querySelectorAll('.step');
+    const progressFill = document.getElementById('progressFill');
+    const currentStepText = document.getElementById('currentStep');
+    const stepTitle = document.getElementById('stepTitle');
+    
+    let currentStep = 0;
+    const stepTitles = [
+        "Basic Info",
+        "Body Metrics",
+        "Health Goals",
+        "Health Background",
+        "Complete"
+    ];
+    
+    // Initialize
+    showStep(currentStep);
+    
+    function showStep(step) {
+        formSteps.forEach((formStep, index) => {
+            formStep.classList.toggle('active', index === step);
+        });
+        
+        steps.forEach((stepIndicator, index) => {
+            if (index < step) {
+                stepIndicator.classList.add('completed');
+                stepIndicator.classList.remove('active');
+            } else if (index === step) {
+                stepIndicator.classList.add('active');
+                stepIndicator.classList.remove('completed');
+            } else {
+                stepIndicator.classList.remove('active', 'completed');
             }
         });
+        
+        prevBtn.style.display = step === 0 ? 'none' : 'flex';
+        nextBtn.style.display = step === formSteps.length - 1 ? 'none' : 'flex';
+        finishBtn.style.display = step === formSteps.length - 1 ? 'flex' : 'none';
+        
+        currentStepText.textContent = step + 1;
+        stepTitle.textContent = stepTitles[step];
+        
+        updateProgress(step);
+    }
+    
+    function updateProgress(step) {
+        const progress = (step / (formSteps.length - 1)) * 100;
+        progressFill.style.width = `${progress}%`;
+    }
+    
+    nextBtn.addEventListener('click', () => {
+        if (validateStep(currentStep)) {
+            currentStep++;
+            showStep(currentStep);
+        }
+    });
+    
+    prevBtn.addEventListener('click', () => {
+        currentStep--;
+        showStep(currentStep);
+    });
+    
+    function validateStep(step) {
+        let isValid = true;
+        const currentFormStep = formSteps[step];
+        const requiredInputs = currentFormStep.querySelectorAll('[required]');
+        
+        requiredInputs.forEach(input => {
+            if (!input.value.trim()) {
+                input.style.borderColor = 'var(--danger)';
+                isValid = false;
+            } else {
+                input.style.borderColor = 'var(--light-gray)';
+            }
+        });
+        
+        // Validate option selections for certain steps
+        if (step === 1) { // Activity level step
+            const activitySelected = document.querySelector('.options-grid[data-field="activityLevel"] .option-item.selected');
+            if (!activitySelected) {
+                alert('Please select your activity level');
+                return false;
+            }
+        }
+        
+        if (step === 2) { // Health goals step
+            const goalsSelected = document.querySelectorAll('.options-grid[data-field="healthGoals"] .option-item.selected');
+            if (goalsSelected.length === 0) {
+                alert('Please select at least one health goal');
+                return false;
+            }
+            
+            const dietRatingSelected = document.querySelector('.rating-scale[data-field="dietRating"] .rating-item.selected');
+            if (!dietRatingSelected) {
+                alert('Please rate your current diet');
+                return false;
+            }
+        }
+        
+        if (step === 3) { // Medical conditions step
+            const conditionsSelected = document.querySelectorAll('.options-grid[data-field="medicalConditions"] .option-item.selected');
+            if (conditionsSelected.length === 0) {
+                alert('Please select at least one option for medical conditions');
+                return false;
+            }
+        }
+        
+        if (!isValid) {
+            alert('Please fill in all required fields marked with *');
+            return false;
+        }
+        
+        return true;
+    }
+    
+    // Handle option selection
+    document.querySelectorAll('.option-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const parent = this.parentElement;
+            const field = parent.getAttribute('data-field');
+            
+            if (parent.classList.contains('options-grid')) {
+                if (this.dataset.value === 'none') {
+                    parent.querySelectorAll('.option-item').forEach(i => {
+                        i.classList.remove('selected');
+                    });
+                } else {
+                    const noneOption = parent.querySelector('.option-item[data-value="none"]');
+                    if (noneOption) noneOption.classList.remove('selected');
+                    
+                    if (field === 'healthGoals') {
+                        const selected = parent.querySelectorAll('.option-item.selected');
+                        if (selected.length >= 2 && !this.classList.contains('selected')) {
+                            alert('Please select no more than 2 primary goals');
+                            return;
+                        }
+                    }
+                }
+                
+                this.classList.toggle('selected');
+            }
+        });
+    });
+    
+    // Handle rating scale selection
+    document.querySelectorAll('.rating-scale').forEach(scale => {
+        scale.addEventListener('click', function(e) {
+            const item = e.target.closest('.rating-item');
+            if (item && scale.contains(item)) {
+                scale.querySelectorAll('.rating-item').forEach(i => {
+                    i.classList.remove('selected');
+                });
+                item.classList.add('selected');
+            }
+        });
+    });
+    
+    // Finish button handler
+    finishBtn.addEventListener('click', async () => {
+        if (!validateStep(currentStep)) {
+            alert('Please complete all required fields before finishing');
+            return;
+        }
+        
+        // Collect all form data
+        const formData = {
+            personalInfo: {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                age: document.getElementById('age').value,
+                gender: document.getElementById('gender').value
+            },
+            bodyMetrics: {
+                height: document.getElementById('height').value,
+                weight: document.getElementById('weight').value,
+                activityLevel: getSelectedOptions('activityLevel')
+            },
+            healthGoals: {
+                goals: getSelectedOptions('healthGoals'),
+                dietRating: getSelectedRating('dietRating')
+            },
+            medicalInfo: {
+                conditions: getSelectedOptions('medicalConditions'),
+                medications: document.getElementById('medications').value,
+                allergies: document.getElementById('allergies').value
+            }
+        };
+        
+        try {
+            finishBtn.disabled = true;
+            finishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+            
+            const response = await fetch('/CustomOnboarding/complete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    onboardingData: formData
+                }),
+                redirect: 'follow' // Important for handling redirects
+            });
+
+            if (response.redirected) {
+                // Follow the redirect if the server sent one
+                window.location.href = response.url;
+            } else if (response.ok) {
+                // If response is OK but not a redirect, try to parse JSON
+                try {
+                    const data = await response.json();
+                    if (data.redirectUrl) {
+                        window.location.href = data.redirectUrl;
+                    } else {
+                        window.location.href = '/dashboard';
+                    }
+                } catch (e) {
+                    // If JSON parsing fails, just go to dashboard
+                    window.location.href = '/dashboard';
+                }
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || errorData.error || 'Failed to complete onboarding');
+            }
+            
+        } catch (error) {
+            console.error('Error completing onboarding:', error);
+            alert(error.message || 'Error completing onboarding. Please try again.');
+            finishBtn.disabled = false;
+            finishBtn.innerHTML = '<i class="fas fa-rocket"></i> Finish & Go to Dashboard';
+        }
+    });
+    
+    function getSelectedOptions(fieldName) {
+        const container = document.querySelector(`[data-field="${fieldName}"]`);
+        if (!container) return [];
+        const selectedItems = container.querySelectorAll('.option-item.selected');
+        return Array.from(selectedItems).map(item => item.dataset.value);
+    }
+    
+    function getSelectedRating(fieldName) {
+        const container = document.querySelector(`[data-field="${fieldName}"]`);
+        if (!container) return null;
+        const selectedItem = container.querySelector('.rating-item.selected');
+        return selectedItem ? selectedItem.dataset.value : null;
+    }
+});
     </script>
 </body>
 </html>

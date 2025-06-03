@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
@@ -41,8 +42,8 @@ const isAuthenticated = (req, res, next) => {
 
 // Onboarding Check Middleware
 const checkOnboarding = (req, res, next) => {
-  if (!req.session.user.onboardingCompleted) {
-    return res.redirect(`/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(req.session.user.email)}`);
+  if (!req.session.user?.onboardingCompleted) {
+    return res.redirect(`/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(req.session.user?.email || '')}`);
   }
   next();
 };
@@ -104,6 +105,53 @@ app.get('/CustomOnboarding', (req, res) => {
   });
 });
 
+// Complete Onboarding Route (Fixed to match frontend)
+app.post('/CustomOnboarding/complete', isAuthenticated, async (req, res) => {
+  try {
+    const { onboardingData } = req.body;
+
+    if (!onboardingData) {
+      return res.status(400).json({
+        success: false,
+        error: 'Onboarding data is required'
+      });
+    }
+
+    // Validate required fields
+    if (!onboardingData.personalInfo?.firstName || 
+        !onboardingData.personalInfo?.lastName ||
+        !onboardingData.bodyMetrics?.height ||
+        !onboardingData.bodyMetrics?.weight) {
+      return res.status(400).json({
+        success: false,
+        error: 'Required fields are missing'
+      });
+    }
+
+    // Update user session with onboarding data
+    req.session.user = {
+      ...req.session.user,
+      onboardingCompleted: true,
+      onboardingData: onboardingData
+    };
+
+    // Here you would typically save to database
+    // await UserService.completeOnboarding(req.session.user.email, onboardingData);
+
+    res.json({ 
+      success: true,
+      redirectUrl: '/dashboard'
+    });
+
+  } catch (error) {
+    console.error('Onboarding completion error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to complete onboarding' 
+    });
+  }
+});
+
 // Login Route
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
@@ -120,16 +168,7 @@ app.post('/login', (req, res) => {
   });
 });
 
-// Complete Onboarding
-app.post('/complete-onboarding', isAuthenticated, (req, res) => {
-  req.session.user.onboardingCompleted = true;
-  res.json({ 
-    success: true,
-    redirectUrl: '/dashboard'
-  });
-});
-
-// All Protected Routes
+// Protected Routes
 const protectedRoutes = [
   '/dashboard',
   '/workouts',
@@ -160,42 +199,30 @@ app.get('/logout', (req, res) => {
   });
 });
 
-// 404 Handler
-app.use((req, res) => {
-  res.status(404).render('404');
-});
-
-// Error Handler
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).render('error', { message: 'Server Error' });
-});
-// Error Handling Middleware (put this at the end of your middleware chain)
+// Error Handling Middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack);
   
-  // Set default error message
-  err.message = err.message || 'Something went wrong!';
-  
-  // Determine status code
   const statusCode = err.status || 500;
+  const message = err.message || 'Something went wrong!';
   
-  // Send response
-  res.status(statusCode).render('error', {
-    message: err.message,
-    status: statusCode,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  res.status(statusCode).json({
+    success: false,
+    error: message,
+    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 });
 
-// 404 Handler (put this after all your routes)
+// 404 Handler
 app.use((req, res) => {
   res.status(404).render('404', {
     path: req.path
   });
 });
+
 // Start Server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
