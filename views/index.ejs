@@ -1294,8 +1294,8 @@
         .then(data => {
             console.log('Signup response data:', data);
             if (data.success) {
-                alert('Signup successful! Welcome email has been sent.');
-                window.location.href = '/onboarding';
+                localStorage.setItem('sessionId', data.sessionId);
+                window.location.href = `/CustomOnboarding?sessionId=${data.sessionId}`;
             } else {
                 alert(data.error || 'Error during signup');
             }
