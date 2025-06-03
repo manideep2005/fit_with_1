@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Health Onboarding - FitWit AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: rgb(18, 17, 17);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 1; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 0.8; }
+        }
+        .onboarding-container {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: slideInDown 1s ease-out;
+        }
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+            animation: slideInUp 1s ease-out 0.2s both;
+        }
+        @keyframes slideInDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes slideInUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .progress-container {
+            background: rgba(246, 242, 242, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            animation: slideInLeft 1s ease-out 0.4s both;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .progress-line {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(243, 240, 240, 0.3);
+            border-radius: 2px;
+            z-index: 1;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            border-radius: 2px;
+            transition: width 0.8s ease;
+            width: 12.5%;
+        }
+        .step {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s ease;
+            color: white;
+            font-weight: bold;
+        }
+        .step.active {
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            border-color: #4CAF50;
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+        }
+        .step.completed {
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            border-color: #4CAF50;
+        }
+        .progress-text {
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        @keyframes slideInLeft {
+            from { transform: translateX(-50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .form-step {
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            animation: slideInRight 1s ease-out 0.6s both;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        @keyframes slideInRight {
+            from { transform: translateX(50px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .form-step.hidden {
+            display: none;
+        }
+        .form-step h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2em;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.2);
+            transform: translateY(-2px);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .conditions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .condition-item {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .condition-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .condition-item.selected {
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            color: white;
+            border-color: #4CAF50;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(76, 175, 80, 0.3);
+        }
+        .condition-item i {
+            font-size: 1.5em;
+        }
+        .rating-scale {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            gap: 10px;
+        }
+        .rating-item {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: #f8f9fa;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .rating-item:hover {
+            background: #e9ecef;
+            transform: translateY(-2px);
+        }
+        .rating-item.selected {
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            color: white;
+            border-color: #4CAF50;
+        }
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            gap: 20px;
+        }
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.2em;
+            border: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .btn:hover:before {
+            left: 100%;
+        }
+        .btn.btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            color: white;
+        }
+        .btn.btn-secondary:disabled {
+            background: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+        .btn.btn-primary {
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            color: white;
+        }
+        .btn.btn-success {
+            background: linear-gradient(135deg, #FF6B35, #F7931E);
+            color: white;
+        }
+        .download-btn {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+            margin-top: 20px;
+        }
+        .completion-screen {
+            text-align: center;
+            padding: 40px;
+        }
+        .completion-screen i {
+            font-size: 5em;
+            color: #4CAF50;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        .health-tip {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 5px solid #2196F3;
+        }
+        .health-tip i {
+            color: #2196F3;
+            margin-right: 10px;
+        }
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .conditions-grid {
+                grid-template-columns: 1fr;
+            }
+            .rating-scale {
+                flex-direction: column;
+            }
+            .step-indicator {
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="onboarding-container">
+        <div class="header">
+            <h1><i class="fas fa-heartbeat"></i> FitWit AI</h1>
+            <p>Comprehensive Health Assessment & Personalized Wellness Journey</p>
+        </div>
+        <div class="progress-container">
+            <div class="step-indicator">
+                <div class="progress-line">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="step active" data-step="1">1</div>
+                <div class="step" data-step="2">2</div>
+                <div class="step" data-step="3">3</div>
+                <div class="step" data-step="4">4</div>
+                <div class="step" data-step="5">5</div>
+                <div class="step" data-step="6">6</div>
+                <div class="step" data-step="7">7</div>
+                <div class="step" data-step="8">8</div>
+            </div>
+            <div class="progress-text">
+                Step <span id="currentStep">1</span> of 8 - <span id="stepTitle">Personal Information</span>
+            </div>
+        </div>
+        <!-- Step 1: Personal Information -->
+        <div class="form-step" data-step="1">
+            <h2><i class="fas fa-user"></i> Personal Information</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="firstName">First Name *</label>
+                    <input type="text" id="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name *</label>
+                    <input type="text" id="lastName" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="age">Age *</label>
+                    <input type="number" id="age" min="1" max="120" required>
+                </div>
+                <div class="form-group">
+                    <label for="gender">Gender *</label>
+                    <select id="gender" required>
+                        <option value="">Select gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                        <option value="prefer-not-to-say">Prefer not to say</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="occupation">Occupation</label>
+                <input type="text" id="occupation" placeholder="What do you do for work?">
+            </div>
+            <div class="health-tip">
+                <i class="fas fa-lightbulb"></i>
+                <strong>Health Tip:</strong> Providing accurate personal information helps us create a personalized health plan.
+            </div>
+        </div>
+        <!-- Step 2: Physical Metrics -->
+        <div class="form-step hidden" data-step="2">
+            <h2><i class="fas fa-weight"></i> Physical Metrics</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="height">Height (cm) *</label>
+                    <input type="number" id="height" min="100" max="250" required>
+                </div>
+                <div class="form-group">
+                    <label for="weight">Weight (kg) *</label>
+                    <input type="number" id="weight" min="30" max="300" step="0.1" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="targetWeight">Target Weight (kg)</label>
+                    <input type="number" id="targetWeight" min="30" max="300" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label for="bodyType">Body Type</label>
+                    <select id="bodyType">
+                        <option value="">Select body type</option>
+                        <option value="ectomorph">Ectomorph (Naturally thin)</option>
+                        <option value="mesomorph">Mesomorph (Athletic build)</option>
+                        <option value="endomorph">Endomorph (Naturally broader)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>How would you describe your current fitness level?</label>
+                <div class="rating-scale" data-field="fitnessLevel">
+                    <div class="rating-item" data-value="1">Sedentary<br><small>No exercise</small></div>
+                    <div class="rating-item" data-value="2">Lightly Active<br><small>1-3 days/week</small></div>
+                    <div class="rating-item" data-value="3">Moderately Active<br><small>3-5 days/week</small></div>
+                    <div class="rating-item" data-value="4">Very Active<br><small>6-7 days/week</small></div>
+                    <div class="rating-item" data-value="5">Extremely Active<br><small>2x per day</small></div>
+                </div>
+            </div>
+            <div class="health-tip">
+                <i class="fas fa-chart-line"></i>
+                <strong>Health Tip:</strong> Your BMI will be calculated automatically to help assess your health status.
+            </div>
+        </div>
+        <!-- Step 3: Medical History -->
+        <div class="form-step hidden" data-step="3">
+            <h2><i class="fas fa-stethoscope"></i> Medical History</h2>
+            <div class="form-group">
+                <label>Do you have any of the following medical conditions? (Select all that apply)</label>
+                <div class="conditions-grid" data-field="medicalConditions">
+                    <div class="condition-item" data-value="diabetes">
+                        <i class="fas fa-heartbeat"></i>
+                        <span>Diabetes</span>
+                    </div>
+                    <div class="condition-item" data-value="hypertension">
+                        <i class="fas fa-heart"></i>
+                        <span>High Blood Pressure</span>
+                    </div>
+                    <div class="condition-item" data-value="heart-disease">
+                        <i class="fas fa-heart-pulse"></i>
+                        <span>Heart Disease</span>
+                    </div>
+                    <div class="condition-item" data-value="asthma">
+                        <i class="fas fa-lungs"></i>
+                        <span>Asthma</span>
+                    </div>
+                    <div class="condition-item" data-value="arthritis">
+                        <i class="fas fa-bone"></i>
+                        <span>Arthritis</span>
+                    </div>
+                    <div class="condition-item" data-value="osteoporosis">
+                        <i class="fas fa-skeleton"></i>
+                        <span>Osteoporosis</span>
+                    </div>
+                    <div class="condition-item" data-value="thyroid">
+                        <i class="fas fa-pills"></i>
+                        <span>Thyroid Issues</span>
+                    </div>
+                    <div class="condition-item" data-value="depression">
+                        <i class="fas fa-brain"></i>
+                        <span>Depression/Anxiety</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="medications">Current Medications (List all)</label>
+                <textarea id="medications" rows="3" placeholder="List any medications you're currently taking..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="allergies">Known Allergies</label>
+                <textarea id="allergies" rows="3" placeholder="List any known allergies..."></textarea>
+            </div>
+            <div class="form-group">
+                <label for="surgeries">Previous Surgeries</label>
+                <textarea id="surgeries" rows="3" placeholder="List any previous surgeries or major medical procedures..."></textarea>
+            </div>
+            <div class="health-tip">
+                <i class="fas fa-shield-alt"></i>
+                <strong>Health Tip:</strong> Complete medical history helps ensure your fitness plan is safe and effective.
+            </div>
+        </div>
+        <!-- Step 4: Lifestyle & Habits -->
+        <div class="form-step hidden" data-step="4">
+            <h2><i class="fas fa-leaf"></i> Lifestyle & Habits</h2>
+            <div class="form-group">
+                <label>How many hours do you sleep per night on average?</label>
+                <div class="rating-scale" data-field="sleepHours">
+                    <div class="rating-item" data-value="1">4-5 hours</div>
+                    <div class="rating-item" data-value="2">5-6 hours</div>
+                    <div class="rating-item" data-value="3">6-7 hours</div>
+                    <div class="rating-item" data-value="4">7-8 hours</div>
+                    <div class="rating-item" data-value="5">8+ hours</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>How would you rate your sleep quality?</label>
+                <div class="rating-scale" data-field="sleepQuality">
+                    <div class="rating-item" data-value="1">Very Poor</div>
+                    <div class="rating-item" data-value="2">Poor</div>
+                    <div class="rating-item" data-value="3">Fair</div>
+                    <div class="rating-item" data-value="4">Good</div>
+                    <div class="rating-item" data-value="5">Excellent</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>How many glasses of water do you drink daily?</label>
+                <div class="rating-scale" data-field="waterIntake">
+                    <div class="rating-item" data-value="1">1-2 glasses</div>
+                    <div class="rating-item" data-value="2">3-4 glasses</div>
+                    <div class="rating-item" data-value="3">5-6 glasses</div>
+                    <div class="rating-item" data-value="4">7-8 glasses</div>
+                    <div class="rating-item" data-value="5">9+ glasses</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Do you smoke?</label>
+                <div class="rating-scale" data-field="smoking">
+                    <div class="rating-item" data-value="never">Never</div>
+                    <div class="rating-item" data-value="former">Former smoker</div>
+                    <div class="rating-item" data-value="occasional">Occasionally</div>
+                    <div class="rating-item" data-value="regular">Regularly</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>How often do you consume alcohol?</label>
+                <div class="rating-scale" data-field="alcohol">
+                    <div class="rating-item" data-value="never">Never</div>
+                    <div class="rating-item" data-value="rarely">Rarely</div>
+                    <div class="rating-item" data-value="weekly">Weekly</div>
+                    <div class="rating-item" data-value="daily">Daily</div>
+                </div>
+            </div>
+            <div class="health-tip">
+                <i class="fas fa-balance-scale"></i>
+                <strong>Health Tip:</strong> Lifestyle factors like sleep, hydration, and substance use impact overall health.
+            </div>
+        </div>
+        <!-- Step 5: Diet & Nutrition -->
+        <div class="form-step hidden" data-step="5">
+            <h2><i class="fas fa-apple-alt"></i> Diet & Nutrition</h2>
+            <div class="form-group">
+                <label>What is your current diet type?</label>
+                <div class="conditions-grid" data-field="dietType">
+                    <div class="condition-item" data-value="omnivore">
+                        <i class="fas fa-utensils"></i>
+                        <span>Omnivore</span>
+                    </div>
+                    <div class="condition-item" data-value="vegetarian">
+                        <i class="fas fa-leaf"></i>
+                        <span>Vegetarian</span>
+                    </div>
+                    <div class="condition-item" data-value="vegan">
+                        <i class="fas fa-seedling"></i>
+                        <span>Vegan</span>
+                    </div>
+                    <div class="condition-item" data-value="keto">
+                        <i class="fas fa-bacon"></i>
+                        <span>Ketogenic</span>
+                    </div>
+                    <div class="condition-item" data-value="paleo">
+                        <i class="fas fa-drumstick-bite"></i>
+                        <span>Paleo</span>
+                    </div>
+                    <div class="condition-item" data-value="mediterranean">
+                        <i class="fas fa-fish"></i>
+                        <span>Mediterranean</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>How many meals do you eat per day?</label>
+                <div class="rating-scale" data-field="mealsPerDay">
+                    <div class="rating-item" data-value="1">1 meal</div>
+                    <div class="rating-item" data-value="2">2 meals</div>
+                    <div class="rating-item" data-value="3">3 meals</div>
+                    <div class="rating-item" data-value="4">4-5 meals</div>
+                    <div class="rating-item" data-value="5">6+ meals</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>How often do you eat fruits and vegetables?</label>
+                <div class="rating-scale" data-field="fruitsVeggies">
+                    <div class="rating-item" data-value="1">Rarely</div>
+                    <div class="rating-item" data-value="2">1-2 times/week</div>
+                    <div class="rating-item" data-value="3">3-4 times/week</div>
+                    <div class="rating-item" data-value="4">Daily</div>
+                    <div class="rating-item" data-value="5">Multiple times daily</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>How often do you eat fast food or processed meals?</label>
+                <div class="rating-scale" data-field="fastFood">
+                    <div class="rating-item" data-value="1">Daily</div>
+                    <div class="rating-item" data-value="2">Few times/week</div>
+                    <div class="rating-item" data-value="3">Weekly</div>
+                    <div class="rating-item" data-value="4">Monthly</div>
+                    <div class="rating-item" data-value="5">Rarely/Never</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="foodAllergies">Food Allergies or Intolerances</label>
+                <textarea id="foodAllergies" rows="3" placeholder="List any food allergies or intolerances..."></textarea>
+            </div>
+            <div class="health-tip">
+                <i class="fas fa-carrot"></i>
+                <strong>Health Tip:</strong> A balanced diet with plenty of fruits and vegetables is key to energy and health.
+            </div>
+        </div>
+        <!-- Step 6: Exercise & Activity -->
+        <div class="form-step hidden" data-step="6">
+            <h2><i class="fas fa-dumbbell"></i> Exercise & Physical Activity</h2>
+            <div class="form-group">
+                <label>What types of exercise do you currently do? (Select all that apply)</label>
+                <div class="conditions-grid" data-field="exerciseTypes">
+                    <div class="condition-item" data-value="cardio">
+                        <i class="fas fa-running"></i>
+                        <span>Cardio/Running</span>
+                    </div>
+                    <div class="condition-item" data-value="weightlifting">
+                        <i class="fas fa-dumbbell"></i>
+                        <span>Weight Lifting</span>
+                    </div>
+                    <div class="condition-item" data-value="yoga">
+                        <i class="fas fa-peace"></i>
+                        <span>Yoga</span>
+                    </div>
+                    <div class="condition-item" data-value="swimming">
+                        <i class="fas fa-swimmer"></i>
+                        <span>Swimming</span>
+                    </div>
+                    <div class="condition-item" data-value="cycling">
+                        <i class="fas fa-bicycle"></i>
+                        <span>Cycling</span>
+                    </div>
+                    <div class="condition-item" data-value="sports">
+                        <i class="fas fa-football-ball"></i>
+                        <span>Team Sports</span>
+                    </div>
+                    <div class="condition-item" data-value="hiking">
+                        <i class="fas fa-mountain"></i>
+                        <span>Hiking/Walking</span>
+                    </div>
+                    <div class="condition-item" data-value="dancing">
+                        <i class="fas fa-music"></i>
+                        <span>Dancing</span>
+                    </div>
+                    <div class="condition-item" data-value="martial-arts">
+                        <i class="fas fa-fist-raised"></i>
+                        <span>Martial Arts</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>How many hours per week do you currently exercise?</label>
+                <div class="rating-scale" data-field="exerciseHours">
+                    <div class="rating-item" data-value="0">0 hours</div>
+                    <div class="rating-item" data-value="1">1-2 hours</div>
+                    <div class="rating-item" data-value="2">3-4 hours</div>
+                    <div class="rating-item" data-value="3">5-7 hours</div>
+                    <div class="rating-item" data-value="4">8+ hours</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>What is your primary fitness goal?</label>
+                <div class="conditions-grid" data-field="fitnessGoal">
+                    <div class="condition-item" data-value="weight-loss">
+                        <i class="fas fa-weight"></i>
+                        <span>Weight Loss</span>
+                    </div>
+                    <div class="condition-item" data-value="muscle-gain">
+                        <i class="fas fa-dumbbell"></i>
+                        <span>Muscle Gain</span>
+                    </div>
+                    <div class="condition-item" data-value="maintenance">
+                        <i class="fas fa-balance-scale"></i>
+                        <span>Maintenance</span>
+                    </div>
+                    <div class="condition-item" data-value="endurance">
+                        <i class="fas fa-running"></i>
+                        <span>Endurance</span>
+                    </div>
+                    <div class="condition-item" data-value="strength">
+                        <i class="fas fa-fist-raised"></i>
+                        <span>Strength</span>
+                    </div>
+                    <div class="condition-item" data-value="flexibility">
+                        <i class="fas fa-child"></i>
+                        <span>Flexibility</span>
+                    </div>
+                </div>
+            </div>
+            <div class="health-tip">
+                <i class="fas fa-trophy"></i>
+                <strong>Health Tip:</strong> Regular physical activity reduces the risk of chronic diseases and improves mental health.
+            </div>
+        </div>
+        <!-- Step 7: Mental Health & Stress -->
+        <div class="form-step hidden" data-step="7">
+            <h2><i class="fas fa-brain"></i> Mental Health & Stress Management</h2>
+            <div class="form-group">
+                <label>How would you rate your current stress level?</label>
+                <div class="rating-scale" data-field="stressLevel">
+                    <div class="rating-item" data-value="1">Very Low</div>
+                    <div class="rating-item" data-value="2">Low</div>
+                    <div class="rating-item" data-value="3">Moderate</div>
+                    <div class="rating-item" data-value="4">High</div>
+                    <div class="rating-item" data-value="5">Very High</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>How often do you feel anxious or worried?</label>
+                <div class="rating-scale" data-field="anxietyLevel">
+                    <div class="rating-item" data-value="1">Never</div>
+                    <div class="rating-item" data-value="2">Rarely</div>
+                    <div class="rating-item" data-value="3">Sometimes</div>
+                    <div class="rating-item" data-value="4">Often</div>
+                    <div class="rating-item" data-value="5">Always</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>How would you rate your overall mood in the past month?</label>
+                <div class="rating-scale" data-field="moodRating">
+                    <div class="rating-item" data-value="1">Very Poor</div>
+                    <div class="rating-item" data-value="2">Poor</div>
+                    <div class="rating-item" data-value="3">Fair</div>
+                    <div class="rating-item" data-value="4">Good</div>
+                    <div class="rating-item" data-value="5">Excellent</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>What stress management techniques do you use? (Select all that apply)</label>
+                <div class="conditions-grid" data-field="stressManagement">
+                    <div class="condition-item" data-value="meditation">
+                        <i class="fas fa-om"></i>
+                        <span>Meditation</span>
+                    </div>
+                    <div class="condition-item" data-value="breathing">
+                        <i class="fas fa-wind"></i>
+                        <span>Deep Breathing</span>
+                    </div>
+                    <div class="condition-item" data-value="music">
+                        <i class="fas fa-music"></i>
+                        <span>Music/Arts</span>
+                    </div>
+                    <div class="condition-item" data-value="nature">
+                        <i class="fas fa-tree"></i>
+                        <span>Nature/Outdoors</span>
+                    </div>
+                    <div class="condition-item" data-value="social">
+                        <i class="fas fa-users"></i>
+                        <span>Social Support</span>
+                    </div>
+                    <div class="condition-item" data-value="none">
+                        <i class="fas fa-times"></i>
+                        <span>None</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>How satisfied are you with your work-life balance?</label>
+                <div class="rating-scale" data-field="workLifeBalance">
+                    <div class="rating-item" data-value="1">Very Dissatisfied</div>
+                    <div class="rating-item" data-value="2">Dissatisfied</div>
+                    <div class="rating-item" data-value="3">Neutral</div>
+                    <div class="rating-item" data-value="4">Satisfied</div>
+                    <div class="rating-item" data-value="5">Very Satisfied</div>
+                </div>
+            </div>
+            <div class="health-tip">
+                <i class="fas fa-heart"></i>
+                <strong>Health Tip:</strong> Managing stress is essential to your well-being.
+            </div>
+        </div>
+        <!-- Step 8: Family History & Genetics -->
+        <div class="form-step hidden" data-step="8">
+            <h2><i class="fas fa-dna"></i> Family History & Genetics</h2>
+            <div class="form-group">
+                <label>Does your family have a history of any of the following? (Select all that apply)</label>
+                <div class="conditions-grid" data-field="familyHistory">
+                    <div class="condition-item" data-value="heart-disease">
+                        <i class="fas fa-heartbeat"></i>
+                        <span>Heart Disease</span>
+                    </div>
+                    <div class="condition-item" data-value="diabetes">
+                        <i class="fas fa-tint"></i>
+                        <span>Diabetes</span>
+                    </div>
+                    <div class="condition-item" data-value="cancer">
+                        <i class="fas fa-ribbon"></i>
+                        <span>Cancer</span>
+                    </div>
+                    <div class="condition-item" data-value="stroke">
+                        <i class="fas fa-brain"></i>
+                        <span>Stroke</span>
+                    </div>
+                    <div class="condition-item" data-value="hypertension">
+                        <i class="fas fa-thermometer-full"></i>
+                        <span>High Blood Pressure</span>
+                    </div>
+                    <div class="condition-item" data-value="obesity">
+                        <i class="fas fa-weight"></i>
+                        <span>Obesity</span>
+                    </div>
+                    <div class="condition-item" data-value="mental-health">
+                        <i class="fas fa-head-side-virus"></i>
+                        <span>Mental Health Issues</span>
+                    </div>
+                    <div class="condition-item" data-value="osteoporosis">
+                        <i class="fas fa-bone"></i>
+                        <span>Osteoporosis</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="familyDetails">Additional Family Health Details</label>
+                <textarea id="familyDetails" rows="3" placeholder="Please provide any additional details about your family's health history..."></textarea>
+            </div>
+            <div class="health-tip">
+                <i class="fas fa-family"></i>
+                <strong>Health Tip:</strong> Family history helps guide preventive care.
+            </div>
+        </div>
+        <!-- Step 9: Reproductive Health (Gender-specific) -->
+        <div class="form-step hidden" data-step="9">
+            <h2><i class="fas fa-venus-mars"></i> Reproductive Health</h2>
+            <div class="form-group" id="femaleHealth" style="display: none;">
+                <h3>Women's Health</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="menstrualCycle">Are your menstrual cycles regular?</label>
+                        <select id="menstrualCycle">
+                            <option value="">Select option</option>
+                            <option value="regular">Yes, regular</option>
+                            <option value="irregular">No, irregular</option>
+                            <option value="no-periods">No periods</option>
+                            <option value="menopause">Post-menopause</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="pregnancies">Number of pregnancies</label>
+                        <input type="number" id="pregnancies" min="0" max="20">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Are you currently using any form of birth control?</label>
+                    <div class="rating-scale" data-field="birthControl">
+                        <div class="rating-item" data-value="none">None</div>
+                        <div class="rating-item" data-value="hormonal">Hormonal</div>
+                        <div class="rating-item" data-value="barrier">Barrier</div>
+                        <div class="rating-item" data-value="iud">IUD</div>
+                        <div class="rating-item" data-value="other">Other</div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group" id="maleHealth" style="display: none;">
+                <h3>Men's Health</h3>
+                <div class="form-group">
+                    <label>Have you had any prostate health concerns?</label>
+                    <div class="rating-scale" data-field="prostateHealth">
+                        <div class="rating-item" data-value="no-concerns">No concerns</div>
+                        <div class="rating-item" data-value="minor-concerns">Minor concerns</div>
+                        <div class="rating-item" data-value="under-monitoring">Under monitoring</div>
+                        <div class="rating-item" data-value="treatment">Under treatment</div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>How would you rate your sexual health and satisfaction?</label>
+                <div class="rating-scale" data-field="sexualHealth">
+                    <div class="rating-item" data-value="1">Very Poor</div>
+                    <div class="rating-item" data-value="2">Poor</div>
+                    <div class="rating-item" data-value="3">Fair</div>
+                    <div class="rating-item" data-value="4">Good</div>
+                    <div class="rating-item" data-value="5">Excellent</div>
+                </div>
+            </div>
+            <div class="health-tip">
+                <i class="fas fa-user-md"></i>
+                <strong>Health Tip:</strong> Regular check-ups are important for early detection.
+            </div>
+        </div>
+        <!-- Step 10: Preventive Care & Screenings -->
+        <div class="form-step hidden" data-step="10">
+            <h2><i class="fas fa-clipboard-check"></i> Preventive Care & Health Screenings</h2>
+            <div class="form-group">
+                <label>When was your last physical examination?</label>
+                <div class="rating-scale" data-field="lastPhysical">
+                    <div class="rating-item" data-value="3months">Within 3 months</div>
+                    <div class="rating-item" data-value="6months">Within 6 months</div>
+                    <div class="rating-item" data-value="1year">Within 1 year</div>
+                    <div class="rating-item" data-value="2years">1-2 years ago</div>
+                    <div class="rating-item" data-value="longer">More than 2 years</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Which health screenings have you had in the past 2 years? (Select all that apply)</label>
+                <div class="conditions-grid" data-field="healthScreenings">
+                    <div class="condition-item" data-value="blood-pressure">
+                        <i class="fas fa-heartbeat"></i>
+                        <span>Blood Pressure</span>
+                    </div>
+                    <div class="condition-item" data-value="cholesterol">
+                        <i class="fas fa-vial"></i>
+                        <span>Cholesterol</span>
+                    </div>
+                    <div class="condition-item" data-value="blood-sugar">
+                        <i class="fas fa-tint"></i>
+                        <span>Blood Sugar</span>
+                    </div>
+                    <div class="condition-item" data-value="mammogram">
+                        <i class="fas fa-x-ray"></i>
+                        <span>Mammogram</span>
+                    </div>
+                    <div class="condition-item" data-value="colonoscopy">
+                        <i class="fas fa-search"></i>
+                        <span>Colonoscopy</span>
+                    </div>
+                    <div class="condition-item" data-value="skin-check">
+                        <i class="fas fa-hand-paper"></i>
+                        <span>Skin Cancer Screening</span>
+                    </div>
+                    <div class="condition-item" data-value="eye-exam">
+                        <i class="fas fa-eye"></i>
+                        <span>Eye Exam</span>
+                    </div>
+                    <div class="condition-item" data-value="dental">
+                        <i class="fas fa-tooth"></i>
+                        <span>Dental Checkup</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Are you up to date with your vaccinations?</label>
+                <div class="rating-scale" data-field="vaccinations">
+                    <div class="rating-item" data-value="yes">Yes, up to date</div>
+                    <div class="rating-item" data-value="mostly">Mostly up to date</div>
+                    <div class="rating-item" data-value="unsure">Not sure</div>
+                    <div class="rating-item" data-value="no">No, behind</div>
+                </div>
+            </div>
+            <div class="health-tip">
+                <i class="fas fa-shield-alt"></i>
+                <strong>Health Tip:</strong> Regular screenings catch health issues early.
+            </div>
+        </div>
+        <!-- Step 11: Environmental & Occupational Health -->
+        <div class="form-step hidden" data-step="11">
+            <h2><i class="fas fa-industry"></i> Environmental & Occupational Health</h2>
+            <div class="form-group">
+                <label>How many hours do you spend sitting at work daily?</label>
+                <div class="rating-scale" data-field="sittingHours">
+                    <div class="rating-item" data-value="1">0-2 hours</div>
+                    <div class="rating-item" data-value="2">3-4 hours</div>
+                    <div class="rating-item" data-value="3">5-6 hours</div>
+                    <div class="rating-item" data-value="4">7-8 hours</div>
+                    <div class="rating-item" data-value="5">9+ hours</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Are you exposed to any of the following at work? (Select all that apply)</label>
+                <div class="conditions-grid" data-field="workExposures">
+                    <div class="condition-item" data-value="chemicals">
+                        <i class="fas fa-flask"></i>
+                        <span>Chemicals</span>
+                    </div>
+                    <div class="condition-item" data-value="dust">
+                        <i class="fas fa-cloud"></i>
+                        <span>Dust/Particles</span>
+                    </div>
+                    <div class="condition-item" data-value="loud-noise">
+                        <i class="fas fa-volume-up"></i>
+                        <span>Loud Noise</span>
+                    </div>
+                    <div class="condition-item" data-value="radiation">
+                        <i class="fas fa-radiation"></i>
+                        <span>Radiation</span>
+                    </div>
+                    <div class="condition-item" data-value="heavy-lifting">
+                        <i class="fas fa-weight-hanging"></i>
+                        <span>Heavy Lifting</span>
+                    </div>
+                    <div class="condition-item" data-value="repetitive-motion">
+                        <i class="fas fa-redo"></i>
+                        <span>Repetitive Motion</span>
+                    </div>
+                    <div class="condition-item" data-value="none">
+                        <i class="fas fa-check"></i>
+                        <span>None</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>How would you rate the air quality in your living area?</label>
+                <div class="rating-scale" data-field="airQuality">
+                    <div class="rating-item" data-value="1">Very Poor</div>
+                    <div class="rating-item" data-value="2">Poor</div>
+                    <div class="rating-item" data-value="3">Fair</div>
+                    <div class="rating-item" data-value="4">Good</div>
+                    <div class="rating-item" data-value="5">Excellent</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>How much time do you spend outdoors daily?</label>
+                <div class="rating-scale" data-field="outdoorTime">
+                    <div class="rating-item" data-value="1">Less than 30 min</div>
+                    <div class="rating-item" data-value="2">30-60 minutes</div>
+                    <div class="rating-item" data-value="3">1-2 hours</div>
+                    <div class="rating-item" data-value="4">2-4 hours</div>
+                    <div class="rating-item" data-value="5">4+ hours</div>
+                </div>
+            </div>
+            <div class="health-tip">
+                <i class="fas fa-leaf"></i>
+                <strong>Health Tip:</strong> Fresh air and nature exposure boost your wellbeing.
+            </div>
+        </div>
+        <!-- Step 12: Technology & Digital Health -->
+        <div class="form-step hidden" data-step="12">
+            <h2><i class="fas fa-mobile-alt"></i> Technology & Digital Wellness</h2>
+            <div class="form-group">
+                <label>How many hours per day do you spend on screens (phone, computer, TV)?</label>
+                <div class="rating-scale" data-field="screenTime">
+                    <div class="rating-item" data-value="1">1-2 hours</div>
+                    <div class="rating-item" data-value="2">3-4 hours</div>
+                    <div class="rating-item" data-value="3">5-6 hours</div>
+                    <div class="rating-item" data-value="4">7-8 hours</div>
+                    <div class="rating-item" data-value="5">9+ hours</div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Do you experience any of the following from screen use? (Select all that apply)</label>
+                <div class="conditions-grid" data-field="screenEffects">
+                    <div class="condition-item" data-value="eye-strain">
+                        <i class="fas fa-eye"></i>
+                        <span>Eye Strain</span>
+                    </div>
+                    <div class="condition-item" data-value="headaches">
+                        <i class="fas fa-head-side-virus"></i>
+                        <span>Headaches</span>
+                    </div>
+                    <div class="condition-item" data-value="neck-pain">
+                        <i class="fas fa-user-injured"></i>
+                        <span>Neck/Shoulder Pain</span>
+                    </div>
+                    <div class="condition-item" data-value="sleep-issues">
+                        <i class="fas fa-bed"></i>
+                        <span>Sleep Issues</span>
+                    </div>
+                    <div class="condition-item" data-value="dry-eyes">
+                        <i class="fas fa-tint-slash"></i>
+                        <span>Dry Eyes</span>
+                    </div>
+                    <div class="condition-item" data-value="none">
+                        <i class="fas fa-check"></i>
+                        <span>None</span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Do you use any health/fitness tracking apps or devices?</label>
+                <div class="conditions-grid" data-field="healthTech">
+                    <div class="condition-item" data-value="fitness-tracker">
+                        <i class="fas fa-stopwatch"></i>
+                        <span>Fitness Tracker</span>
+                    </div>
+                    <div class="condition-item" data-value="health-apps">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>Health Apps</span>
+                    </div>
+                    <div class="condition-item" data-value="smart-scale">
+                        <i class="fas fa-weight"></i>
+                        <span>Smart Scale</span>
+                    </div>
+                    <div class="condition-item" data-value="sleep-tracker">
+                        <i class="fas fa-bed"></i>
+                        <span>Sleep Tracker</span>
+                    </div>
+                    <div class="condition-item" data-value="none">
+                        <i class="fas fa-times"></i>
+                        <span>None</span>
+                    </div>
+                </div>
+            </div>
+            <div class="health-tip">
+                <i class="fas fa-digital-tachograph"></i>
+                <strong>Health Tip:</strong> Balance screen time with regular breaks and physical activity.
+            </div>
+        </div>
+        <!-- Navigation buttons -->
+        <div class="navigation-buttons">
+            <button type="button" id="prevBtn" class="btn btn-secondary" style="display: none;">
+                <i class="fas fa-arrow-left"></i> Previous
+            </button>
+            <button type="button" id="nextBtn" class="btn btn-primary">
+                Next <i class="fas fa-arrow-right"></i>
+            </button>
+            <button type="button" id="submitBtn" class="btn btn-success" style="display: none;">
+                <i class="fas fa-check"></i> Complete Assessment
+            </button>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const nextBtn = document.getElementById('nextBtn');
+            const prevBtn = document.getElementById('prevBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const formSteps = document.querySelectorAll('.form-step');
+            const currentStepText = document.getElementById('currentStep');
+            let currentStep = 0;
+
+            function showStep(step) {
+                formSteps.forEach((formStep, index) => {
+                    formStep.classList.toggle('hidden', index !== step);
+                });
+                // update navigation button display
+                prevBtn.style.display = step > 0 ? 'block' : 'none';
+                nextBtn.style.display = step < formSteps.length - 1 ? 'block' : 'none';
+                submitBtn.style.display = step === formSteps.length - 1 ? 'block' : 'none';
+                currentStepText.textContent = step + 1;
+            }
+
+            nextBtn.addEventListener('click', () => {
+                if (currentStep < formSteps.length - 1) {
+                    currentStep++;
+                    showStep(currentStep);
+                }
+            });
+
+            prevBtn.addEventListener('click', () => {
+                if (currentStep > 0) {
+                    currentStep--;
+                    showStep(currentStep);
+                }
+            });
+
+            // Allow single selection for rating-scale (only one item may be selected)
+            document.querySelectorAll('.rating-scale').forEach(scale => {
+                scale.addEventListener('click', event => {
+                    const ratingItem = event.target.closest('.rating-item');
+                    if (ratingItem && scale.contains(ratingItem)) {
+                        scale.querySelectorAll('.rating-item').forEach(item => item.classList.remove('selected'));
+                        ratingItem.classList.add('selected');
+                    }
+                });
+            });
+
+            // Allow toggle selection for multiple-choice options (conditions-grid)
+            document.querySelectorAll('.conditions-grid').forEach(grid => {
+                grid.addEventListener('click', event => {
+                    const conditionItem = event.target.closest('.condition-item');
+                    if (conditionItem && grid.contains(conditionItem)) {
+                        conditionItem.classList.toggle('selected');
+                    }
+                });
+            });
+
+            // Validate required input/select fields
+            function validateRequiredFields() {
+                let valid = true;
+                document.querySelectorAll('[required]').forEach(input => {
+                    if (!input.value.trim()) {
+                        valid = false;
+                        input.style.borderColor = 'red';
+                    } else {
+                        input.style.borderColor = '#e0e0e0';
+                    }
+                });
+                return valid;
+            }
+
+            // Generate PDF using jsPDF from a few form details
+            function generatePDF() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+
+                let y = 10;
+                doc.setFontSize(16);
+                doc.text("Health Assessment Details", 10, y);
+                y += 10;
+                doc.setFontSize(12);
+
+                // Personal Info
+                doc.text("Personal Information:", 10, y);
+                y += 7;
+                doc.text("First Name: " + document.getElementById('firstName').value, 10, y);
+                y += 7;
+                doc.text("Last Name: " + document.getElementById('lastName').value, 10, y);
+                y += 7;
+                doc.text("Age: " + document.getElementById('age').value, 10, y);
+                y += 7;
+                doc.text("Gender: " + document.getElementById('gender').value, 10, y);
+                y += 7;
+                doc.text("Email: " + document.getElementById('email').value, 10, y);
+                y += 10;
+
+                // You can extract more info from other steps as needed
+
+                doc.save('assessment.pdf');
+            }
+
+            // When the user clicks the submitBtn, validate and then generate the PDF
+            submitBtn.addEventListener('click', () => {
+                if (!validateRequiredFields()) {
+                    alert('Please fill in all required fields marked with *');
+                    return;
+                }
+                generatePDF();
+            });
+
+            showStep(currentStep);
+        });
+    </script>
+</body>
+</html>
