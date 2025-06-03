@@ -11,13 +11,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// Set EJS as the view engine and views directory
+// View Engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Enhanced session configuration
+// Session Configuration
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'some very secret string',
+  secret: process.env.SESSION_SECRET || 'your-secret-key-here',
   resave: false,
   saveUninitialized: false,
   cookie: { 
@@ -28,25 +28,23 @@ app.use(session({
   }
 }));
 
-// Improved Authentication Middleware
+// Authentication Middleware
 const isAuthenticated = (req, res, next) => {
-  console.log('Session check:', req.session); // Debug logging
-  if (req.session?.user) {
-    return next();
+  if (!req.session.user) {
+    if (req.accepts('html')) {
+      return res.redirect('/');
+    }
+    return res.status(401).json({ error: 'Unauthorized' });
   }
-  // Handle both API and view requests
-  if (req.accepts('html')) {
-    return res.redirect('/');
-  }
-  res.status(401).json({ success: false, error: 'Not authenticated' });
+  next();
 };
 
-// Enhanced Onboarding Check Middleware
-const hasCompletedOnboarding = (req, res, next) => {
-  if (req.session.user?.onboardingCompleted) {
-    return next();
+// Onboarding Check Middleware
+const checkOnboarding = (req, res, next) => {
+  if (!req.session.user.onboardingCompleted) {
+    return res.redirect(`/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(req.session.user.email)}`);
   }
-  res.redirect('/CustomOnboarding');
+  next();
 };
 
 // Routes
@@ -54,35 +52,84 @@ app.get('/', (req, res) => {
   res.render('index');
 });
 
-// Login route (you'll need to implement this)
-app.post('/login', (req, res) => {
-  const { email, password } = req.body;
-  
-  // In a real app, you would verify credentials against a database
-  req.session.user = {
-    email,
-    fullName: 'User Name', // Get from DB in real app
-    onboardingCompleted: false
-  };
-  
-  res.json({ success: true, message: 'Login successful' });
+// Signup Route
+app.post('/signup', async (req, res) => {
+  try {
+    const { fullName, email, password } = req.body;
+
+    if (!email || !fullName || !password) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'All fields are required' 
+      });
+    }
+
+    req.session.user = {
+      email: email.trim(),
+      fullName: fullName.trim(),
+      onboardingCompleted: false
+    };
+
+    res.json({
+      success: true,
+      redirectUrl: `/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(email.trim())}`
+    });
+
+    try {
+      await sendWelcomeEmail(email.trim(), fullName.trim());
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+    }
+
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Internal server error' 
+    });
+  }
 });
 
-// Onboarding page
-app.get('/CustomOnboarding', isAuthenticated, (req, res) => {
-  res.render('customonboarding', { user: req.session.user });
-});
-
-// Mark onboarding complete
-app.post('/dashboard/complete', isAuthenticated, (req, res) => {
-  req.session.user.onboardingCompleted = true;
-  res.json({
-    success: true,
-    message: 'Onboarding completed successfully'
+// Custom Onboarding Route
+app.get('/CustomOnboarding', (req, res) => {
+  const email = req.session.user?.email || req.query.email;
+  if (!email) return res.redirect('/');
+  
+  res.render('customonboarding', {
+    user: {
+      email: email,
+      fullName: req.session.user?.fullName || '',
+      sessionId: undefined
+    }
   });
 });
 
-// Protected routes
+// Login Route
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+  
+  req.session.user = {
+    email: email.trim(),
+    fullName: 'User Name', // In real app, get from DB
+    onboardingCompleted: false
+  };
+  
+  res.json({ 
+    success: true,
+    redirectUrl: '/CustomOnboarding?sessionId=undefined'
+  });
+});
+
+// Complete Onboarding
+app.post('/complete-onboarding', isAuthenticated, (req, res) => {
+  req.session.user.onboardingCompleted = true;
+  res.json({ 
+    success: true,
+    redirectUrl: '/dashboard'
+  });
+});
+
+// All Protected Routes
 const protectedRoutes = [
   '/dashboard',
   '/workouts',
@@ -96,82 +143,59 @@ const protectedRoutes = [
 ];
 
 protectedRoutes.forEach(route => {
-  app.get(route, isAuthenticated, hasCompletedOnboarding, (req, res) => {
-    try {
-      const viewName = route.substring(1) || 'dashboard'; // Remove leading slash
-      res.render(viewName, { 
-        user: req.session.user, 
-        fullName: req.session.user.fullName 
-      });
-    } catch (error) {
-      console.error(`Error rendering ${route}:`, error);
-      res.status(500).send('Error loading page');
-    }
+  app.get(route, isAuthenticated, checkOnboarding, (req, res) => {
+    const viewName = route.substring(1); // Remove leading slash
+    res.render(viewName, { 
+      user: req.session.user,
+      currentPath: route
+    });
   });
 });
 
-// Signup route with enhanced error handling
-app.post('/signup', async (req, res) => {
-  try {
-    const { fullName, email, password } = req.body;
-
-    if (!email || !fullName || !password) {
-      return res.status(400).json({
-        success: false,
-        error: 'All fields are required (Full name, Email, Password)'
-      });
-    }
-
-    // In a real app, you would:
-    // 1. Hash the password
-    // 2. Save to database
-    // 3. Handle duplicate emails
-
-    req.session.user = {
-      fullName,
-      email,
-      onboardingCompleted: false
-    };
-
-    await sendWelcomeEmail(email, fullName);
-
-    res.json({
-      success: true,
-      message: 'Signup successful! Welcome email sent.',
-      user: req.session.user // Return user data
-    });
-  } catch (error) {
-    console.error('Signup error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message || 'Error during signup. Please try again.'
-    });
-  }
-});
-
-// Logout route
+// Logout Route
 app.get('/logout', (req, res) => {
-  req.session.destroy((err) => {
-    if (err) {
-      console.error('Error destroying session:', err);
-      return res.status(500).send('Logout failed');
-    }
-    res.clearCookie('connect.sid'); // Clear the session cookie
+  req.session.destroy(() => {
+    res.clearCookie('connect.sid');
     res.redirect('/');
   });
 });
 
-// Error handling middleware
+// 404 Handler
+app.use((req, res) => {
+  res.status(404).render('404');
+});
+
+// Error Handler
 app.use((err, req, res, next) => {
-  console.error('Application error:', err);
-  res.status(500).json({
-    success: false,
-    error: 'Internal server error'
+  console.error(err.stack);
+  res.status(500).render('error', { message: 'Server Error' });
+});
+// Error Handling Middleware (put this at the end of your middleware chain)
+app.use((err, req, res, next) => {
+  console.error('Error:', err.stack);
+  
+  // Set default error message
+  err.message = err.message || 'Something went wrong!';
+  
+  // Determine status code
+  const statusCode = err.status || 500;
+  
+  // Send response
+  res.status(statusCode).render('error', {
+    message: err.message,
+    status: statusCode,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
   });
 });
 
-// Start server
+// 404 Handler (put this after all your routes)
+app.use((req, res) => {
+  res.status(404).render('404', {
+    path: req.path
+  });
+});
+// Start Server
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
