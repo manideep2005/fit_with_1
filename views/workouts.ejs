@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workouts - Fit-With-AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --secondary: #4D44DB;
+            --accent: #FF6584;
+            --light: #F8F9FA;
+            --dark: #343A40;
+            --success: #28A745;
+            --warning: #FFC107;
+            --danger: #DC3545;
+            --gray: #6C757D;
+            --light-gray: #E9ECEF;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F5F7FA;
+            color: var(--dark);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 2rem 1rem;
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+        
+        .sidebar-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .user-plan {
+            font-size: 0.8rem;
+            color: var(--primary);
+            background: rgba(108, 99, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-top: 5px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 1rem;
+            color: var(--gray);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .search-filter {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: white;
+            padding: 0 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            width: 250px;
+        }
+        
+        .search-bar input {
+            border: none;
+            outline: none;
+            padding: 10px;
+            flex: 1;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .filter-btn {
+            background: white;
+            border: none;
+            padding: 0 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .workout-categories {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+        
+        .category-btn {
+            padding: 8px 20px;
+            border-radius: 20px;
+            background: var(--light-gray);
+            border: none;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        
+        .category-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .workout-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .workout-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+        
+        .workout-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .workout-image {
+            height: 180px;
+            background-color: var(--light-gray);
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .workout-content {
+            padding: 1.5rem;
+        }
+        
+        .workout-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0 0 5px 0;
+        }
+        
+        .workout-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .workout-desc {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .workout-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .difficulty {
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+        
+        .beginner {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+        
+        .intermediate {
+            background: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+        }
+        
+        .advanced {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            background: var(--secondary);
+        }
+        
+        .btn-outline {
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .search-filter {
+                width: 100%;
+            }
+            
+            .search-bar {
+                width: 100%;
+            }
+            
+            .workout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
+                <div>
+                    <h3 class="user-name"><%= user.fullName %></h3>
+                    <span class="user-plan">Premium Plan</span>
+                </div>
+            </div>
+            
+             <ul class="nav-menu">
+                <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="nav-item"><a href="/workouts" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
+                <li class="nav-item"><a href="/progress" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
+                <li class="nav-item"><a href="/nutrition" class="nav-link"><i class="fas fa-utensils"></i> Nutrition</a></li>
+                <li class="nav-item"><a href="/health" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
+                <li class="nav-item"><a href="/schedule" class="nav-link active"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
+                <li class="nav-item"><a href="/community" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
+                <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
+                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Workout Plans</h1>
+                <div class="search-filter">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search workouts...">
+                    </div>
+                    <button class="filter-btn">
+                        <i class="fas fa-sliders-h"></i>
+                        <span>Filters</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="workout-categories">
+                <button class="category-btn active">All</button>
+                <button class="category-btn">Strength</button>
+                <button class="category-btn">Cardio</button>
+                <button class="category-btn">HIIT</button>
+                <button class="category-btn">Yoga</button>
+                <button class="category-btn">Recovery</button>
+                <button class="category-btn">Custom</button>
+            </div>
+            
+            <div class="workout-grid">
+                <!-- Workout Card 1 -->
+                <div class="workout-card">
+                    <div class="workout-image" style="background-image: url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80')"></div>
+                    <div class="workout-content">
+                        <h3 class="workout-title">Full Body Strength</h3>
+                        <div class="workout-meta">
+                            <span><i class="far fa-clock"></i> 45 min</span>
+                            <span><i class="fas fa-fire"></i> 320 cal</span>
+                        </div>
+                        <p class="workout-desc">Comprehensive full body workout targeting all major muscle groups with compound exercises.</p>
+                        <div class="workout-footer">
+                            <span class="difficulty intermediate">Intermediate</span>
+                            <button class="btn btn-primary">Start</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Workout Card 2 -->
+                <div class="workout-card">
+                    <div class="workout-image" style="background-image: url('https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80')"></div>
+                    <div class="workout-content">
+                        <h3 class="workout-title">HIIT Burner</h3>
+                        <div class="workout-meta">
+                            <span><i class="far fa-clock"></i> 30 min</span>
+                            <span><i class="fas fa-fire"></i> 450 cal</span>
+                        </div>
+                        <p class="workout-desc">High intensity interval training to maximize fat burn and cardiovascular endurance.</p>
+                        <div class="workout-footer">
+                            <span class="difficulty advanced">Advanced</span>
+                            <button class="btn btn-primary">Start</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Workout Card 3 -->
+                <div class="workout-card">
+                    <div class="workout-image" style="background-image: url('https://images.unsplash.com/photo-1545205597-3d9d02c29597?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80')"></div>
+                    <div class="workout-content">
+                        <h3 class="workout-title">Yoga Flow</h3>
+                        <div class="workout-meta">
+                            <span><i class="far fa-clock"></i> 60 min</span>
+                            <span><i class="fas fa-fire"></i> 180 cal</span>
+                        </div>
+                        <p class="workout-desc">Gentle yoga sequence to improve flexibility, balance, and mental clarity.</p>
+                        <div class="workout-footer">
+                            <span class="difficulty beginner">Beginner</span>
+                            <button class="btn btn-primary">Start</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Workout Card 4 -->
+                <div class="workout-card">
+                    <div class="workout-image" style="background-image: url('https://images.unsplash.com/photo-1538805060514-97d9cc17730c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80')"></div>
+                    <div class="workout-content">
+                        <h3 class="workout-title">Upper Body Sculpt</h3>
+                        <div class="workout-meta">
+                            <span><i class="far fa-clock"></i> 40 min</span>
+                            <span><i class="fas fa-fire"></i> 280 cal</span>
+                        </div>
+                        <p class="workout-desc">Targeted upper body workout focusing on arms, shoulders, chest and back.</p>
+                        <div class="workout-footer">
+                            <span class="difficulty intermediate">Intermediate</span>
+                            <button class="btn btn-primary">Start</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Workout Card 5 -->
+                <div class="workout-card">
+                    <div class="workout-image" style="background-image: url('https://images.unsplash.com/photo-1534258936925-c58bed479fcb?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80')"></div>
+                    <div class="workout-content">
+                        <h3 class="workout-title">Core Crusher</h3>
+                        <div class="workout-meta">
+                            <span><i class="far fa-clock"></i> 25 min</span>
+                            <span><i class="fas fa-fire"></i> 200 cal</span>
+                        </div>
+                        <p class="workout-desc">Intense core workout to strengthen your abs, obliques and lower back.</p>
+                        <div class="workout-footer">
+                            <span class="difficulty intermediate">Intermediate</span>
+                            <button class="btn btn-primary">Start</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Workout Card 6 -->
+                <div class="workout-card">
+                    <div class="workout-image" style="background-image: url('https://images.unsplash.com/photo-1576678927484-cc907957088c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80')"></div>
+                    <div class="workout-content">
+                        <h3 class="workout-title">Recovery Stretch</h3>
+                        <div class="workout-meta">
+                            <span><i class="far fa-clock"></i> 20 min</span>
+                            <span><i class="fas fa-fire"></i> 80 cal</span>
+                        </div>
+                        <p class="workout-desc">Gentle stretching routine to improve mobility and aid muscle recovery.</p>
+                        <div class="workout-footer">
+                            <span class="difficulty beginner">Beginner</span>
+                            <button class="btn btn-primary">Start</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
