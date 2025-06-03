@@ -41,7 +41,7 @@ const sendWelcomeEmail = async (userEmail, userName) => {
                     </ul>
                     <p style="font-size: 16px; line-height: 1.6;">Get started by completing your profile and setting your fitness goals!</p>
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="https://fit-with-ai.com/CustomOnboarding" style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">Complete Your Profile</a>
+                        <a href="https://fit-with-ai-1.vercel.app/CustomOnboarding" style="background-color: #4CAF50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px;">Complete Your Profile</a>
                     </div>
                     <p style="font-size: 16px; line-height: 1.6;">If you have any questions, feel free to reach out to our support team.</p>
                     <p style="font-size: 16px; line-height: 1.6;">Best regards,<br>The Fit-With-AI Team</p>
@@ -60,4 +60,4 @@ const sendWelcomeEmail = async (userEmail, userName) => {
 
 module.exports = {
     sendWelcomeEmail
-}; 
+};
