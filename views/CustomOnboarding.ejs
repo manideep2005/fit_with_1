@@ -153,7 +153,7 @@
             display: none;
         }
         .form-step h2 {
-            color: #333;
+            color: #f9f4f4;
             margin-bottom: 20px;
             font-size: 2em;
             text-align: center;
@@ -165,7 +165,7 @@
             display: block;
             margin-bottom: 8px;
             font-weight: bold;
-            color: #333;
+            color: #f0ebeb;
         }
         .form-group input,
         .form-group select,
@@ -1184,6 +1184,35 @@
     });
 
     showStep(currentStep);
+});
+
+submitBtn.addEventListener('click', async () => {
+    if (!validateRequiredFields()) {
+        alert('Please fill in all required fields marked with *');
+        return;
+    }
+    
+    try {
+        console.log('Sending request to /dashboard/complete...'); // Add this line
+        
+        const response = await fetch('/dashboard/complete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                onboardingData: {}
+            })
+        });
+
+        console.log('Response status:', response.status); // Add this line
+        
+        const result = await response.json();
+        // ... rest of your code
+    } catch (error) {
+        console.error('Error completing onboarding:', error);
+        alert('Error completing onboarding. Please try again.');
+    }
 });
 </script>
 

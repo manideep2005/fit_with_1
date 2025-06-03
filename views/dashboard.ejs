@@ -689,7 +689,7 @@
                 <div class="user-info">
                     <div class="user-avatar">GM</div>
                     <div class="user-details">
-                        <h3>G. Manideep</h3>
+                    <h3 >  <%= user.fullName || 'Guest' %></h3>
                         <div class="user-plan">Premium Plan</div>
                     </div>
                 </div>
@@ -697,7 +697,7 @@
             
             <ul class="sidebar-menu">
                 <li><a href="#" class="active"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
-                <li><a href="#"><i class="fas fa-dumbbell"></i><span>Workouts</span></a></li>
+                <li><a href="/workout"><i class="fas fa-dumbbell"></i><span>Workouts</span></a></li>
                 <li><a href="#"><i class="fas fa-chart-line"></i><span>Progress</span></a></li>
                 <li><a href="#"><i class="fas fa-apple-alt"></i><span>Nutrition</span></a></li>
                 <li><a href="#"><i class="fas fa-calendar-alt"></i><span>Schedule</span></a></li>
@@ -707,7 +707,7 @@
             </ul>
             
             <div class="sidebar-footer">
-                <a href="#" class="logout-btn">
+                <a href="/logout" class="logout-btn">
                     <i class="fas fa-sign-out-alt"></i>
                     <span>Logout</span>
                 </a>
@@ -722,7 +722,7 @@
         <!-- Main Content -->
         <main class="main-content">
             <div class="header">
-                <h1 class="page-title">Welcome back, G. Manideep!</h1>
+          <h1 class="page-title">Welcome back, <%= user.fullName || 'Guest' %>!</h1>
                 <div class="header-actions">
                     <div class="search-bar">
                         <i class="fas fa-search search-icon"></i>

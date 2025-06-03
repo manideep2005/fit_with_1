@@ -62,8 +62,19 @@ app.post('/dashboard/complete', isAuthenticated, (req, res) => {
 
 // Protected dashboard
 app.get('/dashboard', isAuthenticated, hasCompletedOnboarding, (req, res) => {
-  res.render('dashboard', { user: req.session.user });
+  res.render('dashboard', { 
+    user: req.session.user,
+    fullName: req.session.user.fullName 
+  });
 });
+
+app.get('/workout', isAuthenticated, hasCompletedOnboarding, (req, res) => {
+  res.render('workout', { 
+    user: req.session.user,
+    fullName: req.session.user.fullName 
+  });
+});
+
 
 // Signup route
 app.post('/signup', async (req, res) => {
@@ -84,7 +95,15 @@ app.post('/signup', async (req, res) => {
       email,
       onboardingCompleted: false
     };
-
+// Logout route
+app.get('/workout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+        }
+        res.redirect('/');
+    });
+});
     // Send welcome email
     await sendWelcomeEmail(email, fullName);
 
@@ -99,6 +118,15 @@ app.post('/signup', async (req, res) => {
       error: error.message || 'Error during signup. Please try again.'
     });
   }
+});
+// Logout route
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+        }
+        res.redirect('/');
+    });
 });
 
 // Start server

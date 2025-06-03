@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitWit AI - Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        /* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background: #111;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: #111;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1.5rem 0;
+    height: 100vh;
+    position: fixed;
+    transition: all 0.3s ease;
+    overflow-y: auto;
+}
+
+.sidebar-header {
+    padding: 0 1.5rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.sidebar-logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #ff6b6b, #4ecdc4, #8a2be2);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 2px;
+    margin-bottom: 1rem;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: white;
+}
+
+.user-details {
+    flex: 1;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.user-plan {
+    font-size: 0.8rem;
+    color: #4ecdc4;
+}
+
+.sidebar-menu {
+    list-style: none;
+}
+
+.sidebar-menu li {
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-menu a {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1.5rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-menu a:hover,
+.sidebar-menu a.active {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.sidebar-menu a.active {
+    border-left-color: #4ecdc4;
+}
+
+.sidebar-menu i {
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-footer {
+    padding: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 2rem;
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    color: #ff6b6b;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    margin-left: 250px;
+    min-height: 100vh;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.page-title span {
+    color: #4ecdc4;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.search-bar {
+    position: relative;
+}
+
+.search-input {
+    padding: 0.6rem 1rem 0.6rem 2.5rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 30px;
+    color: white;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    width: 200px;
+}
+
+.search-input:focus {
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.15);
+    width: 250px;
+}
+
+.search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.search-icon {
+    position: absolute;
+    top: 50%;
+    left: 0.75rem;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+}
+
+.notification-btn {
+    position: relative;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.notification-btn:hover {
+    color: white;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 18px;
+    height: 18px;
+    background-color: #ff6b6b;
+    border-radius: 50%;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.5rem;
+}
+
+.widget {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.widget:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+}
+
+.widget-sm {
+    grid-column: span 3;
+}
+
+.widget-md {
+    grid-column: span 6;
+}
+
+.widget-lg {
+    grid-column: span 9;
+}
+
+.widget-full {
+    grid-column: span 12;
+}
+
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.widget-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.widget-action {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.widget-action:hover {
+    color: #4ecdc4;
+}
+
+/* Stats Widget */
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.stat-change {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.stat-increase {
+    color: #4ecdc4;
+}
+
+.stat-decrease {
+    color: #ff6b6b;
+}
+
+/* Chart Widget */
+.chart-container {
+    width: 100%;
+    height: 250px;
+    position: relative;
+}
+
+/* Workout List */
+.workout-list {
+    margin-top: 1rem;
+}
+
+.workout-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.workout-item:last-child {
+    border-bottom: none;
+}
+
+.workout-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.workout-icon {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4ecdc4;
+    font-size: 1.2rem;
+}
+
+.workout-details h4 {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.workout-details p {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.workout-time {
+    font-size: 0.9rem;
+    color: #4ecdc4;
+    font-weight: 600;
+}
+
+/* Nutrition Chart */
+.nutrition-chart {
+    display: flex;
+    justify-content: space-around;
+    margin: 1.5rem 0;
+}
+
+.nutrition-item {
+    text-align: center;
+}
+
+.nutrition-bar {
+    width: 30px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    margin-bottom: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.nutrition-fill {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    border-radius: 15px;
+    transition: height 0.6s ease;
+}
+
+.nutrition-fill-protein {
+    background: linear-gradient(0deg, #ff6b6b, #ff9b9b);
+}
+
+.nutrition-fill-carbs {
+    background: linear-gradient(0deg, #4ecdc4, #7ddbd5);
+}
+
+.nutrition-fill-fat {
+    background: linear-gradient(0deg, #8a2be2, #a15ae9);
+}
+
+.nutrition-label {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.nutrition-value {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Mobile Menu Button */
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 101;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .widget-sm {
+        grid-column: span 6;
+    }
+    
+    .widget-md {
+        grid-column: span 6;
+    }
+    
+    .widget-lg {
+        grid-column: span 12;
+    }
+}
+
+@media (max-width: 992px) {
+    .sidebar {
+        width: 80px;
+        transform: translateX(0);
+    }
+    
+    .sidebar.expanded {
+        width: 250px;
+    }
+    
+    .sidebar-logo,
+    .user-details,
+    .sidebar-menu span {
+        display: none;
+    }
+    
+    .sidebar.expanded .sidebar-logo,
+    .sidebar.expanded .user-details,
+    .sidebar.expanded .sidebar-menu span {
+        display: block;
+    }
+    
+    .main-content {
+        margin-left: 80px;
+    }
+    
+    .sidebar.expanded + .main-content {
+        margin-left: 250px;
+    }
+    
+    .widget-sm {
+        grid-column: span 6;
+    }
+    
+    .widget-md {
+        grid-column: span 12;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+    
+    .sidebar {
+        transform: translateX(-100%);
+        z-index: 100;
+    }
+    
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+    
+    .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .header-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .search-input {
+        width: 150px;
+    }
+    
+    .widget-sm {
+        grid-column: span 12;
+    }
+    
+    .mobile-menu-btn {
+        display: block;
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(78, 205, 196, 0.5);
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">Fit-With-AI</div>
+                <div class="user-info">
+                    <div class="user-avatar">JD</div>
+                    <div class="user-details">
+                          <h3 >  <%= user.fullName || 'Guest' %></h3>
+                        <div class="user-plan">Premium Plan</div>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li><a href="/dashboard" class="active"><i class="fas fa-home"></i><span>Dashboard</span></a></li>
+                <li><a href="/workout"><i class="fas fa-dumbbell"></i><span>Workouts</span></a></li>
+                <li><a href="#"><i class="fas fa-chart-line"></i><span>Progress</span></a></li>
+                <li><a href="#"><i class="fas fa-apple-alt"></i><span>Nutrition</span></a></li>
+                <li><a href="#"><i class="fas fa-calendar-alt"></i><span>Schedule</span></a></li>
+                <li><a href="#"><i class="fas fa-users"></i><span>Community</span></a></li>
+                <li><a href="#"><i class="fas fa-robot"></i><span>AI Coach</span></a></li>
+                <li><a href="#"><i class="fas fa-cog"></i><span>Settings</span></a></li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <a href="#" class="logout-btn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="header">
+        <h1 class="page-title">Welcome back, <%= user.fullName || 'Guest' %>!</h1>
+                <div class="header-actions">
+                    <div class="search-bar">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" placeholder="Search...">
+                    </div>
+                    <button class="notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <!-- Stats Widgets -->
+                <div class="widget widget-sm">
+                    <div class="widget-header">
+                        <div class="widget-title">Calories Burned</div>
+                        <div class="widget-action"><i class="fas fa-ellipsis-h"></i></div>
+                    </div>
+                    <div class="stat-value" data-target="2845">0</div>
+                    <div class="stat-label">Daily Goal: 3,000</div>
+                    <div class="stat-change stat-increase">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>15% from last week</span>
+                    </div>
+                </div>
+
+                <div class="widget widget-sm">
+                    <div class="widget-header">
+                        <div class="widget-title">Active Minutes</div>
+                        <div class="widget-action"><i class="fas fa-ellipsis-h"></i></div>
+                    </div>
+                    <div class="stat-value" data-target="87">0</div>
+                    <div class="stat-label">Daily Goal: 120</div>
+                    <div class="stat-change stat-increase">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>23% from last week</span>
+                    </div>
+                </div>
+
+                <div class="widget widget-sm">
+                    <div class="widget-header">
+                        <div class="widget-title">Steps</div>
+                        <div class="widget-action"><i class="fas fa-ellipsis-h"></i></div>
+                    </div>
+                    <div class="stat-value" data-target="8742">0</div>
+                    <div class="stat-label">Daily Goal: 10,000</div>
+                    <div class="stat-change stat-increase">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>8% from last week</span>
+                    </div>
+                </div>
+
+                <div class="widget widget-sm">
+                    <div class="widget-header">
+                        <div class="widget-title">Fitness Score</div>
+                        <div class="widget-action"><i class="fas fa-ellipsis-h"></i></div>
+                    </div>
+                    <div class="stat-value" data-target="78">0</div>
+                    <div class="stat-label">Great Progress!</div>
+                    <div class="stat-change stat-increase">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>5 points this month</span>
+                    </div>
+                </div>
+
+                <!-- Weekly Progress Chart -->
+                <div class="widget widget-full">
+                    <div class="widget-header">
+                        <div class="widget-title">Weekly Activity</div>
+                        <div class="widget-action"><i class="fas fa-sync-alt"></i></div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="weeklyActivityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Today's Workout -->
+                <div class="widget widget-md">
+                    <div class="widget-header">
+                        <div class="widget-title">Today's Workout</div>
+                        <div class="widget-action"><i class="fas fa-play-circle"></i></div>
+                    </div>
+                    <div class="workout-list">
+                        <div class="workout-item">
+                            <div class="workout-info">
+                                <div class="workout-icon"><i class="fas fa-running"></i></div>
+                                <div class="workout-details">
+                                    <h4>Warm-up Cardio</h4>
+                                    <p>10 minutes at moderate pace</p>
+                                </div>
+                            </div>
+                            <div class="workout-time">7:00 AM</div>
+                        </div>
+                        <div class="workout-item">
+                            <div class="workout-info">
+                                <div class="workout-icon"><i class="fas fa-dumbbell"></i></div>
+                                <div class="workout-details">
+                                    <h4>Upper Body Strength</h4>
+                                    <p>4 sets × 12 reps</p>
+                                </div>
+                            </div>
+                            <div class="workout-time">7:15 AM</div>
+                        </div>
+                        <div class="workout-item">
+                            <div class="workout-info">
+                                <div class="workout-icon"><i class="fas fa-heartbeat"></i></div>
+                                <div class="workout-details">
+                                    <h4>HIIT Session</h4>
+                                    <p>20 minutes interval training</p>
+                                </div>
+                            </div>
+                            <div class="workout-time">8:00 AM</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Nutrition Tracking -->
+                <div class="widget widget-md">
+                    <div class="widget-header">
+                        <div class="widget-title">Nutrition Tracking</div>
+                        <div class="widget-action"><i class="fas fa-plus-circle"></i></div>
+                    </div>
+                    <div class="nutrition-chart">
+                        <div class="nutrition-item">
+                            <div class="nutrition-bar" style="height: 100px">
+                                <div class="nutrition-fill nutrition-fill-protein" style="height: 75%"></div>
+                            </div>
+                            <div class="nutrition-label">Protein</div>
+                            <div class="nutrition-value">150g / 200g</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-bar" style="height: 100px">
+                                <div class="nutrition-fill nutrition-fill-carbs" style="height: 60%"></div>
+                            </div>
+                            <div class="nutrition-label">Carbs</div>
+                            <div class="nutrition-value">180g / 300g</div>
+                        </div>
+                        <div class="nutrition-item">
+                            <div class="nutrition-bar" style="height: 100px">
+                                <div class="nutrition-fill nutrition-fill-fat" style="height: 85%"></div>
+                            </div>
+                            <div class="nutrition-label">Fat</div>
+                            <div class="nutrition-value">68g / 80g</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.querySelector('.sidebar');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('mobile-open');
+        });
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                sidebar.classList.remove('mobile-open');
+            }
+        });
+
+        // Sidebar expansion on desktop
+        if (window.innerWidth > 992 && window.innerWidth <= 1200) {
+            sidebar.addEventListener('mouseenter', () => {
+                sidebar.classList.add('expanded');
+            });
+            
+            sidebar.addEventListener('mouseleave', () => {
+                sidebar.classList.remove('expanded');
+            });
+        }
+
+        // Weekly Activity Chart
+        const ctx = document.getElementById('weeklyActivityChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Calories Burned',
+                    data: [2200, 2800, 2400, 2600, 3000, 2700, 2845],
+                    borderColor: '#4ecdc4',
+                    backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#4ecdc4',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#4ecdc4',
+                        borderWidth: 1,
+                        cornerRadius: 8
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            padding: 10
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            padding: 10
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                }
+            }
+        });
+
+        // Animate stat values
+        function animateValue(element, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const currentValue = Math.floor(progress * (end - start) + start);
+                element.textContent = currentValue.toLocaleString();
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        // Start animations when page loads
+        window.addEventListener('load', () => {
+            document.querySelectorAll('.stat-value').forEach(stat => {
+                const target = parseInt(stat.dataset.target);
+                animateValue(stat, 0, target, 2000);
+            });
+
+            // Animate nutrition bars
+            setTimeout(() => {
+                document.querySelectorAll('.nutrition-fill').forEach(fill => {
+                    fill.style.transition = 'height 1.5s ease-in-out';
+                });
+            }, 500);
+        });
+
+        // Search functionality
+        const searchInput = document.querySelector('.search-input');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.style.transform = 'scale(1.02)';
+        });
+
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.style.transform = 'scale(1)';
+        });
+
+        // Notification button animation
+        const notificationBtn = document.querySelector('.notification-btn');
+        notificationBtn.addEventListener('click', () => {
+            const badge = notificationBtn.querySelector('.notification-badge');
+            badge.style.animation = 'pulse 0.3s ease-in-out';
+            setTimeout(() => {
+                badge.style.animation = '';
+            }, 300);
+        });
+    </script>
+</body>
+</html>
