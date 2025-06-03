@@ -3,11 +3,16 @@ const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
+const cors = require('cors');
 const { sendWelcomeEmail } = require('./services/emailService');
 
 const app = express();
 
 // Middleware
+app.use(cors({
+  origin: process.env.FRONTEND_URL || true,
+  credentials: true
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
@@ -16,8 +21,13 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Session Configuration
-app.use(session({
+// Trust proxy in production (for Vercel)
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
+// Session Configuration - Updated for Vercel
+const sessionConfig = {
   secret: process.env.SESSION_SECRET || 'your-secret-key-here',
   resave: false,
   saveUninitialized: false,
@@ -26,8 +36,19 @@ app.use(session({
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax'
-  }
-}));
+  },
+  proxy: true, // Trust Vercel's proxy
+  rolling: true // Extend session on activity
+};
+
+app.use(session(sessionConfig));
+
+// Logging middleware for debugging
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log('Session ID:', req.sessionID);
+  next();
+});
 
 // Authentication Middleware
 const isAuthenticated = (req, res, next) => {
@@ -71,9 +92,20 @@ app.post('/signup', async (req, res) => {
       onboardingCompleted: false
     };
 
-    res.json({
-      success: true,
-      redirectUrl: `/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(email.trim())}`
+    // Save session explicitly
+    req.session.save(err => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ 
+          success: false,
+          error: 'Failed to create session' 
+        });
+      }
+
+      res.json({
+        success: true,
+        redirectUrl: `/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(email.trim())}`
+      });
     });
 
     try {
@@ -105,7 +137,7 @@ app.get('/CustomOnboarding', (req, res) => {
   });
 });
 
-// Complete Onboarding Route (Fixed to match frontend)
+// Complete Onboarding Route - Updated for Vercel
 app.post('/CustomOnboarding/complete', isAuthenticated, async (req, res) => {
   try {
     const { onboardingData } = req.body;
@@ -135,12 +167,21 @@ app.post('/CustomOnboarding/complete', isAuthenticated, async (req, res) => {
       onboardingData: onboardingData
     };
 
-    // Here you would typically save to database
-    // await UserService.completeOnboarding(req.session.user.email, onboardingData);
+    // Explicitly save the session before responding
+    req.session.save(err => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ 
+          success: false,
+          error: 'Failed to save session' 
+        });
+      }
 
-    res.json({ 
-      success: true,
-      redirectUrl: '/dashboard'
+      // Send JSON response with redirect URL
+      res.json({ 
+        success: true,
+        redirectUrl: '/dashboard'
+      });
     });
 
   } catch (error) {
@@ -161,10 +202,20 @@ app.post('/login', (req, res) => {
     fullName: 'User Name', // In real app, get from DB
     onboardingCompleted: false
   };
-  
-  res.json({ 
-    success: true,
-    redirectUrl: '/CustomOnboarding?sessionId=undefined'
+
+  req.session.save(err => {
+    if (err) {
+      console.error('Session save error:', err);
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to create session' 
+      });
+    }
+
+    res.json({ 
+      success: true,
+      redirectUrl: '/CustomOnboarding?sessionId=undefined'
+    });
   });
 });
 
@@ -197,6 +248,11 @@ app.get('/logout', (req, res) => {
     res.clearCookie('connect.sid');
     res.redirect('/');
   });
+});
+
+// Health Check Route (for Vercel)
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK' });
 });
 
 // Error Handling Middleware

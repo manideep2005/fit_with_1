@@ -9,7 +9,11 @@
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "app.js"
+            "dest": "app.js",
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
         }
-    ]
-} 
+    ],
+    "env": {
+        "SESSION_SECRET": "@your-session-secret"
+    }
+}
