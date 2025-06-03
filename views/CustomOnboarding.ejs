@@ -857,67 +857,9 @@
                 <strong>Health Tip:</strong> Family history helps guide preventive care.
             </div>
         </div>
-        <!-- Step 9: Reproductive Health (Gender-specific) -->
-        <div class="form-step hidden" data-step="9">
-            <h2><i class="fas fa-venus-mars"></i> Reproductive Health</h2>
-            <div class="form-group" id="femaleHealth" style="display: none;">
-                <h3>Women's Health</h3>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="menstrualCycle">Are your menstrual cycles regular?</label>
-                        <select id="menstrualCycle">
-                            <option value="">Select option</option>
-                            <option value="regular">Yes, regular</option>
-                            <option value="irregular">No, irregular</option>
-                            <option value="no-periods">No periods</option>
-                            <option value="menopause">Post-menopause</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="pregnancies">Number of pregnancies</label>
-                        <input type="number" id="pregnancies" min="0" max="20">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Are you currently using any form of birth control?</label>
-                    <div class="rating-scale" data-field="birthControl">
-                        <div class="rating-item" data-value="none">None</div>
-                        <div class="rating-item" data-value="hormonal">Hormonal</div>
-                        <div class="rating-item" data-value="barrier">Barrier</div>
-                        <div class="rating-item" data-value="iud">IUD</div>
-                        <div class="rating-item" data-value="other">Other</div>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group" id="maleHealth" style="display: none;">
-                <h3>Men's Health</h3>
-                <div class="form-group">
-                    <label>Have you had any prostate health concerns?</label>
-                    <div class="rating-scale" data-field="prostateHealth">
-                        <div class="rating-item" data-value="no-concerns">No concerns</div>
-                        <div class="rating-item" data-value="minor-concerns">Minor concerns</div>
-                        <div class="rating-item" data-value="under-monitoring">Under monitoring</div>
-                        <div class="rating-item" data-value="treatment">Under treatment</div>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group">
-                <label>How would you rate your sexual health and satisfaction?</label>
-                <div class="rating-scale" data-field="sexualHealth">
-                    <div class="rating-item" data-value="1">Very Poor</div>
-                    <div class="rating-item" data-value="2">Poor</div>
-                    <div class="rating-item" data-value="3">Fair</div>
-                    <div class="rating-item" data-value="4">Good</div>
-                    <div class="rating-item" data-value="5">Excellent</div>
-                </div>
-            </div>
-            <div class="health-tip">
-                <i class="fas fa-user-md"></i>
-                <strong>Health Tip:</strong> Regular check-ups are important for early detection.
-            </div>
-        </div>
+    
         <!-- Step 10: Preventive Care & Screenings -->
-        <div class="form-step hidden" data-step="10">
+        <div class="form-step hidden" data-step="9">
             <h2><i class="fas fa-clipboard-check"></i> Preventive Care & Health Screenings</h2>
             <div class="form-group">
                 <label>When was your last physical examination?</label>
@@ -981,7 +923,7 @@
             </div>
         </div>
         <!-- Step 11: Environmental & Occupational Health -->
-        <div class="form-step hidden" data-step="11">
+        <div class="form-step hidden" data-step="10">
             <h2><i class="fas fa-industry"></i> Environmental & Occupational Health</h2>
             <div class="form-group">
                 <label>How many hours do you spend sitting at work daily?</label>
@@ -1052,7 +994,7 @@
             </div>
         </div>
         <!-- Step 12: Technology & Digital Health -->
-        <div class="form-step hidden" data-step="12">
+        <div class="form-step hidden" data-step="11">
             <h2><i class="fas fa-mobile-alt"></i> Technology & Digital Wellness</h2>
             <div class="form-group">
                 <label>How many hours per day do you spend on screens (phone, computer, TV)?</label>
@@ -1132,120 +1074,118 @@
                 Next <i class="fas fa-arrow-right"></i>
             </button>
             <button type="button" id="submitBtn" class="btn btn-success" style="display: none;">
-                <i class="fas fa-check"></i> Complete Assessment
+                <i class="fas fa-check"></i> Finish & Generate PDF
             </button>
         </div>
     </div>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const nextBtn = document.getElementById('nextBtn');
-            const prevBtn = document.getElementById('prevBtn');
-            const submitBtn = document.getElementById('submitBtn');
-            const formSteps = document.querySelectorAll('.form-step');
-            const currentStepText = document.getElementById('currentStep');
-            let currentStep = 0;
+   document.addEventListener('DOMContentLoaded', () => {
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const formSteps = document.querySelectorAll('.form-step');
+    const currentStepText = document.getElementById('currentStep');
+    let currentStep = 0;
 
-            function showStep(step) {
-                formSteps.forEach((formStep, index) => {
-                    formStep.classList.toggle('hidden', index !== step);
-                });
-                // update navigation button display
-                prevBtn.style.display = step > 0 ? 'block' : 'none';
-                nextBtn.style.display = step < formSteps.length - 1 ? 'block' : 'none';
-                submitBtn.style.display = step === formSteps.length - 1 ? 'block' : 'none';
-                currentStepText.textContent = step + 1;
-            }
-
-            nextBtn.addEventListener('click', () => {
-                if (currentStep < formSteps.length - 1) {
-                    currentStep++;
-                    showStep(currentStep);
-                }
-            });
-
-            prevBtn.addEventListener('click', () => {
-                if (currentStep > 0) {
-                    currentStep--;
-                    showStep(currentStep);
-                }
-            });
-
-            // Allow single selection for rating-scale (only one item may be selected)
-            document.querySelectorAll('.rating-scale').forEach(scale => {
-                scale.addEventListener('click', event => {
-                    const ratingItem = event.target.closest('.rating-item');
-                    if (ratingItem && scale.contains(ratingItem)) {
-                        scale.querySelectorAll('.rating-item').forEach(item => item.classList.remove('selected'));
-                        ratingItem.classList.add('selected');
-                    }
-                });
-            });
-
-            // Allow toggle selection for multiple-choice options (conditions-grid)
-            document.querySelectorAll('.conditions-grid').forEach(grid => {
-                grid.addEventListener('click', event => {
-                    const conditionItem = event.target.closest('.condition-item');
-                    if (conditionItem && grid.contains(conditionItem)) {
-                        conditionItem.classList.toggle('selected');
-                    }
-                });
-            });
-
-            // Validate required input/select fields
-            function validateRequiredFields() {
-                let valid = true;
-                document.querySelectorAll('[required]').forEach(input => {
-                    if (!input.value.trim()) {
-                        valid = false;
-                        input.style.borderColor = 'red';
-                    } else {
-                        input.style.borderColor = '#e0e0e0';
-                    }
-                });
-                return valid;
-            }
-
-            // Generate PDF using jsPDF from a few form details
-            function generatePDF() {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-
-                let y = 10;
-                doc.setFontSize(16);
-                doc.text("Health Assessment Details", 10, y);
-                y += 10;
-                doc.setFontSize(12);
-
-                // Personal Info
-                doc.text("Personal Information:", 10, y);
-                y += 7;
-                doc.text("First Name: " + document.getElementById('firstName').value, 10, y);
-                y += 7;
-                doc.text("Last Name: " + document.getElementById('lastName').value, 10, y);
-                y += 7;
-                doc.text("Age: " + document.getElementById('age').value, 10, y);
-                y += 7;
-                doc.text("Gender: " + document.getElementById('gender').value, 10, y);
-                y += 7;
-                doc.text("Email: " + document.getElementById('email').value, 10, y);
-                y += 10;
-
-                // You can extract more info from other steps as needed
-
-                doc.save('assessment.pdf');
-            }
-
-            // When the user clicks the submitBtn, validate and then generate the PDF
-            submitBtn.addEventListener('click', () => {
-                if (!validateRequiredFields()) {
-                    alert('Please fill in all required fields marked with *');
-                    return;
-                }
-                generatePDF();
-            });
-
-            showStep(currentStep);
+    function showStep(step) {
+        formSteps.forEach((formStep, index) => {
+            formStep.classList.toggle('hidden', index !== step);
         });
-    </script>
+        // update navigation button display
+        prevBtn.style.display = step > 0 ? 'block' : 'none';
+        nextBtn.style.display = step < formSteps.length - 1 ? 'block' : 'none';
+        submitBtn.style.display = step === formSteps.length - 1 ? 'block' : 'none';
+        currentStepText.textContent = step + 1;
+    }
+
+    nextBtn.addEventListener('click', () => {
+        if (currentStep < formSteps.length - 1) {
+            currentStep++;
+            showStep(currentStep);
+        }
+    });
+
+    prevBtn.addEventListener('click', () => {
+        if (currentStep > 0) {
+            currentStep--;
+            showStep(currentStep);
+        }
+    });
+
+    // Allow single selection for rating-scale (only one item may be selected)
+    document.querySelectorAll('.rating-scale').forEach(scale => {
+        scale.addEventListener('click', event => {
+            const ratingItem = event.target.closest('.rating-item');
+            if (ratingItem && scale.contains(ratingItem)) {
+                scale.querySelectorAll('.rating-item').forEach(item => item.classList.remove('selected'));
+                ratingItem.classList.add('selected');
+            }
+        });
+    });
+
+    // Allow toggle selection for multiple-choice options (conditions-grid)
+    document.querySelectorAll('.conditions-grid').forEach(grid => {
+        grid.addEventListener('click', event => {
+            const conditionItem = event.target.closest('.condition-item');
+            if (conditionItem && grid.contains(conditionItem)) {
+                conditionItem.classList.toggle('selected');
+            }
+        });
+    });
+
+    // Validate required input/select fields
+    function validateRequiredFields() {
+        let valid = true;
+        document.querySelectorAll('[required]').forEach(input => {
+            if (!input.value.trim()) {
+                valid = false;
+                input.style.borderColor = 'red';
+            } else {
+                input.style.borderColor = '#e0e0e0';
+            }
+        });
+        return valid;
+    }
+
+    // When the user clicks the submitBtn, validate and complete onboarding
+    submitBtn.addEventListener('click', async () => {
+        if (!validateRequiredFields()) {
+            alert('Please fill in all required fields marked with *');
+            return;
+        }
+        
+        try {
+            // Send POST request to complete onboarding
+            const response = await fetch('/dashboard/complete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    // You can include any onboarding data here if needed
+                    onboardingData: {
+                        // Add any form data you want to save
+                    }
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Redirect to dashboard after successful completion
+                window.location.href = '/dashboard';
+            } else {
+                alert('Error completing onboarding: ' + (result.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error completing onboarding:', error);
+            alert('Error completing onboarding. Please try again.');
+        }
+    });
+
+    showStep(currentStep);
+});
+</script>
+
 </body>
 </html>

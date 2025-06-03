@@ -1,4 +1,5 @@
 const express = require('express');
+const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
 const { sendWelcomeEmail } = require('./services/emailService');
@@ -14,111 +15,94 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Simple session storage (in production, use a proper session store)
-const sessions = new Map();
+// Use express-session middleware
+app.use(session({
+  secret: 'some very secret string', // Change this to a strong secret in production!
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 1000 * 60 * 30 } // 30 minutes session expiry
+}));
 
-// Middleware to check if user is authenticated
+// Middleware: Authentication
 const isAuthenticated = (req, res, next) => {
-    const sessionId = req.headers.authorization || req.query.sessionId;
-    if (sessions.has(sessionId)) {
-        req.user = sessions.get(sessionId);
-        next();
-    } else {
-        res.status(401).json({ success: false, error: 'Not authenticated' });
-    }
+  if (req.session && req.session.user) {
+    next();
+  } else {
+    res.status(401).json({ success: false, error: 'Not authenticated' });
+  }
 };
 
-// Middleware to check if user has completed onboarding
+// Middleware: Onboarding Check
 const hasCompletedOnboarding = (req, res, next) => {
-    if (req.user && req.user.onboardingCompleted) {
-        next();
-    } else {
-        res.redirect('/CustomOnboarding');
-    }
+  if (req.session.user.onboardingCompleted) {
+    next();
+  } else {
+    res.redirect('/CustomOnboarding');
+  }
 };
 
 // Routes
 app.get('/', (req, res) => {
-    res.render('index');
+  res.render('index');
 });
 
+// Onboarding page
 app.get('/CustomOnboarding', isAuthenticated, (req, res) => {
-    res.render('customonboarding', { user: req.user });
+  res.render('customonboarding', { user: req.session.user });
 });
 
-app.post('/CustomOnboarding/complete', isAuthenticated, (req, res) => {
-    const sessionId = req.headers.authorization;
-    const user = sessions.get(sessionId);
-    user.onboardingCompleted = true;
-    sessions.set(sessionId, user);
-    
-    res.json({
-        success: true,
-        message: 'Onboarding completed successfully'
-    });
+// Mark onboarding complete
+app.post('/dashboard/complete', isAuthenticated, (req, res) => {
+  req.session.user.onboardingCompleted = true;
+  res.json({
+    success: true,
+    message: 'Onboarding completed successfully'
+  });
 });
 
+// Protected dashboard
 app.get('/dashboard', isAuthenticated, hasCompletedOnboarding, (req, res) => {
-    res.json({
-        success: true,
-        message: 'Welcome to dashboard',
-        user: req.user
-    });
+  res.render('dashboard', { user: req.session.user });
 });
 
+// Signup route
 app.post('/signup', async (req, res) => {
-    try {
-        const { fullName, email, password } = req.body;
-        
-        // Validate inputs
-        if (!email) {
-            return res.status(400).json({
-                success: false,
-                error: 'Email is required'
-            });
-        }
+  try {
+    const { fullName, email, password } = req.body;
 
-        if (!fullName) {
-            return res.status(400).json({
-                success: false,
-                error: 'Full name is required'
-            });
-        }
-
-        if (!password) {
-            return res.status(400).json({
-                success: false,
-                error: 'Password is required'
-            });
-        }
-
-        // Create session
-        const sessionId = Math.random().toString(36).substring(7);
-        sessions.set(sessionId, {
-            fullName,
-            email,
-            onboardingCompleted: false
-        });
-
-        // Send welcome email
-        await sendWelcomeEmail(email, fullName);
-
-        res.json({
-            success: true,
-            message: 'Signup successful! Welcome email sent.',
-            sessionId: sessionId
-        });
-    } catch (error) {
-        console.error('Signup error:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message || 'Error during signup. Please try again.'
-        });
+    // Validate inputs
+    if (!email || !fullName || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'All fields are required (Full name, Email, Password)'
+      });
     }
+
+    // Save user info in session
+    req.session.user = {
+      fullName,
+      email,
+      onboardingCompleted: false
+    };
+
+    // Send welcome email
+    await sendWelcomeEmail(email, fullName);
+
+    res.json({
+      success: true,
+      message: 'Signup successful! Welcome email sent.'
+    });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Error during signup. Please try again.'
+    });
+  }
 });
 
 // Start server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
