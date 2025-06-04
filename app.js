@@ -58,6 +58,15 @@ app.get('/', (req, res) => {
   res.render('index');
 });
 
+// Debug route to check session (remove in production)
+app.get('/debug-session', (req, res) => {
+  res.json({
+    session: req.session,
+    user: req.session.user,
+    sessionID: req.sessionID
+  });
+});
+
 // Signup Route
 app.post('/signup', async (req, res) => {
   try {
@@ -136,10 +145,26 @@ app.post('/login', (req, res) => {
   });
 });
 
-// Custom Onboarding Route
-app.get('/CustomOnboarding', isAuthenticated, (req, res) => {
+// Custom Onboarding Route - FIXED: Don't require authentication check here
+app.get('/CustomOnboarding', (req, res) => {
+  console.log('Accessing onboarding - Session:', req.session.user); // Debug log
+  
+  // Allow access if user is in session OR if email is provided in query
   const email = req.session.user?.email || req.query.email;
-  if (!email) return res.redirect('/');
+  
+  if (!email) {
+    console.log('No email found, redirecting to home');
+    return res.redirect('/');
+  }
+  
+  // If user is not in session but email is provided (from signup), create minimal session
+  if (!req.session.user && req.query.email) {
+    req.session.user = {
+      email: req.query.email,
+      fullName: '', // Will be empty until they fill the form
+      onboardingCompleted: false
+    };
+  }
   
   res.render('customonboarding', {
     user: {
@@ -150,11 +175,12 @@ app.get('/CustomOnboarding', isAuthenticated, (req, res) => {
   });
 });
 
-// Complete Onboarding Route - FIXED
-app.post('/CustomOnboarding/complete', isAuthenticated, async (req, res) => {
+// Complete Onboarding Route - FIXED: Allow access even without full authentication
+app.post('/CustomOnboarding/complete', async (req, res) => {
   try {
     const { onboardingData } = req.body;
     console.log('Received onboarding data:', onboardingData); // Debug log
+    console.log('Current session user:', req.session.user); // Debug log
 
     if (!onboardingData) {
       return res.status(400).json({
@@ -163,11 +189,21 @@ app.post('/CustomOnboarding/complete', isAuthenticated, async (req, res) => {
       });
     }
 
+    // Ensure we have a user session
+    if (!req.session.user) {
+      return res.status(401).json({
+        success: false,
+        error: 'No user session found'
+      });
+    }
+
     // Update user session with onboarding data
     req.session.user = {
       ...req.session.user,
       onboardingCompleted: true, // IMPORTANT: Mark as completed
-      onboardingData: onboardingData
+      onboardingData: onboardingData,
+      // Update name if provided in onboarding
+      fullName: `${onboardingData.personalInfo?.firstName || ''} ${onboardingData.personalInfo?.lastName || ''}`.trim() || req.session.user.fullName
     };
 
     console.log('Updated user session:', req.session.user); // Debug log
@@ -255,7 +291,7 @@ app.use((req, res) => {
 });
 
 // Start Server
-const PORT = process.env.PORT || 3003;
+const PORT = process.env.PORT || 3004;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
