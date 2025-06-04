@@ -48,6 +48,7 @@
             color: white;
             padding: 30px;
             text-align: center;
+            position: relative;
         }
         
         .header h1 {
@@ -61,8 +62,58 @@
             font-size: 1rem;
         }
         
+        .progress-steps {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 10px;
+        }
+        
+        .step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            position: relative;
+            font-size: 0.9rem;
+        }
+        
+        .step.active {
+            background: white;
+            color: var(--primary);
+        }
+        
+        .step.completed {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 10px;
+            height: 2px;
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .step:last-child::after {
+            display: none;
+        }
+        
         .form-content {
             padding: 30px;
+            display: none;
+        }
+        
+        .form-content.active {
+            display: block;
         }
         
         .form-content h2 {
@@ -161,7 +212,7 @@
         
         .action-buttons {
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             gap: 15px;
             margin-top: 30px;
         }
@@ -200,6 +251,30 @@
             background: var(--secondary);
         }
         
+        .btn-next {
+            margin-left: auto;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-item input {
+            width: auto;
+        }
+        
+        .checkbox-item label {
+            margin-bottom: 0;
+        }
+        
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -216,6 +291,16 @@
             .form-content h2 {
                 font-size: 1.3rem;
             }
+            
+            .progress-steps {
+                gap: 5px;
+            }
+            
+            .step {
+                width: 25px;
+                height: 25px;
+                font-size: 0.8rem;
+            }
         }
     </style>
 </head>
@@ -224,10 +309,20 @@
         <div class="header">
             <h1><i class="fas fa-heartbeat"></i> FitWit AI</h1>
             <p>Help us personalize your experience (optional)</p>
+            
+            <div class="progress-steps">
+                <div class="step active" data-step="1">1</div>
+                <div class="step" data-step="2">2</div>
+                <div class="step" data-step="3">3</div>
+                <div class="step" data-step="4">4</div>
+                <div class="step" data-step="5">5</div>
+                <div class="step" data-step="6">6</div>
+            </div>
         </div>
         
-        <div class="form-content">
-            <h2><i class="fas fa-user"></i> Tell Us About Yourself</h2>
+        <!-- Step 1: Personal Information -->
+        <div class="form-content active" data-step="1">
+            <h2><i class="fas fa-user"></i> Personal Information</h2>
             
             <div class="form-row">
                 <div class="form-group">
@@ -257,6 +352,25 @@
                 </div>
             </div>
             
+            <div class="health-tip">
+                <i class="fas fa-lightbulb"></i>
+                <strong>Tip:</strong> We use this information to personalize your health recommendations.
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-secondary" id="skipBtn">
+                    <i class="fas fa-forward"></i> Skip for Now
+                </button>
+                <button class="btn btn-primary btn-next" data-next="2">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Step 2: Body Metrics -->
+        <div class="form-content" data-step="2">
+            <h2><i class="fas fa-ruler-combined"></i> Body Metrics</h2>
+            
             <div class="form-row">
                 <div class="form-group">
                     <label for="height">Height (cm)</label>
@@ -269,29 +383,84 @@
             </div>
             
             <div class="form-group">
-                <label>Activity Level</label>
+                <label for="targetWeight">Target Weight (kg) <small>(optional)</small></label>
+                <input type="number" id="targetWeight" min="30" max="300" step="0.1" placeholder="Your target weight">
+            </div>
+            
+            <div class="health-tip">
+                <i class="fas fa-lightbulb"></i>
+                <strong>Tip:</strong> Knowing your body metrics helps us calculate appropriate calorie and nutrition goals.
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-secondary btn-prev" data-prev="1">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <button class="btn btn-primary btn-next" data-next="3">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Step 3: Activity Level -->
+        <div class="form-content" data-step="3">
+            <h2><i class="fas fa-running"></i> Activity Level</h2>
+            
+            <div class="form-group">
+                <label>How active are you?</label>
                 <div class="options-grid" data-field="activityLevel">
                     <div class="option-item" data-value="sedentary">
                         <i class="fas fa-couch"></i>
-                        <span>Sedentary</span>
+                        <span>Sedentary<br><small>Little or no exercise</small></span>
                     </div>
                     <div class="option-item" data-value="lightly-active">
                         <i class="fas fa-walking"></i>
-                        <span>Lightly Active</span>
+                        <span>Lightly Active<br><small>Light exercise 1-3 days/week</small></span>
                     </div>
                     <div class="option-item" data-value="moderately-active">
                         <i class="fas fa-running"></i>
-                        <span>Moderately Active</span>
+                        <span>Moderately Active<br><small>Moderate exercise 3-5 days/week</small></span>
                     </div>
                     <div class="option-item" data-value="very-active">
                         <i class="fas fa-biking"></i>
-                        <span>Very Active</span>
+                        <span>Very Active<br><small>Hard exercise 6-7 days/week</small></span>
                     </div>
                 </div>
             </div>
             
             <div class="form-group">
-                <label>Health Goals (Select any that apply)</label>
+                <label for="workoutFrequency">How many days per week do you typically workout? (optional)</label>
+                <select id="workoutFrequency">
+                    <option value="">Select frequency</option>
+                    <option value="0">0 days</option>
+                    <option value="1-2">1-2 days</option>
+                    <option value="3-4">3-4 days</option>
+                    <option value="5-6">5-6 days</option>
+                    <option value="7">Every day</option>
+                </select>
+            </div>
+            
+            <div class="health-tip">
+                <i class="fas fa-lightbulb"></i>
+                <strong>Tip:</strong> Your activity level helps us recommend appropriate exercise routines and calorie needs.
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-secondary btn-prev" data-prev="2">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <button class="btn btn-primary btn-next" data-next="4">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Step 4: Health Goals -->
+        <div class="form-content" data-step="4">
+            <h2><i class="fas fa-bullseye"></i> Health Goals</h2>
+            
+            <div class="form-group">
+                <label>What are your primary health goals? (Select up to 3)</label>
                 <div class="options-grid" data-field="healthGoals">
                     <div class="option-item" data-value="weight-loss">
                         <i class="fas fa-weight"></i>
@@ -309,20 +478,219 @@
                         <i class="fas fa-bed"></i>
                         <span>Better Sleep</span>
                     </div>
+                    <div class="option-item" data-value="stress-reduction">
+                        <i class="fas fa-spa"></i>
+                        <span>Reduce Stress</span>
+                    </div>
+                    <div class="option-item" data-value="improve-diet">
+                        <i class="fas fa-utensils"></i>
+                        <span>Improve Diet</span>
+                    </div>
+                    <div class="option-item" data-value="increase-energy">
+                        <i class="fas fa-bolt"></i>
+                        <span>More Energy</span>
+                    </div>
+                    <div class="option-item" data-value="maintenance">
+                        <i class="fas fa-balance-scale"></i>
+                        <span>Maintain Health</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="goalTimeline">When would you like to achieve your primary goal? (optional)</label>
+                <select id="goalTimeline">
+                    <option value="">Select timeline</option>
+                    <option value="1-month">Within 1 month</option>
+                    <option value="3-months">Within 3 months</option>
+                    <option value="6-months">Within 6 months</option>
+                    <option value="1-year">Within 1 year</option>
+                    <option value="no-rush">No specific timeline</option>
+                </select>
+            </div>
+            
+            <div class="health-tip">
+                <i class="fas fa-lightbulb"></i>
+                <strong>Tip:</strong> Setting clear goals helps us create a personalized plan that works for you.
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-secondary btn-prev" data-prev="3">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <button class="btn btn-primary btn-next" data-next="5">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Step 5: Dietary Preferences -->
+        <div class="form-content" data-step="5">
+            <h2><i class="fas fa-utensils"></i> Dietary Preferences</h2>
+            
+            <div class="form-group">
+                <label>Do you follow any specific diet?</label>
+                <div class="options-grid" data-field="dietType">
+                    <div class="option-item" data-value="none">
+                        <i class="fas fa-question"></i>
+                        <span>No Specific Diet</span>
+                    </div>
+                    <div class="option-item" data-value="vegetarian">
+                        <i class="fas fa-leaf"></i>
+                        <span>Vegetarian</span>
+                    </div>
+                    <div class="option-item" data-value="vegan">
+                        <i class="fas fa-seedling"></i>
+                        <span>Vegan</span>
+                    </div>
+                    <div class="option-item" data-value="keto">
+                        <i class="fas fa-bacon"></i>
+                        <span>Keto</span>
+                    </div>
+                    <div class="option-item" data-value="paleo">
+                        <i class="fas fa-drumstick-bite"></i>
+                        <span>Paleo</span>
+                    </div>
+                    <div class="option-item" data-value="mediterranean">
+                        <i class="fas fa-fish"></i>
+                        <span>Mediterranean</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Any food allergies or intolerances? (Select all that apply)</label>
+                <div class="options-grid" data-field="allergies">
+                    <div class="option-item" data-value="none">
+                        <span>None</span>
+                    </div>
+                    <div class="option-item" data-value="dairy">
+                        <span>Dairy</span>
+                    </div>
+                    <div class="option-item" data-value="gluten">
+                        <span>Gluten</span>
+                    </div>
+                    <div class="option-item" data-value="nuts">
+                        <span>Nuts</span>
+                    </div>
+                    <div class="option-item" data-value="shellfish">
+                        <span>Shellfish</span>
+                    </div>
+                    <div class="option-item" data-value="soy">
+                        <span>Soy</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="waterIntake">How many glasses of water do you typically drink daily? (optional)</label>
+                <select id="waterIntake">
+                    <option value="">Select amount</option>
+                    <option value="1-3">1-3 glasses</option>
+                    <option value="4-6">4-6 glasses</option>
+                    <option value="7-8">7-8 glasses</option>
+                    <option value="8+">More than 8 glasses</option>
+                </select>
+            </div>
+            
+            <div class="health-tip">
+                <i class="fas fa-lightbulb"></i>
+                <strong>Tip:</strong> Knowing your dietary preferences helps us suggest meals you'll enjoy while meeting your goals.
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn btn-secondary btn-prev" data-prev="4">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <button class="btn btn-primary btn-next" data-next="6">
+                    Next <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Step 6: Lifestyle & Habits -->
+        <div class="form-content" data-step="6">
+            <h2><i class="fas fa-heartbeat"></i> Lifestyle & Habits</h2>
+            
+            <div class="form-group">
+                <label>How would you describe your sleep quality?</label>
+                <div class="options-grid" data-field="sleepQuality">
+                    <div class="option-item" data-value="excellent">
+                        <i class="fas fa-smile"></i>
+                        <span>Excellent<br><small>7+ hrs, wake refreshed</small></span>
+                    </div>
+                    <div class="option-item" data-value="good">
+                        <i class="fas fa-meh"></i>
+                        <span>Good<br><small>6-7 hrs, mostly rested</small></span>
+                    </div>
+                    <div class="option-item" data-value="fair">
+                        <i class="fas fa-frown"></i>
+                        <span>Fair<br><small>5-6 hrs, often tired</small></span>
+                    </div>
+                    <div class="option-item" data-value="poor">
+                        <i class="fas fa-tired"></i>
+                        <span>Poor<br><small><5 hrs, always tired</small></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Do you currently smoke?</label>
+                <div class="options-grid" data-field="smokingStatus">
+                    <div class="option-item" data-value="never">
+                        <span>Never</span>
+                    </div>
+                    <div class="option-item" data-value="former">
+                        <span>Former Smoker</span>
+                    </div>
+                    <div class="option-item" data-value="occasional">
+                        <span>Occasionally</span>
+                    </div>
+                    <div class="option-item" data-value="regular">
+                        <span>Regularly</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>How often do you consume alcohol?</label>
+                <div class="options-grid" data-field="alcoholConsumption">
+                    <div class="option-item" data-value="never">
+                        <span>Never</span>
+                    </div>
+                    <div class="option-item" data-value="rarely">
+                        <span>Rarely</span>
+                    </div>
+                    <div class="option-item" data-value="moderately">
+                        <span>Moderately</span>
+                    </div>
+                    <div class="option-item" data-value="frequently">
+                        <span>Frequently</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="stressLevel">On a scale of 1-10, how would you rate your average stress level? (optional)</label>
+                <input type="range" id="stressLevel" min="1" max="10" value="5" step="1" style="width: 100%">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>1 (Low)</span>
+                    <span>5</span>
+                    <span>10 (High)</span>
                 </div>
             </div>
             
             <div class="health-tip">
                 <i class="fas fa-lightbulb"></i>
-                <strong>Tip:</strong> The more information you provide, the better we can personalize your experience.
+                <strong>Tip:</strong> Understanding your lifestyle helps us provide better recommendations for overall wellness.
             </div>
             
             <div class="action-buttons">
-                <button class="btn btn-secondary" id="skipBtn">
-                    <i class="fas fa-forward"></i> Skip for Now
+                <button class="btn btn-secondary btn-prev" data-prev="5">
+                    <i class="fas fa-arrow-left"></i> Back
                 </button>
                 <button class="btn btn-primary" id="saveBtn">
-                    <i class="fas fa-save"></i> Save Preferences
+                    <i class="fas fa-save"></i> Complete Onboarding
                 </button>
             </div>
         </div>
@@ -336,6 +704,43 @@
     
     console.log('User token:', userToken);
     
+    // Handle navigation between steps
+    document.querySelectorAll('.btn-next').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const nextStep = this.getAttribute('data-next');
+            navigateToStep(nextStep);
+        });
+    });
+    
+    document.querySelectorAll('.btn-prev').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const prevStep = this.getAttribute('data-prev');
+            navigateToStep(prevStep);
+        });
+    });
+    
+    function navigateToStep(stepNumber) {
+        // Hide all form contents
+        document.querySelectorAll('.form-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        
+        // Show the selected step
+        document.querySelector(`.form-content[data-step="${stepNumber}"]`).classList.add('active');
+        
+        // Update progress steps
+        document.querySelectorAll('.step').forEach(step => {
+            step.classList.remove('active', 'completed');
+            
+            const stepNum = parseInt(step.getAttribute('data-step'));
+            if (stepNum < stepNumber) {
+                step.classList.add('completed');
+            } else if (stepNum == stepNumber) {
+                step.classList.add('active');
+            }
+        });
+    }
+    
     // Handle option selection
     document.querySelectorAll('.option-item').forEach(item => {
         item.addEventListener('click', function() {
@@ -343,15 +748,30 @@
             const field = parent.getAttribute('data-field');
             
             if (parent.classList.contains('options-grid')) {
-                if (field === 'activityLevel') {
-                    // Single selection for activity level
+                if (field === 'activityLevel' || field === 'sleepQuality' || 
+                    field === 'smokingStatus' || field === 'alcoholConsumption' || 
+                    field === 'dietType') {
+                    // Single selection fields
                     parent.querySelectorAll('.option-item').forEach(i => {
                         i.classList.remove('selected');
                     });
                     this.classList.add('selected');
                 } else {
-                    // Multiple selection for other fields
-                    this.classList.toggle('selected');
+                    // Multiple selection fields
+                    if (this.dataset.value === 'none') {
+                        // If "none" is selected, deselect all others
+                        parent.querySelectorAll('.option-item').forEach(i => {
+                            i.classList.remove('selected');
+                        });
+                        this.classList.add('selected');
+                    } else {
+                        // For other selections, make sure "none" isn't selected
+                        const noneItem = parent.querySelector('.option-item[data-value="none"]');
+                        if (noneItem && noneItem.classList.contains('selected')) {
+                            noneItem.classList.remove('selected');
+                        }
+                        this.classList.toggle('selected');
+                    }
                 }
             }
         });
@@ -385,10 +805,24 @@
             bodyMetrics: {
                 height: document.getElementById('height').value,
                 weight: document.getElementById('weight').value,
-                activityLevel: getSelectedOptions('activityLevel')[0] || null
+                targetWeight: document.getElementById('targetWeight').value || null,
+                activityLevel: getSelectedOptions('activityLevel')[0] || null,
+                workoutFrequency: document.getElementById('workoutFrequency').value || null
             },
             healthGoals: {
-                goals: getSelectedOptions('healthGoals')
+                goals: getSelectedOptions('healthGoals'),
+                timeline: document.getElementById('goalTimeline').value || null
+            },
+            dietaryPreferences: {
+                dietType: getSelectedOptions('dietType')[0] || null,
+                allergies: getSelectedOptions('allergies'),
+                waterIntake: document.getElementById('waterIntake').value || null
+            },
+            lifestyle: {
+                sleepQuality: getSelectedOptions('sleepQuality')[0] || null,
+                smokingStatus: getSelectedOptions('smokingStatus')[0] || null,
+                alcoholConsumption: getSelectedOptions('alcoholConsumption')[0] || null,
+                stressLevel: document.getElementById('stressLevel').value || null
             }
         };
         

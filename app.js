@@ -1,9 +1,9 @@
 require('dotenv').config();
 const express = require('express');
+const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
-const crypto = require('crypto');
- const { sendWelcomeEmail } = require('./services/emailService');
+const { sendWelcomeEmail } = require('./services/emailService');
 
 const app = express();
 
@@ -16,37 +16,58 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// In-memory storage for demo (use database in production)
-const tempUserStore = new Map();
+// Session Configuration
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key-here',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    maxAge: 1000 * 60 * 30, // 30 minutes
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
+  }
+}));
 
-// Helper function to generate temporary token
-function generateTempToken() {
-  return crypto.randomBytes(32).toString('hex');
-}
+// Authentication Middleware
+const isAuthenticated = (req, res, next) => {
+  console.log('Auth check - Session user:', req.session.user); // Debug log
+  if (!req.session.user) {
+    if (req.accepts('html')) {
+      return res.redirect('/');
+    }
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  next();
+};
 
-// Helper function to extract user from token
-function getUserFromToken(token) {
-  return tempUserStore.get(token);
-}
+// Onboarding Check Middleware - FIXED
+const checkOnboarding = (req, res, next) => {
+  console.log('Onboarding check - User:', req.session.user); // Debug log
+  
+  // Check if user exists and onboarding is completed
+  if (!req.session.user || !req.session.user.onboardingCompleted) {
+    const email = req.session.user?.email || '';
+    return res.redirect(`/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(email)}`);
+  }
+  next();
+};
 
 // Routes
 app.get('/', (req, res) => {
   res.render('index');
 });
 
-// Debug route
+// Debug route to check session (remove in production)
 app.get('/debug-session', (req, res) => {
-  const token = req.query.token;
-  const user = token ? getUserFromToken(token) : null;
-  
   res.json({
-    token: token,
-    user: user,
-    allUsers: Array.from(tempUserStore.entries())
+    session: req.session,
+    user: req.session.user,
+    sessionID: req.sessionID
   });
 });
 
-// Signup Route - Modified for Vercel
+// Signup Route
 app.post('/signup', async (req, res) => {
   try {
     const { fullName, email, password } = req.body;
@@ -58,30 +79,34 @@ app.post('/signup', async (req, res) => {
       });
     }
 
-    // Generate temporary token and store user data
-    const token = generateTempToken();
-    const userData = {
+    // Create user session
+    req.session.user = {
       email: email.trim(),
       fullName: fullName.trim(),
-      onboardingCompleted: false,
-      createdAt: new Date(),
-      token: token
+      onboardingCompleted: false
     };
 
-    tempUserStore.set(token, userData);
-    
-    console.log('User created with token:', token, userData);
-
-    res.json({
-      success: true,
-      redirectUrl: `/CustomOnboarding?token=${token}&email=${encodeURIComponent(email.trim())}`
+    // Save session before responding
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ 
+          success: false,
+          error: 'Session creation failed' 
+        });
+      }
+      
+      res.json({
+        success: true,
+        redirectUrl: `/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(email.trim())}`
+      });
     });
 
-    // Send welcome email (if service exists)
-     try {
-       await sendWelcomeEmail(email.trim(), fullName.trim());
-     } catch (emailError) {
-       console.error('Email sending failed:', emailError);
+    // Send welcome email (async, don't wait for it)
+    try {
+      await sendWelcomeEmail(email.trim(), fullName.trim());
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
     }
 
   } catch (error) {
@@ -93,78 +118,69 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// Login Route - Modified for Vercel
+// Login Route - FIXED
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
   
-  // Generate temporary token (in real app, verify credentials first)
-  const token = generateTempToken();
-  const userData = {
+  // In a real app, you'd verify credentials against database
+  req.session.user = {
     email: email.trim(),
     fullName: 'User Name', // In real app, get from DB
-    onboardingCompleted: false, // Set based on DB data
-    createdAt: new Date(),
-    token: token
+    onboardingCompleted: false // Set based on DB data
   };
-
-  tempUserStore.set(token, userData);
   
-  res.json({ 
-    success: true,
-    redirectUrl: `/CustomOnboarding?token=${token}&email=${encodeURIComponent(email.trim())}`
+  req.session.save((err) => {
+    if (err) {
+      console.error('Session save error:', err);
+      return res.status(500).json({ 
+        success: false,
+        error: 'Login failed' 
+      });
+    }
+    
+    res.json({ 
+      success: true,
+      redirectUrl: `/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(email.trim())}`
+    });
   });
 });
 
-// Custom Onboarding Route - Modified for Vercel
+// Custom Onboarding Route - FIXED: Don't require authentication check here
 app.get('/CustomOnboarding', (req, res) => {
-  const token = req.query.token;
-  const email = req.query.email;
+  console.log('Accessing onboarding - Session:', req.session.user); // Debug log
   
-  console.log('Onboarding access - Token:', token, 'Email:', email);
+  // Allow access if user is in session OR if email is provided in query
+  const email = req.session.user?.email || req.query.email;
   
-  if (!token && !email) {
-    console.log('No token or email, redirecting to home');
+  if (!email) {
+    console.log('No email found, redirecting to home');
     return res.redirect('/');
   }
-
-  let user = null;
-  if (token) {
-    user = getUserFromToken(token);
-  }
   
-  // If no user found with token but email provided, create temporary entry
-  if (!user && email) {
-    const tempToken = generateTempToken();
-    user = {
-      email: email,
-      fullName: '',
-      onboardingCompleted: false,
-      createdAt: new Date(),
-      token: tempToken
+  // If user is not in session but email is provided (from signup), create minimal session
+  if (!req.session.user && req.query.email) {
+    req.session.user = {
+      email: req.query.email,
+      fullName: '', // Will be empty until they fill the form
+      onboardingCompleted: false
     };
-    tempUserStore.set(tempToken, user);
-  }
-
-  if (!user) {
-    return res.redirect('/');
   }
   
   res.render('customonboarding', {
     user: {
-      email: user.email,
-      fullName: user.fullName || '',
-      token: user.token
+      email: email,
+      fullName: req.session.user?.fullName || '',
+      sessionId: undefined
     }
   });
 });
 
-// Complete Onboarding Route - Modified for Vercel
+// Complete Onboarding Route - FIXED: Allow access even without full authentication
 app.post('/CustomOnboarding/complete', async (req, res) => {
   try {
-    const { onboardingData, token } = req.body;
-    
-    console.log('Onboarding completion - Token:', token);
-    console.log('Onboarding data:', onboardingData);
+    const { onboardingData } = req.body;
+    console.log('Received onboarding data:', onboardingData); // Debug log
+    console.log('Current session user:', req.session.user); // Debug log
 
     if (!onboardingData) {
       return res.status(400).json({
@@ -173,39 +189,44 @@ app.post('/CustomOnboarding/complete', async (req, res) => {
       });
     }
 
-    if (!token) {
-      return res.status(400).json({
-        success: false,
-        error: 'User token is required'
-      });
-    }
-
-    const user = getUserFromToken(token);
-    if (!user) {
+    // Ensure we have a user session
+    if (!req.session.user) {
       return res.status(401).json({
         success: false,
-        error: 'Invalid or expired token'
+        error: 'No user session found'
       });
     }
 
-    // Update user data
-    const updatedUser = {
-      ...user,
-      onboardingCompleted: true,
+    // Update user session with onboarding data
+    req.session.user = {
+      ...req.session.user,
+      onboardingCompleted: true, // IMPORTANT: Mark as completed
       onboardingData: onboardingData,
-      fullName: `${onboardingData.personalInfo?.firstName || ''} ${onboardingData.personalInfo?.lastName || ''}`.trim() || user.fullName,
-      completedAt: new Date()
+      // Update name if provided in onboarding
+      fullName: `${onboardingData.personalInfo?.firstName || ''} ${onboardingData.personalInfo?.lastName || ''}`.trim() || req.session.user.fullName
     };
 
-    tempUserStore.set(token, updatedUser);
-    
-    console.log('User updated:', updatedUser);
+    console.log('Updated user session:', req.session.user); // Debug log
 
-    res.json({
-      success: true,
-      message: 'Onboarding completed successfully',
-      redirectUrl: `/dashboard?token=${token}`
+    // Save session and respond
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to save session'
+        });
+      }
+      
+      console.log('Session saved successfully'); // Debug log
+      res.json({
+        success: true,
+        message: 'Onboarding completed successfully'
+      });
     });
+
+    // Here you would typically save to database
+    // await UserService.completeOnboarding(req.session.user.email, onboardingData);
 
   } catch (error) {
     console.error('Onboarding completion error:', error);
@@ -216,32 +237,7 @@ app.post('/CustomOnboarding/complete', async (req, res) => {
   }
 });
 
-// Authentication middleware for protected routes
-const tokenAuth = (req, res, next) => {
-  const token = req.query.token;
-  
-  if (!token) {
-    return res.redirect('/');
-  }
-  
-  const user = getUserFromToken(token);
-  if (!user) {
-    return res.redirect('/');
-  }
-  
-  req.user = user;
-  next();
-};
-
-// Onboarding check middleware
-const checkOnboarding = (req, res, next) => {
-  if (!req.user.onboardingCompleted) {
-    return res.redirect(`/CustomOnboarding?token=${req.user.token}&email=${encodeURIComponent(req.user.email)}`);
-  }
-  next();
-};
-
-// Protected Routes - Modified for token-based auth
+// Protected Routes
 const protectedRoutes = [
   '/dashboard',
   '/workouts',
@@ -255,38 +251,23 @@ const protectedRoutes = [
 ];
 
 protectedRoutes.forEach(route => {
-  app.get(route, tokenAuth, checkOnboarding, (req, res) => {
+  app.get(route, isAuthenticated, checkOnboarding, (req, res) => {
     const viewName = route.substring(1); // Remove leading slash
-    console.log(`Accessing ${route} for user:`, req.user.email);
-    
+    console.log(`Accessing ${route} for user:`, req.session.user?.email); // Debug log
     res.render(viewName, { 
-      user: req.user,
-      currentPath: route,
-      token: req.user.token
+      user: req.session.user,
+      currentPath: route
     });
   });
 });
 
 // Logout Route
 app.get('/logout', (req, res) => {
-  const token = req.query.token;
-  if (token) {
-    tempUserStore.delete(token);
-  }
-  res.redirect('/');
+  req.session.destroy(() => {
+    res.clearCookie('connect.sid');
+    res.redirect('/');
+  });
 });
-
-// Cleanup old tokens (run periodically in production)
-setInterval(() => {
-  const now = new Date();
-  const oneHour = 60 * 60 * 1000;
-  
-  for (const [token, user] of tempUserStore.entries()) {
-    if (now - user.createdAt > oneHour) {
-      tempUserStore.delete(token);
-    }
-  }
-}, 10 * 60 * 1000); // Run every 10 minutes
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
@@ -310,10 +291,8 @@ app.use((req, res) => {
 });
 
 // Start Server
-const PORT = process.env.PORT || 3005;
+const PORT = process.env.PORT || 300;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
-
-module.exports = app;
