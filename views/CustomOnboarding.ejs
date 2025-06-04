@@ -61,87 +61,11 @@
             font-size: 1rem;
         }
         
-        .progress-container {
-            padding: 20px;
-            background: white;
-            border-bottom: 1px solid var(--light-gray);
-        }
-        
-        .step-indicator {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            position: relative;
-        }
-        
-        .progress-line {
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--light-gray);
-            border-radius: 2px;
-            z-index: 1;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border-radius: 2px;
-            transition: width 0.5s ease;
-        }
-        
-        .step {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: white;
-            border: 2px solid var(--light-gray);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            z-index: 2;
-            transition: all 0.3s ease;
-            color: var(--gray);
-            font-weight: 600;
-        }
-        
-        .step.active {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: white;
-        }
-        
-        .step.completed {
-            background: var(--primary);
-            border-color: var(--primary);
-            color: white;
-        }
-        
-        .progress-text {
-            text-align: center;
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-        
-        .form-step {
+        .form-content {
             padding: 30px;
-            display: none;
         }
         
-        .form-step.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .form-step h2 {
+        .form-content h2 {
             color: var(--dark);
             margin-bottom: 25px;
             font-size: 1.5rem;
@@ -221,39 +145,6 @@
             color: var(--primary);
         }
         
-        .option-item.selected i {
-            color: var(--primary);
-        }
-        
-        .rating-scale {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            gap: 8px;
-        }
-        
-        .rating-item {
-            flex: 1;
-            padding: 12px;
-            text-align: center;
-            background: white;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1px solid var(--light-gray);
-            font-size: 0.9rem;
-        }
-        
-        .rating-item:hover {
-            border-color: var(--primary);
-        }
-        
-        .rating-item.selected {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-        
         .health-tip {
             background: rgba(108, 99, 255, 0.05);
             padding: 15px;
@@ -268,12 +159,11 @@
             margin-right: 8px;
         }
         
-        .navigation-buttons {
+        .action-buttons {
             display: flex;
-            justify-content: space-between;
-            margin-top: 30px;
+            justify-content: flex-end;
             gap: 15px;
-            padding: 0 30px 30px;
+            margin-top: 30px;
         }
         
         .btn {
@@ -310,37 +200,6 @@
             background: var(--secondary);
         }
         
-        .btn-success {
-            background: var(--success);
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #218838;
-        }
-        
-        .completion-screen {
-            text-align: center;
-            padding: 40px 30px;
-        }
-        
-        .completion-screen i {
-            font-size: 4rem;
-            color: var(--success);
-            margin-bottom: 20px;
-        }
-        
-        .completion-screen h2 {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-            color: var(--dark);
-        }
-        
-        .completion-screen p {
-            color: var(--gray);
-            margin-bottom: 25px;
-        }
-        
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -350,15 +209,11 @@
                 grid-template-columns: 1fr 1fr;
             }
             
-            .rating-scale {
-                flex-direction: column;
-            }
-            
             .header h1 {
                 font-size: 1.8rem;
             }
             
-            .form-step h2 {
+            .form-content h2 {
                 font-size: 1.3rem;
             }
         }
@@ -368,74 +223,53 @@
     <div class="onboarding-container">
         <div class="header">
             <h1><i class="fas fa-heartbeat"></i> FitWit AI</h1>
-            <p>Let's get to know you for a personalized health plan</p>
+            <p>Help us personalize your experience (optional)</p>
         </div>
         
-        <div class="progress-container">
-            <div class="step-indicator">
-                <div class="progress-line">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                <div class="step active" data-step="1">1</div>
-                <div class="step" data-step="2">2</div>
-                <div class="step" data-step="3">3</div>
-                <div class="step" data-step="4">4</div>
-                <div class="step" data-step="5">5</div>
-            </div>
-            <div class="progress-text">
-                Step <span id="currentStep">1</span> of 5 - <span id="stepTitle">Basic Info</span>
-            </div>
-        </div>
-        
-        <!-- Step 1: Personal Information -->
-        <div class="form-step active" data-step="1">
-            <h2><i class="fas fa-user"></i> Basic Information</h2>
+        <div class="form-content">
+            <h2><i class="fas fa-user"></i> Tell Us About Yourself</h2>
+            
             <div class="form-row">
                 <div class="form-group">
-                    <label for="firstName">First Name *</label>
-                    <input type="text" id="firstName" required>
+                    <label for="firstName">First Name</label>
+                    <input type="text" id="firstName" placeholder="Your first name">
                 </div>
                 <div class="form-group">
-                    <label for="lastName">Last Name *</label>
-                    <input type="text" id="lastName" required>
+                    <label for="lastName">Last Name</label>
+                    <input type="text" id="lastName" placeholder="Your last name">
                 </div>
             </div>
+            
             <div class="form-row">
                 <div class="form-group">
-                    <label for="age">Age *</label>
-                    <input type="number" id="age" min="1" max="120" required>
+                    <label for="age">Age</label>
+                    <input type="number" id="age" min="1" max="120" placeholder="Your age">
                 </div>
                 <div class="form-group">
-                    <label for="gender">Gender *</label>
-                    <select id="gender" required>
+                    <label for="gender">Gender</label>
+                    <select id="gender">
                         <option value="">Select gender</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
                         <option value="other">Other</option>
+                        <option value="prefer-not-to-say">Prefer not to say</option>
                     </select>
                 </div>
             </div>
-            <div class="health-tip">
-                <i class="fas fa-lightbulb"></i>
-                <strong>Tip:</strong> This information helps us personalize your health recommendations.
-            </div>
-        </div>
-        
-        <!-- Step 2: Physical Metrics -->
-        <div class="form-step" data-step="2">
-            <h2><i class="fas fa-weight"></i> Body Metrics</h2>
+            
             <div class="form-row">
                 <div class="form-group">
-                    <label for="height">Height (cm) *</label>
-                    <input type="number" id="height" min="100" max="250" required>
+                    <label for="height">Height (cm)</label>
+                    <input type="number" id="height" min="100" max="250" placeholder="Your height">
                 </div>
                 <div class="form-group">
-                    <label for="weight">Weight (kg) *</label>
-                    <input type="number" id="weight" min="30" max="300" step="0.1" required>
+                    <label for="weight">Weight (kg)</label>
+                    <input type="number" id="weight" min="30" max="300" step="0.1" placeholder="Your weight">
                 </div>
             </div>
+            
             <div class="form-group">
-                <label>How active are you? *</label>
+                <label>Activity Level</label>
                 <div class="options-grid" data-field="activityLevel">
                     <div class="option-item" data-value="sedentary">
                         <i class="fas fa-couch"></i>
@@ -455,17 +289,9 @@
                     </div>
                 </div>
             </div>
-            <div class="health-tip">
-                <i class="fas fa-chart-line"></i>
-                <strong>Tip:</strong> Your BMI will be calculated automatically to help assess your health status.
-            </div>
-        </div>
-        
-        <!-- Step 3: Health Goals -->
-        <div class="form-step" data-step="3">
-            <h2><i class="fas fa-bullseye"></i> Health Goals</h2>
+            
             <div class="form-group">
-                <label>What are your primary goals? (Select up to 2) *</label>
+                <label>Health Goals (Select any that apply)</label>
                 <div class="options-grid" data-field="healthGoals">
                     <div class="option-item" data-value="weight-loss">
                         <i class="fas fa-weight"></i>
@@ -483,330 +309,100 @@
                         <i class="fas fa-bed"></i>
                         <span>Better Sleep</span>
                     </div>
-                    <div class="option-item" data-value="reduce-stress">
-                        <i class="fas fa-spa"></i>
-                        <span>Reduce Stress</span>
-                    </div>
-                    <div class="option-item" data-value="healthy-eating">
-                        <i class="fas fa-apple-alt"></i>
-                        <span>Eat Healthier</span>
-                    </div>
                 </div>
             </div>
-            <div class="form-group">
-                <label>How would you rate your current diet? *</label>
-                <div class="rating-scale" data-field="dietRating">
-                    <div class="rating-item" data-value="1">Poor</div>
-                    <div class="rating-item" data-value="2">Fair</div>
-                    <div class="rating-item" data-value="3">Good</div>
-                    <div class="rating-item" data-value="4">Very Good</div>
-                    <div class="rating-item" data-value="5">Excellent</div>
-                </div>
-            </div>
+            
             <div class="health-tip">
-                <i class="fas fa-trophy"></i>
-                <strong>Tip:</strong> Setting clear goals helps us create the perfect plan for you.
+                <i class="fas fa-lightbulb"></i>
+                <strong>Tip:</strong> The more information you provide, the better we can personalize your experience.
             </div>
-        </div>
-        
-        <!-- Step 4: Medical Info -->
-        <div class="form-step" data-step="4">
-            <h2><i class="fas fa-heartbeat"></i> Health Background</h2>
-            <div class="form-group">
-                <label>Any medical conditions we should know about? *</label>
-                <div class="options-grid" data-field="medicalConditions">
-                    <div class="option-item" data-value="diabetes">
-                        <i class="fas fa-syringe"></i>
-                        <span>Diabetes</span>
-                    </div>
-                    <div class="option-item" data-value="hypertension">
-                        <i class="fas fa-heart"></i>
-                        <span>High BP</span>
-                    </div>
-                    <div class="option-item" data-value="asthma">
-                        <i class="fas fa-wind"></i>
-                        <span>Asthma</span>
-                    </div>
-                    <div class="option-item" data-value="none">
-                        <i class="fas fa-check"></i>
-                        <span>None</span>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="medications">Current Medications</label>
-                <textarea id="medications" rows="2" placeholder="List any medications you're taking..."></textarea>
-            </div>
-            <div class="form-group">
-                <label for="allergies">Allergies</label>
-                <textarea id="allergies" rows="2" placeholder="List any allergies..."></textarea>
-            </div>
-            <div class="health-tip">
-                <i class="fas fa-shield-alt"></i>
-                <strong>Tip:</strong> This helps us ensure your plan is safe and effective.
-            </div>
-        </div>
-        
-        <!-- Step 5: Completion -->
-        <div class="form-step" data-step="5">
-            <div class="completion-screen">
-                <i class="fas fa-check-circle"></i>
-                <h2>Setup Complete!</h2>
-                <p>Thank you for providing your information. We're creating your personalized health plan now.</p>
-                <button class="btn btn-success" id="finishBtn">
-                    <i class="fas fa-rocket"></i> Finish & Go to Dashboard
+            
+            <div class="action-buttons">
+                <button class="btn btn-secondary" id="skipBtn">
+                    <i class="fas fa-forward"></i> Skip for Now
+                </button>
+                <button class="btn btn-primary" id="saveBtn">
+                    <i class="fas fa-save"></i> Save Preferences
                 </button>
             </div>
         </div>
-        
-        <!-- Navigation buttons -->
-        <div class="navigation-buttons">
-            <button type="button" id="prevBtn" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back
-            </button>
-            <button type="button" id="nextBtn" class="btn btn-primary">
-                Next <i class="fas fa-arrow-right"></i>
-            </button>
-        </div>
     </div>
+    
     <script>
-
-    document.addEventListener('DOMContentLoaded', () => {
-    const nextBtn = document.getElementById('nextBtn');
-    const prevBtn = document.getElementById('prevBtn');
-    const finishBtn = document.getElementById('finishBtn');
-    const formSteps = document.querySelectorAll('.form-step');
-    const steps = document.querySelectorAll('.step');
-    const progressFill = document.getElementById('progressFill');
-    const currentStepText = document.getElementById('currentStep');
-    const stepTitle = document.getElementById('stepTitle');
-    
-    let currentStep = 0;
-    const stepTitles = [
-        "Basic Info",
-        "Body Metrics",
-        "Health Goals",
-        "Health Background",
-        "Complete"
-    ];
-    
-    // Initialize
-    showStep(currentStep);
-    
-    function showStep(step) {
-        formSteps.forEach((formStep, index) => {
-            formStep.classList.toggle('active', index === step);
-        });
-        
-        steps.forEach((stepIndicator, index) => {
-            if (index < step) {
-                stepIndicator.classList.add('completed');
-                stepIndicator.classList.remove('active');
-            } else if (index === step) {
-                stepIndicator.classList.add('active');
-                stepIndicator.classList.remove('completed');
-            } else {
-                stepIndicator.classList.remove('active', 'completed');
-            }
-        });
-        
-        prevBtn.style.display = step === 0 ? 'none' : 'flex';
-        nextBtn.style.display = step === formSteps.length - 1 ? 'none' : 'flex';
-        finishBtn.style.display = step === formSteps.length - 1 ? 'flex' : 'none';
-        
-        currentStepText.textContent = step + 1;
-        stepTitle.textContent = stepTitles[step];
-        
-        updateProgress(step);
-    }
-    
-    function updateProgress(step) {
-        const progress = (step / (formSteps.length - 1)) * 100;
-        progressFill.style.width = `${progress}%`;
-    }
-    
-    nextBtn.addEventListener('click', () => {
-        if (validateStep(currentStep)) {
-            currentStep++;
-            showStep(currentStep);
-        }
-    });
-    
-    prevBtn.addEventListener('click', () => {
-        currentStep--;
-        showStep(currentStep);
-    });
-    
-    function validateStep(step) {
-        let isValid = true;
-        const currentFormStep = formSteps[step];
-        const requiredInputs = currentFormStep.querySelectorAll('[required]');
-        
-        requiredInputs.forEach(input => {
-            if (!input.value.trim()) {
-                input.style.borderColor = 'var(--danger)';
-                isValid = false;
-            } else {
-                input.style.borderColor = 'var(--light-gray)';
-            }
-        });
-        
-        // Validate option selections for certain steps
-        if (step === 1) { // Activity level step
-            const activitySelected = document.querySelector('.options-grid[data-field="activityLevel"] .option-item.selected');
-            if (!activitySelected) {
-                alert('Please select your activity level');
-                return false;
-            }
-        }
-        
-        if (step === 2) { // Health goals step
-            const goalsSelected = document.querySelectorAll('.options-grid[data-field="healthGoals"] .option-item.selected');
-            if (goalsSelected.length === 0) {
-                alert('Please select at least one health goal');
-                return false;
-            }
-            
-            const dietRatingSelected = document.querySelector('.rating-scale[data-field="dietRating"] .rating-item.selected');
-            if (!dietRatingSelected) {
-                alert('Please rate your current diet');
-                return false;
-            }
-        }
-        
-        if (step === 3) { // Medical conditions step
-            const conditionsSelected = document.querySelectorAll('.options-grid[data-field="medicalConditions"] .option-item.selected');
-            if (conditionsSelected.length === 0) {
-                alert('Please select at least one option for medical conditions');
-                return false;
-            }
-        }
-        
-        if (!isValid) {
-            alert('Please fill in all required fields marked with *');
-            return false;
-        }
-        
-        return true;
-    }
-    
-    // Handle option selection
-    document.querySelectorAll('.option-item').forEach(item => {
-        item.addEventListener('click', function() {
-            const parent = this.parentElement;
-            const field = parent.getAttribute('data-field');
-            
-            if (parent.classList.contains('options-grid')) {
-                if (this.dataset.value === 'none') {
-                    parent.querySelectorAll('.option-item').forEach(i => {
-                        i.classList.remove('selected');
-                    });
-                } else {
-                    const noneOption = parent.querySelector('.option-item[data-value="none"]');
-                    if (noneOption) noneOption.classList.remove('selected');
+        document.addEventListener('DOMContentLoaded', () => {
+            // Handle option selection
+            document.querySelectorAll('.option-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const parent = this.parentElement;
+                    const field = parent.getAttribute('data-field');
                     
-                    if (field === 'healthGoals') {
-                        const selected = parent.querySelectorAll('.option-item.selected');
-                        if (selected.length >= 2 && !this.classList.contains('selected')) {
-                            alert('Please select no more than 2 primary goals');
-                            return;
+                    if (parent.classList.contains('options-grid')) {
+                        if (field === 'activityLevel') {
+                            // Single selection for activity level
+                            parent.querySelectorAll('.option-item').forEach(i => {
+                                i.classList.remove('selected');
+                            });
+                            this.classList.add('selected');
+                        } else {
+                            // Multiple selection for other fields
+                            this.classList.toggle('selected');
                         }
                     }
-                }
-                
-                this.classList.toggle('selected');
-            }
-        });
-    });
-    
-    // Handle rating scale selection
-    document.querySelectorAll('.rating-scale').forEach(scale => {
-        scale.addEventListener('click', function(e) {
-            const item = e.target.closest('.rating-item');
-            if (item && scale.contains(item)) {
-                scale.querySelectorAll('.rating-item').forEach(i => {
-                    i.classList.remove('selected');
                 });
-                item.classList.add('selected');
+            });
+            
+            // Skip button - go straight to dashboard
+            document.getElementById('skipBtn').addEventListener('click', () => {
+                window.location.href = '/dashboard';
+            });
+            
+            // Save button - collect data and go to dashboard
+            document.getElementById('saveBtn').addEventListener('click', async () => {
+                const formData = {
+                    personalInfo: {
+                        firstName: document.getElementById('firstName').value,
+                        lastName: document.getElementById('lastName').value,
+                        age: document.getElementById('age').value,
+                        gender: document.getElementById('gender').value
+                    },
+                    bodyMetrics: {
+                        height: document.getElementById('height').value,
+                        weight: document.getElementById('weight').value,
+                        activityLevel: getSelectedOptions('activityLevel')[0] || null
+                    },
+                    healthGoals: {
+                        goals: getSelectedOptions('healthGoals')
+                    }
+                };
+                
+                try {
+                    // Save data to server (optional)
+                    const response = await fetch('/CustomOnboarding/complete', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            onboardingData: formData
+                        })
+                    });
+                    
+                    // Always go to dashboard whether save succeeds or fails
+                    window.location.href = '/dashboard';
+                    
+                } catch (error) {
+                    console.error('Error saving preferences:', error);
+                    window.location.href = '/dashboard';
+                }
+            });
+            
+            function getSelectedOptions(fieldName) {
+                const container = document.querySelector(`[data-field="${fieldName}"]`);
+                if (!container) return [];
+                const selectedItems = container.querySelectorAll('.option-item.selected');
+                return Array.from(selectedItems).map(item => item.dataset.value);
             }
         });
-    });
-    
-    // Finish button handler
-    finishBtn.addEventListener('click', async () => {
-        if (!validateStep(currentStep)) {
-            alert('Please complete all required fields before finishing');
-            return;
-        }
-        
-        // Collect all form data
-        const formData = {
-            personalInfo: {
-                firstName: document.getElementById('firstName').value,
-                lastName: document.getElementById('lastName').value,
-                age: document.getElementById('age').value,
-                gender: document.getElementById('gender').value
-            },
-            bodyMetrics: {
-                height: document.getElementById('height').value,
-                weight: document.getElementById('weight').value,
-                activityLevel: getSelectedOptions('activityLevel')
-            },
-            healthGoals: {
-                goals: getSelectedOptions('healthGoals'),
-                dietRating: getSelectedRating('dietRating')
-            },
-            medicalInfo: {
-                conditions: getSelectedOptions('medicalConditions'),
-                medications: document.getElementById('medications').value,
-                allergies: document.getElementById('allergies').value
-            }
-        };
-        
-        try {
-            finishBtn.disabled = true;
-            finishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
-            
-            const response = await fetch('/CustomOnboarding/complete', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    onboardingData: formData
-                })
-            });
-
-            if (response.ok) {
-                // Directly redirect to dashboard after successful completion
-                window.location.href = '/dashboard';
-            } else {
-                const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.message || errorData.error || 'Failed to complete onboarding');
-            }
-            
-        } catch (error) {
-            console.error('Error completing onboarding:', error);
-            alert(error.message || 'Error completing onboarding. Please try again.');
-            finishBtn.disabled = false;
-            finishBtn.innerHTML = '<i class="fas fa-rocket"></i> Finish & Go to Dashboard';
-        }
-    });
-    
-    function getSelectedOptions(fieldName) {
-        const container = document.querySelector(`[data-field="${fieldName}"]`);
-        if (!container) return [];
-        const selectedItems = container.querySelectorAll('.option-item.selected');
-        return Array.from(selectedItems).map(item => item.dataset.value);
-    }
-    
-    function getSelectedRating(fieldName) {
-        const container = document.querySelector(`[data-field="${fieldName}"]`);
-        if (!container) return null;
-        const selectedItem = container.querySelector('.rating-item.selected');
-        return selectedItem ? selectedItem.dataset.value : null;
-    }
-});
     </script>
 </body>
 </html>
