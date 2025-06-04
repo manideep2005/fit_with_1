@@ -329,7 +329,13 @@
     </div>
     
     <script>
-       document.addEventListener('DOMContentLoaded', () => {
+     document.addEventListener('DOMContentLoaded', () => {
+    // Get token from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const userToken = urlParams.get('token');
+    
+    console.log('User token:', userToken);
+    
     // Handle option selection
     document.querySelectorAll('.option-item').forEach(item => {
         item.addEventListener('click', function() {
@@ -351,10 +357,13 @@
         });
     });
     
-    // Skip button - go straight to dashboard
+    // Skip button - go straight to dashboard with token
     document.getElementById('skipBtn').addEventListener('click', () => {
-        // Redirect immediately without saving
-        window.location.href = '/dashboard';
+        if (userToken) {
+            window.location.href = `/dashboard?token=${userToken}`;
+        } else {
+            window.location.href = '/dashboard';
+        }
     });
     
     // Save button - collect data and go to dashboard
@@ -383,27 +392,36 @@
             }
         };
         
-        console.log('Sending onboarding data:', formData); // Debug log
+        console.log('Sending onboarding data:', formData);
+        console.log('Using token:', userToken);
         
         try {
-            // Save data to server
+            // Save data to server with token
             const response = await fetch('/CustomOnboarding/complete', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    onboardingData: formData
+                    onboardingData: formData,
+                    token: userToken
                 })
             });
             
             const data = await response.json();
-            console.log('Server response:', data); // Debug log
+            console.log('Server response:', data);
             
             if (data.success) {
                 // Success - redirect to dashboard
                 console.log('Onboarding completed successfully, redirecting to dashboard');
-                window.location.href = '/dashboard';
+                
+                if (data.redirectUrl) {
+                    window.location.href = data.redirectUrl;
+                } else if (userToken) {
+                    window.location.href = `/dashboard?token=${userToken}`;
+                } else {
+                    window.location.href = '/dashboard';
+                }
             } else {
                 // Error from server
                 console.error('Server error:', data.error);
