@@ -48,7 +48,6 @@
             color: white;
             padding: 30px;
             text-align: center;
-            position: relative;
         }
         
         .header h1 {
@@ -62,57 +61,8 @@
             font-size: 1rem;
         }
         
-        .progress-steps {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-            gap: 15px;
-        }
-        
-        .step {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-            position: relative;
-        }
-        
-        .step.active {
-            background: white;
-            color: var(--primary);
-        }
-        
-        .step.completed {
-            background: var(--accent);
-            color: white;
-        }
-        
-        .step::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 100%;
-            width: 15px;
-            height: 2px;
-            background: rgba(255,255,255,0.3);
-        }
-        
-        .step:last-child::after {
-            display: none;
-        }
-        
         .form-content {
             padding: 30px;
-            display: none;
-        }
-        
-        .form-content.active {
-            display: block;
         }
         
         .form-content h2 {
@@ -211,7 +161,7 @@
         
         .action-buttons {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             gap: 15px;
             margin-top: 30px;
         }
@@ -250,10 +200,6 @@
             background: var(--secondary);
         }
         
-        .btn-next {
-            margin-left: auto;
-        }
-        
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -278,17 +224,10 @@
         <div class="header">
             <h1><i class="fas fa-heartbeat"></i> FitWit AI</h1>
             <p>Help us personalize your experience (optional)</p>
-            
-            <div class="progress-steps">
-                <div class="step active" data-step="1">1</div>
-                <div class="step" data-step="2">2</div>
-                <div class="step" data-step="3">3</div>
-            </div>
         </div>
         
-        <!-- Step 1: Personal Information -->
-        <div class="form-content active" data-step="1">
-            <h2><i class="fas fa-user"></i> Personal Information</h2>
+        <div class="form-content">
+            <h2><i class="fas fa-user"></i> Tell Us About Yourself</h2>
             
             <div class="form-row">
                 <div class="form-group">
@@ -317,25 +256,6 @@
                     </select>
                 </div>
             </div>
-            
-            <div class="health-tip">
-                <i class="fas fa-lightbulb"></i>
-                <strong>Tip:</strong> We use this information to personalize your health recommendations.
-            </div>
-            
-            <div class="action-buttons">
-                <button class="btn btn-secondary" id="skipBtn">
-                    <i class="fas fa-forward"></i> Skip for Now
-                </button>
-                <button class="btn btn-primary btn-next" data-next="2">
-                    Next <i class="fas fa-arrow-right"></i>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Step 2: Body Metrics -->
-        <div class="form-content" data-step="2">
-            <h2><i class="fas fa-ruler-combined"></i> Body Metrics</h2>
             
             <div class="form-row">
                 <div class="form-group">
@@ -370,27 +290,8 @@
                 </div>
             </div>
             
-            <div class="health-tip">
-                <i class="fas fa-lightbulb"></i>
-                <strong>Tip:</strong> Your activity level helps us recommend appropriate exercise routines.
-            </div>
-            
-            <div class="action-buttons">
-                <button class="btn btn-secondary btn-prev" data-prev="1">
-                    <i class="fas fa-arrow-left"></i> Back
-                </button>
-                <button class="btn btn-primary btn-next" data-next="3">
-                    Next <i class="fas fa-arrow-right"></i>
-                </button>
-            </div>
-        </div>
-        
-        <!-- Step 3: Health Goals -->
-        <div class="form-content" data-step="3">
-            <h2><i class="fas fa-bullseye"></i> Health Goals</h2>
-            
             <div class="form-group">
-                <label>What are your health goals? (Select any that apply)</label>
+                <label>Health Goals (Select any that apply)</label>
                 <div class="options-grid" data-field="healthGoals">
                     <div class="option-item" data-value="weight-loss">
                         <i class="fas fa-weight"></i>
@@ -408,14 +309,6 @@
                         <i class="fas fa-bed"></i>
                         <span>Better Sleep</span>
                     </div>
-                    <div class="option-item" data-value="stress-reduction">
-                        <i class="fas fa-spa"></i>
-                        <span>Reduce Stress</span>
-                    </div>
-                    <div class="option-item" data-value="improve-diet">
-                        <i class="fas fa-utensils"></i>
-                        <span>Improve Diet</span>
-                    </div>
                 </div>
             </div>
             
@@ -425,8 +318,8 @@
             </div>
             
             <div class="action-buttons">
-                <button class="btn btn-secondary btn-prev" data-prev="2">
-                    <i class="fas fa-arrow-left"></i> Back
+                <button class="btn btn-secondary" id="skipBtn">
+                    <i class="fas fa-forward"></i> Skip for Now
                 </button>
                 <button class="btn btn-primary" id="saveBtn">
                     <i class="fas fa-save"></i> Save Preferences
@@ -442,43 +335,6 @@
     const userToken = urlParams.get('token');
     
     console.log('User token:', userToken);
-    
-    // Handle navigation between steps
-    document.querySelectorAll('.btn-next').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const nextStep = this.getAttribute('data-next');
-            navigateToStep(nextStep);
-        });
-    });
-    
-    document.querySelectorAll('.btn-prev').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const prevStep = this.getAttribute('data-prev');
-            navigateToStep(prevStep);
-        });
-    });
-    
-    function navigateToStep(stepNumber) {
-        // Hide all form contents
-        document.querySelectorAll('.form-content').forEach(content => {
-            content.classList.remove('active');
-        });
-        
-        // Show the selected step
-        document.querySelector(`.form-content[data-step="${stepNumber}"]`).classList.add('active');
-        
-        // Update progress steps
-        document.querySelectorAll('.step').forEach(step => {
-            step.classList.remove('active', 'completed');
-            
-            const stepNum = parseInt(step.getAttribute('data-step'));
-            if (stepNum < stepNumber) {
-                step.classList.add('completed');
-            } else if (stepNum == stepNumber) {
-                step.classList.add('active');
-            }
-        });
-    }
     
     // Handle option selection
     document.querySelectorAll('.option-item').forEach(item => {
