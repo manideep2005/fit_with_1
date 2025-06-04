@@ -3,7 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const crypto = require('crypto');
-// const { sendWelcomeEmail } = require('./services/emailService');
+ const { sendWelcomeEmail } = require('./services/emailService');
 
 const app = express();
 
@@ -78,11 +78,11 @@ app.post('/signup', async (req, res) => {
     });
 
     // Send welcome email (if service exists)
-    // try {
-    //   await sendWelcomeEmail(email.trim(), fullName.trim());
-    // } catch (emailError) {
-    //   console.error('Email sending failed:', emailError);
-    // }
+     try {
+       await sendWelcomeEmail(email.trim(), fullName.trim());
+     } catch (emailError) {
+       console.error('Email sending failed:', emailError);
+    }
 
   } catch (error) {
     console.error('Signup error:', error);
