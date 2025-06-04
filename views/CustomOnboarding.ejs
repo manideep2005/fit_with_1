@@ -774,26 +774,12 @@
                 },
                 body: JSON.stringify({
                     onboardingData: formData
-                }),
-                redirect: 'follow' // Important for handling redirects
+                })
             });
 
-            if (response.redirected) {
-                // Follow the redirect if the server sent one
-                window.location.href = response.url;
-            } else if (response.ok) {
-                // If response is OK but not a redirect, try to parse JSON
-                try {
-                    const data = await response.json();
-                    if (data.redirectUrl) {
-                        window.location.href = data.redirectUrl;
-                    } else {
-                        window.location.href = '/dashboard';
-                    }
-                } catch (e) {
-                    // If JSON parsing fails, just go to dashboard
-                    window.location.href = '/dashboard';
-                }
+            if (response.ok) {
+                // Directly redirect to dashboard after successful completion
+                window.location.href = '/dashboard';
             } else {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.message || errorData.error || 'Failed to complete onboarding');
