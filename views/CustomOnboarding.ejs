@@ -329,80 +329,108 @@
     </div>
     
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Handle option selection
-            document.querySelectorAll('.option-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    const parent = this.parentElement;
-                    const field = parent.getAttribute('data-field');
-                    
-                    if (parent.classList.contains('options-grid')) {
-                        if (field === 'activityLevel') {
-                            // Single selection for activity level
-                            parent.querySelectorAll('.option-item').forEach(i => {
-                                i.classList.remove('selected');
-                            });
-                            this.classList.add('selected');
-                        } else {
-                            // Multiple selection for other fields
-                            this.classList.toggle('selected');
-                        }
-                    }
-                });
-            });
+       document.addEventListener('DOMContentLoaded', () => {
+    // Handle option selection
+    document.querySelectorAll('.option-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const parent = this.parentElement;
+            const field = parent.getAttribute('data-field');
             
-            // Skip button - go straight to dashboard
-            document.getElementById('skipBtn').addEventListener('click', () => {
-                window.location.href = '/dashboard';
-            });
-            
-            // Save button - collect data and go to dashboard
-            document.getElementById('saveBtn').addEventListener('click', async () => {
-                const formData = {
-                    personalInfo: {
-                        firstName: document.getElementById('firstName').value,
-                        lastName: document.getElementById('lastName').value,
-                        age: document.getElementById('age').value,
-                        gender: document.getElementById('gender').value
-                    },
-                    bodyMetrics: {
-                        height: document.getElementById('height').value,
-                        weight: document.getElementById('weight').value,
-                        activityLevel: getSelectedOptions('activityLevel')[0] || null
-                    },
-                    healthGoals: {
-                        goals: getSelectedOptions('healthGoals')
-                    }
-                };
-                
-                try {
-                    // Save data to server (optional)
-                    const response = await fetch('/CustomOnboarding/complete', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            onboardingData: formData
-                        })
+            if (parent.classList.contains('options-grid')) {
+                if (field === 'activityLevel') {
+                    // Single selection for activity level
+                    parent.querySelectorAll('.option-item').forEach(i => {
+                        i.classList.remove('selected');
                     });
-                    
-                    // Always go to dashboard whether save succeeds or fails
-                    window.location.href = '/dashboard';
-                    
-                } catch (error) {
-                    console.error('Error saving preferences:', error);
-                    window.location.href = '/dashboard';
+                    this.classList.add('selected');
+                } else {
+                    // Multiple selection for other fields
+                    this.classList.toggle('selected');
                 }
-            });
-            
-            function getSelectedOptions(fieldName) {
-                const container = document.querySelector(`[data-field="${fieldName}"]`);
-                if (!container) return [];
-                const selectedItems = container.querySelectorAll('.option-item.selected');
-                return Array.from(selectedItems).map(item => item.dataset.value);
             }
         });
+    });
+    
+    // Skip button - go straight to dashboard
+    document.getElementById('skipBtn').addEventListener('click', () => {
+        // Redirect immediately without saving
+        window.location.href = '/dashboard';
+    });
+    
+    // Save button - collect data and go to dashboard
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+        const saveBtn = document.getElementById('saveBtn');
+        const originalText = saveBtn.innerHTML;
+        
+        // Show loading state
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        saveBtn.disabled = true;
+        
+        const formData = {
+            personalInfo: {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                age: document.getElementById('age').value,
+                gender: document.getElementById('gender').value
+            },
+            bodyMetrics: {
+                height: document.getElementById('height').value,
+                weight: document.getElementById('weight').value,
+                activityLevel: getSelectedOptions('activityLevel')[0] || null
+            },
+            healthGoals: {
+                goals: getSelectedOptions('healthGoals')
+            }
+        };
+        
+        console.log('Sending onboarding data:', formData); // Debug log
+        
+        try {
+            // Save data to server
+            const response = await fetch('/CustomOnboarding/complete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    onboardingData: formData
+                })
+            });
+            
+            const data = await response.json();
+            console.log('Server response:', data); // Debug log
+            
+            if (data.success) {
+                // Success - redirect to dashboard
+                console.log('Onboarding completed successfully, redirecting to dashboard');
+                window.location.href = '/dashboard';
+            } else {
+                // Error from server
+                console.error('Server error:', data.error);
+                alert('Failed to save preferences: ' + data.error);
+                
+                // Reset button
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
+            
+        } catch (error) {
+            console.error('Error saving preferences:', error);
+            alert('Failed to save preferences. Please try again.');
+            
+            // Reset button
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        }
+    });
+    
+    function getSelectedOptions(fieldName) {
+        const container = document.querySelector(`[data-field="${fieldName}"]`);
+        if (!container) return [];
+        const selectedItems = container.querySelectorAll('.option-item.selected');
+        return Array.from(selectedItems).map(item => item.dataset.value);
+    }
+});
     </script>
 </body>
 </html>

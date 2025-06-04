@@ -31,6 +31,7 @@ app.use(session({
 
 // Authentication Middleware
 const isAuthenticated = (req, res, next) => {
+  console.log('Auth check - Session user:', req.session.user); // Debug log
   if (!req.session.user) {
     if (req.accepts('html')) {
       return res.redirect('/');
@@ -40,10 +41,14 @@ const isAuthenticated = (req, res, next) => {
   next();
 };
 
-// Onboarding Check Middleware
+// Onboarding Check Middleware - FIXED
 const checkOnboarding = (req, res, next) => {
-  if (!req.session.user?.onboardingCompleted) {
-    return res.redirect(`/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(req.session.user?.email || '')}`);
+  console.log('Onboarding check - User:', req.session.user); // Debug log
+  
+  // Check if user exists and onboarding is completed
+  if (!req.session.user || !req.session.user.onboardingCompleted) {
+    const email = req.session.user?.email || '';
+    return res.redirect(`/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(email)}`);
   }
   next();
 };
@@ -65,17 +70,30 @@ app.post('/signup', async (req, res) => {
       });
     }
 
+    // Create user session
     req.session.user = {
       email: email.trim(),
       fullName: fullName.trim(),
       onboardingCompleted: false
     };
 
-    res.json({
-      success: true,
-      redirectUrl: `/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(email.trim())}`
+    // Save session before responding
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ 
+          success: false,
+          error: 'Session creation failed' 
+        });
+      }
+      
+      res.json({
+        success: true,
+        redirectUrl: `/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(email.trim())}`
+      });
     });
 
+    // Send welcome email (async, don't wait for it)
     try {
       await sendWelcomeEmail(email.trim(), fullName.trim());
     } catch (emailError) {
@@ -91,8 +109,35 @@ app.post('/signup', async (req, res) => {
   }
 });
 
+// Login Route - FIXED
+app.post('/login', (req, res) => {
+  const { email, password } = req.body;
+  
+  // In a real app, you'd verify credentials against database
+  req.session.user = {
+    email: email.trim(),
+    fullName: 'User Name', // In real app, get from DB
+    onboardingCompleted: false // Set based on DB data
+  };
+  
+  req.session.save((err) => {
+    if (err) {
+      console.error('Session save error:', err);
+      return res.status(500).json({ 
+        success: false,
+        error: 'Login failed' 
+      });
+    }
+    
+    res.json({ 
+      success: true,
+      redirectUrl: `/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(email.trim())}`
+    });
+  });
+});
+
 // Custom Onboarding Route
-app.get('/CustomOnboarding', (req, res) => {
+app.get('/CustomOnboarding', isAuthenticated, (req, res) => {
   const email = req.session.user?.email || req.query.email;
   if (!email) return res.redirect('/');
   
@@ -105,10 +150,11 @@ app.get('/CustomOnboarding', (req, res) => {
   });
 });
 
-// Complete Onboarding Route (Fixed to match frontend)
+// Complete Onboarding Route - FIXED
 app.post('/CustomOnboarding/complete', isAuthenticated, async (req, res) => {
   try {
     const { onboardingData } = req.body;
+    console.log('Received onboarding data:', onboardingData); // Debug log
 
     if (!onboardingData) {
       return res.status(400).json({
@@ -117,27 +163,16 @@ app.post('/CustomOnboarding/complete', isAuthenticated, async (req, res) => {
       });
     }
 
-    // Validate required fields
-    if (!onboardingData.personalInfo?.firstName || 
-        !onboardingData.personalInfo?.lastName ||
-        !onboardingData.bodyMetrics?.height ||
-        !onboardingData.bodyMetrics?.weight) {
-      return res.status(400).json({
-        success: false,
-        error: 'Required fields are missing'
-      });
-    }
-
     // Update user session with onboarding data
     req.session.user = {
       ...req.session.user,
-      onboardingCompleted: true,
+      onboardingCompleted: true, // IMPORTANT: Mark as completed
       onboardingData: onboardingData
     };
 
-    // Here you would typically save to database
-    // await UserService.completeOnboarding(req.session.user.email, onboardingData);
+    console.log('Updated user session:', req.session.user); // Debug log
 
+    // Save session and respond
     req.session.save((err) => {
       if (err) {
         console.error('Session save error:', err);
@@ -146,11 +181,16 @@ app.post('/CustomOnboarding/complete', isAuthenticated, async (req, res) => {
           error: 'Failed to save session'
         });
       }
+      
+      console.log('Session saved successfully'); // Debug log
       res.json({
         success: true,
-        redirectUrl: '/dashboard'
+        message: 'Onboarding completed successfully'
       });
     });
+
+    // Here you would typically save to database
+    // await UserService.completeOnboarding(req.session.user.email, onboardingData);
 
   } catch (error) {
     console.error('Onboarding completion error:', error);
@@ -159,22 +199,6 @@ app.post('/CustomOnboarding/complete', isAuthenticated, async (req, res) => {
       error: 'Failed to complete onboarding' 
     });
   }
-});
-
-// Login Route
-app.post('/login', (req, res) => {
-  const { email, password } = req.body;
-  
-  req.session.user = {
-    email: email.trim(),
-    fullName: 'User Name', // In real app, get from DB
-    onboardingCompleted: false
-  };
-  
-  res.json({ 
-    success: true,
-    redirectUrl: '/CustomOnboarding?sessionId=undefined'
-  });
 });
 
 // Protected Routes
@@ -193,6 +217,7 @@ const protectedRoutes = [
 protectedRoutes.forEach(route => {
   app.get(route, isAuthenticated, checkOnboarding, (req, res) => {
     const viewName = route.substring(1); // Remove leading slash
+    console.log(`Accessing ${route} for user:`, req.session.user?.email); // Debug log
     res.render(viewName, { 
       user: req.session.user,
       currentPath: route
@@ -230,7 +255,7 @@ app.use((req, res) => {
 });
 
 // Start Server
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3003;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
