@@ -138,9 +138,18 @@ app.post('/CustomOnboarding/complete', isAuthenticated, async (req, res) => {
     // Here you would typically save to database
     // await UserService.completeOnboarding(req.session.user.email, onboardingData);
 
-    res.json({ 
-      success: true,
-      redirectUrl: '/dashboard'
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to save session'
+        });
+      }
+      res.json({
+        success: true,
+        redirectUrl: '/dashboard'
+      });
     });
 
   } catch (error) {
