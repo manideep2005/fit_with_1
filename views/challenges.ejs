@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challenges & Achievements - Fit-With-AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --secondary: #4D44DB;
+            --accent: #FF6584;
+            --light: #F8F9FA;
+            --dark: #343A40;
+            --success: #28A745;
+            --warning: #FFC107;
+            --danger: #DC3545;
+            --gray: #6C757D;
+            --light-gray: #E9ECEF;
+            --gold: #FFD700;
+            --silver: #C0C0C0;
+            --bronze: #CD7F32;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F5F7FA;
+            color: var(--dark);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 2rem 1rem;
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+        
+        .sidebar-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .user-plan {
+            font-size: 0.8rem;
+            color: var(--primary);
+            background: rgba(108, 99, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-top: 5px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 1rem;
+            color: var(--gray);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .stat-icon.gold { background: var(--gold); }
+        .stat-icon.silver { background: var(--silver); }
+        .stat-icon.bronze { background: var(--bronze); }
+        .stat-icon.primary { background: var(--primary); }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+        
+        .challenges-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .challenge-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .tab-btn {
+            padding: 8px 16px;
+            border: none;
+            background: var(--light);
+            color: var(--gray);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .challenge-card {
+            border: 1px solid var(--light-gray);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .challenge-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 20px rgba(108, 99, 255, 0.1);
+        }
+        
+        .challenge-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .challenge-info h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .challenge-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+        
+        .challenge-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge-active {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+        
+        .badge-completed {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+        }
+        
+        .badge-upcoming {
+            background: rgba(255, 193, 7, 0.1);
+            color: var(--warning);
+        }
+        
+        .challenge-progress {
+            margin: 1rem 0;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: var(--light-gray);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .challenge-reward {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 1rem;
+            padding: 10px;
+            background: rgba(255, 213, 0, 0.1);
+            border-radius: 8px;
+        }
+        
+        .reward-icon {
+            color: var(--gold);
+        }
+        
+        .achievements-sidebar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            height: fit-content;
+        }
+        
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .achievement-item:hover {
+            background: var(--light);
+        }
+        
+        .achievement-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: white;
+        }
+        
+        .achievement-info h4 {
+            margin: 0 0 5px 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+        
+        .achievement-date {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .locked-achievement {
+            opacity: 0.5;
+        }
+        
+        .locked-achievement .achievement-icon {
+            background: var(--light-gray);
+            color: var(--gray);
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-outline {
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
+                <div>
+                    <h3 class="user-name"><%= user.fullName %></h3>
+                    <span class="user-plan">Premium Plan</span>
+                </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="nav-item"><a href="/workouts" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
+                <li class="nav-item"><a href="/progress" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
+                <li class="nav-item"><a href="/nutrition" class="nav-link"><i class="fas fa-utensils"></i> Nutrition</a></li>
+                <li class="nav-item"><a href="/meal-planner" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
+                <li class="nav-item"><a href="/challenges" class="nav-link active"><i class="fas fa-trophy"></i> Challenges</a></li>
+                <li class="nav-item"><a href="/health" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
+                <li class="nav-item"><a href="/schedule" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
+                <li class="nav-item"><a href="/community" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
+                <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
+                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Challenges & Achievements</h1>
+                <div>
+                    <button class="btn btn-primary"><i class="fas fa-plus"></i> Create Challenge</button>
+                </div>
+            </div>
+            
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-icon gold">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Challenges Completed</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-value">7</div>
+                    <div class="stat-label">Day Streak</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon bronze">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                    <div class="stat-value">28</div>
+                    <div class="stat-label">Achievements Unlocked</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon silver">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-value">1,250</div>
+                    <div class="stat-label">Points Earned</div>
+                </div>
+            </div>
+            
+            <div class="content-grid">
+                <div class="challenges-section">
+                    <div class="section-header">
+                        <h2 class="section-title">Active Challenges</h2>
+                    </div>
+                    
+                    <div class="challenge-tabs">
+                        <button class="tab-btn active" onclick="switchTab('active')">Active</button>
+                        <button class="tab-btn" onclick="switchTab('completed')">Completed</button>
+                        <button class="tab-btn" onclick="switchTab('upcoming')">Upcoming</button>
+                    </div>
+                    
+                    <div id="active-challenges">
+                        <div class="challenge-card">
+                            <div class="challenge-header">
+                                <div class="challenge-info">
+                                    <h3>30-Day Push-Up Challenge</h3>
+                                    <div class="challenge-meta">
+                                        <span><i class="fas fa-calendar"></i> 23 days left</span>
+                                        <span><i class="fas fa-users"></i> 1,247 participants</span>
+                                    </div>
+                                </div>
+                                <div class="challenge-badge badge-active">Active</div>
+                            </div>
+                            
+                            <p>Build upper body strength with progressive push-up training. Start with 5 push-ups and work your way up to 50!</p>
+                            
+                            <div class="challenge-progress">
+                                <div class="progress-header">
+                                    <span>Progress: Day 7/30</span>
+                                    <span>23%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 23%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="challenge-reward">
+                                <i class="fas fa-gift reward-icon"></i>
+                                <span>Reward: "Push-Up Master" badge + 200 points</span>
+                            </div>
+                            
+                            <div style="margin-top: 1rem;">
+                                <button class="btn btn-success btn-small">Log Today's Set</button>
+                                <button class="btn btn-outline btn-small">View Details</button>
+                            </div>
+                        </div>
+                        
+                        <div class="challenge-card">
+                            <div class="challenge-header">
+                                <div class="challenge-info">
+                                    <h3>Weekly Cardio Goal</h3>
+                                    <div class="challenge-meta">
+                                        <span><i class="fas fa-calendar"></i> 4 days left</span>
+                                        <span><i class="fas fa-target"></i> 150 minutes target</span>
+                                    </div>
+                                </div>
+                                <div class="challenge-badge badge-active">Active</div>
+                            </div>
+                            
+                            <p>Complete 150 minutes of cardio this week. Any cardio activity counts - running, cycling, swimming, or dancing!</p>
+                            
+                            <div class="challenge-progress">
+                                <div class="progress-header">
+                                    <span>Progress: 95/150 minutes</span>
+                                    <span>63%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 63%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="challenge-reward">
+                                <i class="fas fa-gift reward-icon"></i>
+                                <span>Reward: "Cardio Champion" badge + 150 points</span>
+                            </div>
+                            
+                            <div style="margin-top: 1rem;">
+                                <button class="btn btn-success btn-small">Log Cardio</button>
+                                <button class="btn btn-outline btn-small">View Details</button>
+                            </div>
+                        </div>
+                        
+                        <div class="challenge-card">
+                            <div class="challenge-header">
+                                <div class="challenge-info">
+                                    <h3>Hydration Hero</h3>
+                                    <div class="challenge-meta">
+                                        <span><i class="fas fa-calendar"></i> Daily</span>
+                                        <span><i class="fas fa-tint"></i> 8 glasses target</span>
+                                    </div>
+                                </div>
+                                <div class="challenge-badge badge-active">Active</div>
+                            </div>
+                            
+                            <p>Drink 8 glasses of water every day for optimal hydration and health.</p>
+                            
+                            <div class="challenge-progress">
+                                <div class="progress-header">
+                                    <span>Today: 6/8 glasses</span>
+                                    <span>75%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 75%"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="challenge-reward">
+                                <i class="fas fa-gift reward-icon"></i>
+                                <span>Daily: 10 points | Weekly streak: 50 points</span>
+                            </div>
+                            
+                            <div style="margin-top: 1rem;">
+                                <button class="btn btn-success btn-small">Log Water</button>
+                                <button class="btn btn-outline btn-small">View History</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="achievements-sidebar">
+                    <h3 class="section-title">Recent Achievements</h3>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon" style="background: var(--gold);">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <h4>Week Warrior</h4>
+                            <div class="achievement-date">Earned 2 days ago</div>
+                        </div>
+                    </div>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon" style="background: var(--success);">
+                            <i class="fas fa-dumbbell"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <h4>Strength Builder</h4>
+                            <div class="achievement-date">Earned 5 days ago</div>
+                        </div>
+                    </div>
+                    
+                    <div class="achievement-item">
+                        <div class="achievement-icon" style="background: var(--primary);">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <h4>Cardio King</h4>
+                            <div class="achievement-date">Earned 1 week ago</div>
+                        </div>
+                    </div>
+                    
+                    <div class="achievement-item locked-achievement">
+                        <div class="achievement-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <h4>Marathon Master</h4>
+                            <div class="achievement-date">Complete 26.2 miles</div>
+                        </div>
+                    </div>
+                    
+                    <div class="achievement-item locked-achievement">
+                        <div class="achievement-icon">
+                            <i class="fas fa-lock"></i>
+                        </div>
+                        <div class="achievement-info">
+                            <h4>Consistency Champion</h4>
+                            <div class="achievement-date">30-day streak</div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;">
+                        View All Achievements
+                    </button>
+                    
+                    <div style="margin-top: 2rem;">
+                        <h4>Leaderboard</h4>
+                        <div style="font-size: 0.9rem; color: var(--gray);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span>1. Sarah M.</span>
+                                <span>2,450 pts</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span>2. Mike R.</span>
+                                <span>2,180 pts</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--primary); font-weight: 600;">
+                                <span>3. You</span>
+                                <span>1,250 pts</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                <span>4. Alex K.</span>
+                                <span>1,120 pts</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>5. Emma L.</span>
+                                <span>980 pts</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function switchTab(tabName) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            // In a real app, this would load different challenge data
+            if (tabName === 'completed') {
+                alert('Loading completed challenges...');
+            } else if (tabName === 'upcoming') {
+                alert('Loading upcoming challenges...');
+            }
+        }
+        
+        // Add click handlers for challenge actions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Log workout buttons
+            document.querySelectorAll('.btn-success').forEach(btn => {
+                if (btn.textContent.includes('Log')) {
+                    btn.addEventListener('click', function() {
+                        const challengeName = this.closest('.challenge-card').querySelector('h3').textContent;
+                        alert(`Logging progress for: ${challengeName}`);
+                        // In a real app, this would open a logging modal
+                    });
+                }
+            });
+            
+            // View details buttons
+            document.querySelectorAll('.btn-outline').forEach(btn => {
+                if (btn.textContent.includes('View Details') || btn.textContent.includes('View History')) {
+                    btn.addEventListener('click', function() {
+                        const challengeName = this.closest('.challenge-card').querySelector('h3').textContent;
+                        alert(`Viewing details for: ${challengeName}`);
+                        // In a real app, this would open a details modal
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

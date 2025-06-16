@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biometric Tracking - Fit-With-AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --secondary: #4D44DB;
+            --accent: #FF6584;
+            --light: #F8F9FA;
+            --dark: #343A40;
+            --success: #28A745;
+            --warning: #FFC107;
+            --danger: #DC3545;
+            --gray: #6C757D;
+            --light-gray: #E9ECEF;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F5F7FA;
+            color: var(--dark);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 2rem 1rem;
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+        
+        .sidebar-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .user-plan {
+            font-size: 0.8rem;
+            color: var(--primary);
+            background: rgba(108, 99, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-top: 5px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 1rem;
+            color: var(--gray);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 2rem;
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+        }
+        
+        .metric-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .metric-icon.heart { background: var(--danger); }
+        .metric-icon.weight { background: var(--primary); }
+        .metric-icon.pressure { background: var(--warning); }
+        .metric-icon.sleep { background: var(--secondary); }
+        .metric-icon.steps { background: var(--success); }
+        .metric-icon.temp { background: var(--accent); }
+        
+        .metric-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+        
+        .metric-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .metric-trend {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        
+        .trend-up {
+            background: rgba(40, 167, 69, 0.1);
+            color: var(--success);
+        }
+        
+        .trend-down {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+        
+        .trend-stable {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+        }
+        
+        .charts-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .time-filter {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .filter-btn {
+            padding: 4px 12px;
+            border: none;
+            background: var(--light);
+            color: var(--gray);
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .insights-panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+        }
+        
+        .insight-item {
+            padding: 1rem;
+            border-left: 4px solid var(--primary);
+            background: rgba(108, 99, 255, 0.05);
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 1rem;
+        }
+        
+        .insight-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .insight-text {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .data-entry-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+        }
+        
+        .entry-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .entry-card {
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .entry-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .entry-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: white;
+            font-size: 0.9rem;
+        }
+        
+        .entry-title {
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--light-gray);
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-outline {
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+        
+        .floating-add-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(108, 99, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .floating-add-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
+                <div>
+                    <h3 class="user-name"><%= user.fullName %></h3>
+                    <span class="user-plan">Premium Plan</span>
+                </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="nav-item"><a href="/workouts" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
+                <li class="nav-item"><a href="/progress" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
+                <li class="nav-item"><a href="/nutrition" class="nav-link"><i class="fas fa-utensils"></i> Nutrition</a></li>
+                <li class="nav-item"><a href="/meal-planner" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
+                <li class="nav-item"><a href="/challenges" class="nav-link"><i class="fas fa-trophy"></i> Challenges</a></li>
+                <li class="nav-item"><a href="/health" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
+                <li class="nav-item"><a href="/biometrics" class="nav-link active"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
+                <li class="nav-item"><a href="/schedule" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
+                <li class="nav-item"><a href="/community" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
+                <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
+                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Biometric Tracking</h1>
+                <div>
+                    <button class="btn btn-primary" onclick="syncDevices()"><i class="fas fa-sync"></i> Sync Devices</button>
+                </div>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card" onclick="openMetricDetail('heart-rate')">
+                    <div class="metric-icon heart">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div class="metric-value">72</div>
+                    <div class="metric-label">Resting Heart Rate</div>
+                    <div class="metric-trend trend-stable">
+                        <i class="fas fa-minus"></i> Stable
+                    </div>
+                </div>
+                
+                <div class="metric-card" onclick="openMetricDetail('weight')">
+                    <div class="metric-icon weight">
+                        <i class="fas fa-weight"></i>
+                    </div>
+                    <div class="metric-value">165.2</div>
+                    <div class="metric-label">Weight (lbs)</div>
+                    <div class="metric-trend trend-down">
+                        <i class="fas fa-arrow-down"></i> -2.1 lbs
+                    </div>
+                </div>
+                
+                <div class="metric-card" onclick="openMetricDetail('blood-pressure')">
+                    <div class="metric-icon pressure">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <div class="metric-value">118/76</div>
+                    <div class="metric-label">Blood Pressure</div>
+                    <div class="metric-trend trend-stable">
+                        <i class="fas fa-minus"></i> Normal
+                    </div>
+                </div>
+                
+                <div class="metric-card" onclick="openMetricDetail('sleep')">
+                    <div class="metric-icon sleep">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <div class="metric-value">7h 32m</div>
+                    <div class="metric-label">Sleep Duration</div>
+                    <div class="metric-trend trend-up">
+                        <i class="fas fa-arrow-up"></i> +45 min
+                    </div>
+                </div>
+                
+                <div class="metric-card" onclick="openMetricDetail('steps')">
+                    <div class="metric-icon steps">
+                        <i class="fas fa-walking"></i>
+                    </div>
+                    <div class="metric-value">8,247</div>
+                    <div class="metric-label">Daily Steps</div>
+                    <div class="metric-trend trend-up">
+                        <i class="fas fa-arrow-up"></i> +1,200
+                    </div>
+                </div>
+                
+                <div class="metric-card" onclick="openMetricDetail('body-temp')">
+                    <div class="metric-icon temp">
+                        <i class="fas fa-thermometer-half"></i>
+                    </div>
+                    <div class="metric-value">98.6°F</div>
+                    <div class="metric-label">Body Temperature</div>
+                    <div class="metric-trend trend-stable">
+                        <i class="fas fa-minus"></i> Normal
+                    </div>
+                </div>
+            </div>
+            
+            <div class="charts-section">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Heart Rate Trends</h3>
+                        <div class="time-filter">
+                            <button class="filter-btn" onclick="changeTimeframe('7d')">7D</button>
+                            <button class="filter-btn active" onclick="changeTimeframe('30d')">30D</button>
+                            <button class="filter-btn" onclick="changeTimeframe('90d')">90D</button>
+                            <button class="filter-btn" onclick="changeTimeframe('1y')">1Y</button>
+                        </div>
+                    </div>
+                    <canvas id="heartRateChart" width="400" height="200"></canvas>
+                </div>
+                
+                <div class="insights-panel">
+                    <h3 class="chart-title">AI Health Insights</h3>
+                    
+                    <div class="insight-item">
+                        <div class="insight-title">Heart Rate Variability</div>
+                        <div class="insight-text">Your HRV has improved by 12% this month, indicating better recovery and stress management.</div>
+                    </div>
+                    
+                    <div class="insight-item">
+                        <div class="insight-title">Sleep Quality</div>
+                        <div class="insight-text">You're getting 15% more deep sleep compared to last month. Keep up the consistent bedtime routine!</div>
+                    </div>
+                    
+                    <div class="insight-item">
+                        <div class="insight-title">Weight Trend</div>
+                        <div class="insight-text">Steady progress towards your goal. You're on track to reach your target weight in 6 weeks.</div>
+                    </div>
+                    
+                    <div class="insight-item">
+                        <div class="insight-title">Activity Level</div>
+                        <div class="insight-text">Your daily step count has increased by 20% this week. Consider adding more strength training.</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="data-entry-section">
+                <h3 class="chart-title" style="margin-bottom: 1.5rem;">Quick Data Entry</h3>
+                
+                <div class="entry-grid">
+                    <div class="entry-card">
+                        <div class="entry-header">
+                            <div class="entry-icon weight">
+                                <i class="fas fa-weight"></i>
+                            </div>
+                            <h4 class="entry-title">Weight</h4>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Weight (lbs)</label>
+                            <input type="number" class="form-input" placeholder="165.2" step="0.1">
+                        </div>
+                        <button class="btn btn-primary btn-small" style="width: 100%;">Log Weight</button>
+                    </div>
+                    
+                    <div class="entry-card">
+                        <div class="entry-header">
+                            <div class="entry-icon pressure">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </div>
+                            <h4 class="entry-title">Blood Pressure</h4>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div class="form-group">
+                                <label class="form-label">Systolic</label>
+                                <input type="number" class="form-input" placeholder="118">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Diastolic</label>
+                                <input type="number" class="form-input" placeholder="76">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-small" style="width: 100%;">Log BP</button>
+                    </div>
+                    
+                    <div class="entry-card">
+                        <div class="entry-header">
+                            <div class="entry-icon heart">
+                                <i class="fas fa-heartbeat"></i>
+                            </div>
+                            <h4 class="entry-title">Heart Rate</h4>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">BPM</label>
+                            <input type="number" class="form-input" placeholder="72">
+                        </div>
+                        <button class="btn btn-primary btn-small" style="width: 100%;">Log HR</button>
+                    </div>
+                    
+                    <div class="entry-card">
+                        <div class="entry-header">
+                            <div class="entry-icon temp">
+                                <i class="fas fa-thermometer-half"></i>
+                            </div>
+                            <h4 class="entry-title">Temperature</h4>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Temperature (°F)</label>
+                            <input type="number" class="form-input" placeholder="98.6" step="0.1">
+                        </div>
+                        <button class="btn btn-primary btn-small" style="width: 100%;">Log Temp</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Floating Add Button -->
+    <button class="floating-add-btn" onclick="openQuickEntry()">
+        <i class="fas fa-plus"></i>
+    </button>
+    
+    <script>
+        // Initialize Heart Rate Chart
+        const ctx = document.getElementById('heartRateChart').getContext('2d');
+        const heartRateChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [{
+                    label: 'Resting Heart Rate',
+                    data: [75, 73, 72, 72],
+                    borderColor: '#DC3545',
+                    backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'Max Heart Rate',
+                    data: [185, 182, 180, 178],
+                    borderColor: '#FF6584',
+                    backgroundColor: 'rgba(255, 101, 132, 0.1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 60,
+                        max: 200
+                    }
+                }
+            }
+        });
+        
+        function openMetricDetail(metric) {
+            alert(`Opening detailed view for ${metric.replace('-', ' ')}`);
+            // In a real app, this would open a detailed modal or navigate to a detail page
+        }
+        
+        function syncDevices() {
+            alert('Syncing with connected devices...');
+            // Simulate sync process
+            setTimeout(() => {
+                alert('Sync completed! Latest data has been imported.');
+            }, 2000);
+        }
+        
+        function changeTimeframe(timeframe) {
+            // Remove active class from all filter buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Update chart data based on timeframe
+            let newData, newLabels;
+            
+            switch(timeframe) {
+                case '7d':
+                    newLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                    newData = [74, 72, 73, 71, 72, 75, 73];
+                    break;
+                case '30d':
+                    newLabels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+                    newData = [75, 73, 72, 72];
+                    break;
+                case '90d':
+                    newLabels = ['Month 1', 'Month 2', 'Month 3'];
+                    newData = [76, 74, 72];
+                    break;
+                case '1y':
+                    newLabels = ['Q1', 'Q2', 'Q3', 'Q4'];
+                    newData = [78, 75, 73, 72];
+                    break;
+            }
+            
+            heartRateChart.data.labels = newLabels;
+            heartRateChart.data.datasets[0].data = newData;
+            heartRateChart.update();
+        }
+        
+        function openQuickEntry() {
+            alert('Opening quick data entry modal...');
+            // In a real app, this would open a modal for quick data entry
+        }
+        
+        // Add event listeners for data entry forms
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.entry-card .btn-primary').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const card = this.closest('.entry-card');
+                    const title = card.querySelector('.entry-title').textContent;
+                    const inputs = card.querySelectorAll('.form-input');
+                    
+                    let values = [];
+                    inputs.forEach(input => {
+                        if (input.value) {
+                            values.push(input.value);
+                        }
+                    });
+                    
+                    if (values.length > 0) {
+                        alert(`${title} logged: ${values.join('/')}`);
+                        // Clear inputs
+                        inputs.forEach(input => input.value = '');
+                    } else {
+                        alert('Please enter a value before logging.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

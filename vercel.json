@@ -8,6 +8,10 @@
   ],
   "routes": [
     {
+      "src": "/public/(.*)",
+      "dest": "/public/$1"
+    },
+    {
       "src": "/CustomOnboarding/complete",
       "dest": "/app.js",
       "methods": ["POST"]
@@ -16,5 +20,10 @@
       "src": "/(.*)",
       "dest": "/app.js"
     }
-  ]
+  ],
+  "functions": {
+    "app.js": {
+      "maxDuration": 30
+    }
+  }
 }

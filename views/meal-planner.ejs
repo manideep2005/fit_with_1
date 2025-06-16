@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Planner - Fit-With-AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --secondary: #4D44DB;
+            --accent: #FF6584;
+            --light: #F8F9FA;
+            --dark: #343A40;
+            --success: #28A745;
+            --warning: #FFC107;
+            --danger: #DC3545;
+            --gray: #6C757D;
+            --light-gray: #E9ECEF;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F5F7FA;
+            color: var(--dark);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 2rem 1rem;
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+        
+        .sidebar-header img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .user-plan {
+            font-size: 0.8rem;
+            color: var(--primary);
+            background: rgba(108, 99, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-top: 5px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 1rem;
+            color: var(--gray);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .meal-planner-grid {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .calendar-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+        }
+        
+        .week-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .week-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+        
+        .nav-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .meal-calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+        
+        .day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 10px;
+            background: var(--light);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .day-meals {
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            padding: 10px;
+            min-height: 200px;
+        }
+        
+        .meal-item {
+            background: rgba(108, 99, 255, 0.1);
+            border-radius: 6px;
+            padding: 8px;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .meal-item:hover {
+            background: rgba(108, 99, 255, 0.2);
+        }
+        
+        .meal-type {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+        
+        .meal-calories {
+            font-size: 0.7rem;
+            color: var(--gray);
+            margin-top: 3px;
+        }
+        
+        .meal-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: none;
+        }
+        
+        .meal-item:hover .meal-actions {
+            display: block;
+        }
+        
+        .meal-action-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            font-size: 0.7rem;
+            padding: 2px;
+        }
+        
+        .meal-action-btn:hover {
+            color: var(--primary);
+        }
+        
+        .sidebar-panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+        }
+        
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .recipe-card {
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .recipe-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 2px 10px rgba(108, 99, 255, 0.1);
+        }
+        
+        .recipe-image {
+            width: 100%;
+            height: 120px;
+            background: var(--light);
+            border-radius: 6px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+            overflow: hidden;
+        }
+        
+        .recipe-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .recipe-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .recipe-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+        
+        .nutrition-summary {
+            background: var(--light);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .nutrition-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .nutrition-progress {
+            height: 8px;
+            background: var(--light-gray);
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .nutrition-progress-bar {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-outline {
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .floating-add-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(108, 99, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .floating-add-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            margin: 5% auto;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--light-gray);
+            border-radius: 6px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1100;
+        }
+        
+        .toast {
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            animation: slideIn 0.3s, fadeOut 0.5s 2.5s forwards;
+        }
+        
+        .toast-success {
+            background-color: var(--success);
+        }
+        
+        .toast-error {
+            background-color: var(--danger);
+        }
+        
+        .toast-info {
+            background-color: var(--primary);
+        }
+        
+        .toast-warning {
+            background-color: var(--warning);
+        }
+        
+        .toast-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        /* Day selection modal */
+        .day-selection-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .day-selection-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 400px;
+            margin: 10% auto;
+        }
+        
+        .day-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 1rem 0;
+        }
+        
+        .day-option {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid var(--light-gray);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .day-option:hover {
+            background: rgba(108, 99, 255, 0.1);
+            border-color: var(--primary);
+        }
+        
+        .day-option.selected {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary);
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* AI Generation Modal */
+        .ai-generation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .ai-generation-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 500px;
+            margin: 10% auto;
+        }
+        
+        .ai-options {
+            margin: 1rem 0;
+        }
+        
+        .ai-option {
+            margin-bottom: 1rem;
+        }
+        
+        .ai-option label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .ai-option input {
+            margin-right: 10px;
+        }
+        
+        /* Recipe Details Modal */
+        .recipe-details-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        
+        .recipe-details-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            margin: 5% auto;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .recipe-details-image {
+            width: 100%;
+            height: 200px;
+            background: var(--light);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        
+        .recipe-details-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .recipe-details-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .recipe-details-meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 1rem;
+            color: var(--gray);
+        }
+        
+        .recipe-details-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .recipe-details-section h4 {
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .recipe-details-ingredients {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .recipe-details-ingredients li {
+            margin-bottom: 5px;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+        
+        .recipe-details-ingredients li:before {
+            content: "•";
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+        }
+        
+        .recipe-details-steps {
+            counter-reset: step-counter;
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        .recipe-details-steps li {
+            margin-bottom: 10px;
+            padding-left: 1.8rem;
+            position: relative;
+        }
+        
+        .recipe-details-steps li:before {
+            counter-increment: step-counter;
+            content: counter(step-counter);
+            color: white;
+            background: var(--primary);
+            border-radius: 50%;
+            width: 1.2rem;
+            height: 1.2rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            position: absolute;
+            left: 0;
+            top: 2px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .meal-planner-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .meal-calendar {
+                grid-template-columns: 1fr;
+            }
+            
+            .day-selection-content {
+                width: 90%;
+                margin: 20% auto;
+            }
+            
+            .day-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
+                <div>
+                    <h3 class="user-name"><%= user.fullName %></h3>
+                    <span class="user-plan">Premium Plan</span>
+                </div>
+            </div>
+            
+          <ul class="nav-menu">
+                <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="nav-item"><a href="/workouts" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
+                <li class="nav-item"><a href="/progress" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
+                <li class="nav-item"><a href="/nutrition" class="nav-link"><i class="fas fa-utensils"></i> Nutrition</a></li>
+                <li class="nav-item"><a href="/meal-planner" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
+                <li class="nav-item"><a href="/challenges" class="nav-link"><i class="fas fa-trophy"></i> Challenges</a></li>
+                <li class="nav-item"><a href="/health" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
+                <li class="nav-item"><a href="/biometrics" class="nav-link active"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
+                <li class="nav-item"><a href="/schedule" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
+                <li class="nav-item"><a href="/community" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
+                <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
+                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Meal Planner</h1>
+                <div>
+                    <button class="btn btn-primary" onclick="openAIGenerationModal()"><i class="fas fa-magic"></i> AI Generate Plan</button>
+                </div>
+            </div>
+            
+            <div class="meal-planner-grid">
+                <div class="calendar-section">
+                    <div class="week-navigation">
+                        <button class="nav-btn" onclick="previousWeek()"><i class="fas fa-chevron-left"></i></button>
+                        <h2 class="week-title" id="weekTitle">Week of March 18-24, 2024</h2>
+                        <button class="nav-btn" onclick="nextWeek()"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    
+                    <div class="meal-calendar" id="mealCalendar">
+                        <div class="day-header">Mon</div>
+                        <div class="day-header">Tue</div>
+                        <div class="day-header">Wed</div>
+                        <div class="day-header">Thu</div>
+                        <div class="day-header">Fri</div>
+                        <div class="day-header">Sat</div>
+                        <div class="day-header">Sun</div>
+                        
+                        <!-- Days will be populated by JavaScript -->
+                    </div>
+                    
+                    <div class="nutrition-summary" style="margin-top: 1.5rem;">
+                        <h4>Weekly Nutrition Summary</h4>
+                        <div class="nutrition-item">
+                            <span>Total Calories</span>
+                            <span id="weeklyCalories">0</span>
+                        </div>
+                        <div class="nutrition-item">
+                            <span>Average Daily Calories</span>
+                            <span id="avgDailyCalories">0</span>
+                        </div>
+                        <div class="nutrition-item">
+                            <span>Protein</span>
+                            <span id="weeklyProtein">0g</span>
+                        </div>
+                        <div class="nutrition-item">
+                            <span>Carbs</span>
+                            <span id="weeklyCarbs">0g</span>
+                        </div>
+                        <div class="nutrition-item">
+                            <span>Fat</span>
+                            <span id="weeklyFat">0g</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="sidebar-panel">
+                    <h3 class="panel-title">AI Recipe Suggestions</h3>
+                    
+                    <div class="recipe-card" onclick="showRecipeDetails('recipe1')">
+                        <div class="recipe-image">
+                            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Protein Power Bowl">
+                        </div>
+                        <div class="recipe-title">Protein Power Bowl</div>
+                        <div class="recipe-meta">
+                            <span>25 min</span>
+                            <span>450 cal</span>
+                        </div>
+                    </div>
+                    
+                    <div class="recipe-card" onclick="showRecipeDetails('recipe2')">
+                        <div class="recipe-image">
+                            <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Green Smoothie Bowl">
+                        </div>
+                        <div class="recipe-title">Green Smoothie Bowl</div>
+                        <div class="recipe-meta">
+                            <span>10 min</span>
+                            <span>320 cal</span>
+                        </div>
+                    </div>
+                    
+                    <div class="recipe-card" onclick="showRecipeDetails('recipe3')">
+                        <div class="recipe-image">
+                            <img src="https://images.unsplash.com/photo-1559847844-5315695dadae?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Baked Cod with Vegetables">
+                        </div>
+                        <div class="recipe-title">Baked Cod with Vegetables</div>
+                        <div class="recipe-meta">
+                            <span>30 min</span>
+                            <span>380 cal</span>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;" onclick="getNewRecipeSuggestions()">
+                        <i class="fas fa-refresh"></i> Get New Suggestions
+                    </button>
+                    
+                    <div class="nutrition-summary">
+                        <h4>Your Nutrition Goals</h4>
+                        <div class="nutrition-item">
+                            <span>Daily Calories</span>
+                            <span>1,800-2,200</span>
+                        </div>
+                        <div class="nutrition-progress">
+                            <div class="nutrition-progress-bar" style="width: 65%;"></div>
+                        </div>
+                        <div class="nutrition-item">
+                            <span>Protein</span>
+                            <span>120-150g</span>
+                        </div>
+                        <div class="nutrition-progress">
+                            <div class="nutrition-progress-bar" style="width: 80%;"></div>
+                        </div>
+                        <div class="nutrition-item">
+                            <span>Carbs</span>
+                            <span>200-250g</span>
+                        </div>
+                        <div class="nutrition-progress">
+                            <div class="nutrition-progress-bar" style="width: 60%;"></div>
+                        </div>
+                        <div class="nutrition-item">
+                            <span>Fat</span>
+                            <span>60-80g</span>
+                        </div>
+                        <div class="nutrition-progress">
+                            <div class="nutrition-progress-bar" style="width: 45%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <!-- Add Meal Modal -->
+    <div id="addMealModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Meal</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <form id="addMealForm">
+                <input type="hidden" id="selectedDay">
+                <div class="form-group">
+                    <label class="form-label">Meal Type</label>
+                    <select class="form-select" id="mealType" required>
+                        <option value="">Select meal type</option>
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                        <option value="snack">Snack</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Meal Name</label>
+                    <input type="text" class="form-input" id="mealName" placeholder="Enter meal name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Calories</label>
+                    <input type="number" class="form-input" id="mealCalories" placeholder="Enter calories">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Protein (g)</label>
+                    <input type="number" class="form-input" id="mealProtein" placeholder="Enter protein content">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Carbs (g)</label>
+                    <input type="number" class="form-input" id="mealCarbs" placeholder="Enter carbs content">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Fat (g)</label>
+                    <input type="number" class="form-input" id="mealFat" placeholder="Enter fat content">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Notes (optional)</label>
+                    <textarea class="form-input" id="mealNotes" rows="3" placeholder="Add any notes or ingredients"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Add Meal</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Edit Meal Modal -->
+    <div id="editMealModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Meal</h3>
+                <button class="close-btn" onclick="closeEditModal()">&times;</button>
+            </div>
+            
+            <form id="editMealForm">
+                <input type="hidden" id="editMealId">
+                <div class="form-group">
+                    <label class="form-label">Meal Type</label>
+                    <select class="form-select" id="editMealType" required>
+                        <option value="">Select meal type</option>
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                        <option value="snack">Snack</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Meal Name</label>
+                    <input type="text" class="form-input" id="editMealName" placeholder="Enter meal name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Calories</label>
+                    <input type="number" class="form-input" id="editMealCalories" placeholder="Enter calories">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Protein (g)</label>
+                    <input type="number" class="form-input" id="editMealProtein" placeholder="Enter protein content">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Carbs (g)</label>
+                    <input type="number" class="form-input" id="editMealCarbs" placeholder="Enter carbs content">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Fat (g)</label>
+                    <input type="number" class="form-input" id="editMealFat" placeholder="Enter fat content">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Notes (optional)</label>
+                    <textarea class="form-input" id="editMealNotes" rows="3" placeholder="Add any notes or ingredients"></textarea>
+                </div>
+                
+                <div class="form-group" style="display: flex; justify-content: space-between;">
+                    <button type="button" class="btn btn-outline" onclick="deleteMeal()">Delete</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Day Selection Modal -->
+    <div id="daySelectionModal" class="day-selection-modal">
+        <div class="day-selection-content">
+            <div class="modal-header">
+                <h3>Select Day</h3>
+                <button class="close-btn" onclick="closeDaySelectionModal()">&times;</button>
+            </div>
+            
+            <p>Select which day to add this recipe to:</p>
+            
+            <div class="day-options">
+                <div class="day-option" onclick="selectDay('monday')">Monday</div>
+                <div class="day-option" onclick="selectDay('tuesday')">Tuesday</div>
+                <div class="day-option" onclick="selectDay('wednesday')">Wednesday</div>
+                <div class="day-option" onclick="selectDay('thursday')">Thursday</div>
+                <div class="day-option" onclick="selectDay('friday')">Friday</div>
+                <div class="day-option" onclick="selectDay('saturday')">Saturday</div>
+                <div class="day-option" onclick="selectDay('sunday')">Sunday</div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Meal Type</label>
+                <select class="form-select" id="recipeMealType" required>
+                    <option value="">Select meal type</option>
+                    <option value="breakfast">Breakfast</option>
+                    <option value="lunch">Lunch</option>
+                    <option value="dinner">Dinner</option>
+                    <option value="snack">Snack</option>
+                </select>
+            </div>
+            
+            <button type="button" class="btn btn-primary" style="width: 100%;" onclick="addSelectedRecipe()">Add Recipe</button>
+        </div>
+    </div>
+    
+    <!-- AI Generation Modal -->
+    <div id="aiGenerationModal" class="ai-generation-modal">
+        <div class="ai-generation-content">
+            <div class="modal-header">
+                <h3>Generate AI Meal Plan</h3>
+                <button class="close-btn" onclick="closeAIGenerationModal()">&times;</button>
+            </div>
+            
+            <p>Customize your AI-generated meal plan based on your preferences:</p>
+            
+            <div class="ai-options">
+                <div class="ai-option">
+                    <label>
+                        <input type="checkbox" id="vegetarian" name="preferences"> Vegetarian
+                    </label>
+                </div>
+                <div class="ai-option">
+                    <label>
+                        <input type="checkbox" id="vegan" name="preferences"> Vegan
+                    </label>
+                </div>
+                <div class="ai-option">
+                    <label>
+                        <input type="checkbox" id="glutenFree" name="preferences"> Gluten-Free
+                    </label>
+                </div>
+                <div class="ai-option">
+                    <label>
+                        <input type="checkbox" id="dairyFree" name="preferences"> Dairy-Free
+                    </label>
+                </div>
+                <div class="ai-option">
+                    <label>
+                        <input type="checkbox" id="lowCarb" name="preferences"> Low-Carb
+                    </label>
+                </div>
+                <div class="ai-option">
+                    <label>
+                        <input type="checkbox" id="highProtein" name="preferences"> High-Protein
+                    </label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Calorie Target</label>
+                <input type="number" class="form-input" id="calorieTarget" placeholder="e.g. 2000" value="2000">
+            </div>
+            
+            <button type="button" class="btn btn-primary" style="width: 100%;" onclick="generateAIMealPlan()">
+                <i class="fas fa-magic"></i> Generate Meal Plan
+            </button>
+            
+            <div id="aiLoading" style="display: none;">
+                <div class="spinner"></div>
+                <p style="text-align: center;">AI is generating your personalized meal plan...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recipe Details Modal -->
+    <div id="recipeDetailsModal" class="recipe-details-modal
+">
+        <div class="recipe-details-content">
+            <div class="modal-header">
+                <h3 id="recipeDetailsTitle">Recipe Title</h3>
+                <button class="close-btn" onclick="closeRecipeDetailsModal()">&times;</button>
+            </div>
+            
+            <div class="recipe-details-image">
+                <img id="recipeDetailsImage" src="" alt="Recipe Image">
+            </div>
+            
+            <div class="recipe-details-meta" id="recipeDetailsMeta">
+                <span id="recipeDetailsTime">30 min</span>
+                <span id="recipeDetailsCalories">450 cal</span>
+            </div>
+            
+            <div class="recipe-details-section">
+                <h4>Ingredients</h4>
+                <ul class="recipe-details-ingredients" id="recipeDetailsIngredients"></ul>
+            </div>
+            
+            <div class="recipe-details-section">
+                <h4>Instructions</h4>
+                <ol class="recipe-details-steps" id="recipeDetailsSteps"></ol>
+            </div>
+            
+            <button class="btn btn-primary" style="width: 100%;" onclick="addRecipeToMealPlan()">
+                Add to Meal Plan
+            </button>
+        </div>
+    </div>  
+    <script>
+        // JavaScript functions for handling modals, meal planning, and AI generation
+        function openAddMealModal(day) {
+            document.getElementById('selectedDay').value = day;
+            document.getElementById('addMealModal').style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('addMealModal').style.display = 'none';
+            document.getElementById('editMealModal').style.display = 'none';
+            document.getElementById('daySelectionModal').style.display = 'none';
+            document.getElementById('aiGenerationModal').style.display = 'none';
+            document.getElementById('recipeDetailsModal').style.display = 'none';
+        }
+        
+        function openEditMealModal(meal) {
+            // Populate the edit form with meal data
+            document.getElementById('editMealId').value = meal.id;
+            document.getElementById('editMealType').value = meal.type;
+            document.getElementById('editMealName').value = meal.name;
+            document.getElementById('editMealCalories').value = meal.calories;
+            document.getElementById('editMealProtein').value = meal.protein;
+            document.getElementById('editMealCarbs').value = meal.carbs;
+            document.getElementById('editMealFat').value = meal.fat;
+            document.getElementById('editMealNotes').value = meal.notes;
+            
+            document.getElementById('editMealModal').style.display = 'block';
+        }
+        
+        function closeEditModal() {
+            closeModal();
+        }
+        
+        function openDaySelectionModal(recipe) {
+            // Store the recipe data for later use
+            window.selectedRecipe = recipe;
+            document.getElementById('daySelectionModal').style.display = 'block';
+        }
+        
+        function closeDaySelectionModal() {
+            closeModal();
+        }
+        
+        function openAIGenerationModal() {
+            document.getElementById('aiGenerationModal').style.display = 'block';
+        }
+        
+        function closeAIGenerationModal() {
+            closeModal();
+        }
+        
+        function showRecipeDetails(recipe) {
+            // Populate the recipe details modal with recipe data
+            const recipeData = getRecipeData(recipe);
+            
+            document.getElementById('recipeDetailsTitle').innerText = recipeData.title;
+            document.getElementById('recipeDetailsImage').src = recipeData.image;   
+            document.getElementById('recipeDetailsMeta').innerHTML = `
+                <span>${recipeData.time} min</span>
+                <span>${recipeData.calories} cal</span>
+            `;
+            document.getElementById('recipeDetailsIngredients').innerHTML = recipeData.ingredients.map(ing => `<li>${ing}</li>`).join('');
+            document.getElementById('recipeDetailsSteps').innerHTML = recipeData.steps.map((step, index) => `<li>${index + 1}. ${step}</li>`).join('');
+            document.getElementById('recipeDetailsModal').style.display = 'block';
+        }
+        function closeRecipeDetailsModal() {
+            closeModal();
+        }
+        function addRecipeToMealPlan() {
+            const selectedDay = document.getElementById('selectedDay').value;
+            const mealType = document.getElementById('recipeMealType').value;
+            
+            if (!selectedDay || !mealType) {
+                showToast('Please select a day and meal type.', 'error');
+                return;
+            }
+            
+            // Here you would typically send the data to your server to save the meal
+            // For demonstration, we'll just log it
+            console.log(`Adding recipe to ${selectedDay} as ${mealType}`);
+            
+            closeModal();
+            showToast('Recipe added to meal plan successfully!', 'success');
+        }   
+        function getRecipeData(recipe) {
+            // This function should return the recipe data based on the recipe ID or name
+            // For demonstration, we'll return static data
+            const recipes = {
+                recipe1: {
+                    title: 'Protein Power Bowl',
+                    image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+                    time: '25',
+                    calories: '450',
+                    ingredients: ['1 cup quinoa', '200g grilled chicken', '1 avocado', 'Mixed greens', 'Cherry tomatoes'],
+                    steps: ['Cook quinoa according to package instructions.', 'Grill chicken until cooked through.', 'Assemble bowl with quinoa, chicken, avocado, greens, and tomatoes.']
+                },
+                recipe2: {
+                    title: 'Green Smoothie Bowl',
+                    image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+                    time: '10',
+                    calories: '320',
+                    ingredients: ['1 banana', '1 cup spinach', '1/2 cup almond milk', 'Toppings: granola, chia seeds'],
+                    steps: ['Blend banana, spinach, and almond milk until smooth.', 'Pour into a bowl and add toppings.']
+                },
+                recipe3: {
+                    title: 'Baked Cod with Vegetables',
+                    image: 'https://images.unsplash.com/photo-1559847844-5315695dadae?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+                    time: '30',
+                    calories: '380',
+                    ingredients: ['2 cod fillets', '1 cup broccoli', '1 bell pepper', 'Olive oil, salt, pepper'],
+                    steps: ['Preheat oven to 200°C (400°F).', 'Place cod and vegetables on a baking sheet.', 'Drizzle with olive oil and season.', 'Bake for 20 minutes or until fish is flaky.']
+                }
+            };
+            return recipes[recipe];
+        }
+        function getNewRecipeSuggestions() {
+            // This function would typically fetch new recipe suggestions from your server
+            // For demonstration, we'll just show a toast notification
+            showToast('New recipe suggestions fetched!', 'success');
+        }
+        function showToast(message, type) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            toastContainer.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+        function previousWeek() {
+            // Logic to navigate to the previous week
+            console.log('Navigating to previous week');
+        }
+        function nextWeek() {
+            // Logic to navigate to the next week
+            console.log('Navigating to next week');
+        }       
+        function selectDay(day) {
+            // Store the selected day for later use
+            window.selectedDay = day;
+            document.getElementById('daySelectionModal').style.display = 'none';
+            showToast(`Selected ${day.charAt(0).toUpperCase() + day.slice(1)} for recipe`, 'success');
+        }
+        function generateAIMealPlan() {
+            const vegetarian = document.getElementById('vegetarian').checked;
+            const vegan = document.getElementById('vegan').checked;
+            const glutenFree = document.getElementById('glutenFree').checked;
+            const dairyFree = document.getElementById('dairyFree').checked;
+            const lowCarb = document.getElementById('lowCarb').checked;
+            const highProtein = document.getElementById('highProtein').checked;
+            const calorieTarget = document.getElementById('calorieTarget').value || 2000;
+
+            // Show loading state
+            document.getElementById('aiLoading').style.display = 'block';
+
+            // Simulate AI generation with a timeout
+            setTimeout(() => {
+                // Hide loading state
+                document.getElementById('aiLoading').style.display = 'none';
+                
+                // Show success message
+                showToast('AI meal plan generated successfully!', 'success');
+                
+                // Close the modal
+                closeAIGenerationModal();
+            }, 2000);
+        }
+        function deleteMeal() {
+            const mealId = document.getElementById('editMealId').value;
+            // Logic to delete the meal from the database
+            console.log(`Deleting meal with ID: ${mealId}`);
+            
+            closeEditModal();
+            showToast('Meal deleted successfully!', 'success');
+        }
+        // Initialize the meal calendar with days
+        function initializeMealCalendar() {
+            const mealCalendar = document.getElementById('mealCalendar');
+            const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+            
+            daysOfWeek.forEach(day => {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'day';
+                dayDiv.innerHTML = `
+                    <div class="day-header">${day}</div>
+                    <div class="day-content" onclick="openAddMealModal('${day.toLowerCase()}')">
+                        <span class="add-meal">+</span>
+                    </div>
+                `;
+                mealCalendar.appendChild(dayDiv);   
+            });
+            // Set the week title
+            const weekTitle = document.getElementById('weekTitle');
+            const currentDate = new Date();
+            const startOfWeek = new Date(currentDate.setDate(currentDate.getDate() - currentDate.getDay() + 1));
+            const endOfWeek = new Date(startOfWeek);    
+            endOfWeek.setDate(endOfWeek.getDate() + 6);
+            weekTitle.innerText = `Week of ${startOfWeek.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`;
+        }
+        // Call the initialization function on page load
+        document.addEventListener('DOMContentLoaded', initializeMealCalendar);
+    </script>   
+</body>
+</html>

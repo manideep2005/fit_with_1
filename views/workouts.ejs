@@ -274,6 +274,150 @@
             border: 1px solid var(--primary);
         }
         
+        /* Video Modal Styles */
+        .video-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        
+        .video-modal-content {
+            position: relative;
+            background-color: white;
+            margin: 2% auto;
+            padding: 0;
+            width: 90%;
+            max-width: 900px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .video-modal-header {
+            padding: 1.5rem;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .video-modal-title {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+        
+        .close-modal:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: #000;
+        }
+        
+        .workout-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .video-controls {
+            padding: 1.5rem;
+            background: white;
+        }
+        
+        .workout-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .workout-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .video-progress {
+            width: 100%;
+            height: 6px;
+            background: var(--light-gray);
+            border-radius: 3px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        
+        .video-progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .video-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .video-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .video-btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .video-btn-primary:hover {
+            background: var(--secondary);
+        }
+        
+        .video-btn-secondary {
+            background: var(--light-gray);
+            color: var(--dark);
+        }
+        
+        .video-btn-secondary:hover {
+            background: var(--gray);
+            color: white;
+        }
+        
         @media (max-width: 768px) {
             .dashboard-container {
                 flex-direction: column;
@@ -305,6 +449,24 @@
             .workout-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .video-modal-content {
+                width: 95%;
+                margin: 5% auto;
+            }
+            
+            .video-container {
+                height: 300px;
+            }
+            
+            .video-actions {
+                flex-direction: column;
+            }
+            
+            .video-btn {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -321,13 +483,16 @@
                 </div>
             </div>
             
-             <ul class="nav-menu">
+              <ul class="nav-menu">
                 <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li class="nav-item"><a href="/workouts" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
                 <li class="nav-item"><a href="/progress" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
                 <li class="nav-item"><a href="/nutrition" class="nav-link"><i class="fas fa-utensils"></i> Nutrition</a></li>
+                <li class="nav-item"><a href="/meal-planner" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
+                <li class="nav-item"><a href="/challenges" class="nav-link"><i class="fas fa-trophy"></i> Challenges</a></li>
                 <li class="nav-item"><a href="/health" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
-                <li class="nav-item"><a href="/schedule" class="nav-link active"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
+                <li class="nav-item"><a href="/biometrics" class="nav-link active"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
+                <li class="nav-item"><a href="/schedule" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
                 <li class="nav-item"><a href="/community" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
                 <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
                 <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
@@ -373,7 +538,13 @@
                         <p class="workout-desc">Comprehensive full body workout targeting all major muscle groups with compound exercises.</p>
                         <div class="workout-footer">
                             <span class="difficulty intermediate">Intermediate</span>
-                            <button class="btn btn-primary">Start</button>
+                            <button class="btn btn-primary start-workout-btn" 
+                                    data-workout-title="Full Body Strength"
+                                    data-workout-duration="45 min"
+                                    data-workout-calories="320 cal"
+                                    data-workout-video="https://www.youtube.com/watch?v=-vGcK_1glIk">
+                                Start
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -390,7 +561,13 @@
                         <p class="workout-desc">High intensity interval training to maximize fat burn and cardiovascular endurance.</p>
                         <div class="workout-footer">
                             <span class="difficulty advanced">Advanced</span>
-                            <button class="btn btn-primary">Start</button>
+                            <button class="btn btn-primary start-workout-btn" 
+                                    data-workout-title="HIIT Burner"
+                                    data-workout-duration="30 min"
+                                    data-workout-calories="450 cal"
+                                    data-workout-video="https://www.youtube.com/watch?v=-vGcK_1glIk">
+                                Start
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -407,7 +584,13 @@
                         <p class="workout-desc">Gentle yoga sequence to improve flexibility, balance, and mental clarity.</p>
                         <div class="workout-footer">
                             <span class="difficulty beginner">Beginner</span>
-                            <button class="btn btn-primary">Start</button>
+                            <button class="btn btn-primary start-workout-btn" 
+                                    data-workout-title="Yoga Flow"
+                                    data-workout-duration="60 min"
+                                    data-workout-calories="180 cal"
+                                    data-workout-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4">
+                                Start
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -424,7 +607,13 @@
                         <p class="workout-desc">Targeted upper body workout focusing on arms, shoulders, chest and back.</p>
                         <div class="workout-footer">
                             <span class="difficulty intermediate">Intermediate</span>
-                            <button class="btn btn-primary">Start</button>
+                            <button class="btn btn-primary start-workout-btn" 
+                                    data-workout-title="Upper Body Sculpt"
+                                    data-workout-duration="40 min"
+                                    data-workout-calories="280 cal"
+                                    data-workout-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4">
+                                Start
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -441,7 +630,13 @@
                         <p class="workout-desc">Intense core workout to strengthen your abs, obliques and lower back.</p>
                         <div class="workout-footer">
                             <span class="difficulty intermediate">Intermediate</span>
-                            <button class="btn btn-primary">Start</button>
+                            <button class="btn btn-primary start-workout-btn" 
+                                    data-workout-title="Core Crusher"
+                                    data-workout-duration="25 min"
+                                    data-workout-calories="200 cal"
+                                    data-workout-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4">
+                                Start
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -458,12 +653,228 @@
                         <p class="workout-desc">Gentle stretching routine to improve mobility and aid muscle recovery.</p>
                         <div class="workout-footer">
                             <span class="difficulty beginner">Beginner</span>
-                            <button class="btn btn-primary">Start</button>
+                            <button class="btn btn-primary start-workout-btn" 
+                                    data-workout-title="Recovery Stretch"
+                                    data-workout-duration="20 min"
+                                    data-workout-calories="80 cal"
+                                    data-workout-video="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4">
+                                Start
+                            </button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Video Modal -->
+    <div id="videoModal" class="video-modal">
+        <div class="video-modal-content">
+            <div class="video-modal-header">
+                <h2 id="modalWorkoutTitle" class="video-modal-title">Workout Video</h2>
+                <button class="close-modal" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="video-container"<video id="workoutVideo" class="workout-video" controls style="display: none;">
+                    <source src="" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <iframe id="youtubePlayer" style="width: 100%; height: 100%; border: none; display: none;" 
+                        frameborder="0" allowfullscreen>
+                </iframe>
+            </div>
+            
+            <div class="video-controls">
+                <div class="workout-info">
+                    <div>
+                        <h3 id="modalWorkoutName">Workout Name</h3>
+                        <div class="workout-stats">
+                            <span id="modalDuration"><i class="far fa-clock"></i> 0 min</span>
+                            <span id="modalCalories"><i class="fas fa-fire"></i> 0 cal</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="video-progress">
+                    <div class="video-progress-bar" id="progressBar"></div>
+                </div>
+                
+                <div class="video-actions">
+                    <button class="video-btn video-btn-primary" id="playPauseBtn">
+                        <i class="fas fa-play"></i>
+                        <span>Play</span>
+                    </button>
+                    <button class="video-btn video-btn-secondary" id="restartBtn">
+                        <i class="fas fa-redo"></i>
+                        <span>Restart</span>
+                    </button>
+                    <button class="video-btn video-btn-secondary" id="fullscreenBtn">
+                        <i class="fas fa-expand"></i>
+                        <span>Fullscreen</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Video Modal Functionality
+        const videoModal = document.getElementById('videoModal');
+        const workoutVideo = document.getElementById('workoutVideo');
+        const modalWorkoutTitle = document.getElementById('modalWorkoutTitle');
+        const modalWorkoutName = document.getElementById('modalWorkoutName');
+        const modalDuration = document.getElementById('modalDuration');
+        const modalCalories = document.getElementById('modalCalories');
+        const closeModal = document.getElementById('closeModal');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const restartBtn = document.getElementById('restartBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const progressBar = document.getElementById('progressBar');
+
+        // Get all start workout buttons
+        const startWorkoutBtns = document.querySelectorAll('.start-workout-btn');
+
+        // Add click event listeners to all start buttons
+        startWorkoutBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const workoutTitle = this.getAttribute('data-workout-title');
+                const workoutDuration = this.getAttribute('data-workout-duration');
+                const workoutCalories = this.getAttribute('data-workout-calories');
+                const workoutVideoUrl = this.getAttribute('data-workout-video');
+
+                // Update modal content
+                modalWorkoutTitle.textContent = workoutTitle;
+                modalWorkoutName.textContent = workoutTitle;
+                modalDuration.innerHTML = `<i class="far fa-clock"></i> ${workoutDuration}`;
+                modalCalories.innerHTML = `<i class="fas fa-fire"></i> ${workoutCalories}`;
+                
+                // Set video source
+                workoutVideo.src = workoutVideoUrl;
+                
+                // Show modal
+                videoModal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        // Close modal functionality
+        function closeVideoModal() {
+            videoModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            workoutVideo.pause();
+            workoutVideo.currentTime = 0;
+            progressBar.style.width = '0%';
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i><span>Play</span>';
+        }
+
+        closeModal.addEventListener('click', closeVideoModal);
+
+        // Close modal when clicking outside
+        videoModal.addEventListener('click', function(e) {
+            if (e.target === videoModal) {
+                closeVideoModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && videoModal.style.display === 'block') {
+                closeVideoModal();
+            }
+        });
+
+        // Play/Pause functionality
+        playPauseBtn.addEventListener('click', function() {
+            if (workoutVideo.paused) {
+                workoutVideo.play();
+                this.innerHTML = '<i class="fas fa-pause"></i><span>Pause</span>';
+            } else {
+                workoutVideo.pause();
+                this.innerHTML = '<i class="fas fa-play"></i><span>Play</span>';
+            }
+        });
+
+        // Restart functionality
+        restartBtn.addEventListener('click', function() {
+            workoutVideo.currentTime = 0;
+            workoutVideo.play();
+            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i><span>Pause</span>';
+        });
+
+        // Fullscreen functionality
+        fullscreenBtn.addEventListener('click', function() {
+            if (workoutVideo.requestFullscreen) {
+                workoutVideo.requestFullscreen();
+            } else if (workoutVideo.webkitRequestFullscreen) {
+                workoutVideo.webkitRequestFullscreen();
+            } else if (workoutVideo.msRequestFullscreen) {
+                workoutVideo.msRequestFullscreen();
+            }
+        });
+
+        // Update progress bar
+        workoutVideo.addEventListener('timeupdate', function() {
+            const progress = (workoutVideo.currentTime / workoutVideo.duration) * 100;
+            progressBar.style.width = progress + '%';
+        });
+
+        // Update play/pause button when video ends
+        workoutVideo.addEventListener('ended', function() {
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i><span>Play</span>';
+            progressBar.style.width = '100%';
+        });
+
+        // Category filtering functionality
+        const categoryBtns = document.querySelectorAll('.category-btn');
+        const workoutCards = document.querySelectorAll('.workout-card');
+
+        categoryBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Remove active class from all buttons
+                categoryBtns.forEach(b => b.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+
+                const category = this.textContent.toLowerCase();
+                
+                // Show/hide workout cards based on category
+                workoutCards.forEach(card => {
+                    if (category === 'all') {
+                        card.style.display = 'block';
+                    } else {
+                        const workoutTitle = card.querySelector('.workout-title').textContent.toLowerCase();
+                        if (workoutTitle.includes(category) || 
+                            (category === 'strength' && workoutTitle.includes('body')) ||
+                            (category === 'cardio' && workoutTitle.includes('hiit')) ||
+                            (category === 'yoga' && workoutTitle.includes('yoga')) ||
+                            (category === 'recovery' && workoutTitle.includes('stretch'))) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        });
+
+        // Search functionality
+        const searchInput = document.querySelector('.search-bar input');
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            workoutCards.forEach(card => {
+                const workoutTitle = card.querySelector('.workout-title').textContent.toLowerCase();
+                const workoutDesc = card.querySelector('.workout-desc').textContent.toLowerCase();
+                
+                if (workoutTitle.includes(searchTerm) || workoutDesc.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>

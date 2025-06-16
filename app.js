@@ -5,6 +5,17 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const { sendWelcomeEmail } = require('./services/emailService');
 
+// Handle Redis connection gracefully for Vercel
+let redisClient = null;
+try {
+  if (process.env.REDIS_URL) {
+    const redis = require('./services/redis');
+    redisClient = redis;
+  }
+} catch (error) {
+  console.log('Redis not available, using memory sessions:', error.message);
+}
+
 const app = express();
 
 // Middleware
@@ -16,17 +27,19 @@ app.use(express.static('public'));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Session Configuration
+// Session Configuration - Updated for Vercel
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key-here',
+  secret: process.env.SESSION_SECRET || 'your-secret-key-here-change-in-production',
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    maxAge: 1000 * 60 * 30, // 30 minutes
+    maxAge: 1000 * 60 * 60 * 24, // 24 hours (longer for serverless)
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
-  }
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+  },
+  // For serverless environments, we need to handle sessions differently
+  name: 'fit-with-ai-session'
 }));
 
 // Authentication Middleware
@@ -242,8 +255,11 @@ const protectedRoutes = [
   '/dashboard',
   '/workouts',
   '/progress',
+  '/meal-planner',
   '/nutrition',
   '/health',
+  '/challenges',
+  '/biometrics',
   '/schedule',
   '/community',
   '/ai-coach',
@@ -291,7 +307,7 @@ app.use((req, res) => {
 });
 
 // Start Server
-const PORT = process.env.PORT || 300;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
