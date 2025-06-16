@@ -127,6 +127,36 @@ app.get('/debug-onboarding', (req, res) => {
   });
 });
 
+// Debug route to test email functionality
+app.get('/debug-email', async (req, res) => {
+  try {
+    const { sendTestEmail, testEmailConnection } = require('./services/emailService');
+    
+    const testEmail = req.query.email || 'test@example.com';
+    
+    // Test connection first
+    const connectionResult = await testEmailConnection();
+    
+    // Try to send test email
+    const emailResult = await sendTestEmail(testEmail);
+    
+    res.json({
+      connection: connectionResult,
+      email: emailResult,
+      environment: {
+        NODE_ENV: process.env.NODE_ENV,
+        EMAIL_USER: process.env.EMAIL_USER ? 'Set' : 'Not set',
+        EMAIL_PASS: process.env.EMAIL_PASS ? 'Set' : 'Not set'
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message,
+      stack: error.stack
+    });
+  }
+});
+
 // Signup Route
 app.post('/signup', async (req, res) => {
   try {
@@ -164,9 +194,11 @@ app.post('/signup', async (req, res) => {
 
     // Send welcome email (async, don't wait for it)
     try {
-      await sendWelcomeEmail(email.trim(), fullName.trim());
+      const emailResult = await sendWelcomeEmail(email.trim(), fullName.trim());
+      console.log('Welcome email result:', emailResult);
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
+      // Don't fail signup if email fails
     }
 
   } catch (error) {

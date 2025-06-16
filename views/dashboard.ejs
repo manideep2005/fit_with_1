@@ -349,7 +349,7 @@
             </div>
             
             <div class="welcome-card">
-                <h2 class="welcome-title">Good Morning, <%= user.fullName.split(' ')[0] : "there") %>!</h2>
+                <h2 class="welcome-title">Good Morning, <%= user.onboardingData?.personalInfo?.firstName || (user.fullName && user.fullName !== "User" ? user.fullName.split(" ")[0] : "there") %>!</h2>
                 <p class="welcome-subtitle">You're making great progress. Keep it up!</p>
                 <button class="btn btn-outline" style="color: white; border-color: white;">View Weekly Report</button>
             </div>
