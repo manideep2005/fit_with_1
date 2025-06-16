@@ -64,7 +64,7 @@ const isAuthenticated = (req, res, next) => {
         // Create session from token
         req.session.user = {
           email: tokenData.email,
-          fullName: 'User', // Default name
+          fullName: tokenData.fullName || 'User', // Use name from token if available
           onboardingCompleted: true, // Assume completed if they have a token
           fromToken: true
         };
@@ -313,9 +313,10 @@ app.post('/CustomOnboarding/complete', async (req, res) => {
       
       console.log('Session saved successfully'); // Debug log
       
-      // Generate token for dashboard access
+      // Generate token for dashboard access with full name
       const dashboardToken = Buffer.from(JSON.stringify({
         email: userEmail,
+        fullName: fullName || 'User',
         timestamp: Date.now(),
         sessionId: req.sessionID
       })).toString('base64');
@@ -339,7 +340,7 @@ app.post('/CustomOnboarding/complete', async (req, res) => {
   }
 });
 
-// Protected Routes
+// Protected Routes with token passing for navigation
 const protectedRoutes = [
   '/dashboard',
   '/workouts',
@@ -359,9 +360,19 @@ protectedRoutes.forEach(route => {
   app.get(route, isAuthenticated, checkOnboarding, (req, res) => {
     const viewName = route.substring(1); // Remove leading slash
     console.log(`Accessing ${route} for user:`, req.session.user?.email); // Debug log
+    
+    // Generate navigation token for links between protected pages
+    const navToken = Buffer.from(JSON.stringify({
+      email: req.session.user.email,
+      fullName: req.session.user.fullName,
+      timestamp: Date.now(),
+      sessionId: req.sessionID
+    })).toString('base64');
+    
     res.render(viewName, { 
       user: req.session.user,
-      currentPath: route
+      currentPath: route,
+      navToken: navToken // Pass token for navigation links
     });
   });
 });
