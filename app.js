@@ -42,16 +42,47 @@ app.use(session({
   name: 'fit-with-ai-session'
 }));
 
-// Authentication Middleware
+// Authentication Middleware - Enhanced for serverless with token support
 const isAuthenticated = (req, res, next) => {
   console.log('Auth check - Session user:', req.session.user); // Debug log
-  if (!req.session.user) {
-    if (req.accepts('html')) {
-      return res.redirect('/');
-    }
-    return res.status(401).json({ error: 'Unauthorized' });
+  console.log('Auth check - Query token:', req.query.token); // Debug log
+  
+  // Check if user is in session
+  if (req.session.user) {
+    return next();
   }
-  next();
+  
+  // If no session, check for token in query params
+  const token = req.query.token;
+  if (token) {
+    try {
+      const tokenData = JSON.parse(Buffer.from(token, 'base64').toString());
+      console.log('Decoded token for auth:', tokenData);
+      
+      // Validate token (basic validation - in production, add expiry check)
+      if (tokenData.email && tokenData.timestamp) {
+        // Create session from token
+        req.session.user = {
+          email: tokenData.email,
+          fullName: 'User', // Default name
+          onboardingCompleted: true, // Assume completed if they have a token
+          fromToken: true
+        };
+        
+        console.log('Created session from token:', req.session.user);
+        return next();
+      }
+    } catch (tokenError) {
+      console.error('Token validation error:', tokenError);
+    }
+  }
+  
+  // No valid session or token
+  console.log('No valid authentication found, redirecting to home');
+  if (req.accepts('html')) {
+    return res.redirect('/');
+  }
+  return res.status(401).json({ error: 'Unauthorized' });
 };
 
 // Onboarding Check Middleware - FIXED
@@ -76,7 +107,19 @@ app.get('/debug-session', (req, res) => {
   res.json({
     session: req.session,
     user: req.session.user,
-    sessionID: req.sessionID
+    sessionID: req.sessionID,
+    cookies: req.headers.cookie
+  });
+});
+
+// Additional debug route for onboarding
+app.get('/debug-onboarding', (req, res) => {
+  res.json({
+    query: req.query,
+    session: req.session,
+    user: req.session.user,
+    sessionID: req.sessionID,
+    cookies: req.headers.cookie
   });
 });
 
@@ -269,10 +312,18 @@ app.post('/CustomOnboarding/complete', async (req, res) => {
       }
       
       console.log('Session saved successfully'); // Debug log
+      
+      // Generate token for dashboard access
+      const dashboardToken = Buffer.from(JSON.stringify({
+        email: userEmail,
+        timestamp: Date.now(),
+        sessionId: req.sessionID
+      })).toString('base64');
+      
       res.json({
         success: true,
         message: 'Onboarding completed successfully',
-        redirectUrl: '/dashboard'
+        redirectUrl: `/dashboard?token=${dashboardToken}`
       });
     });
 
