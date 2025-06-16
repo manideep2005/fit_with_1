@@ -158,9 +158,10 @@ app.post('/login', (req, res) => {
   });
 });
 
-// Custom Onboarding Route - FIXED: Don't require authentication check here
+// Custom Onboarding Route - Enhanced for serverless
 app.get('/CustomOnboarding', (req, res) => {
   console.log('Accessing onboarding - Session:', req.session.user); // Debug log
+  console.log('Query params:', req.query); // Debug log
   
   // Allow access if user is in session OR if email is provided in query
   const email = req.session.user?.email || req.query.email;
@@ -170,29 +171,38 @@ app.get('/CustomOnboarding', (req, res) => {
     return res.redirect('/');
   }
   
-  // If user is not in session but email is provided (from signup), create minimal session
-  if (!req.session.user && req.query.email) {
+  // Create or update session for serverless compatibility
+  if (!req.session.user) {
     req.session.user = {
-      email: req.query.email,
-      fullName: '', // Will be empty until they fill the form
-      onboardingCompleted: false
+      email: email,
+      fullName: '', 
+      onboardingCompleted: false,
+      tempUser: true // Mark as temporary until onboarding is complete
     };
   }
+  
+  // Generate a simple token for this session (for serverless compatibility)
+  const userToken = Buffer.from(JSON.stringify({
+    email: email,
+    timestamp: Date.now(),
+    sessionId: req.sessionID
+  })).toString('base64');
   
   res.render('customonboarding', {
     user: {
       email: email,
       fullName: req.session.user?.fullName || '',
-      sessionId: undefined
+      token: userToken
     }
   });
 });
 
-// Complete Onboarding Route - FIXED: Allow access even without full authentication
+// Complete Onboarding Route - Enhanced for serverless with token support
 app.post('/CustomOnboarding/complete', async (req, res) => {
   try {
-    const { onboardingData } = req.body;
+    const { onboardingData, token } = req.body;
     console.log('Received onboarding data:', onboardingData); // Debug log
+    console.log('Received token:', token); // Debug log
     console.log('Current session user:', req.session.user); // Debug log
 
     if (!onboardingData) {
@@ -202,8 +212,32 @@ app.post('/CustomOnboarding/complete', async (req, res) => {
       });
     }
 
-    // Ensure we have a user session
-    if (!req.session.user) {
+    let userEmail = null;
+    
+    // Try to get user from session first
+    if (req.session.user) {
+      userEmail = req.session.user.email;
+    } 
+    // If no session, try to decode token
+    else if (token) {
+      try {
+        const tokenData = JSON.parse(Buffer.from(token, 'base64').toString());
+        userEmail = tokenData.email;
+        console.log('Decoded token data:', tokenData);
+        
+        // Create session from token
+        req.session.user = {
+          email: userEmail,
+          fullName: '',
+          onboardingCompleted: false,
+          tempUser: true
+        };
+      } catch (tokenError) {
+        console.error('Token decode error:', tokenError);
+      }
+    }
+
+    if (!userEmail) {
       return res.status(401).json({
         success: false,
         error: 'No user session found'
@@ -211,12 +245,15 @@ app.post('/CustomOnboarding/complete', async (req, res) => {
     }
 
     // Update user session with onboarding data
+    const fullName = `${onboardingData.personalInfo?.firstName || ''} ${onboardingData.personalInfo?.lastName || ''}`.trim();
+    
     req.session.user = {
       ...req.session.user,
+      email: userEmail,
       onboardingCompleted: true, // IMPORTANT: Mark as completed
       onboardingData: onboardingData,
-      // Update name if provided in onboarding
-      fullName: `${onboardingData.personalInfo?.firstName || ''} ${onboardingData.personalInfo?.lastName || ''}`.trim() || req.session.user.fullName
+      fullName: fullName || req.session.user?.fullName || 'User',
+      tempUser: false // No longer temporary
     };
 
     console.log('Updated user session:', req.session.user); // Debug log
@@ -234,12 +271,13 @@ app.post('/CustomOnboarding/complete', async (req, res) => {
       console.log('Session saved successfully'); // Debug log
       res.json({
         success: true,
-        message: 'Onboarding completed successfully'
+        message: 'Onboarding completed successfully',
+        redirectUrl: '/dashboard'
       });
     });
 
     // Here you would typically save to database
-    // await UserService.completeOnboarding(req.session.user.email, onboardingData);
+    // await UserService.completeOnboarding(userEmail, onboardingData);
 
   } catch (error) {
     console.error('Onboarding completion error:', error);

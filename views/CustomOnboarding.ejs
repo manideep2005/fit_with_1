@@ -698,9 +698,8 @@
     
     <script>
      document.addEventListener('DOMContentLoaded', () => {
-    // Get token from URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const userToken = urlParams.get('token');
+    // Get token from server-rendered data
+    const userToken = '<%= user.token %>';
     
     console.log('User token:', userToken);
     
