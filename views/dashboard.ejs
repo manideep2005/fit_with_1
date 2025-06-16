@@ -323,7 +323,7 @@
                 </div>
             </div>
             
-            <ul class="nav-menu"<ul class="nav-menu">
+            <ul class="nav-menu">
                 <li class="nav-item"><a href="/dashboard?token=<%= navToken %>" class="nav-link active"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li class="nav-item"><a href="/workouts?token=<%= navToken %>" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
                 <li class="nav-item"><a href="/progress?token=<%= navToken %>" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
@@ -349,7 +349,7 @@
             </div>
             
             <div class="welcome-card">
-                <h2 class="welcome-title">Good Morning, <%= user.fullName.split(' ')[0] || user.fullName %>!</h2>
+                <h2 class="welcome-title">Good Morning, <%= user.fullName.split(' ')[0] : "there") %>!</h2>
                 <p class="welcome-subtitle">You're making great progress. Keep it up!</p>
                 <button class="btn btn-outline" style="color: white; border-color: white;">View Weekly Report</button>
             </div>

@@ -42,41 +42,45 @@ app.use(session({
   name: 'fit-with-ai-session'
 }));
 
-// Authentication Middleware - Enhanced for serverless with token support
+// Authentication Middleware - Enhanced for serverless with persistent session handling
 const isAuthenticated = (req, res, next) => {
   console.log('Auth check - Session user:', req.session.user); // Debug log
   console.log('Auth check - Query token:', req.query.token); // Debug log
-  
-  // Check if user is in session
-  if (req.session.user) {
+
+  // Check if user is in session and has completed onboarding
+  if (req.session.user && req.session.user.onboardingCompleted) {
+    console.log('User authenticated via existing session');
     return next();
   }
-  
+
   // If no session, check for token in query params
   const token = req.query.token;
   if (token) {
     try {
       const tokenData = JSON.parse(Buffer.from(token, 'base64').toString());
       console.log('Decoded token for auth:', tokenData);
-      
+
       // Validate token (basic validation - in production, add expiry check)
       if (tokenData.email && tokenData.timestamp) {
-        // Create session from token
+        // Create/update session from token with proper fullName handling
         req.session.user = {
           email: tokenData.email,
-          fullName: tokenData.fullName || 'User', // Use name from token if available
-          onboardingCompleted: true, // Assume completed if they have a token
-          fromToken: true
+          fullName: tokenData.fullName || tokenData.firstName || 'User',
+          onboardingCompleted: true,
+          fromToken: true,
+          lastTokenRefresh: Date.now(),
+          // Preserve onboarding data if available
+          onboardingData: tokenData.onboardingData || null
         };
-        
-        console.log('Created session from token:', req.session.user);
+
+        console.log('Created/updated session from token:', req.session.user);
         return next();
       }
     } catch (tokenError) {
       console.error('Token validation error:', tokenError);
     }
   }
-  
+
   // No valid session or token
   console.log('No valid authentication found, redirecting to home');
   if (req.accepts('html')) {
@@ -313,12 +317,14 @@ app.post('/CustomOnboarding/complete', async (req, res) => {
       
       console.log('Session saved successfully'); // Debug log
       
-      // Generate token for dashboard access with full name
+      // Generate token for dashboard access with full name and onboarding data
       const dashboardToken = Buffer.from(JSON.stringify({
         email: userEmail,
         fullName: fullName || 'User',
+        firstName: onboardingData.personalInfo?.firstName || '',
         timestamp: Date.now(),
-        sessionId: req.sessionID
+        sessionId: req.sessionID,
+        onboardingData: onboardingData
       })).toString('base64');
       
       res.json({
@@ -340,7 +346,7 @@ app.post('/CustomOnboarding/complete', async (req, res) => {
   }
 });
 
-// Protected Routes with token passing for navigation
+// Protected Routes with enhanced token handling
 const protectedRoutes = [
   '/dashboard',
   '/workouts',
@@ -361,18 +367,21 @@ protectedRoutes.forEach(route => {
     const viewName = route.substring(1); // Remove leading slash
     console.log(`Accessing ${route} for user:`, req.session.user?.email); // Debug log
     
-    // Generate navigation token for links between protected pages
+    // Always generate a fresh navigation token for each page load
     const navToken = Buffer.from(JSON.stringify({
       email: req.session.user.email,
       fullName: req.session.user.fullName,
-      timestamp: Date.now(),
-      sessionId: req.sessionID
+      firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
+      timestamp: Date.now(), // Fresh timestamp for each navigation
+      sessionId: req.sessionID,
+      route: route, // Include current route for debugging
+      onboardingData: req.session.user.onboardingData
     })).toString('base64');
     
     res.render(viewName, { 
       user: req.session.user,
       currentPath: route,
-      navToken: navToken // Pass token for navigation links
+      navToken: navToken // Fresh token for navigation links
     });
   });
 });
