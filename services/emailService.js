@@ -44,6 +44,11 @@ const testEmailConnection = async () => {
     }
 };
 
+// Function to generate OTP
+const generateOTP = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+};
+
 // Function to send welcome email
 const sendWelcomeEmail = async (userEmail, userName) => {
     // Validate inputs
@@ -189,6 +194,271 @@ The Fit-With-AI Team
     }
 };
 
+// Function to send password reset OTP email
+const sendPasswordResetOTP = async (userEmail, userName, otp) => {
+    if (!userEmail) {
+        throw new Error('Email address is required');
+    }
+    if (!otp) {
+        throw new Error('OTP is required');
+    }
+
+    try {
+        console.log('Sending password reset OTP email to:', userEmail);
+        const transporter = createTransporter();
+        
+        const mailOptions = {
+            from: {
+                name: 'Fit-With-AI',
+                address: process.env.EMAIL_USER
+            },
+            to: userEmail,
+            subject: 'Password Reset - Fit-With-AI 🔐',
+            html: `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Password Reset - Fit-With-AI</title>
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+                        body { font-family: 'Poppins', Arial, sans-serif; background-color: #f7f9fc; margin: 0; padding: 0; color: #333; }
+                        .email-container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+                        .header { background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%); padding: 40px 20px; text-align: center; color: white; }
+                        .header h1 { margin: 0; font-size: 28px; font-weight: 700; }
+                        .content { padding: 30px; }
+                        .otp-box { background: linear-gradient(135deg, #6C63FF 0%, #4A42E8 100%); color: white; padding: 30px; border-radius: 15px; text-align: center; margin: 25px 0; }
+                        .otp-code { font-size: 36px; font-weight: 700; letter-spacing: 8px; margin: 15px 0; font-family: 'Courier New', monospace; }
+                        .warning-box { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin: 20px 0; }
+                        .warning-box p { margin: 0; color: #856404; font-size: 14px; }
+                        .footer { text-align: center; padding: 20px; border-top: 1px solid #eee; font-size: 14px; color: #999; }
+                        .security-tips { background: #f8f9fa; border-radius: 10px; padding: 20px; margin: 20px 0; }
+                        .security-tips h3 { color: #6C63FF; margin-top: 0; }
+                        .security-tips ul { padding-left: 20px; }
+                        .security-tips li { margin: 8px 0; }
+                    </style>
+                </head>
+                <body>
+                    <div class="email-container">
+                        <div class="header">
+                            <h1>🔐 Password Reset Request</h1>
+                        </div>
+                        
+                        <div class="content">
+                            <p>Hi ${userName || 'there'},</p>
+                            
+                            <p>We received a request to reset your password for your Fit-With-AI account. If you made this request, please use the verification code below:</p>
+                            
+                            <div class="otp-box">
+                                <p style="margin: 0; font-size: 18px;">Your verification code is:</p>
+                                <div class="otp-code">${otp}</div>
+                                <p style="margin: 0; font-size: 14px; opacity: 0.9;">This code will expire in 10 minutes</p>
+                            </div>
+                            
+                            <div class="warning-box">
+                                <p><strong>⚠️ Security Notice:</strong> If you didn't request this password reset, please ignore this email. Your account remains secure.</p>
+                            </div>
+                            
+                            <div class="security-tips">
+                                <h3>🛡️ Security Tips</h3>
+                                <ul>
+                                    <li>Never share your verification code with anyone</li>
+                                    <li>Fit-With-AI will never ask for your password via email</li>
+                                    <li>Use a strong, unique password for your account</li>
+                                    <li>Enable two-factor authentication when available</li>
+                                </ul>
+                            </div>
+                            
+                            <p>If you're having trouble with the password reset process, please contact our support team.</p>
+                            
+                            <p>Best regards,<br><strong>The Fit-With-AI Security Team</strong></p>
+                        </div>
+                        
+                        <div class="footer">
+                            <p>© ${new Date().getFullYear()} Fit-With-AI. All rights reserved.</p>
+                            <p>This email was sent to ${userEmail}</p>
+                            <p>Request made at: ${new Date().toLocaleString()}</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `,
+            text: `
+Password Reset Request - Fit-With-AI
+
+Hi ${userName || 'there'},
+
+We received a request to reset your password for your Fit-With-AI account. If you made this request, please use the verification code below:
+
+Your verification code is: ${otp}
+
+This code will expire in 10 minutes.
+
+SECURITY NOTICE: If you didn't request this password reset, please ignore this email. Your account remains secure.
+
+Security Tips:
+- Never share your verification code with anyone
+- Fit-With-AI will never ask for your password via email
+- Use a strong, unique password for your account
+- Enable two-factor authentication when available
+
+If you're having trouble with the password reset process, please contact our support team.
+
+Best regards,
+The Fit-With-AI Security Team
+
+© ${new Date().getFullYear()} Fit-With-AI. All rights reserved.
+This email was sent to ${userEmail}
+Request made at: ${new Date().toLocaleString()}
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Password reset OTP email sent successfully:', info.messageId);
+        return {
+            success: true,
+            messageId: info.messageId
+        };
+    } catch (error) {
+        console.error('Error sending password reset OTP email:', error);
+        if (process.env.NODE_ENV === 'production') {
+            return { success: false, error: error.message };
+        } else {
+            throw error;
+        }
+    }
+};
+
+// Function to send password reset confirmation email
+const sendPasswordResetConfirmation = async (userEmail, userName) => {
+    if (!userEmail) {
+        throw new Error('Email address is required');
+    }
+
+    try {
+        console.log('Sending password reset confirmation email to:', userEmail);
+        const transporter = createTransporter();
+        
+        const mailOptions = {
+            from: {
+                name: 'Fit-With-AI',
+                address: process.env.EMAIL_USER
+            },
+            to: userEmail,
+            subject: 'Password Successfully Reset - Fit-With-AI ✅',
+            html: `
+                <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>Password Reset Confirmation</title>
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+                        body { font-family: 'Poppins', Arial, sans-serif; background-color: #f7f9fc; margin: 0; padding: 0; color: #333; }
+                        .email-container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+                        .header { background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); padding: 40px 20px; text-align: center; color: white; }
+                        .header h1 { margin: 0; font-size: 28px; font-weight: 700; }
+                        .content { padding: 30px; }
+                        .success-box { background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; padding: 25px; border-radius: 15px; text-align: center; margin: 25px 0; }
+                        .cta-button { display: inline-block; background: linear-gradient(135deg, #6C63FF 0%, #4A42E8 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; margin: 20px 0; }
+                        .footer { text-align: center; padding: 20px; border-top: 1px solid #eee; font-size: 14px; color: #999; }
+                        .security-tips { background: #f8f9fa; border-radius: 10px; padding: 20px; margin: 20px 0; }
+                    </style>
+                </head>
+                <body>
+                    <div class="email-container">
+                        <div class="header">
+                            <h1>✅ Password Reset Successful</h1>
+                        </div>
+                        
+                        <div class="content">
+                            <p>Hi ${userName || 'there'},</p>
+                            
+                            <div class="success-box">
+                                <h2 style="margin: 0; font-size: 24px;">🎉 Success!</h2>
+                                <p style="margin: 10px 0 0 0; font-size: 16px;">Your password has been successfully reset.</p>
+                            </div>
+                            
+                            <p>Your Fit-With-AI account password has been successfully updated. You can now log in with your new password.</p>
+                            
+                            <div style="text-align: center;">
+                                <a href="https://fit-with-ai-1.vercel.app/" class="cta-button">
+                                    Log In to Your Account
+                                </a>
+                            </div>
+                            
+                            <div class="security-tips">
+                                <h3>🛡️ Security Reminder</h3>
+                                <p>If you didn't make this change, please contact our support team immediately. Your account security is our priority.</p>
+                                <p><strong>Tips for keeping your account secure:</strong></p>
+                                <ul>
+                                    <li>Use a strong, unique password</li>
+                                    <li>Don't share your login credentials</li>
+                                    <li>Log out from shared devices</li>
+                                    <li>Monitor your account for unusual activity</li>
+                                </ul>
+                            </div>
+                            
+                            <p>Thank you for using Fit-With-AI. We're here to support your fitness journey!</p>
+                            
+                            <p>Best regards,<br><strong>The Fit-With-AI Team</strong></p>
+                        </div>
+                        
+                        <div class="footer">
+                            <p>© ${new Date().getFullYear()} Fit-With-AI. All rights reserved.</p>
+                            <p>This email was sent to ${userEmail}</p>
+                            <p>Password reset completed at: ${new Date().toLocaleString()}</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `,
+            text: `
+Password Reset Successful - Fit-With-AI
+
+Hi ${userName || 'there'},
+
+Your Fit-With-AI account password has been successfully updated. You can now log in with your new password.
+
+Log in to your account: https://fit-with-ai-1.vercel.app/
+
+SECURITY REMINDER: If you didn't make this change, please contact our support team immediately. Your account security is our priority.
+
+Tips for keeping your account secure:
+- Use a strong, unique password
+- Don't share your login credentials
+- Log out from shared devices
+- Monitor your account for unusual activity
+
+Thank you for using Fit-With-AI. We're here to support your fitness journey!
+
+Best regards,
+The Fit-With-AI Team
+
+© ${new Date().getFullYear()} Fit-With-AI. All rights reserved.
+This email was sent to ${userEmail}
+Password reset completed at: ${new Date().toLocaleString()}
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Password reset confirmation email sent successfully:', info.messageId);
+        return {
+            success: true,
+            messageId: info.messageId
+        };
+    } catch (error) {
+        console.error('Error sending password reset confirmation email:', error);
+        if (process.env.NODE_ENV === 'production') {
+            return { success: false, error: error.message };
+        } else {
+            throw error;
+        }
+    }
+};
+
 // Function to send test email (for debugging)
 const sendTestEmail = async (testEmail = 'test@example.com') => {
     try {
@@ -223,143 +493,58 @@ const sendOnboardingCompletionEmail = async (userEmail, userName, onboardingData
             to: userEmail,
             subject: 'Your Fit-With-AI Profile is Ready! 🎉',
             html: `
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Your Fit-With-AI Profile</title>
-                    <style>
-                        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
-                        body { font-family: 'Poppins', Arial, sans-serif; background-color: #f7f9fc; margin: 0; padding: 0; color: #333; }
-                        .email-container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-                        .header { background: linear-gradient(135deg, #6C63FF 0%, #4A42E8 100%); padding: 40px 20px; text-align: center; color: white; }
-                        .header h1 { margin: 0; font-size: 28px; font-weight: 700; }
-                        .content { padding: 30px; }
-                        .section { background: #f8f9fa; border-radius: 10px; padding: 20px; margin: 20px 0; }
-                        .section h3 { color: #6C63FF; margin-top: 0; font-size: 18px; margin-bottom: 15px; }
-                        .section p { margin: 8px 0; font-size: 15px; line-height: 1.5; }
-                        .cta-button { display: inline-block; background: linear-gradient(135deg, #6C63FF 0%, #4A42E8 100%); color: white; padding: 15px 30px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 16px; margin: 20px 0; text-align: center; box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3); }
-                        .footer { text-align: center; padding: 20px; border-top: 1px solid #eee; font-size: 14px; color: #999; }
-                        .divider { height: 3px; background: linear-gradient(90deg, #6C63FF, #FF6584, #6C63FF); margin: 25px 0; border-radius: 3px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="email-container">
-                        <div class="header">
-                            <h1>Your Profile is Ready! 🎉</h1>
-                        </div>
-                        
-                        <div class="content">
-                            <p>Hi ${userName},</p>
-                            
-                            <p>Thank you for completing your Fit-With-AI profile! We're excited to have you on board and can't wait to help you achieve your fitness goals.</p>
-                            
-                            <div class="divider"></div>
-                            
-                            <h2>Your Profile Summary</h2>
-                            
-                            <div class="section">
-                                <h3>👤 Personal Information</h3>
-                                <p>Name: ${onboardingData.personalInfo.firstName} ${onboardingData.personalInfo.lastName}</p>
-                                <p>Age: ${onboardingData.personalInfo.age}</p>
-                                <p>Gender: ${onboardingData.personalInfo.gender}</p>
-                            </div>
-                            
-                            <div class="section">
-                                <h3>📏 Body Metrics</h3>
-                                <p>Height: ${onboardingData.bodyMetrics.height} cm</p>
-                                <p>Current Weight: ${onboardingData.bodyMetrics.weight} kg</p>
-                                ${onboardingData.bodyMetrics.targetWeight ? `<p>Target Weight: ${onboardingData.bodyMetrics.targetWeight} kg</p>` : ''}
-                                <p>Activity Level: ${onboardingData.bodyMetrics.activityLevel}</p>
-                                <p>Workout Frequency: ${onboardingData.bodyMetrics.workoutFrequency}</p>
-                            </div>
-                            
-                            <div class="section">
-                                <h3>🎯 Health Goals</h3>
-                                <p>Goals: ${onboardingData.healthGoals.goals.join(', ')}</p>
-                                ${onboardingData.healthGoals.timeline ? `<p>Timeline: ${onboardingData.healthGoals.timeline}</p>` : ''}
-                            </div>
-                            
-                            <div class="section">
-                                <h3>🍽️ Dietary Preferences</h3>
-                                <p>Diet Type: ${onboardingData.dietaryPreferences.dietType}</p>
-                                ${onboardingData.dietaryPreferences.allergies.length > 0 ? 
-                                    `<p>Allergies: ${onboardingData.dietaryPreferences.allergies.join(', ')}</p>` : ''}
-                                <p>Water Intake: ${onboardingData.dietaryPreferences.waterIntake}</p>
-                            </div>
-                            
-                            <div class="section">
-                                <h3>🌿 Lifestyle</h3>
-                                <p>Sleep Quality: ${onboardingData.lifestyle.sleepQuality}</p>
-                                <p>Smoking Status: ${onboardingData.lifestyle.smokingStatus}</p>
-                                <p>Alcohol Consumption: ${onboardingData.lifestyle.alcoholConsumption}</p>
-                                ${onboardingData.lifestyle.stressLevel ? `<p>Stress Level: ${onboardingData.lifestyle.stressLevel}/10</p>` : ''}
-                            </div>
-                            
-                            <div style="text-align: center;">
-                                <a href="https://fit-with-ai-1.vercel.app/dashboard" class="cta-button">
-                                    Go to Your Dashboard
-                                </a>
-                            </div>
-                            
-                            <p>We've already started creating your personalized fitness plan based on your preferences. You'll find it in your dashboard along with:</p>
-                            
-                            <ul>
-                                <li>Customized workout routines</li>
-                                <li>Personalized nutrition recommendations</li>
-                                <li>Progress tracking tools</li>
-                                <li>AI-powered form correction</li>
-                            </ul>
-                            
-                            <p>If you need to make any changes to your profile, you can do so anytime from your dashboard settings.</p>
-                            
-                            <div class="divider"></div>
-                            
-                            <p>Ready to start your fitness journey? Click the button above to access your dashboard!</p>
-                        </div>
-                        
-                        <div class="footer">
-                            <p>© ${new Date().getFullYear()} Fit-With-AI. All rights reserved.</p>
-                            <p>This email was sent to ${userEmail}</p>
-                        </div>
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #6C63FF; margin-bottom: 10px;">Your Profile is Ready! 🎉</h1>
+                        <div style="width: 50px; height: 3px; background: #6C63FF; margin: 0 auto;"></div>
                     </div>
-                </body>
-                </html>
+                    
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">Hi ${userName},</p>
+                    
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+                        Thank you for completing your Fit-With-AI profile! We're excited to have you on board and can't wait to help you achieve your fitness goals.
+                    </p>
+                    
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="https://fit-with-ai-1.vercel.app/dashboard" 
+                           style="background-color: #6C63FF; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+                            Go to Your Dashboard
+                        </a>
+                    </div>
+                    
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+                        We've already started creating your personalized fitness plan based on your preferences. You'll find it in your dashboard along with:
+                    </p>
+                    
+                    <ul style="font-size: 16px; line-height: 1.8; color: #333; padding-left: 20px;">
+                        <li>Customized workout routines</li>
+                        <li>Personalized nutrition recommendations</li>
+                        <li>Progress tracking tools</li>
+                        <li>AI-powered form correction</li>
+                    </ul>
+                    
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+                        If you need to make any changes to your profile, you can do so anytime from your dashboard settings.
+                    </p>
+                    
+                    <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px;">
+                        <p style="font-size: 16px; line-height: 1.6; color: #333;">
+                            Best regards,<br>
+                            <strong>The Fit-With-AI Team</strong>
+                        </p>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                        <p style="font-size: 12px; color: #999;">
+                            This email was sent to ${userEmail}
+                        </p>
+                    </div>
+                </div>
             `,
             text: `
 Hi ${userName},
 
 Thank you for completing your Fit-With-AI profile! We're excited to have you on board and can't wait to help you achieve your fitness goals.
-
-Your Profile Summary:
-
-Personal Information:
-- Name: ${onboardingData.personalInfo.firstName} ${onboardingData.personalInfo.lastName}
-- Age: ${onboardingData.personalInfo.age}
-- Gender: ${onboardingData.personalInfo.gender}
-
-Body Metrics:
-- Height: ${onboardingData.bodyMetrics.height} cm
-- Current Weight: ${onboardingData.bodyMetrics.weight} kg
-${onboardingData.bodyMetrics.targetWeight ? `- Target Weight: ${onboardingData.bodyMetrics.targetWeight} kg` : ''}
-- Activity Level: ${onboardingData.bodyMetrics.activityLevel}
-- Workout Frequency: ${onboardingData.bodyMetrics.workoutFrequency}
-
-Health Goals:
-- Goals: ${onboardingData.healthGoals.goals.join(', ')}
-${onboardingData.healthGoals.timeline ? `- Timeline: ${onboardingData.healthGoals.timeline}` : ''}
-
-Dietary Preferences:
-- Diet Type: ${onboardingData.dietaryPreferences.dietType}
-${onboardingData.dietaryPreferences.allergies.length > 0 ? `- Allergies: ${onboardingData.dietaryPreferences.allergies.join(', ')}` : ''}
-- Water Intake: ${onboardingData.dietaryPreferences.waterIntake}
-
-Lifestyle:
-- Sleep Quality: ${onboardingData.lifestyle.sleepQuality}
-- Smoking Status: ${onboardingData.lifestyle.smokingStatus}
-- Alcohol Consumption: ${onboardingData.lifestyle.alcoholConsumption}
-${onboardingData.lifestyle.stressLevel ? `- Stress Level: ${onboardingData.lifestyle.stressLevel}/10` : ''}
 
 We've already started creating your personalized fitness plan based on your preferences. You'll find it in your dashboard along with:
 - Customized workout routines
@@ -371,7 +556,8 @@ If you need to make any changes to your profile, you can do so anytime from your
 
 Ready to start your fitness journey? Visit your dashboard: https://fit-with-ai-1.vercel.app/dashboard
 
-© ${new Date().getFullYear()} Fit-With-AI. All rights reserved.
+Best regards,
+The Fit-With-AI Team
             `
         };
 
@@ -395,5 +581,8 @@ module.exports = {
     sendWelcomeEmail,
     sendTestEmail,
     testEmailConnection,
-    sendOnboardingCompletionEmail
+    sendOnboardingCompletionEmail,
+    generateOTP,
+    sendPasswordResetOTP,
+    sendPasswordResetConfirmation
 };
