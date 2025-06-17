@@ -6,7 +6,7 @@ const createTransporter = () => {
     const emailPass = process.env.EMAIL_PASS;
     
     if (!emailUser || !emailPass) {
-        throw new Error('Email configuration is missing. Please set EMAIL_USER and EMAIL_PASS environment variables.');
+        throw new Error('Email configuration is missing. Please set EMAIL_USER and EMAIL_PASS environment variables in your Vercel project settings.');
     }
     
     console.log('Email configuration:', {

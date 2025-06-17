@@ -3,11 +3,12 @@ const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
-const { sendWelcomeEmail } = require('./services/emailService');
+const { sendWelcomeEmail, generateOTP, sendPasswordResetOTP, sendPasswordResetConfirmation } = require('./services/emailService');
 
 // MongoDB connection
 const database = require('./config/database');
 const UserService = require('./services/userService');
+const PasswordResetService = require('./services/passwordResetService');
 
 // Handle Redis connection gracefully for Vercel
 let redisClient = null;
@@ -589,7 +590,6 @@ app.post('/forgot-password', async (req, res) => {
     }
     
     // Generate OTP and store it temporarily
-    const { generateOTP, sendPasswordResetOTP } = require('./services/emailService');
     const otp = generateOTP();
     
     // Store OTP in session temporarily (in production, use Redis or database)
@@ -721,10 +721,9 @@ app.post('/reset-password', async (req, res) => {
     const email = req.session.passwordReset.email;
     
     // Reset the password
-    await UserService.resetPassword(email, newPassword);
+    await UserService.updatePassword(email, null, newPassword, true); // true = skip current password check
     
     // Send confirmation email
-    const { sendPasswordResetConfirmation } = require('./services/emailService');
     const user = await UserService.getUserByEmail(email);
     await sendPasswordResetConfirmation(email, user.fullName);
     
