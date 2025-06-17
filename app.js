@@ -1,21 +1,32 @@
+console.log('Starting Fit-With-AI application...');
+console.log('Node.js version:', process.version);
+console.log('Environment:', process.env.NODE_ENV);
+console.log('Working directory:', process.cwd());
+
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
+
+console.log('Loading services...');
 const { sendWelcomeEmail, generateOTP, sendPasswordResetOTP, sendPasswordResetConfirmation } = require('./services/emailService');
 
 // MongoDB connection
 const database = require('./config/database');
 const UserService = require('./services/userService');
-const PasswordResetService = require('./services/passwordResetService');
+console.log('Services loaded successfully');
 
 // Handle Redis connection gracefully for Vercel
 let redisClient = null;
 try {
-  if (process.env.REDIS_URL) {
+  if (process.env.REDIS_URL && !process.env.VERCEL) {
+    console.log('Attempting to connect to Redis...');
     const redis = require('./services/redis');
     redisClient = redis;
+    console.log('Redis client initialized');
+  } else {
+    console.log('Redis not configured or in Vercel environment, using memory sessions');
   }
 } catch (error) {
   console.log('Redis not available, using memory sessions:', error.message);
@@ -811,7 +822,36 @@ app.get('/api/health', (req, res) => {
     status: 'OK',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
-    vercel: !!process.env.VERCEL
+    vercel: !!process.env.VERCEL,
+    nodeVersion: process.version,
+    workingDirectory: process.cwd(),
+    routesRegistered: app._router ? app._router.stack.length : 0
+  });
+});
+
+// Debug endpoint for Vercel (production safe)
+app.get('/api/debug', (req, res) => {
+  const routes = [];
+  if (app._router && app._router.stack) {
+    app._router.stack.forEach(layer => {
+      if (layer.route) {
+        const methods = Object.keys(layer.route.methods);
+        routes.push(`${methods.join(',').toUpperCase()} ${layer.route.path}`);
+      }
+    });
+  }
+  
+  res.status(200).json({
+    status: 'Debug Info',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    vercel: !!process.env.VERCEL,
+    nodeVersion: process.version,
+    workingDirectory: process.cwd(),
+    routesCount: routes.length,
+    routes: routes.slice(0, 20), // First 20 routes
+    hasDatabase: !!database,
+    databaseStatus: database ? database.getConnectionStatus() : 'Not available'
   });
 });
 
@@ -849,6 +889,10 @@ app.listen(PORT, () => {
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
 }
+
+console.log('App initialization completed successfully');
+console.log('Vercel environment:', !!process.env.VERCEL);
+console.log('App routes registered:', app._router ? 'Yes' : 'No');
 
 // Export for Vercel
 module.exports = app;
