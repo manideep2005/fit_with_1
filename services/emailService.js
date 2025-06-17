@@ -6,6 +6,11 @@ const createTransporter = () => {
     const emailPass = process.env.EMAIL_PASS;
     
     if (!emailUser || !emailPass) {
+        console.error('Email configuration missing:', {
+            hasUser: !!emailUser,
+            hasPass: !!emailPass,
+            nodeEnv: process.env.NODE_ENV
+        });
         throw new Error('Email configuration is missing. Please set EMAIL_USER and EMAIL_PASS environment variables in your Vercel project settings.');
     }
     
@@ -27,21 +32,33 @@ const createTransporter = () => {
         },
         tls: {
             rejectUnauthorized: process.env.NODE_ENV === 'production'
-        }
+        },
+        pool: true, // Use pooled connections
+        maxConnections: 5,
+        maxMessages: 100,
+        rateDelta: 1000, // How many messages to send per second
+        rateLimit: 5 // Max number of messages per rateDelta
     });
 };
 
-// Test email connection
-const testEmailConnection = async () => {
-    try {
-        const transporter = createTransporter();
-        await transporter.verify();
-        console.log('Email server connection verified successfully');
-        return true;
-    } catch (error) {
-        console.error('Email server connection failed:', error.message);
-        return false;
+// Test email connection with retry
+const testEmailConnection = async (retries = 3) => {
+    for (let i = 0; i < retries; i++) {
+        try {
+            const transporter = createTransporter();
+            await transporter.verify();
+            console.log('Email server connection verified successfully');
+            return true;
+        } catch (error) {
+            console.error(`Email server connection attempt ${i + 1} failed:`, error.message);
+            if (i === retries - 1) {
+                return false;
+            }
+            // Wait before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+        }
     }
+    return false;
 };
 
 // Function to generate OTP
@@ -231,18 +248,18 @@ const sendPasswordResetOTP = async (userEmail, userName, otp) => {
                     <div style="text-align: center; margin-bottom: 30px;">
                         <h1 style="color: #6C63FF; margin-bottom: 10px;">Password Reset Code</h1>
                         <div style="width: 50px; height: 3px; background: #6C63FF; margin: 0 auto;"></div>
-                    </div>
-                    
+                        </div>
+                        
                     <p style="font-size: 16px; line-height: 1.6; color: #333;">Dear ${userName},</p>
-                    
+                            
                     <p style="font-size: 16px; line-height: 1.6; color: #333;">
                         We received a request to reset your password. Use the following code to reset your password:
                     </p>
-                    
+                            
                     <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
                         <h2 style="color: #6C63FF; margin: 0; font-size: 32px; letter-spacing: 5px;">${otp}</h2>
-                    </div>
-                    
+                            </div>
+                            
                     <p style="font-size: 16px; line-height: 1.6; color: #333;">
                         This code will expire in 10 minutes. If you didn't request this password reset, please ignore this email.
                     </p>

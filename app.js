@@ -49,12 +49,12 @@ if (!process.env.SESSION_SECRET) {
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-here-change-in-production',
     resave: false,
-    saveUninitialized: true, // Changed to true for better session handling
+    saveUninitialized: true,
     cookie: { 
         maxAge: 1000 * 60 * 60 * 24, // 24 hours
         httpOnly: true,
-        secure: false, // Set to false for now to fix session issues
-        sameSite: 'lax' // Use lax for better compatibility
+        secure: false, // Keep false for now to avoid HTTPS issues
+        sameSite: 'lax'
     },
     name: 'fit-with-ai-session'
 }));
@@ -202,12 +202,15 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
-// Signup Route - Updated to use MongoDB
+// Signup Route - Updated to use MongoDB with enhanced error logging
 app.post('/signup', async (req, res) => {
+  console.log('Signup request received:', { body: req.body });
+  
   try {
     const { fullName, email, password } = req.body;
 
     if (!email || !fullName || !password) {
+      console.log('Missing required fields:', { email: !!email, fullName: !!fullName, password: !!password });
       return res.status(400).json({ 
         success: false,
         error: 'All fields are required' 
@@ -216,18 +219,23 @@ app.post('/signup', async (req, res) => {
 
     // Validate password length
     if (password.length < 6) {
+      console.log('Password too short:', password.length);
       return res.status(400).json({ 
         success: false,
         error: 'Password must be at least 6 characters long' 
       });
     }
 
+    console.log('Attempting to create user in database...');
+    
     // Create user in database
     const user = await UserService.createUser({
       email: email.trim(),
       fullName: fullName.trim(),
       password: password
     });
+
+    console.log('User created successfully:', { userId: user._id, email: user.email });
 
     // Create user session
     req.session.user = {
@@ -236,6 +244,8 @@ app.post('/signup', async (req, res) => {
       fullName: user.fullName,
       onboardingCompleted: user.onboardingCompleted
     };
+
+    console.log('Session user set:', req.session.user);
 
     // Save session before responding
     req.session.save((err) => {
@@ -246,6 +256,8 @@ app.post('/signup', async (req, res) => {
           error: 'Session creation failed' 
         });
       }
+      
+      console.log('Session saved successfully');
       
       res.json({
         success: true,
@@ -264,7 +276,12 @@ app.post('/signup', async (req, res) => {
     }
 
   } catch (error) {
-    console.error('Signup error:', error);
+    console.error('Signup error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      code: error.code
+    });
     
     // Handle specific MongoDB errors
     if (error.message.includes('already exists')) {
@@ -274,9 +291,27 @@ app.post('/signup', async (req, res) => {
       });
     }
     
+    // More specific error handling
+    if (error.name === 'MongoNetworkError') {
+      console.error('MongoDB network error - connection failed');
+      return res.status(500).json({ 
+        success: false,
+        error: 'Database connection failed' 
+      });
+    }
+    
+    if (error.name === 'MongoTimeoutError') {
+      console.error('MongoDB timeout error');
+      return res.status(500).json({ 
+        success: false,
+        error: 'Database operation timed out' 
+      });
+    }
+    
     res.status(500).json({ 
       success: false,
-      error: 'Internal server error' 
+      error: 'Internal server error',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
@@ -747,7 +782,7 @@ app.post('/reset-password', async (req, res) => {
     const email = req.session.passwordReset.email;
     
     // Reset the password
-    await UserService.updatePassword(email, null, newPassword, true); // true = skip current password check
+    await UserService.resetPassword(email, newPassword);
     
     // Send confirmation email
     const user = await UserService.getUserByEmail(email);
@@ -788,32 +823,16 @@ app.get('/logout', (req, res) => {
   });
 });
 
-// Error Handling Middleware
+// Add error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Error:', err.stack);
-  
-  const statusCode = err.status || 500;
-  const message = err.message || 'Something went wrong!';
-  
-  // For Vercel deployment, provide more detailed error info
-  if (process.env.VERCEL) {
-    console.error('Vercel Error Details:', {
-      message: err.message,
-      stack: err.stack,
-      url: req.url,
-      method: req.method,
-      headers: req.headers,
-      body: req.body
+    console.error('Server error:', err);
+    res.status(500).json({
+        success: false,
+        error: process.env.NODE_ENV === 'production' 
+            ? 'Internal server error' 
+            : err.message
     });
-  }
-  
-  res.status(statusCode).json({
-    success: false,
-    error: message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-  });
 });
-
 
 // 404 Handler
 app.use((req, res) => {
@@ -824,11 +843,11 @@ app.use((req, res) => {
 
 // Start Server (only in non-serverless environment)
 if (!process.env.VERCEL) {
-  const PORT = process.env.PORT || 3001;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  });
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+});
 }
 
 // Export for Vercel

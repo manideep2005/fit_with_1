@@ -136,7 +136,7 @@ class PasswordResetService {
       }
 
       // Update password
-      await UserService.updatePassword(email, null, newPassword, true); // true = skip current password check
+      await UserService.resetPassword(email, newPassword);
 
       // Remove OTP from storage
       otpStorage.delete(emailKey);
