@@ -579,15 +579,20 @@ app.post('/forgot-password', async (req, res) => {
       });
     }
     
+    console.log('Processing password reset request for:', email.trim());
+    
     // Check if user exists
     const user = await UserService.getUserByEmail(email.trim());
     if (!user) {
+      console.log('No user found for email:', email.trim());
       // Don't reveal if user exists or not for security
       return res.json({
         success: true,
         message: 'If an account with this email exists, you will receive a password reset code shortly.'
       });
     }
+    
+    console.log('User found, generating OTP for:', user.email);
     
     // Generate OTP and store it temporarily
     const otp = generateOTP();
@@ -600,8 +605,16 @@ app.post('/forgot-password', async (req, res) => {
       attempts: 0
     };
     
+    console.log('Attempting to send password reset OTP email...');
+    
     // Send OTP email
-    await sendPasswordResetOTP(email.trim(), user.fullName, otp);
+    try {
+      await sendPasswordResetOTP(email.trim(), user.fullName, otp);
+      console.log('Password reset OTP email sent successfully');
+    } catch (emailError) {
+      console.error('Failed to send password reset OTP email:', emailError);
+      throw new Error('Failed to send password reset email: ' + emailError.message);
+    }
     
     res.json({
       success: true,
@@ -609,10 +622,23 @@ app.post('/forgot-password', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Password reset request error:', error);
+    console.error('Password reset request error:', {
+      message: error.message,
+      stack: error.stack,
+      code: error.code
+    });
+    
+    // Check for specific error types
+    if (error.message.includes('Email configuration is missing')) {
+      return res.status(500).json({
+        success: false,
+        error: 'Email service is not properly configured. Please contact support.'
+      });
+    }
+    
     res.status(500).json({
       success: false,
-      error: 'Failed to process password reset request'
+      error: 'Failed to process password reset request. Please try again later.'
     });
   }
 });

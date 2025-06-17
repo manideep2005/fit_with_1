@@ -202,131 +202,105 @@ const sendPasswordResetOTP = async (userEmail, userName, otp) => {
     if (!otp) {
         throw new Error('OTP is required');
     }
+    if (!userName) {
+        userName = 'Valued Member'; // Default name if not provided
+    }
 
     try {
-        console.log('Sending password reset OTP email to:', userEmail);
+        console.log('Attempting to send password reset OTP email to:', userEmail);
+        
+        // Create transporter for each email to ensure fresh connection
         const transporter = createTransporter();
+        
+        // Test connection first
+        const connectionTest = await testEmailConnection();
+        if (!connectionTest) {
+            console.error('Email connection test failed');
+            throw new Error('Failed to connect to email server');
+        }
         
         const mailOptions = {
             from: {
                 name: 'Fit-With-AI',
-                address: process.env.EMAIL_USER
+                address: process.env.EMAIL_USER || 'fitwithai18@gmail.com'
             },
             to: userEmail,
-            subject: 'Password Reset - Fit-With-AI 🔐',
+            subject: 'Your Password Reset Code - Fit-With-AI',
             html: `
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="UTF-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                    <title>Password Reset - Fit-With-AI</title>
-                    <style>
-                        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
-                        body { font-family: 'Poppins', Arial, sans-serif; background-color: #f7f9fc; margin: 0; padding: 0; color: #333; }
-                        .email-container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-                        .header { background: linear-gradient(135deg, #FF6B6B 0%, #FF5252 100%); padding: 40px 20px; text-align: center; color: white; }
-                        .header h1 { margin: 0; font-size: 28px; font-weight: 700; }
-                        .content { padding: 30px; }
-                        .otp-box { background: linear-gradient(135deg, #6C63FF 0%, #4A42E8 100%); color: white; padding: 30px; border-radius: 15px; text-align: center; margin: 25px 0; }
-                        .otp-code { font-size: 36px; font-weight: 700; letter-spacing: 8px; margin: 15px 0; font-family: 'Courier New', monospace; }
-                        .warning-box { background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin: 20px 0; }
-                        .warning-box p { margin: 0; color: #856404; font-size: 14px; }
-                        .footer { text-align: center; padding: 20px; border-top: 1px solid #eee; font-size: 14px; color: #999; }
-                        .security-tips { background: #f8f9fa; border-radius: 10px; padding: 20px; margin: 20px 0; }
-                        .security-tips h3 { color: #6C63FF; margin-top: 0; }
-                        .security-tips ul { padding-left: 20px; }
-                        .security-tips li { margin: 8px 0; }
-                    </style>
-                </head>
-                <body>
-                    <div class="email-container">
-                        <div class="header">
-                            <h1>🔐 Password Reset Request</h1>
-                        </div>
-                        
-                        <div class="content">
-                            <p>Hi ${userName || 'there'},</p>
-                            
-                            <p>We received a request to reset your password for your Fit-With-AI account. If you made this request, please use the verification code below:</p>
-                            
-                            <div class="otp-box">
-                                <p style="margin: 0; font-size: 18px;">Your verification code is:</p>
-                                <div class="otp-code">${otp}</div>
-                                <p style="margin: 0; font-size: 14px; opacity: 0.9;">This code will expire in 10 minutes</p>
-                            </div>
-                            
-                            <div class="warning-box">
-                                <p><strong>⚠️ Security Notice:</strong> If you didn't request this password reset, please ignore this email. Your account remains secure.</p>
-                            </div>
-                            
-                            <div class="security-tips">
-                                <h3>🛡️ Security Tips</h3>
-                                <ul>
-                                    <li>Never share your verification code with anyone</li>
-                                    <li>Fit-With-AI will never ask for your password via email</li>
-                                    <li>Use a strong, unique password for your account</li>
-                                    <li>Enable two-factor authentication when available</li>
-                                </ul>
-                            </div>
-                            
-                            <p>If you're having trouble with the password reset process, please contact our support team.</p>
-                            
-                            <p>Best regards,<br><strong>The Fit-With-AI Security Team</strong></p>
-                        </div>
-                        
-                        <div class="footer">
-                            <p>© ${new Date().getFullYear()} Fit-With-AI. All rights reserved.</p>
-                            <p>This email was sent to ${userEmail}</p>
-                            <p>Request made at: ${new Date().toLocaleString()}</p>
-                        </div>
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #6C63FF; margin-bottom: 10px;">Password Reset Code</h1>
+                        <div style="width: 50px; height: 3px; background: #6C63FF; margin: 0 auto;"></div>
                     </div>
-                </body>
-                </html>
+                    
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">Dear ${userName},</p>
+                    
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+                        We received a request to reset your password. Use the following code to reset your password:
+                    </p>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                        <h2 style="color: #6C63FF; margin: 0; font-size: 32px; letter-spacing: 5px;">${otp}</h2>
+                    </div>
+                    
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+                        This code will expire in 10 minutes. If you didn't request this password reset, please ignore this email.
+                    </p>
+                    
+                    <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px;">
+                        <p style="font-size: 14px; line-height: 1.6; color: #666;">
+                            If you have any questions, feel free to reach out to our support team.
+                        </p>
+                        <p style="font-size: 16px; line-height: 1.6; color: #333;">
+                            Best regards,<br>
+                            <strong>The Fit-With-AI Team</strong>
+                        </p>
+                    </div>
+                </div>
             `,
             text: `
-Password Reset Request - Fit-With-AI
+Password Reset Code - Fit-With-AI
 
-Hi ${userName || 'there'},
+Dear ${userName},
 
-We received a request to reset your password for your Fit-With-AI account. If you made this request, please use the verification code below:
+We received a request to reset your password. Use the following code to reset your password:
 
-Your verification code is: ${otp}
+${otp}
 
-This code will expire in 10 minutes.
-
-SECURITY NOTICE: If you didn't request this password reset, please ignore this email. Your account remains secure.
-
-Security Tips:
-- Never share your verification code with anyone
-- Fit-With-AI will never ask for your password via email
-- Use a strong, unique password for your account
-- Enable two-factor authentication when available
-
-If you're having trouble with the password reset process, please contact our support team.
+This code will expire in 10 minutes. If you didn't request this password reset, please ignore this email.
 
 Best regards,
-The Fit-With-AI Security Team
-
-© ${new Date().getFullYear()} Fit-With-AI. All rights reserved.
-This email was sent to ${userEmail}
-Request made at: ${new Date().toLocaleString()}
+The Fit-With-AI Team
             `
         };
 
+        console.log('Sending password reset OTP email with options:', {
+            to: mailOptions.to,
+            subject: mailOptions.subject,
+            from: mailOptions.from
+        });
+
         const info = await transporter.sendMail(mailOptions);
-        console.log('Password reset OTP email sent successfully:', info.messageId);
+        console.log('Password reset OTP email sent successfully:', {
+            messageId: info.messageId,
+            response: info.response,
+            accepted: info.accepted,
+            rejected: info.rejected
+        });
         return {
             success: true,
-            messageId: info.messageId
+            messageId: info.messageId,
+            response: info.response
         };
     } catch (error) {
-        console.error('Error sending password reset OTP email:', error);
-        if (process.env.NODE_ENV === 'production') {
-            return { success: false, error: error.message };
-        } else {
-            throw error;
-        }
+        console.error('Error sending password reset OTP email:', {
+            message: error.message,
+            code: error.code,
+            command: error.command,
+            response: error.response,
+            stack: error.stack
+        });
+        throw error; // Re-throw the error to be handled by the route
     }
 };
 
