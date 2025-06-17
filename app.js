@@ -745,6 +745,16 @@ app.post('/reset-password', async (req, res) => {
   }
 });
 
+// Health check endpoint for Vercel
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV,
+    vercel: !!process.env.VERCEL
+  });
+});
+
 // Logout Route
 app.get('/logout', (req, res) => {
   req.session.destroy(() => {
@@ -759,6 +769,18 @@ app.use((err, req, res, next) => {
   
   const statusCode = err.status || 500;
   const message = err.message || 'Something went wrong!';
+  
+  // For Vercel deployment, provide more detailed error info
+  if (process.env.VERCEL) {
+    console.error('Vercel Error Details:', {
+      message: err.message,
+      stack: err.stack,
+      url: req.url,
+      method: req.method,
+      headers: req.headers,
+      body: req.body
+    });
+  }
   
   res.status(statusCode).json({
     success: false,
@@ -780,3 +802,6 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
 });
+
+// Export for Vercel
+module.exports = app;
