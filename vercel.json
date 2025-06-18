@@ -10,6 +10,14 @@
       }
     },
     {
+      "src": "api/health.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/debug.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "api/test.js",
       "use": "@vercel/node"
     },
@@ -23,6 +31,14 @@
     }
   ],
   "routes": [
+    {
+      "src": "/api/health",
+      "dest": "/api/health.js"
+    },
+    {
+      "src": "/api/debug",
+      "dest": "/api/debug.js"
+    },
     {
       "src": "/api/test",
       "dest": "/api/test.js"

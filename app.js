@@ -34,13 +34,33 @@ try {
 
 const app = express();
 
-// Initialize MongoDB connection
-database.connect().catch(error => {
-  console.error('Failed to connect to MongoDB:', error);
-  // Don't exit the process in production, allow app to run without DB for now
-  if (process.env.NODE_ENV !== 'production') {
-    process.exit(1);
+// Database connection middleware
+const ensureDbConnection = async (req, res, next) => {
+  try {
+    const status = database.getConnectionStatus();
+    if (status.status !== 'connected') {
+      console.log('Database not connected, attempting to connect...');
+      await database.connect();
+      console.log('Database connected successfully');
+    }
+    next();
+  } catch (error) {
+    console.error('Database connection failed:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Database connection failed',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
+};
+
+// Initialize MongoDB connection (non-blocking)
+console.log('Initializing MongoDB connection...');
+database.connect().then(() => {
+  console.log('MongoDB connection established successfully');
+}).catch(error => {
+  console.error('Failed to connect to MongoDB:', error);
+  console.log('Will attempt to connect on first database request');
 });
 
 // Middleware
@@ -48,11 +68,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-// View Engine
+
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Session Configuration - Updated for Vercel
+
 if (!process.env.SESSION_SECRET) {
     console.error('WARNING: SESSION_SECRET environment variable is not set. Using a default secret is not secure for production.');
 }
@@ -214,7 +234,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Signup Route - Updated to use MongoDB with enhanced error logging
-app.post('/signup', async (req, res) => {
+app.post('/signup', ensureDbConnection, async (req, res) => {
   console.log('Signup request received:', { body: req.body });
   
   try {
@@ -328,7 +348,7 @@ app.post('/signup', async (req, res) => {
 });
 
 // Login Route - Updated to use MongoDB
-app.post('/login', async (req, res) => {
+app.post('/login', ensureDbConnection, async (req, res) => {
   try {
     const { email, password } = req.body;
     
@@ -436,7 +456,7 @@ app.get('/CustomOnboarding', (req, res) => {
 });
 
 // Complete Onboarding Route - Updated to use MongoDB
-app.post('/CustomOnboarding/complete', async (req, res) => {
+app.post('/CustomOnboarding/complete', ensureDbConnection, async (req, res) => {
   try {
     const { onboardingData, token } = req.body;
     console.log('Received onboarding data:', onboardingData); // Debug log
@@ -614,7 +634,7 @@ app.get('/forgot-password', (req, res) => {
   res.render('forgot-password');
 });
 
-app.post('/forgot-password', async (req, res) => {
+app.post('/forgot-password', ensureDbConnection, async (req, res) => {
   try {
     const { email } = req.body;
     
@@ -758,7 +778,7 @@ app.post('/verify-reset-otp', async (req, res) => {
   }
 });
 
-app.post('/reset-password', async (req, res) => {
+app.post('/reset-password', ensureDbConnection, async (req, res) => {
   try {
     const { newPassword, confirmPassword } = req.body;
     
