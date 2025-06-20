@@ -71,18 +71,6 @@ app.use(express.static('public'));
 app.set('json spaces', 0);
 app.set('json replacer', null);
 
-// Custom JSON response middleware to fix serialization issues
-app.use((req, res, next) => {
-  const originalJson = res.json;
-  res.json = function(obj) {
-    // Ensure proper JSON serialization
-    const jsonString = JSON.stringify(obj, null, 0);
-    res.setHeader('Content-Type', 'application/json');
-    return res.send(jsonString);
-  };
-  next();
-});
-
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));

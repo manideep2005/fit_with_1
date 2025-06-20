@@ -49,7 +49,7 @@ module.exports = async (req, res) => {
       console.error('Error loading app:', error);
       console.error('Stack trace:', error.stack);
       
-      return res.status(500).json({
+      const errorResponse = {
         error: 'Internal Server Error',
         message: 'Failed to initialize application',
         details: error.message,
@@ -57,7 +57,9 @@ module.exports = async (req, res) => {
         timestamp: new Date().toISOString(),
         url: req.url,
         method: req.method
-      });
+      };
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(500).send(JSON.stringify(errorResponse));
     }
   }
 
@@ -70,23 +72,27 @@ module.exports = async (req, res) => {
       return app(req, res);
     } catch (error) {
       console.error('Error handling request:', error);
-      return res.status(500).json({
+      const errorResponse = {
         error: 'Request handling failed',
         message: error.message,
         timestamp: new Date().toISOString(),
         url: req.url,
         method: req.method
-      });
+      };
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(500).send(JSON.stringify(errorResponse));
     }
   } else {
     console.error('App is not a function:', typeof app);
-    return res.status(500).json({
+    const errorResponse = {
       error: 'Internal Server Error',
       message: 'Application is not properly initialized',
       appType: typeof app,
       timestamp: new Date().toISOString(),
       url: req.url,
       method: req.method
-    });
+    };
+    res.setHeader('Content-Type', 'application/json');
+    return res.status(500).send(JSON.stringify(errorResponse));
   }
 };

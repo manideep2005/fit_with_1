@@ -30,6 +30,10 @@
       "use": "@vercel/node"
     },
     {
+      "src": "api/json-test.js",
+      "use": "@vercel/node"
+    },
+    {
       "src": "public/**/*",
       "use": "@vercel/static"
     }
@@ -54,6 +58,10 @@
     {
       "src": "/api/test-onboarding",
       "dest": "/api/test-onboarding.js"
+    },
+    {
+      "src": "/api/json-test",
+      "dest": "/api/json-test.js"
     },
     {
       "src": "/api/(.*)",
