@@ -63,9 +63,25 @@ database.connect().then(() => {
 });
 
 // Middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('public'));
+
+// Ensure proper JSON serialization
+app.set('json spaces', 0);
+app.set('json replacer', null);
+
+// Custom JSON response middleware to fix serialization issues
+app.use((req, res, next) => {
+  const originalJson = res.json;
+  res.json = function(obj) {
+    // Ensure proper JSON serialization
+    const jsonString = JSON.stringify(obj, null, 0);
+    res.setHeader('Content-Type', 'application/json');
+    return res.send(jsonString);
+  };
+  next();
+});
 
 
 app.set('view engine', 'ejs');
