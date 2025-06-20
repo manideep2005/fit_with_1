@@ -95,6 +95,33 @@
         .nav-link i {
             margin-right: 10px;
             font-size: 1.2rem;
+        }        
+        
+        .logout-section {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--light-gray);
+        }
+        
+        .logout-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 1rem;
+            color: var(--danger);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .logout-link:hover {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+        
+        .logout-link i {
+            margin-right: 10px;
+            font-size: 1.2rem;
         }
         
         .main-content {
@@ -310,6 +337,169 @@
         .facebook { background: #3B5998; }
         .fitbit { background: #00B0B9; }
         
+        .subscription-content {
+            display: none;
+        }
+        
+        .subscription-content.active {
+            display: block;
+        }
+        
+        .current-plan {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .plan-name {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .plan-price {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .plan-features {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+        
+        .plan-features li {
+            margin-bottom: 0.5rem;
+            opacity: 0.9;
+        }
+        
+        .plan-features li:before {
+            content: "✓";
+            margin-right: 0.5rem;
+            font-weight: bold;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .pricing-card {
+            background: white;
+            border: 2px solid var(--light-gray);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .pricing-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(108, 99, 255, 0.2);
+        }
+        
+        .pricing-card.popular {
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+        
+        .popular-badge {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .pricing-plan-name {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        .pricing-plan-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .pricing-plan-period {
+            color: var(--gray);
+            margin-bottom: 2rem;
+        }
+        
+        .pricing-features {
+            list-style: none;
+            padding: 0;
+            margin: 2rem 0;
+            text-align: left;
+        }
+        
+        .pricing-features li {
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .pricing-features li:before {
+            content: "✓";
+            color: var(--success);
+            font-weight: bold;
+            margin-right: 0.8rem;
+            font-size: 1.1rem;
+        }
+        
+        .pricing-features li.unavailable {
+            color: var(--gray);
+            opacity: 0.6;
+        }
+        
+        .pricing-features li.unavailable:before {
+            content: "✗";
+            color: var(--gray);
+        }
+        
+        .btn-upgrade {
+            width: 100%;
+            padding: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .payment-methods {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .payment-method {
+            padding: 8px 16px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
         @media (max-width: 768px) {
             .settings-container {
                 flex-direction: column;
@@ -335,11 +525,22 @@
                 <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
                 <div>
                     <h3 class="user-name"><%= user.fullName %></h3>
-                    <span class="user-plan">Premium Plan</span>
+                    <span class="user-plan">
+                        <% 
+                        const planNames = {
+                            'free': 'Free Plan',
+                            'basic': 'Basic Plan', 
+                            'premium': 'Premium Plan',
+                            'pro': 'Pro Plan'
+                        };
+                        const currentPlan = user.subscription?.plan || 'free';
+                        %>
+                        <%= planNames[currentPlan] || 'Free Plan' %>
+                    </span>
                 </div>
             </div>
             
-             <ul class="nav-menu">
+            <ul class="nav-menu">
                 <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li class="nav-item"><a href="/workouts" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
                 <li class="nav-item"><a href="/progress" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
@@ -353,6 +554,13 @@
                 <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
                 <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
             </ul>
+            
+            <!-- Logout Section -->
+            <div class="logout-section">
+                <a href="/logout" class="logout-link" onclick="return confirmLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
         </div>
         
         <!-- Main Content -->
@@ -369,12 +577,12 @@
                 <div class="tab">Preferences</div>
                 <div class="tab">Notifications</div>
                 <div class="tab">Security</div>
-                <div class="tab">Billing</div>
+                <div class="tab" id="billingTab">Subscription</div>
                 <div class="tab">Advanced</div>
             </div>
             
             <!-- Account Settings Card -->
-            <div class="settings-card">
+            <div class="settings-card account-content">
                 <div class="card-header">
                     <h2 class="card-title">Profile Information</h2>
                     <span class="badge badge-success">Active</span>
@@ -412,7 +620,7 @@
             </div>
             
             <!-- Connected Accounts Card -->
-            <div class="settings-card">
+            <div class="settings-card account-content">
                 <div class="card-header">
                     <h2 class="card-title">Connected Accounts</h2>
                 </div>
@@ -458,7 +666,7 @@
             </div>
             
             <!-- Account Security Card -->
-            <div class="settings-card">
+            <div class="settings-card account-content">
                 <div class="card-header">
                     <h2 class="card-title">Account Security</h2>
                 </div>
@@ -498,7 +706,7 @@
             </div>
             
             <!-- Danger Zone Card -->
-            <div class="settings-card" style="border-left: 4px solid var(--danger);">
+            <div class="settings-card account-content" style="border-left: 4px solid var(--danger);">
                 <div class="card-header">
                     <h2 class="card-title" style="color: var(--danger);">Danger Zone</h2>
                 </div>
@@ -523,18 +731,288 @@
                     </div>
                 </div>
             </div>
+            
+            <!-- Subscription Content -->
+            <div class="subscription-content">
+                <!-- Current Plan Card -->
+                <div class="current-plan">
+                    <div class="plan-name" id="currentPlanName">
+                        <%= planNames[user.subscription?.plan || 'free'] || 'Free Plan' %>
+                    </div>
+                    <div class="plan-price" id="currentPlanPrice">
+                        <% 
+                        const planPrices = {
+                            'free': '$0',
+                            'basic': '$9.99', 
+                            'premium': '$19.99',
+                            'pro': '$29.99'
+                        };
+                        %>
+                        <%= planPrices[user.subscription?.plan || 'free'] || '$0' %>/month
+                    </div>
+                    <ul class="plan-features">
+                        <% if (currentPlan === 'free') { %>
+                            <li>Basic workout tracking</li>
+                            <li>Limited nutrition logging</li>
+                            <li>Basic progress charts</li>
+                        <% } else if (currentPlan === 'basic') { %>
+                            <li>Unlimited workout tracking</li>
+                            <li>Full nutrition logging</li>
+                            <li>Advanced progress charts</li>
+                            <li>Email support</li>
+                        <% } else if (currentPlan === 'premium') { %>
+                            <li>Everything in Basic</li>
+                            <li>AI-powered workout recommendations</li>
+                            <li>Meal planning & recipes</li>
+                            <li>Priority support</li>
+                        <% } else if (currentPlan === 'pro') { %>
+                            <li>Everything in Premium</li>
+                            <li>Personal AI fitness coach</li>
+                            <li>Custom workout programs</li>
+                            <li>1-on-1 coaching sessions</li>
+                        <% } %>
+                    </ul>
+                    <% if (currentPlan !== 'pro') { %>
+                        <button class="btn btn-outline" style="color: white; border-color: white;" onclick="showUpgradeOptions()">
+                            <i class="fas fa-arrow-up"></i> Upgrade Plan
+                        </button>
+                    <% } %>
+                </div>
+                
+                <!-- Pricing Plans -->
+                <div class="pricing-grid" id="pricingPlans" style="display: none;">
+                    <!-- Basic Plan -->
+                    <div class="pricing-card">
+                        <div class="pricing-plan-name">Basic Plan</div>
+                        <div class="pricing-plan-price">$9.99</div>
+                        <div class="pricing-plan-period">per month</div>
+                        <ul class="pricing-features">
+                            <li>Unlimited workout tracking</li>
+                            <li>Full nutrition logging</li>
+                            <li>Advanced progress charts</li>
+                            <li>Email support</li>
+                            <li class="unavailable">AI workout recommendations</li>
+                            <li class="unavailable">Meal planning</li>
+                        </ul>
+                        <button class="btn btn-primary btn-upgrade" onclick="upgradePlan('basic', 9.99)">
+                            Choose Basic
+                        </button>
+                    </div>
+                    
+                    <!-- Premium Plan -->
+                    <div class="pricing-card popular">
+                        <div class="popular-badge">Most Popular</div>
+                        <div class="pricing-plan-name">Premium Plan</div>
+                        <div class="pricing-plan-price">$19.99</div>
+                        <div class="pricing-plan-period">per month</div>
+                        <ul class="pricing-features">
+                            <li>Everything in Basic</li>
+                            <li>AI-powered workout recommendations</li>
+                            <li>Meal planning & recipes</li>
+                            <li>Advanced analytics</li>
+                            <li>Priority support</li>
+                            <li class="unavailable">Personal AI coach</li>
+                        </ul>
+                        <button class="btn btn-primary btn-upgrade" onclick="upgradePlan('premium', 19.99)">
+                            Choose Premium
+                        </button>
+                    </div>
+                    
+                    <!-- Pro Plan -->
+                    <div class="pricing-card">
+                        <div class="pricing-plan-name">Pro Plan</div>
+                        <div class="pricing-plan-price">$29.99</div>
+                        <div class="pricing-plan-period">per month</div>
+                        <ul class="pricing-features">
+                            <li>Everything in Premium</li>
+                            <li>Personal AI fitness coach</li>
+                            <li>Custom workout programs</li>
+                            <li>1-on-1 coaching sessions</li>
+                            <li>Nutrition consultation</li>
+                            <li>24/7 priority support</li>
+                        </ul>
+                        <button class="btn btn-primary btn-upgrade" onclick="upgradePlan('pro', 29.99)">
+                            Choose Pro
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Payment Methods -->
+                <div class="payment-methods">
+                    <div class="payment-method">
+                        <i class="fab fa-cc-visa"></i>
+                        <span>Visa</span>
+                    </div>
+                    <div class="payment-method">
+                        <i class="fab fa-cc-mastercard"></i>
+                        <span>Mastercard</span>
+                    </div>
+                    <div class="payment-method">
+                        <i class="fab fa-cc-paypal"></i>
+                        <span>PayPal</span>
+                    </div>
+                    <div class="payment-method">
+                        <i class="fab fa-apple-pay"></i>
+                        <span>Apple Pay</span>
+                    </div>
+                </div>
+                
+                <!-- Payment History -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Payment History</h2>
+                    </div>
+                    <div id="paymentHistory">
+                        <% if (user.subscription?.paymentHistory && user.subscription.paymentHistory.length > 0) { %>
+                            <% user.subscription.paymentHistory.forEach(payment => { %>
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--light-gray);">
+                                    <div>
+                                        <strong><%= payment.plan %> Plan</strong>
+                                        <br>
+                                        <small style="color: var(--gray);"><%= new Date(payment.date).toLocaleDateString() %></small>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <strong>$<%= payment.amount %></strong>
+                                        <br>
+                                        <span class="badge badge-success"><%= payment.status %></span>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <p style="text-align: center; color: var(--gray); padding: 2rem;">
+                                No payment history available
+                            </p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
     <script>
-        // Simple tab switching functionality
+        // Tab switching functionality
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
-                // Here you would add logic to show/hide the appropriate content sections
+                
+                // Show/hide content based on tab
+                if (this.id === 'billingTab') {
+                    document.querySelectorAll('.account-content').forEach(el => el.style.display = 'none');
+                    document.querySelector('.subscription-content').classList.add('active');
+                } else {
+                    document.querySelectorAll('.account-content').forEach(el => el.style.display = 'block');
+                    document.querySelector('.subscription-content').classList.remove('active');
+                }
             });
         });
+
+        // Show upgrade options
+        function showUpgradeOptions() {
+            const pricingPlans = document.getElementById('pricingPlans');
+            if (pricingPlans.style.display === 'none') {
+                pricingPlans.style.display = 'grid';
+            } else {
+                pricingPlans.style.display = 'none';
+            }
+        }
+
+        // Upgrade plan function
+        async function upgradePlan(planType, price) {
+            try {
+                // Show loading state
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                button.disabled = true;
+
+                // Simulate payment processing
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Call API to upgrade subscription
+                const response = await fetch('/api/subscription/upgrade', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        plan: planType,
+                        amount: price,
+                        paymentMethod: 'Credit Card',
+                        duration: 'monthly'
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Show success message
+                    showNotification('Subscription upgraded successfully!', 'success');
+                    
+                    // Update current plan display
+                    updateCurrentPlanDisplay(planType, price);
+                    
+                    // Hide pricing plans
+                    document.getElementById('pricingPlans').style.display = 'none';
+                    
+                    // Refresh page after a short delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showNotification('Upgrade failed: ' + result.error, 'error');
+                }
+
+            } catch (error) {
+                console.error('Upgrade error:', error);
+                showNotification('Upgrade failed. Please try again.', 'error');
+            } finally {
+                // Reset button
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        }
+
+        // Update current plan display
+        function updateCurrentPlanDisplay(planType, price) {
+            const planNames = {
+                'basic': 'Basic Plan',
+                'premium': 'Premium Plan',
+                'pro': 'Pro Plan'
+            };
+            
+            document.getElementById('currentPlanName').textContent = planNames[planType];
+            document.getElementById('currentPlanPrice').textContent = `$${price}/month`;
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 2000;
+                background: ${type === 'success' ? '#28A745' : '#DC3545'};
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 4000);
+        }
+
+        // Logout confirmation
+        function confirmLogout() {
+            return confirm('Are you sure you want to logout?');
+        }
     </script>
 </body>
 </html>

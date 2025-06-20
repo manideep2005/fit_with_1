@@ -10,7 +10,7 @@ const http = require('http');
 const querystring = require('querystring');
 
 // Configuration
-const BASE_URL = process.env.TEST_URL || 'https://fit-with-1.vercel.app';
+const BASE_URL = process.env.TEST_URL || 'https://fit-with-1-8tdayn7ye-gonugunta-manideeps-projects.vercel.app';
 const TEST_EMAIL = `test-${Date.now()}@example.com`;
 const TEST_PASSWORD = 'testpassword123';
 const TEST_NAME = 'Test User';

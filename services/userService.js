@@ -7,8 +7,8 @@ class UserService {
     try {
       const { email, password, fullName } = userData;
       
-      // Check if user already exists
-      const existingUser = await User.findByEmail(email);
+      // Check if user already exists using direct query
+      const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
       if (existingUser) {
         throw new Error('User already exists with this email');
       }
@@ -34,25 +34,60 @@ class UserService {
     }
   }
   
-  // Authenticate user
+  // Authenticate user - FIXED to handle schema corruption gracefully
   static async authenticateUser(email, password) {
     try {
-      const user = await User.findByEmail(email);
+      const mongoose = require('mongoose');
+      const bcrypt = require('bcrypt');
+      
+      // Use direct MongoDB operations to avoid schema issues during authentication
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      // Find user directly from collection
+      const user = await collection.findOne({ email: email.toLowerCase().trim() });
       if (!user) {
         throw new Error('Invalid email or password');
       }
       
-      const isValidPassword = await user.comparePassword(password);
+      // Verify password using bcrypt directly
+      const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
         throw new Error('Invalid email or password');
       }
       
-      // Update last login
-      await user.updateLastLogin();
+      // Update last login using direct MongoDB operations
+      await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { 
+          $set: { lastLogin: new Date() },
+          $inc: { loginCount: 1 }
+        }
+      );
       
-      // Return user without password
-      const userObject = user.toObject();
-      delete userObject.password;
+      // Return user without password, ensuring arrays are properly formatted
+      const userObject = {
+        _id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        isActive: user.isActive !== false, // Default to true if undefined
+        isVerified: user.isVerified || false,
+        onboardingCompleted: user.onboardingCompleted || false,
+        personalInfo: user.personalInfo || {},
+        fitnessGoals: user.fitnessGoals || {},
+        healthInfo: user.healthInfo || {},
+        preferences: user.preferences || {},
+        subscription: user.subscription || { plan: 'free', status: 'active' },
+        workouts: Array.isArray(user.workouts) ? user.workouts : [],
+        biometrics: Array.isArray(user.biometrics) ? user.biometrics : [],
+        nutritionLogs: Array.isArray(user.nutritionLogs) ? user.nutritionLogs : [],
+        friends: Array.isArray(user.friends) ? user.friends : [],
+        challenges: Array.isArray(user.challenges) ? user.challenges : [],
+        lastLogin: new Date(),
+        loginCount: (user.loginCount || 0) + 1,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      };
       
       return userObject;
     } catch (error) {
@@ -61,17 +96,43 @@ class UserService {
     }
   }
   
-  // Get user by email
+  // Get user by email (returns plain object) - FIXED to handle schema corruption
   static async getUserByEmail(email) {
     try {
-      const user = await User.findByEmail(email);
+      const mongoose = require('mongoose');
+      
+      // Use direct MongoDB operations to avoid schema issues
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      const user = await collection.findOne({ email: email.toLowerCase().trim() });
       if (!user) {
         return null;
       }
       
-      // Return user without password
-      const userObject = user.toObject();
-      delete userObject.password;
+      // Return user without password, ensuring arrays are properly formatted
+      const userObject = {
+        _id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        isActive: user.isActive !== false,
+        isVerified: user.isVerified || false,
+        onboardingCompleted: user.onboardingCompleted || false,
+        personalInfo: user.personalInfo || {},
+        fitnessGoals: user.fitnessGoals || {},
+        healthInfo: user.healthInfo || {},
+        preferences: user.preferences || {},
+        subscription: user.subscription || { plan: 'free', status: 'active' },
+        workouts: Array.isArray(user.workouts) ? user.workouts : [],
+        biometrics: Array.isArray(user.biometrics) ? user.biometrics : [],
+        nutritionLogs: Array.isArray(user.nutritionLogs) ? user.nutritionLogs : [],
+        friends: Array.isArray(user.friends) ? user.friends : [],
+        challenges: Array.isArray(user.challenges) ? user.challenges : [],
+        lastLogin: user.lastLogin,
+        loginCount: user.loginCount || 0,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt
+      };
       
       return userObject;
     } catch (error) {
@@ -99,10 +160,10 @@ class UserService {
     }
   }
   
-  // Complete user onboarding
+  // Complete user onboarding - FIXED to use Mongoose document
   static async completeOnboarding(email, onboardingData) {
     try {
-      const user = await User.findByEmail(email);
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
       if (!user) {
         throw new Error('User not found');
       }
@@ -123,7 +184,7 @@ class UserService {
   // Update user profile
   static async updateUserProfile(email, updateData) {
     try {
-      const user = await User.findByEmail(email);
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
       if (!user) {
         throw new Error('User not found');
       }
@@ -150,18 +211,30 @@ class UserService {
     }
   }
   
-  // Add workout
+  // Add workout - FIXED to use direct MongoDB operations to avoid schema conflicts
   static async addWorkout(email, workoutData) {
     try {
-      const user = await User.findByEmail(email);
-      if (!user) {
+      const mongoose = require('mongoose');
+      
+      // Use direct MongoDB collection operations to completely bypass Mongoose schema issues
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      const result = await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { $push: { workouts: workoutData } }
+      );
+      
+      if (result.matchedCount === 0) {
         throw new Error('User not found');
       }
       
-      user.workouts.push(workoutData);
-      await user.save();
+      if (result.modifiedCount === 0) {
+        throw new Error('Failed to add workout');
+      }
       
-      return user.workouts[user.workouts.length - 1];
+      // Return the workout data that was added
+      return workoutData;
     } catch (error) {
       console.error('Error adding workout:', error);
       throw error;
@@ -171,12 +244,14 @@ class UserService {
   // Get user workouts
   static async getUserWorkouts(email, limit = 10) {
     try {
-      const user = await User.findByEmail(email);
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
       if (!user) {
         throw new Error('User not found');
       }
       
-      return user.workouts
+      // Ensure workouts is an array before sorting
+      const workouts = user.workouts || [];
+      return workouts
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .slice(0, limit);
     } catch (error) {
@@ -185,18 +260,30 @@ class UserService {
     }
   }
   
-  // Add biometric data
+  // Add biometric data - FIXED to use direct MongoDB operations to avoid schema conflicts
   static async addBiometrics(email, biometricData) {
     try {
-      const user = await User.findByEmail(email);
-      if (!user) {
+      const mongoose = require('mongoose');
+      
+      // Use direct MongoDB collection operations to completely bypass Mongoose schema issues
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      const result = await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { $push: { biometrics: biometricData } }
+      );
+      
+      if (result.matchedCount === 0) {
         throw new Error('User not found');
       }
       
-      user.biometrics.push(biometricData);
-      await user.save();
+      if (result.modifiedCount === 0) {
+        throw new Error('Failed to add biometric data');
+      }
       
-      return user.biometrics[user.biometrics.length - 1];
+      // Return the biometric data that was added
+      return biometricData;
     } catch (error) {
       console.error('Error adding biometrics:', error);
       throw error;
@@ -206,12 +293,14 @@ class UserService {
   // Get user biometrics
   static async getUserBiometrics(email, limit = 10) {
     try {
-      const user = await User.findByEmail(email);
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
       if (!user) {
         throw new Error('User not found');
       }
       
-      return user.biometrics
+      // Ensure biometrics is an array before sorting
+      const biometrics = user.biometrics || [];
+      return biometrics
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .slice(0, limit);
     } catch (error) {
@@ -220,18 +309,30 @@ class UserService {
     }
   }
   
-  // Add nutrition log
+  // Add nutrition log - FIXED to use direct MongoDB operations to avoid schema conflicts
   static async addNutritionLog(email, nutritionData) {
     try {
-      const user = await User.findByEmail(email);
-      if (!user) {
+      const mongoose = require('mongoose');
+      
+      // Use direct MongoDB collection operations to completely bypass Mongoose schema issues
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      const result = await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { $push: { nutritionLogs: nutritionData } }
+      );
+      
+      if (result.matchedCount === 0) {
         throw new Error('User not found');
       }
       
-      user.nutritionLogs.push(nutritionData);
-      await user.save();
+      if (result.modifiedCount === 0) {
+        throw new Error('Failed to add nutrition log');
+      }
       
-      return user.nutritionLogs[user.nutritionLogs.length - 1];
+      // Return the nutrition data that was added
+      return nutritionData;
     } catch (error) {
       console.error('Error adding nutrition log:', error);
       throw error;
@@ -241,12 +342,14 @@ class UserService {
   // Get user nutrition logs
   static async getUserNutritionLogs(email, limit = 7) {
     try {
-      const user = await User.findByEmail(email);
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
       if (!user) {
         throw new Error('User not found');
       }
       
-      return user.nutritionLogs
+      // Ensure nutritionLogs is an array before sorting
+      const nutritionLogs = user.nutritionLogs || [];
+      return nutritionLogs
         .sort((a, b) => new Date(b.date) - new Date(a.date))
         .slice(0, limit);
     } catch (error) {
@@ -255,10 +358,14 @@ class UserService {
     }
   }
   
-  // Update password
+  // Update password - FIXED to use direct MongoDB operations
   static async updatePassword(email, currentPassword, newPassword) {
     try {
-      const user = await User.findByEmail(email);
+      const mongoose = require('mongoose');
+      const bcrypt = require('bcrypt');
+      
+      // Get user using Mongoose for password comparison
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
       if (!user) {
         throw new Error('User not found');
       }
@@ -269,9 +376,27 @@ class UserService {
         throw new Error('Current password is incorrect');
       }
       
-      // Update password
-      user.password = newPassword;
-      await user.save();
+      // Use direct MongoDB operations to update password
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      // Hash the new password
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+      
+      // Update password directly in database
+      const result = await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { $set: { password: hashedPassword } }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('User not found');
+      }
+      
+      if (result.modifiedCount === 0) {
+        throw new Error('Failed to update password');
+      }
       
       return { success: true, message: 'Password updated successfully' };
     } catch (error) {
@@ -280,17 +405,39 @@ class UserService {
     }
   }
   
-  // Reset password (for forgot password functionality)
+  // Reset password (for forgot password functionality) - FIXED to use direct MongoDB operations
   static async resetPassword(email, newPassword) {
     try {
-      const user = await User.findByEmail(email);
+      const mongoose = require('mongoose');
+      const bcrypt = require('bcrypt');
+      
+      // Use direct MongoDB operations to avoid schema conflicts
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      // Check if user exists
+      const user = await collection.findOne({ email: email.toLowerCase().trim() });
       if (!user) {
         throw new Error('User not found');
       }
       
-      // Update password without requiring current password
-      user.password = newPassword;
-      await user.save();
+      // Hash the new password
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+      
+      // Update password directly in database
+      const result = await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { $set: { password: hashedPassword } }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('User not found');
+      }
+      
+      if (result.modifiedCount === 0) {
+        throw new Error('Failed to update password');
+      }
       
       return { success: true, message: 'Password reset successfully' };
     } catch (error) {
@@ -302,7 +449,7 @@ class UserService {
   // Delete user account
   static async deleteUser(email, password) {
     try {
-      const user = await User.findByEmail(email);
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
       if (!user) {
         throw new Error('User not found');
       }
@@ -322,19 +469,64 @@ class UserService {
     }
   }
   
-  // Get user statistics
-  static async getUserStats(email) {
+  // Update user preferences - FIXED to use direct MongoDB operations to avoid schema conflicts
+  static async updateUserPreferences(email, preferences) {
     try {
-      const user = await User.findByEmail(email);
+      // Get current user preferences first
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
       if (!user) {
         throw new Error('User not found');
       }
       
+      // Merge preferences
+      const updatedPreferences = { 
+        ...user.preferences?.toObject?.() || user.preferences || {}, 
+        ...preferences 
+      };
+      
+      // Use direct MongoDB update operation
+      const result = await User.updateOne(
+        { email: email.toLowerCase().trim() },
+        { $set: { preferences: updatedPreferences } }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('User not found');
+      }
+      
+      if (result.modifiedCount === 0) {
+        throw new Error('Failed to update preferences');
+      }
+      
+      // Return updated user without password
+      const updatedUser = await User.findOne({ email: email.toLowerCase().trim() });
+      const userObject = updatedUser.toObject();
+      delete userObject.password;
+      
+      return userObject;
+    } catch (error) {
+      console.error('Error updating user preferences:', error);
+      throw error;
+    }
+  }
+
+  // Get user statistics
+  static async getUserStats(email) {
+    try {
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
+      if (!user) {
+        throw new Error('User not found');
+      }
+      
+      // Ensure arrays exist before processing
+      const workouts = user.workouts || [];
+      const biometrics = user.biometrics || [];
+      
       const stats = {
-        totalWorkouts: user.workouts.length,
-        totalWorkoutTime: user.workouts.reduce((total, workout) => total + (workout.duration || 0), 0),
-        totalCaloriesBurned: user.workouts.reduce((total, workout) => total + (workout.calories || 0), 0),
-        currentWeight: user.latestBiometrics?.weight || user.personalInfo?.weight,
+        totalWorkouts: workouts.length,
+        totalWorkoutTime: workouts.reduce((total, workout) => total + (workout.duration || 0), 0),
+        totalCaloriesBurned: workouts.reduce((total, workout) => total + (workout.calories || 0), 0),
+        currentWeight: biometrics.length > 0 ? biometrics[biometrics.length - 1]?.weight : user.personalInfo?.weight,
         bmi: user.bmi,
         memberSince: user.createdAt,
         lastLogin: user.lastLogin,
@@ -345,6 +537,77 @@ class UserService {
       return stats;
     } catch (error) {
       console.error('Error getting user stats:', error);
+      throw error;
+    }
+  }
+
+  // Subscription Management Methods
+  
+  // Update user subscription
+  static async updateSubscription(email, subscriptionData) {
+    try {
+      const mongoose = require('mongoose');
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      const result = await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { $set: { subscription: subscriptionData } }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('User not found');
+      }
+      
+      if (result.modifiedCount === 0) {
+        throw new Error('Failed to update subscription');
+      }
+      
+      return { success: true, message: 'Subscription updated successfully' };
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      throw error;
+    }
+  }
+  
+  // Add payment to user's payment history
+  static async addPayment(email, paymentData) {
+    try {
+      const mongoose = require('mongoose');
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      const result = await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { $push: { 'subscription.paymentHistory': paymentData } }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('User not found');
+      }
+      
+      if (result.modifiedCount === 0) {
+        throw new Error('Failed to add payment');
+      }
+      
+      return paymentData;
+    } catch (error) {
+      console.error('Error adding payment:', error);
+      throw error;
+    }
+  }
+  
+  // Get user subscription details
+  static async getSubscription(email) {
+    try {
+      const user = await this.getUserByEmail(email);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      
+      return user.subscription || { plan: 'free', status: 'active' };
+    } catch (error) {
+      console.error('Error getting subscription:', error);
       throw error;
     }
   }

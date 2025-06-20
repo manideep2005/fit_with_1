@@ -12,12 +12,11 @@ const path = require('path');
 console.log('Loading services...');
 const { sendWelcomeEmail, generateOTP, sendPasswordResetOTP, sendPasswordResetConfirmation } = require('./services/emailService');
 
-// MongoDB connection
+
 const database = require('./config/database');
 const UserService = require('./services/userService');
 console.log('Services loaded successfully');
 
-// Handle Redis connection gracefully for Vercel
 let redisClient = null;
 try {
   if (process.env.REDIS_URL && !process.env.VERCEL) {
@@ -34,7 +33,7 @@ try {
 
 const app = express();
 
-// Database connection middleware
+
 const ensureDbConnection = async (req, res, next) => {
   try {
     const status = database.getConnectionStatus();
@@ -54,7 +53,7 @@ const ensureDbConnection = async (req, res, next) => {
   }
 };
 
-// Initialize MongoDB connection (non-blocking)
+
 console.log('Initializing MongoDB connection...');
 database.connect().then(() => {
   console.log('MongoDB connection established successfully');
@@ -455,7 +454,7 @@ app.get('/CustomOnboarding', (req, res) => {
   });
 });
 
-// Complete Onboarding Route - Updated to use MongoDB
+// Complete Onboarding Route - Enhanced to save comprehensive data to MongoDB
 app.post('/CustomOnboarding/complete', ensureDbConnection, async (req, res) => {
   try {
     const { onboardingData, token } = req.body;
@@ -505,20 +504,67 @@ app.post('/CustomOnboarding/complete', ensureDbConnection, async (req, res) => {
       });
     }
 
+    // Transform onboarding data to match User schema
+    const transformedData = {
+      personalInfo: {
+        firstName: onboardingData.personalInfo?.firstName || '',
+        lastName: onboardingData.personalInfo?.lastName || '',
+        age: onboardingData.personalInfo?.age ? parseInt(onboardingData.personalInfo.age) : null,
+        gender: onboardingData.personalInfo?.gender || null,
+        height: onboardingData.bodyMetrics?.height ? parseFloat(onboardingData.bodyMetrics.height) : null,
+        weight: onboardingData.bodyMetrics?.weight ? parseFloat(onboardingData.bodyMetrics.weight) : null
+      },
+      fitnessGoals: {
+        primaryGoal: onboardingData.healthGoals?.goals?.[0] || null,
+        targetWeight: onboardingData.bodyMetrics?.targetWeight ? parseFloat(onboardingData.bodyMetrics.targetWeight) : null,
+        activityLevel: onboardingData.bodyMetrics?.activityLevel || null,
+        workoutFrequency: onboardingData.bodyMetrics?.workoutFrequency ? parseInt(onboardingData.bodyMetrics.workoutFrequency) : null,
+        preferredWorkoutTypes: onboardingData.healthGoals?.goals || [],
+        fitnessExperience: 'beginner' // Default, can be enhanced later
+      },
+      healthInfo: {
+        dietaryRestrictions: onboardingData.dietaryPreferences?.allergies || [],
+        smokingStatus: onboardingData.lifestyle?.smokingStatus || 'never',
+        alcoholConsumption: onboardingData.lifestyle?.alcoholConsumption || 'none'
+      },
+      preferences: {
+        workoutTime: 'morning', // Default, can be enhanced later
+        workoutDuration: 60, // Default 60 minutes
+        equipmentAccess: [], // Can be enhanced later
+        notifications: {
+          email: true,
+          push: true,
+          workout: true,
+          nutrition: true,
+          progress: true
+        },
+        privacy: {
+          profileVisibility: 'friends',
+          shareProgress: false,
+          shareWorkouts: false
+        }
+      }
+    };
+
+    console.log('Transformed onboarding data:', transformedData);
+
     // Save onboarding data to database
-    const updatedUser = await UserService.completeOnboarding(userEmail, onboardingData);
+    const updatedUser = await UserService.completeOnboarding(userEmail, transformedData);
     
     // Update user session with onboarding data
-    const fullName = `${onboardingData.personalInfo?.firstName || ''} ${onboardingData.personalInfo?.lastName || ''}`.trim();
+    const fullName = `${transformedData.personalInfo?.firstName || ''} ${transformedData.personalInfo?.lastName || ''}`.trim();
     
     req.session.user = {
       ...req.session.user,
       _id: updatedUser._id,
       email: updatedUser.email,
       onboardingCompleted: updatedUser.onboardingCompleted,
-      onboardingData: onboardingData,
+      onboardingData: transformedData,
       fullName: fullName || updatedUser.fullName || 'User',
       personalInfo: updatedUser.personalInfo,
+      fitnessGoals: updatedUser.fitnessGoals,
+      healthInfo: updatedUser.healthInfo,
+      preferences: updatedUser.preferences,
       tempUser: false // No longer temporary
     };
 
@@ -540,16 +586,16 @@ app.post('/CustomOnboarding/complete', ensureDbConnection, async (req, res) => {
       const dashboardToken = Buffer.from(JSON.stringify({
         email: userEmail,
         fullName: fullName || 'User',
-        firstName: onboardingData.personalInfo?.firstName || '',
+        firstName: transformedData.personalInfo?.firstName || '',
         timestamp: Date.now(),
         sessionId: req.sessionID,
-        onboardingData: onboardingData
+        onboardingData: transformedData
       })).toString('base64');
 
       // Send onboarding completion email
       try {
         const { sendOnboardingCompletionEmail } = require('./services/emailService');
-        await sendOnboardingCompletionEmail(userEmail, fullName || userName, onboardingData);
+        await sendOnboardingCompletionEmail(userEmail, fullName || userName, transformedData);
         console.log('Onboarding completion email sent successfully');
       } catch (emailError) {
         console.error('Failed to send onboarding completion email:', emailError);
@@ -875,6 +921,696 @@ app.get('/api/debug', (req, res) => {
   });
 });
 
+// API Routes for Dashboard Data Management
+
+// Add Workout Route
+app.post('/api/workouts', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { type, duration, calories, exercises, notes } = req.body;
+    const userEmail = req.session.user.email;
+
+    const workoutData = {
+      date: new Date(),
+      type: type || 'General',
+      duration: duration ? parseInt(duration) : 0,
+      calories: calories ? parseInt(calories) : 0,
+      exercises: exercises || [],
+      notes: notes || ''
+    };
+
+    const updatedUser = await UserService.addWorkout(userEmail, workoutData);
+    
+    // Process gamification for workout completion
+    let gamificationResults = null;
+    try {
+      gamificationResults = await gamificationService.processWorkoutCompletion(updatedUser._id, workoutData);
+      console.log('Gamification results for workout:', gamificationResults);
+    } catch (gamificationError) {
+      console.error('Gamification processing error:', gamificationError);
+      // Don't fail the workout logging if gamification fails
+    }
+    
+    res.json({
+      success: true,
+      message: 'Workout logged successfully',
+      workout: workoutData,
+      gamification: gamificationResults
+    });
+
+  } catch (error) {
+    console.error('Add workout error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to log workout'
+    });
+  }
+});
+
+// Add Biometric Data Route
+app.post('/api/biometrics', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { weight, bodyFat, muscleMass, measurements } = req.body;
+    const userEmail = req.session.user.email;
+
+    const biometricData = {
+      date: new Date(),
+      weight: weight ? parseFloat(weight) : null,
+      bodyFat: bodyFat ? parseFloat(bodyFat) : null,
+      muscleMass: muscleMass ? parseFloat(muscleMass) : null,
+      measurements: measurements || {}
+    };
+
+    const updatedUser = await UserService.addBiometrics(userEmail, biometricData);
+    
+    res.json({
+      success: true,
+      message: 'Biometric data saved successfully',
+      biometrics: biometricData
+    });
+
+  } catch (error) {
+    console.error('Add biometrics error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to save biometric data'
+    });
+  }
+});
+
+// Add Nutrition Log Route
+app.post('/api/nutrition', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { meals, totalCalories, totalProtein, totalCarbs, totalFat, waterIntake } = req.body;
+    const userEmail = req.session.user.email;
+
+    const nutritionData = {
+      date: new Date(),
+      meals: meals || [],
+      totalCalories: totalCalories ? parseInt(totalCalories) : 0,
+      totalProtein: totalProtein ? parseFloat(totalProtein) : 0,
+      totalCarbs: totalCarbs ? parseFloat(totalCarbs) : 0,
+      totalFat: totalFat ? parseFloat(totalFat) : 0,
+      waterIntake: waterIntake ? parseInt(waterIntake) : 0
+    };
+
+    const updatedUser = await UserService.addNutritionLog(userEmail, nutritionData);
+    
+    // Process gamification for nutrition logging
+    let gamificationResults = null;
+    try {
+      gamificationResults = await gamificationService.processNutritionLog(updatedUser._id, nutritionData);
+      console.log('Gamification results for nutrition:', gamificationResults);
+    } catch (gamificationError) {
+      console.error('Gamification processing error:', gamificationError);
+      // Don't fail the nutrition logging if gamification fails
+    }
+    
+    res.json({
+      success: true,
+      message: 'Nutrition data logged successfully',
+      nutrition: nutritionData,
+      gamification: gamificationResults
+    });
+
+  } catch (error) {
+    console.error('Add nutrition error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to log nutrition data'
+    });
+  }
+});
+
+// Get Gamification Data Route
+app.get('/api/gamification-data', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const user = await UserService.getUserByEmail(userEmail);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // Get gamification data using the service
+    const gamificationData = await gamificationService.getGamificationData(user._id);
+    
+    res.json({
+      success: true,
+      data: gamificationData
+    });
+
+  } catch (error) {
+    console.error('Get gamification data error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch gamification data'
+    });
+  }
+});
+
+// Get User Dashboard Data Route
+app.get('/api/dashboard-data', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const user = await UserService.getUserByEmail(userEmail);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // Calculate dashboard statistics
+    const today = new Date();
+    const weekStart = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay());
+    
+    // Ensure arrays exist before processing - FIXED
+    const workouts = user.workouts || [];
+    const nutritionLogs = user.nutritionLogs || [];
+    const biometrics = user.biometrics || [];
+
+    console.log('Dashboard data - Arrays check:', {
+      workoutsLength: workouts.length,
+      nutritionLogsLength: nutritionLogs.length,
+      biometricsLength: biometrics.length
+    });
+
+    // Get this week's workouts
+    const thisWeekWorkouts = workouts.filter(workout => 
+      new Date(workout.date) >= weekStart
+    );
+
+    // Get today's nutrition - FIXED to sum all entries for today
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    
+    const todayNutritionLogs = nutritionLogs.filter(log => 
+      new Date(log.date) >= todayStart && new Date(log.date) < todayEnd
+    );
+
+    console.log('Dashboard data - Today nutrition logs found:', todayNutritionLogs.length);
+    
+    // Sum up all nutrition entries for today
+    const todayNutrition = todayNutritionLogs.reduce((total, log) => ({
+      totalCalories: (total.totalCalories || 0) + (log.totalCalories || 0),
+      totalProtein: (total.totalProtein || 0) + (log.totalProtein || 0),
+      totalCarbs: (total.totalCarbs || 0) + (log.totalCarbs || 0),
+      totalFat: (total.totalFat || 0) + (log.totalFat || 0),
+      waterIntake: (total.waterIntake || 0) + (log.waterIntake || 0)
+    }), {
+      totalCalories: 0,
+      totalProtein: 0,
+      totalCarbs: 0,
+      totalFat: 0,
+      waterIntake: 0
+    });
+
+    console.log('Today nutrition totals:', {
+      calories: todayNutrition.totalCalories,
+      protein: todayNutrition.totalProtein,
+      water: todayNutrition.waterIntake,
+      entriesCount: todayNutritionLogs.length
+    });
+
+    // Get latest biometrics
+    const latestBiometrics = biometrics.length > 0 
+      ? biometrics[biometrics.length - 1] 
+      : null;
+
+    const dashboardData = {
+      user: {
+        fullName: user.displayName || user.fullName,
+        firstName: user.personalInfo?.firstName || user.fullName?.split(' ')[0] || 'User',
+        email: user.email,
+        personalInfo: user.personalInfo,
+        fitnessGoals: user.fitnessGoals,
+        healthInfo: user.healthInfo,
+        preferences: user.preferences
+      },
+      stats: {
+        workoutsThisWeek: thisWeekWorkouts.length,
+        targetWorkoutsPerWeek: user.fitnessGoals?.workoutFrequency || 5,
+        todayCalories: todayNutrition.totalCalories || 0,
+        targetCalories: 2000, // Can be calculated based on user data
+        todayProtein: todayNutrition.totalProtein || 0,
+        targetProtein: 150, // Can be calculated based on user data
+        todayWater: todayNutrition.waterIntake || 0,
+        targetWater: 2500 // ml
+      },
+      recentWorkouts: thisWeekWorkouts.slice(-5),
+      latestBiometrics: latestBiometrics,
+      bmi: user.bmi
+    };
+
+    console.log('Dashboard data being sent:', {
+      workoutsThisWeek: dashboardData.stats.workoutsThisWeek,
+      todayCalories: dashboardData.stats.todayCalories,
+      todayWater: dashboardData.stats.todayWater
+    });
+
+    res.json({
+      success: true,
+      data: dashboardData
+    });
+
+  } catch (error) {
+    console.error('Get dashboard data error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch dashboard data'
+    });
+  }
+});
+
+// Update User Preferences Route
+app.put('/api/user/preferences', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const { preferences } = req.body;
+
+    const updatedUser = await UserService.updateUserPreferences(userEmail, preferences);
+    
+    // Update session
+    req.session.user.preferences = updatedUser.preferences;
+    
+    res.json({
+      success: true,
+      message: 'Preferences updated successfully',
+      preferences: updatedUser.preferences
+    });
+
+  } catch (error) {
+    console.error('Update preferences error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update preferences'
+    });
+  }
+});
+
+// Subscription Management Routes
+
+// Upgrade subscription
+app.post('/api/subscription/upgrade', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const { plan, amount, paymentMethod, duration } = req.body;
+
+    if (!plan || !amount) {
+      return res.status(400).json({
+        success: false,
+        error: 'Plan and amount are required'
+      });
+    }
+
+    // Generate a dummy transaction ID
+    const transactionId = 'TXN_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+    // Calculate end date (30 days from now for monthly)
+    const startDate = new Date();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + (duration === 'yearly' ? 365 : 30));
+
+    // Create subscription data
+    const subscriptionData = {
+      plan: plan,
+      status: 'active',
+      startDate: startDate,
+      endDate: endDate,
+      autoRenew: true,
+      paymentHistory: []
+    };
+
+    // Create payment record
+    const paymentData = {
+      date: new Date(),
+      amount: amount,
+      plan: plan,
+      duration: duration || 'monthly',
+      paymentMethod: paymentMethod || 'Credit Card',
+      transactionId: transactionId,
+      status: 'completed'
+    };
+
+    // Update subscription
+    await UserService.updateSubscription(userEmail, subscriptionData);
+    
+    // Add payment to history
+    await UserService.addPayment(userEmail, paymentData);
+
+    // Update session
+    req.session.user.subscription = subscriptionData;
+
+    res.json({
+      success: true,
+      message: 'Subscription upgraded successfully',
+      subscription: subscriptionData,
+      payment: paymentData
+    });
+
+  } catch (error) {
+    console.error('Subscription upgrade error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to upgrade subscription'
+    });
+  }
+});
+
+// Get subscription details
+app.get('/api/subscription', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const subscription = await UserService.getSubscription(userEmail);
+    
+    res.json({
+      success: true,
+      subscription: subscription
+    });
+
+  } catch (error) {
+    console.error('Get subscription error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get subscription details'
+    });
+  }
+});
+
+// Cancel subscription
+app.post('/api/subscription/cancel', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    
+    // Get current subscription
+    const currentSubscription = await UserService.getSubscription(userEmail);
+    
+    // Update subscription status to cancelled
+    const updatedSubscription = {
+      ...currentSubscription,
+      status: 'cancelled',
+      autoRenew: false
+    };
+
+    await UserService.updateSubscription(userEmail, updatedSubscription);
+
+    // Update session
+    req.session.user.subscription = updatedSubscription;
+
+    res.json({
+      success: true,
+      message: 'Subscription cancelled successfully',
+      subscription: updatedSubscription
+    });
+
+  } catch (error) {
+    console.error('Cancel subscription error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to cancel subscription'
+    });
+  }
+});
+
+// AI Coach API Routes
+const aiService = require('./services/aiService');
+const gamificationService = require('./services/gamificationService');
+
+// AI Chat endpoint
+app.post('/api/ai-chat', isAuthenticated, async (req, res) => {
+  try {
+    const { message } = req.body;
+    const userContext = req.session.user;
+
+    if (!message || message.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Message is required'
+      });
+    }
+
+    console.log('AI Chat request from:', userContext.email, 'Message:', message);
+
+    // Get AI response
+    const aiResponse = await aiService.getAIResponse(message.trim(), userContext);
+
+    console.log('AI Response generated:', aiResponse.substring(0, 100) + '...');
+
+    res.json({
+      success: true,
+      response: aiResponse,
+      timestamp: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('AI Chat error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get AI response',
+      fallback: "I'm here to help with your fitness journey! Please try asking about workouts, nutrition, or your fitness goals."
+    });
+  }
+});
+
+// AI Health check endpoint
+app.get('/api/ai-health', isAuthenticated, async (req, res) => {
+  try {
+    const health = await aiService.healthCheck();
+    res.json({
+      success: true,
+      health: health
+    });
+  } catch (error) {
+    console.error('AI Health check error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'AI service health check failed'
+    });
+  }
+});
+
+// Search workouts endpoint (Real YouTube API integration)
+app.get('/api/search-workouts', isAuthenticated, async (req, res) => {
+  try {
+    const query = req.query.q;
+    
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        error: 'Search query is required'
+      });
+    }
+
+    // Use YouTube Data API to search for real workout videos
+    const videos = await searchYouTubeVideos(query);
+    
+    res.json({
+      success: true,
+      videos: videos,
+      query: query
+    });
+
+  } catch (error) {
+    console.error('Search workouts error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search for workouts'
+    });
+  }
+});
+
+// Function to search YouTube videos using YouTube Data API
+async function searchYouTubeVideos(query) {
+  try {
+    // YouTube Data API key - you'll need to get this from Google Cloud Console
+    const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY || 'YOUR_YOUTUBE_API_KEY';
+    
+    if (!YOUTUBE_API_KEY || YOUTUBE_API_KEY === 'YOUR_YOUTUBE_API_KEY') {
+      console.log('YouTube API key not configured, using fallback videos');
+      return getFallbackVideos(query);
+    }
+
+    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=12&q=${encodeURIComponent(query + ' workout fitness exercise')}&type=video&videoDuration=medium&videoDefinition=high&key=${YOUTUBE_API_KEY}`;
+    
+    const response = await fetch(searchUrl);
+    const data = await response.json();
+    
+    if (!data.items || data.items.length === 0) {
+      return getFallbackVideos(query);
+    }
+
+    // Get video details including duration
+    const videoIds = data.items.map(item => item.id.videoId).join(',');
+    const detailsUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${videoIds}&key=${YOUTUBE_API_KEY}`;
+    
+    const detailsResponse = await fetch(detailsUrl);
+    const detailsData = await detailsResponse.json();
+    
+    // Process and format the videos
+    const videos = data.items.map((item, index) => {
+      const details = detailsData.items?.find(d => d.id === item.id.videoId);
+      const duration = details ? parseDuration(details.contentDetails.duration) : '30 min';
+      const viewCount = details ? formatViewCount(details.statistics.viewCount) : '1M';
+      const durationMinutes = parseInt(duration.replace(/\D/g, '')) || 30;
+      
+      return {
+        videoId: item.id.videoId,
+        title: item.snippet.title,
+        description: item.snippet.description.substring(0, 150) + '...',
+        thumbnail: item.snippet.thumbnails.high?.url || item.snippet.thumbnails.medium?.url || item.snippet.thumbnails.default?.url,
+        duration: duration,
+        calories: calculateCalories(durationMinutes, query),
+        views: viewCount,
+        channelTitle: item.snippet.channelTitle,
+        publishedAt: item.snippet.publishedAt
+      };
+    });
+
+    return videos;
+
+  } catch (error) {
+    console.error('YouTube API error:', error);
+    return getFallbackVideos(query);
+  }
+}
+
+// Fallback videos when YouTube API is not available
+function getFallbackVideos(query) {
+  const popularWorkoutVideos = [
+    {
+      videoId: 'UBMk30rjy0o',
+      title: `${query.charAt(0).toUpperCase() + query.slice(1)} Workout - 30 Min Full Body`,
+      description: `Complete ${query} workout routine for all fitness levels. Follow along for maximum results!`,
+      thumbnail: 'https://img.youtube.com/vi/UBMk30rjy0o/maxresdefault.jpg',
+      duration: '30 min',
+      calories: calculateCalories(30, query),
+      views: '1.2M',
+      channelTitle: 'FitnessBlender'
+    },
+    {
+      videoId: 'ml6cT4AZdqI',
+      title: `Intense ${query.charAt(0).toUpperCase() + query.slice(1)} HIIT - 25 Minutes`,
+      description: `High-intensity ${query} workout that will challenge your limits and boost your fitness.`,
+      thumbnail: 'https://img.youtube.com/vi/ml6cT4AZdqI/maxresdefault.jpg',
+      duration: '25 min',
+      calories: calculateCalories(25, query),
+      views: '856K',
+      channelTitle: 'Calisthenic Movement'
+    },
+    {
+      videoId: 'ixmxOlcrlUc',
+      title: `Beginner ${query.charAt(0).toUpperCase() + query.slice(1)} - 20 Min Routine`,
+      description: `Perfect ${query} workout for beginners. Easy to follow and highly effective.`,
+      thumbnail: 'https://img.youtube.com/vi/ixmxOlcrlUc/maxresdefault.jpg',
+      duration: '20 min',
+      calories: calculateCalories(20, query),
+      views: '2.1M',
+      channelTitle: 'Yoga with Adriene'
+    },
+    {
+      videoId: 'gC_L9qAHVJ8',
+      title: `Advanced ${query.charAt(0).toUpperCase() + query.slice(1)} Challenge - 45 Min`,
+      description: `Take your ${query} training to the next level with this advanced workout routine.`,
+      thumbnail: 'https://img.youtube.com/vi/gC_L9qAHVJ8/maxresdefault.jpg',
+      duration: '45 min',
+      calories: calculateCalories(45, query),
+      views: '634K',
+      channelTitle: 'Athlean-X'
+    },
+    {
+      videoId: 'QOVaHwm-Q6U',
+      title: `Quick ${query.charAt(0).toUpperCase() + query.slice(1)} Blast - 15 Min`,
+      description: `Short but effective ${query} workout perfect for busy schedules.`,
+      thumbnail: 'https://img.youtube.com/vi/QOVaHwm-Q6U/maxresdefault.jpg',
+      duration: '15 min',
+      calories: calculateCalories(15, query),
+      views: '945K',
+      channelTitle: 'Pamela Reif'
+    },
+    {
+      videoId: 'Eml2xnoLpYE',
+      title: `${query.charAt(0).toUpperCase() + query.slice(1)} and Core Combo - 35 Min`,
+      description: `Combine ${query} training with core strengthening for maximum impact.`,
+      thumbnail: 'https://img.youtube.com/vi/Eml2xnoLpYE/maxresdefault.jpg',
+      duration: '35 min',
+      calories: calculateCalories(35, query),
+      views: '1.8M',
+      channelTitle: 'MadFit'
+    }
+  ];
+
+  return popularWorkoutVideos;
+}
+
+// Parse YouTube duration format (PT15M33S) to readable format
+function parseDuration(duration) {
+  const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
+  
+  const hours = (match[1] || '').replace('H', '');
+  const minutes = (match[2] || '').replace('M', '');
+  const seconds = (match[3] || '').replace('S', '');
+  
+  if (hours) {
+    return `${hours}h ${minutes || '0'}m`;
+  } else if (minutes) {
+    return `${minutes} min`;
+  } else {
+    return `${seconds} sec`;
+  }
+}
+
+// Format view count to readable format
+function formatViewCount(viewCount) {
+  const count = parseInt(viewCount);
+  if (count >= 1000000) {
+    return (count / 1000000).toFixed(1) + 'M';
+  } else if (count >= 1000) {
+    return (count / 1000).toFixed(1) + 'K';
+  }
+  return count.toString();
+}
+
+// Helper function to calculate calories based on workout type and duration
+function calculateCalories(minutes, workoutType) {
+  const baseCaloriesPerMinute = {
+    'cardio': 12,
+    'hiit': 15,
+    'strength': 8,
+    'yoga': 3,
+    'pilates': 5,
+    'dance': 10,
+    'boxing': 14,
+    'cycling': 11,
+    'running': 13,
+    'swimming': 12,
+    'crossfit': 16,
+    'abs': 6,
+    'core': 6,
+    'legs': 9,
+    'arms': 7,
+    'back': 8,
+    'chest': 8,
+    'shoulders': 7
+  };
+
+  const type = workoutType.toLowerCase();
+  let caloriesPerMinute = 8; // default
+
+  // Find matching workout type
+  for (const [key, value] of Object.entries(baseCaloriesPerMinute)) {
+    if (type.includes(key)) {
+      caloriesPerMinute = value;
+      break;
+    }
+  }
+
+  return Math.round(minutes * caloriesPerMinute);
+}
+
 // Logout Route
 app.get('/logout', (req, res) => {
   req.session.destroy(() => {
@@ -903,16 +1639,32 @@ app.use((req, res) => {
 
 // Start Server (only in non-serverless environment)
 if (!process.env.VERCEL) {
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3007;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🤖 AI Coach Status: ${process.env.GOOGLE_AI_API_KEY ? 'Google AI Enabled' : 'Enhanced Fallback Mode'}`);
+  console.log(`🌐 Access your app at: http://localhost:${PORT}`);
 });
 }
 
 console.log('App initialization completed successfully');
 console.log('Vercel environment:', !!process.env.VERCEL);
 console.log('App routes registered:', app._router ? 'Yes' : 'No');
+
+// YouTube API status
+const youtubeApiKey = process.env.YOUTUBE_API_KEY;
+if (!youtubeApiKey || youtubeApiKey === 'YOUR_YOUTUBE_API_KEY') {
+  console.log('🎥 YouTube API: Using fallback videos (limited functionality)');
+  console.log('📝 To enable real YouTube search:');
+  console.log('   1. Go to https://console.cloud.google.com/');
+  console.log('   2. Create a new project or select existing');
+  console.log('   3. Enable YouTube Data API v3');
+  console.log('   4. Create credentials (API Key)');
+  console.log('   5. Add YOUTUBE_API_KEY=your_key_here to .env file');
+} else {
+  console.log('🎥 YouTube API: Enabled - Real video search available');
+}
 
 // Export for Vercel
 module.exports = app;

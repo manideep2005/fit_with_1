@@ -110,6 +110,32 @@ const userSchema = new mongoose.Schema({
   lastLogin: { type: Date },
   loginCount: { type: Number, default: 0 },
   
+  // Subscription Data
+  subscription: {
+    plan: { 
+      type: String, 
+      enum: ['free', 'basic', 'premium', 'pro'], 
+      default: 'free' 
+    },
+    status: { 
+      type: String, 
+      enum: ['active', 'inactive', 'cancelled', 'expired'], 
+      default: 'active' 
+    },
+    startDate: { type: Date },
+    endDate: { type: Date },
+    autoRenew: { type: Boolean, default: false },
+    paymentHistory: [{
+      date: { type: Date, default: Date.now },
+      amount: Number,
+      plan: String,
+      duration: String, // monthly, yearly
+      paymentMethod: String,
+      transactionId: String,
+      status: { type: String, enum: ['completed', 'pending', 'failed'], default: 'completed' }
+    }]
+  },
+  
   // Progress Data
   workouts: [{
     date: { type: Date, default: Date.now },
@@ -186,6 +212,96 @@ const userSchema = new mongoose.Schema({
       response: String,
       context: String
     }]
+  },
+
+  // Gamification System
+  gamification: {
+    // Experience Points and Level
+    totalXP: { type: Number, default: 0 },
+    currentLevel: { type: Number, default: 1 },
+    xpToNextLevel: { type: Number, default: 100 },
+    
+    // Streaks
+    streaks: {
+      workout: {
+        current: { type: Number, default: 0 },
+        longest: { type: Number, default: 0 },
+        lastWorkoutDate: { type: Date }
+      },
+      nutrition: {
+        current: { type: Number, default: 0 },
+        longest: { type: Number, default: 0 },
+        lastLogDate: { type: Date }
+      },
+      login: {
+        current: { type: Number, default: 0 },
+        longest: { type: Number, default: 0 },
+        lastLoginDate: { type: Date }
+      }
+    },
+    
+    // Achievements/Badges
+    achievements: [{
+      id: String,
+      name: String,
+      description: String,
+      category: { type: String, enum: ['workout', 'nutrition', 'social', 'milestone', 'streak', 'special'] },
+      icon: String,
+      rarity: { type: String, enum: ['common', 'rare', 'epic', 'legendary'], default: 'common' },
+      xpReward: { type: Number, default: 0 },
+      unlockedAt: { type: Date, default: Date.now },
+      progress: { type: Number, default: 100 } // Percentage completed
+    }],
+    
+    // Challenges Progress
+    challengeStats: {
+      completed: { type: Number, default: 0 },
+      active: { type: Number, default: 0 },
+      totalParticipated: { type: Number, default: 0 }
+    },
+    
+    // Fitness Character Stats (RPG-like)
+    character: {
+      strength: { type: Number, default: 10 },
+      endurance: { type: Number, default: 10 },
+      flexibility: { type: Number, default: 10 },
+      nutrition: { type: Number, default: 10 },
+      consistency: { type: Number, default: 10 },
+      overall: { type: Number, default: 50 }
+    },
+    
+    // Weekly/Monthly Stats
+    weeklyStats: {
+      workoutsCompleted: { type: Number, default: 0 },
+      caloriesBurned: { type: Number, default: 0 },
+      xpEarned: { type: Number, default: 0 },
+      weekStartDate: { type: Date }
+    },
+    
+    monthlyStats: {
+      workoutsCompleted: { type: Number, default: 0 },
+      caloriesBurned: { type: Number, default: 0 },
+      xpEarned: { type: Number, default: 0 },
+      monthStartDate: { type: Date }
+    },
+    
+    // Rewards and Unlocks
+    rewards: [{
+      id: String,
+      name: String,
+      type: { type: String, enum: ['workout-plan', 'recipe', 'customization', 'feature', 'badge'] },
+      description: String,
+      unlockedAt: { type: Date, default: Date.now },
+      used: { type: Boolean, default: false }
+    }],
+    
+    // Social Gamification
+    social: {
+      friendsInvited: { type: Number, default: 0 },
+      workoutsShared: { type: Number, default: 0 },
+      challengesWon: { type: Number, default: 0 },
+      helpfulVotes: { type: Number, default: 0 }
+    }
   }
 }, {
   timestamps: true, // Adds createdAt and updatedAt
@@ -223,6 +339,17 @@ userSchema.virtual('latestBiometrics').get(function() {
     return this.biometrics[this.biometrics.length - 1];
   }
   return null;
+});
+
+// Virtual for subscription display name
+userSchema.virtual('subscriptionDisplayName').get(function() {
+  const planNames = {
+    'free': 'Free Plan',
+    'basic': 'Basic Plan',
+    'premium': 'Premium Plan',
+    'pro': 'Pro Plan'
+  };
+  return planNames[this.subscription?.plan || 'free'] || 'Free Plan';
 });
 
 // Pre-save middleware to hash password

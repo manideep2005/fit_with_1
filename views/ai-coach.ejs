@@ -95,6 +95,32 @@
         .nav-link i {
             margin-right: 10px;
             font-size: 1.2rem;
+        }        
+        .logout-section {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--light-gray);
+        }
+        
+        .logout-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 1rem;
+            color: var(--danger);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .logout-link:hover {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+        
+        .logout-link i {
+            margin-right: 10px;
+            font-size: 1.2rem;
         }
         
         .main-content {
@@ -285,8 +311,13 @@
                 <li class="nav-item"><a href="/schedule" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
                 <li class="nav-item"><a href="/community" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
                 <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
-                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
-            </ul>
+                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>            
+            <!-- Logout Section -->
+            <div class="logout-section">
+                <a href="/logout" class="logout-link" onclick="return confirmLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
         </div>
         
         <!-- Main Content -->
@@ -306,17 +337,16 @@
                 <div class="chat-container" id="chatContainer">
                     <div class="ai-message">
                         <strong>AI Coach:</strong>
-                        <p>Hello <%= user.fullName.split(' ')[0] %>! I'm your AI fitness coach. How can I help you today? You can ask me about workouts, nutrition, or your progress.</p>
-                    </div>
-                    
-                    <div class="user-message">
-                        <strong>You:</strong>
-                        <p>What workout should I do today?</p>
-                    </div>
-                    
-                    <div class="ai-message">
-                        <strong>AI Coach:</strong>
-                        <p>Based on your recent activity and goals, I recommend an upper body strength training session with 3 sets of push-ups, pull-ups, and dumbbell shoulder presses. Would you like me to create a detailed plan?</p>
+                        <p>Hello <%= user.fullName.split(' ')[0] %>! 👋 I'm your personal AI fitness coach, and I'm excited to help you on your fitness journey! 
+                        
+                        I can assist you with:
+                        • 🏋️ Personalized workout plans
+                        • 🥗 Nutrition guidance and meal planning  
+                        • 📈 Progress tracking and motivation
+                        • 💪 Form tips and exercise modifications
+                        • 🎯 Goal setting and achievement strategies
+                        
+                        What would you like to work on today? Feel free to ask me anything about fitness, health, or wellness!</p>
                     </div>
                 </div>
                 
@@ -385,45 +415,126 @@
     </div>
     
     <script>
-        // Simple chat functionality
-        document.getElementById('sendButton').addEventListener('click', function() {
+        // Real AI chat functionality
+        let isLoading = false;
+
+        async function sendMessage() {
+            if (isLoading) return;
+            
             const input = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
             const message = input.value.trim();
             
-            if (message) {
-                const chatContainer = document.getElementById('chatContainer');
+            if (!message) return;
+
+            const chatContainer = document.getElementById('chatContainer');
+            
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'user-message';
+            userMessage.innerHTML = `<strong>You:</strong><p>${message}</p>`;
+            chatContainer.appendChild(userMessage);
+            
+            // Clear input and disable button
+            input.value = '';
+            isLoading = true;
+            sendButton.disabled = true;
+            sendButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Thinking...';
+            
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            try {
+                // Send message to AI API
+                const response = await fetch('/api/ai-chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                const data = await response.json();
                 
-                // Add user message
-                const userMessage = document.createElement('div');
-                userMessage.className = 'user-message';
-                userMessage.innerHTML = `<strong>You:</strong><p>${message}</p>`;
-                chatContainer.appendChild(userMessage);
-                
-                // Clear input
-                input.value = '';
-                
-                // Simulate AI response after a delay
-                setTimeout(() => {
+                if (data.success) {
+                    // Add AI response
                     const aiMessage = document.createElement('div');
                     aiMessage.className = 'ai-message';
-                    aiMessage.innerHTML = `<strong>AI Coach:</strong><p>I understand you asked about "${message}". Here's my detailed response based on your fitness profile...</p>`;
+                    aiMessage.innerHTML = `<strong>AI Coach:</strong><p>${data.response}</p>`;
                     chatContainer.appendChild(aiMessage);
-                    
-                    // Scroll to bottom
-                    chatContainer.scrollTop = chatContainer.scrollHeight;
-                }, 1000);
+                } else {
+                    // Add error message with fallback
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'ai-message';
+                    errorMessage.innerHTML = `<strong>AI Coach:</strong><p>${data.fallback || 'Sorry, I had trouble processing that. Can you try rephrasing your question?'}</p>`;
+                    chatContainer.appendChild(errorMessage);
+                }
+                
+            } catch (error) {
+                console.error('Chat error:', error);
+                // Add fallback message
+                const fallbackMessage = document.createElement('div');
+                fallbackMessage.className = 'ai-message';
+                fallbackMessage.innerHTML = `<strong>AI Coach:</strong><p>I'm here to help with your fitness journey! I can assist with workouts, nutrition advice, motivation, and tracking your progress. What would you like to know?</p>`;
+                chatContainer.appendChild(fallbackMessage);
+            } finally {
+                // Re-enable button
+                isLoading = false;
+                sendButton.disabled = false;
+                sendButton.innerHTML = '<i class="fas fa-paper-plane"></i> Send';
                 
                 // Scroll to bottom
                 chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                // Focus back on input
+                input.focus();
             }
-        });
+        }
+
+        // Event listeners
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
         
         // Allow sending with Enter key
         document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('sendButton').click();
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
             }
         });
+
+        // Generate workout plan button
+        document.querySelector('.btn-primary').addEventListener('click', function() {
+            const input = document.getElementById('messageInput');
+            input.value = 'Can you create a personalized workout plan for me based on my fitness goals?';
+            sendMessage();
+        });
+
+        // Auto-focus on input when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('messageInput').focus();
+        });
+        
+        // Logout confirmation
+        function confirmLogout() {
+            return confirm('Are you sure you want to logout?');
+        }
+
+        // Add some CSS for loading state
+        const style = document.createElement('style');
+        style.textContent = `
+            .btn:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+            .fa-spin {
+                animation: fa-spin 2s infinite linear;
+            }
+            @keyframes fa-spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>

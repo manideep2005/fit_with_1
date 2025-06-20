@@ -97,6 +97,33 @@
             font-size: 1.2rem;
         }
         
+        .logout-section {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--light-gray);
+        }
+        
+        .logout-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 1rem;
+            color: var(--danger);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .logout-link:hover {
+            background: rgba(220, 53, 69, 0.1);
+            color: var(--danger);
+        }
+        
+        .logout-link i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
         .main-content {
             flex: 1;
             padding: 2rem;
@@ -319,7 +346,18 @@
                 <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
                 <div>
                     <h3 class="user-name"><%= user.fullName %></h3>
-                    <span class="user-plan">Premium Plan</span>
+                    <span class="user-plan">
+                        <% 
+                        const planNames = {
+                            'free': 'Free Plan',
+                            'basic': 'Basic Plan', 
+                            'premium': 'Premium Plan',
+                            'pro': 'Pro Plan'
+                        };
+                        const currentPlan = user.subscription?.plan || 'free';
+                        %>
+                        <%= planNames[currentPlan] || 'Free Plan' %>
+                    </span>
                 </div>
             </div>
             
@@ -337,6 +375,13 @@
                 <li class="nav-item"><a href="/ai-coach?token=<%= navToken %>" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
                 <li class="nav-item"><a href="/settings?token=<%= navToken %>" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
             </ul>
+            
+            <!-- Logout Section -->
+            <div class="logout-section">
+                <a href="/logout" class="logout-link" onclick="return confirmLogout()">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
         </div>
         
         <!-- Main Content -->
@@ -344,7 +389,8 @@
             <div class="page-header">
                 <h1 class="page-title">Dashboard</h1>
                 <div>
-                    <button class="btn btn-primary"><i class="fas fa-plus"></i> Quick Log</button>
+                    <button class="btn btn-outline" id="gamificationBtn" style="margin-right: 10px;"><i class="fas fa-trophy"></i> Gamification</button>
+                    <button class="btn btn-primary" id="quickLogBtn"><i class="fas fa-plus"></i> Quick Log</button>
                 </div>
             </div>
             
@@ -354,74 +400,52 @@
                 <button class="btn btn-outline" style="color: white; border-color: white;">View Weekly Report</button>
             </div>
             
-            <div class="stats-grid">
+            <div class="stats-grid" id="statsGrid">
                 <div class="stat-card">
                     <div class="stat-label">Workouts This Week</div>
-                    <div class="stat-value">3/5</div>
+                    <div class="stat-value" id="workoutsThisWeek">0/5</div>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: 60%"></div>
+                        <div class="progress-fill" id="workoutsProgress" style="width: 0%"></div>
                     </div>
                 </div>
                 
                 <div class="stat-card">
                     <div class="stat-label">Calories Today</div>
-                    <div class="stat-value">1,850</div>
+                    <div class="stat-value" id="caloriesToday">0</div>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: 75%"></div>
+                        <div class="progress-fill" id="caloriesProgress" style="width: 0%"></div>
                     </div>
                 </div>
                 
                 <div class="stat-card">
                     <div class="stat-label">Protein Intake</div>
-                    <div class="stat-value">145g</div>
+                    <div class="stat-value" id="proteinToday">0g</div>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: 85%"></div>
+                        <div class="progress-fill" id="proteinProgress" style="width: 0%"></div>
                     </div>
                 </div>
                 
                 <div class="stat-card">
                     <div class="stat-label">Water Intake</div>
-                    <div class="stat-value">1.8L</div>
+                    <div class="stat-value" id="waterToday">0L</div>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: 60%"></div>
+                        <div class="progress-fill" id="waterProgress" style="width: 0%"></div>
                     </div>
                 </div>
             </div>
             
             <div class="workout-plan">
                 <div class="workout-header">
-                    <h2 class="section-title">This Week's Workout Plan</h2>
-                    <button class="btn btn-outline">View All</button>
+                    <h2 class="section-title">Recent Workouts</h2>
+                    <button class="btn btn-outline" onclick="window.location.href='/workouts?token=<%= navToken %>'">View All</button>
                 </div>
                 
-                <div class="workout-day">
-                    <div class="day-name">Monday</div>
-                    <div class="day-workout">Upper Body Strength (Completed)</div>
-                    <div class="day-status completed"><i class="fas fa-check"></i></div>
-                </div>
-                
-                <div class="workout-day">
-                    <div class="day-name">Tuesday</div>
-                    <div class="day-workout">Cardio & Core</div>
-                    <div class="day-status"><i class="fas fa-check"></i></div>
-                </div>
-                
-                <div class="workout-day">
-                    <div class="day-name">Wednesday</div>
-                    <div class="day-workout">Lower Body Strength (Completed)</div>
-                    <div class="day-status completed"><i class="fas fa-check"></i></div>
-                </div>
-                
-                <div class="workout-day">
-                    <div class="day-name">Thursday</div>
-                    <div class="day-workout">Active Recovery & Mobility</div>
-                    <div class="day-status"><i class="fas fa-check"></i></div>
-                </div>
-                
-                <div class="workout-day">
-                    <div class="day-name">Friday</div>
-                    <div class="day-workout">Full Body HIIT (Completed)</div>
-                    <div class="day-status completed"><i class="fas fa-check"></i></div>
+                <div id="recentWorkouts">
+                    <div class="workout-day">
+                        <div class="day-name">No workouts yet</div>
+                        <div class="day-workout">Start your fitness journey by logging your first workout!</div>
+                        <div class="day-status"><i class="fas fa-plus"></i></div>
+                    </div>
                 </div>
             </div>
             
@@ -436,6 +460,787 @@
             </div>
         </div>
     </div>
+
+    <!-- Quick Log Modal -->
+    <div id="quickLogModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 500px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3>Quick Log</h3>
+                <button id="closeModal" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 10px;">Log Type:</label>
+                <select id="logType" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    <option value="workout">Workout</option>
+                    <option value="nutrition">Nutrition</option>
+                    <option value="biometrics">Biometrics</option>
+                </select>
+            </div>
+            
+            <!-- Workout Form -->
+            <div id="workoutForm" class="log-form">
+                <div style="margin-bottom: 15px;">
+                    <label>Workout Type:</label>
+                    <input type="text" id="workoutType" placeholder="e.g., Cardio, Strength Training" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <label>Duration (minutes):</label>
+                        <input type="number" id="workoutDuration" placeholder="30" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Calories Burned:</label>
+                        <input type="number" id="workoutCalories" placeholder="200" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>Notes:</label>
+                    <textarea id="workoutNotes" placeholder="How did it go?" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; height: 80px;"></textarea>
+                </div>
+            </div>
+            
+            <!-- Nutrition Form -->
+            <div id="nutritionForm" class="log-form" style="display: none;">
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <label>Calories:</label>
+                        <input type="number" id="nutritionCalories" placeholder="500" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Protein (g):</label>
+                        <input type="number" id="nutritionProtein" placeholder="25" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <label>Carbs (g):</label>
+                        <input type="number" id="nutritionCarbs" placeholder="50" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Fat (g):</label>
+                        <input type="number" id="nutritionFat" placeholder="15" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>Water Intake (ml):</label>
+                    <input type="number" id="nutritionWater" placeholder="500" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+            </div>
+            
+            <!-- Biometrics Form -->
+            <div id="biometricsForm" class="log-form" style="display: none;">
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div style="flex: 1;">
+                        <label>Weight (kg):</label>
+                        <input type="number" id="biometricsWeight" placeholder="70" step="0.1" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Body Fat (%):</label>
+                        <input type="number" id="biometricsBodyFat" placeholder="15" step="0.1" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label>Muscle Mass (kg):</label>
+                    <input type="number" id="biometricsMuscle" placeholder="35" step="0.1" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px;">
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 15px; margin-top: 20px;">
+                <button id="cancelLog" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+                <button id="saveLog" class="btn btn-primary" style="flex: 1;">Save Log</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gamification Modal -->
+    <div id="gamificationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; overflow-y: auto;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 0; border-radius: 16px; width: 95%; max-width: 900px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+            <!-- Modal Header -->
+            <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 25px 30px; border-radius: 16px 16px 0 0; position: relative;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h2 style="margin: 0; font-size: 1.8rem; font-weight: 600;">🏆 Your Fitness Journey</h2>
+                        <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 1rem;">Level up your fitness game!</p>
+                    </div>
+                    <button id="closeGamificationModal" style="background: rgba(255,255,255,0.2); border: none; color: white; font-size: 24px; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;">&times;</button>
+                </div>
+            </div>
+
+            <!-- Modal Content -->
+            <div style="padding: 30px;">
+                <!-- Level & XP Section -->
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 25px; margin-bottom: 25px; color: white; position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: -20px; right: -20px; font-size: 120px; opacity: 0.1;">🎮</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <div>
+                            <h3 style="margin: 0; font-size: 1.4rem;">Level <span id="userLevel">1</span></h3>
+                            <p style="margin: 5px 0 0 0; opacity: 0.9;">Fitness Enthusiast</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 1.8rem; font-weight: 600;" id="totalXP">0 XP</div>
+                            <div style="font-size: 0.9rem; opacity: 0.8;" id="xpToNext">0 XP to next level</div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.2); border-radius: 10px; height: 12px; overflow: hidden;">
+                        <div id="levelProgress" style="background: rgba(255,255,255,0.8); height: 100%; border-radius: 10px; width: 0%; transition: width 0.5s ease;"></div>
+                    </div>
+                </div>
+
+                <!-- Stats Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 25px;">
+                    <!-- Streaks Card -->
+                    <div style="background: white; border: 2px solid #f0f0f0; border-radius: 12px; padding: 20px;">
+                        <h4 style="margin: 0 0 15px 0; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 1.2rem;">🔥</span> Current Streaks
+                        </h4>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: 600; color: var(--accent);" id="workoutStreak">0</div>
+                                <div style="font-size: 0.8rem; color: var(--gray);">Workout Days</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.5rem; font-weight: 600; color: var(--success);" id="nutritionStreak">0</div>
+                                <div style="font-size: 0.8rem; color: var(--gray);">Nutrition Days</div>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.9rem; color: var(--gray); text-align: center;">
+                            🏆 Best: <span id="longestStreak">0</span> days
+                        </div>
+                    </div>
+
+                    <!-- Character Stats Card -->
+                    <div style="background: white; border: 2px solid #f0f0f0; border-radius: 12px; padding: 20px;">
+                        <h4 style="margin: 0 0 15px 0; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 1.2rem;">💪</span> Character Stats
+                        </h4>
+                        <div id="characterStats">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size: 0.9rem;">Strength</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="background: #f0f0f0; border-radius: 6px; height: 6px; width: 60px; overflow: hidden;">
+                                        <div id="strengthBar" style="background: var(--accent); height: 100%; width: 50%; border-radius: 6px;"></div>
+                                    </div>
+                                    <span style="font-size: 0.8rem; font-weight: 600;" id="strengthValue">10</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size: 0.9rem;">Endurance</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="background: #f0f0f0; border-radius: 6px; height: 6px; width: 60px; overflow: hidden;">
+                                        <div id="enduranceBar" style="background: var(--primary); height: 100%; width: 50%; border-radius: 6px;"></div>
+                                    </div>
+                                    <span style="font-size: 0.8rem; font-weight: 600;" id="enduranceValue">10</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size: 0.9rem;">Flexibility</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="background: #f0f0f0; border-radius: 6px; height: 6px; width: 60px; overflow: hidden;">
+                                        <div id="flexibilityBar" style="background: var(--success); height: 100%; width: 50%; border-radius: 6px;"></div>
+                                    </div>
+                                    <span style="font-size: 0.8rem; font-weight: 600;" id="flexibilityValue">10</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <span style="font-size: 0.9rem;">Nutrition</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="background: #f0f0f0; border-radius: 6px; height: 6px; width: 60px; overflow: hidden;">
+                                        <div id="nutritionBar" style="background: var(--warning); height: 100%; width: 50%; border-radius: 6px;"></div>
+                                    </div>
+                                    <span style="font-size: 0.8rem; font-weight: 600;" id="nutritionValue">10</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.9rem;">Consistency</span>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="background: #f0f0f0; border-radius: 6px; height: 6px; width: 60px; overflow: hidden;">
+                                        <div id="consistencyBar" style="background: var(--secondary); height: 100%; width: 50%; border-radius: 6px;"></div>
+                                    </div>
+                                    <span style="font-size: 0.8rem; font-weight: 600;" id="consistencyValue">10</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Achievements Section -->
+                <div style="background: white; border: 2px solid #f0f0f0; border-radius: 12px; padding: 20px; margin-bottom: 25px;">
+                    <h4 style="margin: 0 0 20px 0; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.2rem;">🏅</span> Recent Achievements
+                    </h4>
+                    <div id="achievementsList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;">
+                        <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; color: var(--gray);">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">🎯</div>
+                            <div style="font-size: 0.9rem;">Complete your first workout to unlock achievements!</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly Stats -->
+                <div style="background: white; border: 2px solid #f0f0f0; border-radius: 12px; padding: 20px;">
+                    <h4 style="margin: 0 0 20px 0; color: var(--primary); display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.2rem;">📊</span> This Week's Progress
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 20px;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.8rem; font-weight: 600; color: var(--primary);" id="weeklyWorkouts">0</div>
+                            <div style="font-size: 0.9rem; color: var(--gray);">Workouts</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.8rem; font-weight: 600; color: var(--accent);" id="weeklyCalories">0</div>
+                            <div style="font-size: 0.9rem; color: var(--gray);">Calories Burned</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 1.8rem; font-weight: 600; color: var(--success);" id="weeklyXP">0</div>
+                            <div style="font-size: 0.9rem; color: var(--gray);">XP Earned</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dashboard functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+            setupQuickLog();
+            setupGamificationModal();
+        });
+
+        // Load dashboard data from API
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/dashboard-data');
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateDashboardStats(result.data);
+                    updateRecentWorkouts(result.data.recentWorkouts);
+                } else {
+                    console.error('Failed to load dashboard data:', result.error);
+                }
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Update dashboard statistics
+        function updateDashboardStats(data) {
+            const stats = data.stats;
+            
+            // Update workouts
+            document.getElementById('workoutsThisWeek').textContent = `${stats.workoutsThisWeek}/${stats.targetWorkoutsPerWeek}`;
+            const workoutProgress = (stats.workoutsThisWeek / stats.targetWorkoutsPerWeek) * 100;
+            document.getElementById('workoutsProgress').style.width = `${Math.min(workoutProgress, 100)}%`;
+            
+            // Update calories
+            document.getElementById('caloriesToday').textContent = stats.todayCalories.toLocaleString();
+            const calorieProgress = (stats.todayCalories / stats.targetCalories) * 100;
+            document.getElementById('caloriesProgress').style.width = `${Math.min(calorieProgress, 100)}%`;
+            
+            // Update protein
+            document.getElementById('proteinToday').textContent = `${stats.todayProtein}g`;
+            const proteinProgress = (stats.todayProtein / stats.targetProtein) * 100;
+            document.getElementById('proteinProgress').style.width = `${Math.min(proteinProgress, 100)}%`;
+            
+            // Update water
+            const waterInLiters = (stats.todayWater / 1000).toFixed(1);
+            document.getElementById('waterToday').textContent = `${waterInLiters}L`;
+            const waterProgress = (stats.todayWater / stats.targetWater) * 100;
+            document.getElementById('waterProgress').style.width = `${Math.min(waterProgress, 100)}%`;
+        }
+
+        // Update recent workouts
+        function updateRecentWorkouts(workouts) {
+            const container = document.getElementById('recentWorkouts');
+            
+            if (!workouts || workouts.length === 0) {
+                return; // Keep default message
+            }
+            
+            container.innerHTML = '';
+            workouts.forEach(workout => {
+                const workoutDate = new Date(workout.date);
+                const dayName = workoutDate.toLocaleDateString('en-US', { weekday: 'long' });
+                const dateStr = workoutDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                
+                const workoutDiv = document.createElement('div');
+                workoutDiv.className = 'workout-day';
+                workoutDiv.innerHTML = `
+                    <div class="day-name">${dayName}<br><small>${dateStr}</small></div>
+                    <div class="day-workout">${workout.type} - ${workout.duration}min, ${workout.calories} cal</div>
+                    <div class="day-status completed"><i class="fas fa-check"></i></div>
+                `;
+                container.appendChild(workoutDiv);
+            });
+        }
+
+        // Setup quick log functionality
+        function setupQuickLog() {
+            const modal = document.getElementById('quickLogModal');
+            const quickLogBtn = document.getElementById('quickLogBtn');
+            const closeModal = document.getElementById('closeModal');
+            const cancelLog = document.getElementById('cancelLog');
+            const saveLog = document.getElementById('saveLog');
+            const logType = document.getElementById('logType');
+
+            // Show modal
+            quickLogBtn.addEventListener('click', () => {
+                modal.style.display = 'block';
+            });
+
+            // Hide modal
+            function hideModal() {
+                modal.style.display = 'none';
+                clearForms();
+            }
+
+            closeModal.addEventListener('click', hideModal);
+            cancelLog.addEventListener('click', hideModal);
+
+            // Switch forms based on log type
+            logType.addEventListener('change', function() {
+                document.querySelectorAll('.log-form').forEach(form => {
+                    form.style.display = 'none';
+                });
+                document.getElementById(this.value + 'Form').style.display = 'block';
+            });
+
+            // Save log
+            saveLog.addEventListener('click', async function() {
+                const type = logType.value;
+                let data = {};
+                let endpoint = '';
+
+                if (type === 'workout') {
+                    data = {
+                        type: document.getElementById('workoutType').value,
+                        duration: parseInt(document.getElementById('workoutDuration').value) || 0,
+                        calories: parseInt(document.getElementById('workoutCalories').value) || 0,
+                        notes: document.getElementById('workoutNotes').value
+                    };
+                    endpoint = '/api/workouts';
+                } else if (type === 'nutrition') {
+                    data = {
+                        totalCalories: parseInt(document.getElementById('nutritionCalories').value) || 0,
+                        totalProtein: parseFloat(document.getElementById('nutritionProtein').value) || 0,
+                        totalCarbs: parseFloat(document.getElementById('nutritionCarbs').value) || 0,
+                        totalFat: parseFloat(document.getElementById('nutritionFat').value) || 0,
+                        waterIntake: parseInt(document.getElementById('nutritionWater').value) || 0
+                    };
+                    endpoint = '/api/nutrition';
+                } else if (type === 'biometrics') {
+                    data = {
+                        weight: parseFloat(document.getElementById('biometricsWeight').value) || null,
+                        bodyFat: parseFloat(document.getElementById('biometricsBodyFat').value) || null,
+                        muscleMass: parseFloat(document.getElementById('biometricsMuscle').value) || null
+                    };
+                    endpoint = '/api/biometrics';
+                }
+
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        hideModal();
+                        loadDashboardData(); // Refresh dashboard data
+                        showNotification('Data logged successfully!', 'success');
+                        
+                        // Show gamification notifications if available
+                        if (result.gamification) {
+                            showGamificationNotifications(result.gamification);
+                        }
+                    } else {
+                        showNotification('Failed to log data: ' + result.error, 'error');
+                    }
+                } catch (error) {
+                    console.error('Error saving log:', error);
+                    showNotification('Error saving data. Please try again.', 'error');
+                }
+            });
+        }
+
+        // Clear all forms
+        function clearForms() {
+            document.querySelectorAll('input, textarea, select').forEach(input => {
+                if (input.id !== 'logType') {
+                    input.value = '';
+                }
+            });
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 2000;
+                background: ${type === 'success' ? '#28A745' : '#DC3545'};
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Show gamification notifications
+        function showGamificationNotifications(gamificationData) {
+            let delay = 1000; // Start after 1 second
+
+            // Show XP notification
+            if (gamificationData.xp > 0) {
+                setTimeout(() => {
+                    showGamificationPopup(`+${gamificationData.xp} XP`, '🎯', 'xp');
+                }, delay);
+                delay += 2000;
+            }
+
+            // Show level up notification
+            if (gamificationData.levelUp) {
+                setTimeout(() => {
+                    showGamificationPopup('Level Up!', '🎉', 'levelup');
+                }, delay);
+                delay += 2000;
+            }
+
+            // Show streak notifications
+            if (gamificationData.streaks) {
+                if (gamificationData.streaks.workout && gamificationData.streaks.workout.streakUpdated) {
+                    setTimeout(() => {
+                        const streak = gamificationData.streaks.workout.currentStreak;
+                        showGamificationPopup(`${streak} Day Workout Streak!`, '🔥', 'streak');
+                    }, delay);
+                    delay += 2000;
+                }
+
+                if (gamificationData.streaks.nutrition && gamificationData.streaks.nutrition.streakUpdated) {
+                    setTimeout(() => {
+                        const streak = gamificationData.streaks.nutrition.currentStreak;
+                        showGamificationPopup(`${streak} Day Nutrition Streak!`, '🥗', 'streak');
+                    }, delay);
+                    delay += 2000;
+                }
+            }
+
+            // Show achievement notifications
+            if (gamificationData.achievements && gamificationData.achievements.length > 0) {
+                gamificationData.achievements.forEach((achievement, index) => {
+                    setTimeout(() => {
+                        showAchievementPopup(achievement);
+                    }, delay + (index * 2000));
+                });
+            }
+        }
+
+        // Show gamification popup
+        function showGamificationPopup(message, icon, type) {
+            const popup = document.createElement('div');
+            popup.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(0);
+                background: linear-gradient(135deg, var(--primary), var(--secondary));
+                color: white;
+                padding: 20px 30px;
+                border-radius: 16px;
+                text-align: center;
+                z-index: 3000;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                transition: all 0.3s ease;
+                min-width: 200px;
+            `;
+            
+            popup.innerHTML = `
+                <div style="font-size: 2rem; margin-bottom: 10px;">${icon}</div>
+                <div style="font-size: 1.2rem; font-weight: 600;">${message}</div>
+            `;
+            
+            document.body.appendChild(popup);
+            
+            // Animate in
+            setTimeout(() => {
+                popup.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 100);
+            
+            // Animate out
+            setTimeout(() => {
+                popup.style.transform = 'translate(-50%, -50%) scale(0)';
+                setTimeout(() => {
+                    popup.remove();
+                }, 300);
+            }, 2000);
+        }
+
+        // Show achievement popup
+        function showAchievementPopup(achievement) {
+            const rarityColors = {
+                common: '#28a745',
+                rare: '#007bff',
+                epic: '#6f42c1',
+                legendary: '#fd7e14'
+            };
+            
+            const rarityColor = rarityColors[achievement.rarity] || '#28a745';
+            
+            const popup = document.createElement('div');
+            popup.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) scale(0);
+                background: white;
+                color: var(--dark);
+                padding: 25px;
+                border-radius: 16px;
+                text-align: center;
+                z-index: 3000;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                transition: all 0.3s ease;
+                min-width: 300px;
+                border: 3px solid ${rarityColor};
+            `;
+            
+            popup.innerHTML = `
+                <div style="background: ${rarityColor}; color: white; padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; margin-bottom: 15px; display: inline-block;">${achievement.rarity}</div>
+                <div style="font-size: 3rem; margin-bottom: 15px;">${achievement.icon}</div>
+                <div style="font-size: 1.4rem; font-weight: 600; margin-bottom: 8px; color: ${rarityColor};">Achievement Unlocked!</div>
+                <div style="font-size: 1.1rem; font-weight: 600; margin-bottom: 8px;">${achievement.name}</div>
+                <div style="font-size: 0.9rem; color: var(--gray); margin-bottom: 15px;">${achievement.description}</div>
+                <div style="font-size: 1rem; color: ${rarityColor}; font-weight: 600;">+${achievement.xpReward} XP</div>
+            `;
+            
+            document.body.appendChild(popup);
+            
+            // Animate in
+            setTimeout(() => {
+                popup.style.transform = 'translate(-50%, -50%) scale(1)';
+            }, 100);
+            
+            // Animate out
+            setTimeout(() => {
+                popup.style.transform = 'translate(-50%, -50%) scale(0)';
+                setTimeout(() => {
+                    popup.remove();
+                }, 300);
+            }, 4000);
+        }
+
+        // Setup gamification modal functionality
+        function setupGamificationModal() {
+            const modal = document.getElementById('gamificationModal');
+            const gamificationBtn = document.getElementById('gamificationBtn');
+            const closeModal = document.getElementById('closeGamificationModal');
+
+            // Show modal
+            gamificationBtn.addEventListener('click', async () => {
+                modal.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+                await loadGamificationData();
+            });
+
+            // Hide modal
+            function hideGamificationModal() {
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+
+            closeModal.addEventListener('click', hideGamificationModal);
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    hideGamificationModal();
+                }
+            });
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.style.display === 'block') {
+                    hideGamificationModal();
+                }
+            });
+        }
+
+        // Load gamification data from API
+        async function loadGamificationData() {
+            try {
+                showGamificationLoading(true);
+                
+                const response = await fetch('/api/gamification-data');
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateGamificationDisplay(result.data);
+                } else {
+                    console.error('Failed to load gamification data:', result.error);
+                    showGamificationError();
+                }
+            } catch (error) {
+                console.error('Error loading gamification data:', error);
+                showGamificationError();
+            } finally {
+                showGamificationLoading(false);
+            }
+        }
+
+        // Update gamification display with data
+        function updateGamificationDisplay(data) {
+            // Update level and XP
+            document.getElementById('userLevel').textContent = data.level || 1;
+            document.getElementById('totalXP').textContent = `${(data.totalXP || 0).toLocaleString()} XP`;
+            document.getElementById('xpToNext').textContent = `${data.xpToNextLevel || 0} XP to next level`;
+            
+            // Update level progress bar
+            const progressPercent = data.progressToNextLevel || 0;
+            document.getElementById('levelProgress').style.width = `${progressPercent}%`;
+
+            // Update streaks
+            const streaks = data.streaks || {};
+            document.getElementById('workoutStreak').textContent = streaks.workout?.current || 0;
+            document.getElementById('nutritionStreak').textContent = streaks.nutrition?.current || 0;
+            
+            const longestWorkout = streaks.workout?.longest || 0;
+            const longestNutrition = streaks.nutrition?.longest || 0;
+            document.getElementById('longestStreak').textContent = Math.max(longestWorkout, longestNutrition);
+
+            // Update character stats
+            const character = data.character || {};
+            updateCharacterStat('strength', character.strength || 10);
+            updateCharacterStat('endurance', character.endurance || 10);
+            updateCharacterStat('flexibility', character.flexibility || 10);
+            updateCharacterStat('nutrition', character.nutrition || 10);
+            updateCharacterStat('consistency', character.consistency || 10);
+
+            // Update achievements
+            updateAchievements(data.achievements || []);
+
+            // Update weekly stats
+            const weeklyStats = data.weeklyStats || {};
+            document.getElementById('weeklyWorkouts').textContent = weeklyStats.workoutsCompleted || 0;
+            document.getElementById('weeklyCalories').textContent = (weeklyStats.caloriesBurned || 0).toLocaleString();
+            document.getElementById('weeklyXP').textContent = (weeklyStats.xpEarned || 0).toLocaleString();
+        }
+
+        // Update individual character stat
+        function updateCharacterStat(statName, value) {
+            const maxValue = 100; // Assuming max stat value is 100
+            const percentage = Math.min((value / maxValue) * 100, 100);
+            
+            document.getElementById(`${statName}Value`).textContent = value;
+            document.getElementById(`${statName}Bar`).style.width = `${percentage}%`;
+        }
+
+        // Update achievements display
+        function updateAchievements(achievements) {
+            const achievementsList = document.getElementById('achievementsList');
+            
+            if (!achievements || achievements.length === 0) {
+                achievementsList.innerHTML = `
+                    <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; color: var(--gray);">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">🎯</div>
+                        <div style="font-size: 0.9rem;">Complete your first workout to unlock achievements!</div>
+                    </div>
+                `;
+                return;
+            }
+
+            // Show recent achievements (last 6)
+            const recentAchievements = achievements.slice(0, 6);
+            achievementsList.innerHTML = recentAchievements.map(achievement => {
+                const rarityColors = {
+                    common: '#28a745',
+                    rare: '#007bff',
+                    epic: '#6f42c1',
+                    legendary: '#fd7e14'
+                };
+                
+                const rarityColor = rarityColors[achievement.rarity] || '#28a745';
+                const unlockedDate = new Date(achievement.unlockedAt).toLocaleDateString();
+                
+                return `
+                    <div style="background: white; border: 2px solid ${rarityColor}; border-radius: 8px; padding: 15px; text-align: center; position: relative; overflow: hidden;">
+                        <div style="position: absolute; top: 5px; right: 5px; background: ${rarityColor}; color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; text-transform: uppercase;">${achievement.rarity}</div>
+                        <div style="font-size: 2rem; margin-bottom: 8px;">${achievement.icon}</div>
+                        <div style="font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; color: var(--dark);">${achievement.name}</div>
+                        <div style="font-size: 0.8rem; color: var(--gray); margin-bottom: 8px;">${achievement.description}</div>
+                        <div style="font-size: 0.7rem; color: ${rarityColor}; font-weight: 600;">+${achievement.xpReward} XP</div>
+                        <div style="font-size: 0.7rem; color: var(--gray); margin-top: 4px;">${unlockedDate}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Show loading state for gamification modal
+        function showGamificationLoading(show) {
+            const modal = document.getElementById('gamificationModal');
+            if (show) {
+                // Add loading overlay
+                const loadingOverlay = document.createElement('div');
+                loadingOverlay.id = 'gamificationLoading';
+                loadingOverlay.style.cssText = `
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(255,255,255,0.8);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 1001;
+                    border-radius: 16px;
+                `;
+                loadingOverlay.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 2rem; margin-bottom: 10px;">🏆</div>
+                        <div style="font-size: 1rem; color: var(--primary);">Loading your achievements...</div>
+                    </div>
+                `;
+                modal.querySelector('div').appendChild(loadingOverlay);
+            } else {
+                const loadingOverlay = document.getElementById('gamificationLoading');
+                if (loadingOverlay) {
+                    loadingOverlay.remove();
+                }
+            }
+        }
+
+        // Show error state for gamification modal
+        function showGamificationError() {
+            const achievementsList = document.getElementById('achievementsList');
+            achievementsList.innerHTML = `
+                <div style="text-align: center; padding: 20px; background: #f8d7da; border-radius: 8px; color: var(--danger);">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">⚠️</div>
+                    <div style="font-size: 0.9rem;">Failed to load gamification data. Please try again later.</div>
+                </div>
+            `;
+        }
+
+        // Logout confirmation
+        function confirmLogout() {
+            return confirm('Are you sure you want to logout?');
+        }
+    </script>
 </body>
 </html>
 
