@@ -458,7 +458,7 @@ app.get('/CustomOnboarding', (req, res) => {
 app.post('/CustomOnboarding/complete', ensureDbConnection, async (req, res) => {
   try {
     const { onboardingData, token } = req.body;
-    console.log('Received onboarding data:', onboardingData); // Debug log
+    console.log('Received onboarding data:', JSON.stringify(onboardingData, null, 2)); // Debug log
     console.log('Received token:', token); // Debug log
     console.log('Current session user:', req.session.user); // Debug log
 
@@ -494,6 +494,10 @@ app.post('/CustomOnboarding/complete', ensureDbConnection, async (req, res) => {
         };
       } catch (tokenError) {
         console.error('Token decode error:', tokenError);
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid token format'
+        });
       }
     }
 
@@ -504,7 +508,7 @@ app.post('/CustomOnboarding/complete', ensureDbConnection, async (req, res) => {
       });
     }
 
-    // Transform onboarding data to match User schema
+    // Transform onboarding data to match User schema with better error handling
     const transformedData = {
       personalInfo: {
         firstName: onboardingData.personalInfo?.firstName || '',
@@ -518,12 +522,16 @@ app.post('/CustomOnboarding/complete', ensureDbConnection, async (req, res) => {
         primaryGoal: onboardingData.healthGoals?.goals?.[0] || null,
         targetWeight: onboardingData.bodyMetrics?.targetWeight ? parseFloat(onboardingData.bodyMetrics.targetWeight) : null,
         activityLevel: onboardingData.bodyMetrics?.activityLevel || null,
-        workoutFrequency: onboardingData.bodyMetrics?.workoutFrequency ? parseInt(onboardingData.bodyMetrics.workoutFrequency) : null,
-        preferredWorkoutTypes: onboardingData.healthGoals?.goals || [],
+        workoutFrequency: onboardingData.bodyMetrics?.workoutFrequency ? 
+          (typeof onboardingData.bodyMetrics.workoutFrequency === 'string' ? 
+            parseInt(onboardingData.bodyMetrics.workoutFrequency.split('-')[0]) || 3 : 
+            parseInt(onboardingData.bodyMetrics.workoutFrequency)) : 3,
+        preferredWorkoutTypes: Array.isArray(onboardingData.healthGoals?.goals) ? onboardingData.healthGoals.goals : [],
         fitnessExperience: 'beginner' // Default, can be enhanced later
       },
       healthInfo: {
-        dietaryRestrictions: onboardingData.dietaryPreferences?.allergies || [],
+        dietaryRestrictions: Array.isArray(onboardingData.dietaryPreferences?.allergies) ? 
+          onboardingData.dietaryPreferences.allergies.filter(a => a !== 'none') : [],
         smokingStatus: onboardingData.lifestyle?.smokingStatus || 'never',
         alcoholConsumption: onboardingData.lifestyle?.alcoholConsumption || 'none'
       },
@@ -546,10 +554,20 @@ app.post('/CustomOnboarding/complete', ensureDbConnection, async (req, res) => {
       }
     };
 
-    console.log('Transformed onboarding data:', transformedData);
+    console.log('Transformed onboarding data:', JSON.stringify(transformedData, null, 2));
 
-    // Save onboarding data to database
-    const updatedUser = await UserService.completeOnboarding(userEmail, transformedData);
+    // Save onboarding data to database with better error handling
+    let updatedUser;
+    try {
+      updatedUser = await UserService.completeOnboarding(userEmail, transformedData);
+      console.log('User onboarding completed successfully');
+    } catch (dbError) {
+      console.error('Database error during onboarding completion:', dbError);
+      return res.status(500).json({
+        success: false,
+        error: 'Database error: ' + dbError.message
+      });
+    }
     
     // Update user session with onboarding data
     const fullName = `${transformedData.personalInfo?.firstName || ''} ${transformedData.personalInfo?.lastName || ''}`.trim();
@@ -576,7 +594,7 @@ app.post('/CustomOnboarding/complete', ensureDbConnection, async (req, res) => {
         console.error('Session save error:', err);
         return res.status(500).json({
           success: false,
-          error: 'Failed to save session'
+          error: 'Failed to save session: ' + err.message
         });
       }
       
@@ -592,13 +610,14 @@ app.post('/CustomOnboarding/complete', ensureDbConnection, async (req, res) => {
         onboardingData: transformedData
       })).toString('base64');
 
-      // Send onboarding completion email
+      // Send onboarding completion email (async, don't wait)
       try {
         const { sendOnboardingCompletionEmail } = require('./services/emailService');
-        await sendOnboardingCompletionEmail(userEmail, fullName || userName, transformedData);
-        console.log('Onboarding completion email sent successfully');
+        sendOnboardingCompletionEmail(userEmail, fullName || userName, transformedData)
+          .then(() => console.log('Onboarding completion email sent successfully'))
+          .catch(emailError => console.error('Failed to send onboarding completion email:', emailError));
       } catch (emailError) {
-        console.error('Failed to send onboarding completion email:', emailError);
+        console.error('Email service error:', emailError);
         // Don't fail the request if email fails
       }
       
@@ -610,10 +629,14 @@ app.post('/CustomOnboarding/complete', ensureDbConnection, async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Onboarding completion error:', error);
+    console.error('Onboarding completion error:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     res.status(500).json({ 
       success: false,
-      error: 'Failed to complete onboarding' 
+      error: 'Failed to complete onboarding: ' + error.message
     });
   }
 });
@@ -1041,7 +1064,7 @@ app.post('/api/nutrition', isAuthenticated, ensureDbConnection, async (req, res)
   }
 });
 
-// Get Gamification Data Route
+
 app.get('/api/gamification-data', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const userEmail = req.session.user.email;
@@ -1478,7 +1501,7 @@ async function searchYouTubeVideos(query) {
   }
 }
 
-// Fallback videos when YouTube API is not available
+
 function getFallbackVideos(query) {
   const popularWorkoutVideos = [
     {
@@ -1600,7 +1623,6 @@ function calculateCalories(minutes, workoutType) {
   const type = workoutType.toLowerCase();
   let caloriesPerMinute = 8; // default
 
-  // Find matching workout type
   for (const [key, value] of Object.entries(baseCaloriesPerMinute)) {
     if (type.includes(key)) {
       caloriesPerMinute = value;

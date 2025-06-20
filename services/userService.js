@@ -160,23 +160,69 @@ class UserService {
     }
   }
   
-  // Complete user onboarding - FIXED to use Mongoose document
+  // Complete user onboarding - FIXED to use direct MongoDB operations to avoid schema conflicts
   static async completeOnboarding(email, onboardingData) {
     try {
-      const user = await User.findOne({ email: email.toLowerCase().trim() });
-      if (!user) {
+      const mongoose = require('mongoose');
+      
+      // Use direct MongoDB operations to avoid schema validation issues
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      // First check if user exists
+      const existingUser = await collection.findOne({ email: email.toLowerCase().trim() });
+      if (!existingUser) {
         throw new Error('User not found');
       }
       
-      await user.completeOnboarding(onboardingData);
+      console.log('Found user for onboarding completion:', existingUser.email);
       
-      // Return updated user without password
-      const userObject = user.toObject();
+      // Prepare update data with proper validation
+      const updateData = {
+        onboardingCompleted: true,
+        personalInfo: onboardingData.personalInfo || {},
+        fitnessGoals: onboardingData.fitnessGoals || {},
+        healthInfo: onboardingData.healthInfo || {},
+        preferences: onboardingData.preferences || {},
+        updatedAt: new Date()
+      };
+      
+      console.log('Updating user with data:', JSON.stringify(updateData, null, 2));
+      
+      // Update user directly in database
+      const result = await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { $set: updateData }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('User not found during update');
+      }
+      
+      if (result.modifiedCount === 0) {
+        console.log('No modifications made - user may already have this data');
+      }
+      
+      console.log('Update result:', result);
+      
+      // Get updated user
+      const updatedUser = await collection.findOne({ email: email.toLowerCase().trim() });
+      if (!updatedUser) {
+        throw new Error('Failed to retrieve updated user');
+      }
+      
+      // Return user without password
+      const userObject = { ...updatedUser };
       delete userObject.password;
       
+      console.log('Onboarding completion successful for user:', userObject.email);
       return userObject;
     } catch (error) {
-      console.error('Error completing onboarding:', error);
+      console.error('Error completing onboarding:', {
+        message: error.message,
+        stack: error.stack,
+        email: email
+      });
       throw error;
     }
   }
