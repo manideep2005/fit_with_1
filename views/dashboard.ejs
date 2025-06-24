@@ -366,6 +366,7 @@
                 <li class="nav-item"><a href="/workouts?token=<%= navToken %>" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
                 <li class="nav-item"><a href="/progress?token=<%= navToken %>" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
                 <li class="nav-item"><a href="/nutrition?token=<%= navToken %>" class="nav-link"><i class="fas fa-utensils"></i> Nutrition</a></li>
+                <li class="nav-item"><a href="/nutriscan?token=<%= navToken %>" class="nav-link"><i class="fas fa-qrcode"></i> NutriScan</a></li>
                 <li class="nav-item"><a href="/meal-planner?token=<%= navToken %>" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
                 <li class="nav-item"><a href="/challenges?token=<%= navToken %>" class="nav-link"><i class="fas fa-trophy"></i> Challenges</a></li>
                 <li class="nav-item"><a href="/health?token=<%= navToken %>" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
@@ -391,6 +392,7 @@
                 <div>
                     <button class="btn btn-outline" id="gamificationBtn" style="margin-right: 10px;"><i class="fas fa-trophy"></i> Gamification</button>
                     <button class="btn btn-primary" id="quickLogBtn"><i class="fas fa-plus"></i> Quick Log</button>
+                    <button class="btn btn-success" id="scanFoodBtn" style="margin-left: 10px;"><i class="fas fa-qrcode"></i> Scan Food</button>
                 </div>
             </div>
             
@@ -791,6 +793,11 @@
                 modal.style.display = 'block';
             });
 
+            // Scan Food button
+            const scanFoodBtn = document.getElementById('scanFoodBtn');
+            scanFoodBtn.addEventListener('click', () => {
+                window.location.href = '/nutriscan?token=<%= navToken %>';
+            });
             // Hide modal
             function hideModal() {
                 modal.style.display = 'none';
