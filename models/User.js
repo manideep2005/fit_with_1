@@ -289,10 +289,17 @@ const userSchema = new mongoose.Schema({
     rewards: [{
       id: String,
       name: String,
-      type: { type: String, enum: ['workout-plan', 'recipe', 'customization', 'feature', 'badge'] },
+      type: { type: String, enum: ['health', 'fitness', 'workout-plan', 'recipe', 'customization', 'feature', 'badge'] },
+      subType: String, // More specific reward type
       description: String,
+      value: String, // Reward value/benefit description
       unlockedAt: { type: Date, default: Date.now },
-      used: { type: Boolean, default: false }
+      used: { type: Boolean, default: false },
+      usedAt: Date,
+      streakType: String, // 'workout' or 'nutrition'
+      streakCount: Number, // Streak length when earned
+      expiresAt: Date,
+      rarity: { type: String, enum: ['common', 'rare', 'epic', 'legendary'], default: 'common' }
     }],
     
     // Social Gamification

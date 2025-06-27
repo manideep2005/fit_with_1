@@ -535,29 +535,6 @@ class GamificationService {
       
       // Award streak rewards if milestone reached
       const streakRewards = this.awardStreakRewards(user, 'workout', user.gamification.streaks.workout.current);
-      
-      // Check if user qualifies for health rewards and notify hospitals
-      const previousStreak = user.gamification.streaks.workout.current - (streakUpdated ? 1 : 0);
-      const currentStreak = user.gamification.streaks.workout.current;
-      if (healthService.shouldAwardStreakReward('workout', currentStreak, previousStreak)) {
-        try {
-          const userInfo = {
-            email: user.email,
-            fullName: user.fullName,
-            firstName: user.personalInfo?.firstName || user.fullName?.split(' ')[0] || 'User'
-          };
-          
-          const healthReward = await healthService.processStreakReward(userId, 'workout', currentStreak, userInfo);
-          if (healthReward) {
-            // Add health reward to user's gamification rewards
-            user.gamification.rewards.push(healthReward);
-            console.log(`Health reward awarded for ${currentStreak}-day workout streak:`, healthReward.name);
-          }
-        } catch (healthError) {
-          console.error('Error processing health reward:', healthError);
-          // Don't fail the streak update if health reward fails
-        }
-      }
       await user.save();
 
       return {
@@ -617,29 +594,6 @@ class GamificationService {
       
       // Award streak rewards if milestone reached
       const streakRewards = this.awardStreakRewards(user, 'nutrition', user.gamification.streaks.nutrition.current);
-      
-      // Check if user qualifies for health rewards and notify hospitals
-      const previousStreak = user.gamification.streaks.nutrition.current - (streakUpdated ? 1 : 0);
-      const currentStreak = user.gamification.streaks.nutrition.current;
-      if (healthService.shouldAwardStreakReward('nutrition', currentStreak, previousStreak)) {
-        try {
-          const userInfo = {
-            email: user.email,
-            fullName: user.fullName,
-            firstName: user.personalInfo?.firstName || user.fullName?.split(' ')[0] || 'User'
-          };
-          
-          const healthReward = await healthService.processStreakReward(userId, 'nutrition', currentStreak, userInfo);
-          if (healthReward) {
-            // Add health reward to user's gamification rewards
-            user.gamification.rewards.push(healthReward);
-            console.log(`Health reward awarded for ${currentStreak}-day nutrition streak:`, healthReward.name);
-          }
-        } catch (healthError) {
-          console.error('Error processing health reward:', healthError);
-          // Don't fail the streak update if health reward fails
-        }
-      }
       await user.save();
 
       return {

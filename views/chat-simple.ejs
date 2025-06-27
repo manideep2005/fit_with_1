@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat - Fit-With-AI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; }
+        
+        .chat-container { 
+            max-width: 1200px; 
+            margin: 20px auto; 
+            background: white; 
+            border-radius: 10px; 
+            overflow: hidden;
+            height: 80vh;
+            display: flex;
+        }
+        
+        .sidebar { 
+            width: 300px; 
+            background: #2c3e50; 
+            color: white; 
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-header { 
+            padding: 20px; 
+            background: #34495e; 
+            text-align: center;
+        }
+        
+        .add-friend-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px 0;
+            width: 100%;
+            font-size: 0.9em;
+        }
+        
+        .add-friend-btn:hover {
+            background: #2980b9;
+        }
+        
+        .conversations { 
+            flex: 1; 
+            overflow-y: auto; 
+        }
+        
+        .conversation-item { 
+            padding: 15px 20px; 
+            border-bottom: 1px solid #34495e; 
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .conversation-item:hover { background: #34495e; }
+        .conversation-item.active { background: #3498db; }
+        
+        .chat-area { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+        }
+        
+        .chat-header { 
+            padding: 20px; 
+            background: #ecf0f1; 
+            border-bottom: 1px solid #bdc3c7;
+        }
+        
+        .messages { 
+            flex: 1; 
+            padding: 20px; 
+            overflow-y: auto; 
+            background: #f8f9fa;
+        }
+        
+        .message { 
+            margin-bottom: 15px; 
+            display: flex;
+        }
+        
+        .message.sent { 
+            justify-content: flex-end; 
+        }
+        
+        .message-bubble { 
+            max-width: 70%; 
+            padding: 10px 15px; 
+            border-radius: 15px; 
+            word-wrap: break-word;
+        }
+        
+        .message.received .message-bubble { 
+            background: #e3f2fd; 
+            color: #333;
+        }
+        
+        .message.sent .message-bubble { 
+            background: #3498db; 
+            color: white; 
+        }
+        
+        .message-input-area { 
+            padding: 20px; 
+            background: #ecf0f1; 
+            display: flex; 
+            gap: 10px;
+        }
+        
+        .message-input { 
+            flex: 1; 
+            padding: 10px 15px; 
+            border: 1px solid #bdc3c7; 
+            border-radius: 25px; 
+            outline: none;
+        }
+        
+        .send-btn { 
+            background: #3498db; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 25px; 
+            cursor: pointer;
+        }
+        
+        .no-chat { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100%; 
+            color: #7f8c8d;
+        }
+        
+        .modal { 
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.5); 
+            z-index: 1000;
+        }
+        
+        .modal-content { 
+            background: white; 
+            margin: 10% auto; 
+            padding: 20px; 
+            width: 400px; 
+            border-radius: 10px;
+        }
+        
+        .form-input { 
+            width: 100%; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+        }
+        
+        .btn { 
+            padding: 10px 20px; 
+            margin: 5px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer;
+        }
+        
+        .btn-primary { background: #3498db; color: white; }
+        .btn-secondary { background: #95a5a6; color: white; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2 style="color: #6C63FF; margin-bottom: 15px; font-size: 1.5em;">Fit-With-AI</h2>
+                <h3>Chat</h3>
+                <button class="add-friend-btn" onclick="window.location.href='/dashboard'">← Dashboard</button>
+                <button class="add-friend-btn" onclick="openAddFriendModal()">Add Friend</button>
+                <button class="add-friend-btn" onclick="showFriendRequests()" id="requests-btn">Friend Requests <span id="request-count" style="background: red; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.8em; display: none;"></span></button>
+            </div>
+            <div class="conversations" id="conversations">
+                <!-- Conversations will be loaded here -->
+            </div>
+        </div>
+        
+        <div class="chat-area">
+            <div class="chat-header" id="chat-header" style="display: none;">
+                <h3 id="chat-title">Select a conversation</h3>
+            </div>
+            
+            <div class="messages" id="messages">
+                <div class="no-chat">
+                    <p>Select a friend to start chatting</p>
+                </div>
+            </div>
+            
+            <div class="message-input-area" id="message-input-area" style="display: none;">
+                <input type="text" class="message-input" id="message-input" placeholder="Type a message...">
+                <button class="send-btn" onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Friend Modal -->
+    <div class="modal" id="add-friend-modal">
+        <div class="modal-content">
+            <h3>Find Friends</h3>
+            <input type="text" class="form-input" id="search-input" placeholder="Search by name..." oninput="searchUsers()">
+            <div id="search-results" style="max-height: 300px; overflow-y: auto; margin: 10px 0;"></div>
+            <textarea class="form-input" id="friend-message" placeholder="Message (optional)">Hi! I'd like to connect with you.</textarea>
+            <button class="btn btn-secondary" onclick="closeAddFriendModal()">Cancel</button>
+        </div>
+    </div>
+    
+    <script>
+        let currentFriendId = null;
+        let currentUserId = '<%= user._id %>';
+        
+        // Load conversations on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConversations();
+            loadFriendRequests();
+            // Auto-refresh friend requests every 30 seconds
+            setInterval(loadFriendRequests, 30000);
+        });
+        
+        // Load conversations
+        async function loadConversations() {
+            try {
+                const response = await fetch('/api/chat/conversations');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayConversations(data.conversations);
+                }
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+            }
+        }
+        
+        // Display conversations in sidebar
+        function displayConversations(conversations) {
+            const container = document.getElementById('conversations');
+            
+            if (conversations.length === 0) {
+                container.innerHTML = '<div style="padding: 20px; text-align: center; color: #bdc3c7;">No conversations yet</div>';
+                return;
+            }
+            
+            container.innerHTML = conversations.map(conv => `
+                <div class="conversation-item" onclick="selectConversation('${conv.friend._id}', '${conv.friend.fullName}')">
+                    <div style="font-weight: bold;">${conv.friend.fullName}</div>
+                    <div style="font-size: 0.9em; color: #bdc3c7; margin-top: 5px;">
+                        ${conv.lastMessage.content.substring(0, 30)}...
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Select a conversation
+        async function selectConversation(friendId, friendName) {
+            currentFriendId = friendId;
+            
+            // Update active conversation
+            document.querySelectorAll('.conversation-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.conversation-item').classList.add('active');
+            
+            // Show chat header and input
+            document.getElementById('chat-header').style.display = 'block';
+            document.getElementById('message-input-area').style.display = 'flex';
+            document.getElementById('chat-title').textContent = friendName;
+            
+            // Load messages
+            await loadMessages(friendId);
+        }
+        
+        // Load messages for a conversation
+        async function loadMessages(friendId) {
+            try {
+                const response = await fetch(`/api/chat/messages/${friendId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayMessages(data.messages);
+                }
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+        
+        // Display messages
+        function displayMessages(messages) {
+            const container = document.getElementById('messages');
+            
+            if (messages.length === 0) {
+                container.innerHTML = '<div class="no-chat"><p>No messages yet. Start the conversation!</p></div>';
+                return;
+            }
+            
+            container.innerHTML = messages.map(msg => {
+                const isCurrentUser = msg.sender._id === currentUserId;
+                return `
+                    <div class="message ${isCurrentUser ? 'sent' : 'received'}">
+                        <div class="message-bubble">
+                            ${msg.content}
+                            <div style="font-size: 0.8em; margin-top: 5px; opacity: 0.7;">
+                                ${new Date(msg.createdAt).toLocaleTimeString()}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // Send message
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            
+            if (!message || !currentFriendId) return;
+            
+            try {
+                const response = await fetch('/api/chat/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        receiverId: currentFriendId,
+                        content: message
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    input.value = '';
+                    await loadMessages(currentFriendId);
+                    await loadConversations();
+                } else {
+                    alert('Failed to send message: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                alert('Failed to send message');
+            }
+        }
+        
+        // Send message on Enter key
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && document.getElementById('message-input') === document.activeElement) {
+                sendMessage();
+            }
+        });
+        
+        // Friend request functions
+        function openAddFriendModal() {
+            document.getElementById('add-friend-modal').style.display = 'block';
+            document.getElementById('search-input').focus();
+        }
+        
+        function closeAddFriendModal() {
+            document.getElementById('add-friend-modal').style.display = 'none';
+            document.getElementById('search-input').value = '';
+            document.getElementById('search-results').innerHTML = '';
+            document.getElementById('friend-message').value = 'Hi! I\'d like to connect with you.';
+        }
+        
+        // Search users by name
+        let searchTimeout;
+        async function searchUsers() {
+            const query = document.getElementById('search-input').value.trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                document.getElementById('search-results').innerHTML = '';
+                return;
+            }
+            
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const response = await fetch('/api/chat/search-users?q=' + encodeURIComponent(query));
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        displaySearchResults(data.users);
+                    }
+                } catch (error) {
+                    console.error('Search error:', error);
+                }
+            }, 300);
+        }
+        
+        function displaySearchResults(users) {
+            const container = document.getElementById('search-results');
+            
+            if (users.length === 0) {
+                container.innerHTML = '<div style="padding: 10px; color: #999;">No users found</div>';
+                return;
+            }
+            
+            container.innerHTML = users.map(user => `
+                <div style="padding: 10px; border: 1px solid #ddd; margin: 5px 0; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>${user.fullName}</strong><br>
+                        <small style="color: #666;">${user.email}</small>
+                        ${user.friendshipStatus === 'friends' ? '<br><span style="color: green; font-size: 0.8em;">✓ Already Friends</span>' : ''}
+                        ${user.friendshipStatus === 'request_sent' ? '<br><span style="color: orange; font-size: 0.8em;">⏳ Request Sent</span>' : ''}
+                    </div>
+                    <button class="btn btn-primary" 
+                            onclick="sendFriendRequestToUser('${user._id}', '${user.fullName}')" 
+                            ${user.friendshipStatus === 'friends' || user.friendshipStatus === 'request_sent' ? 'disabled' : ''}>
+                        ${user.friendshipStatus === 'friends' ? 'Friends' : 
+                          user.friendshipStatus === 'request_sent' ? 'Sent' : 'Add Friend'}
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        async function sendFriendRequestToUser(userId, userName) {
+            const message = document.getElementById('friend-message').value.trim();
+            
+            try {
+                const response = await fetch('/api/chat/send-friend-request-by-id', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: userId,
+                        message: message || 'Hi! I\'d like to connect with you.'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`Friend request sent to ${userName}!`);
+                    closeAddFriendModal();
+                } else {
+                    alert('Failed to send friend request: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error sending friend request:', error);
+                alert('Failed to send friend request');
+            }
+        }
+        
+        // Load and handle friend requests
+        async function loadFriendRequests() {
+            try {
+                const response = await fetch('/api/chat/friend-requests');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const count = data.requests.length;
+                    const badge = document.getElementById('request-count');
+                    if (count > 0) {
+                        badge.textContent = count;
+                        badge.style.display = 'inline';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading friend requests:', error);
+            }
+        }
+        
+        async function showFriendRequests() {
+            try {
+                const response = await fetch('/api/chat/friend-requests');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayFriendRequestsModal(data.requests);
+                }
+            } catch (error) {
+                console.error('Error loading friend requests:', error);
+            }
+        }
+        
+        function displayFriendRequestsModal(requests) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'block';
+            
+            const requestsHtml = requests.length === 0 ? 
+                '<p style="text-align: center; color: #999; padding: 20px;">No pending friend requests</p>' :
+                requests.map(req => `
+                    <div style="padding: 15px; border: 1px solid #ddd; margin: 10px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong>${req.sender.fullName}</strong><br>
+                            <small style="color: #666;">${req.sender.email}</small><br>
+                            <em style="color: #888; font-size: 0.9em;">${req.message || 'No message'}</em>
+                        </div>
+                        <div>
+                            <button class="btn btn-primary" onclick="respondToRequest('${req._id}', 'accept')" style="margin-right: 5px;">Accept</button>
+                            <button class="btn btn-secondary" onclick="respondToRequest('${req._id}', 'reject')">Decline</button>
+                        </div>
+                    </div>
+                `).join('');
+            
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3>Friend Requests</h3>
+                    <div style="max-height: 400px; overflow-y: auto;">
+                        ${requestsHtml}
+                    </div>
+                    <button class="btn btn-secondary" onclick="this.parentElement.parentElement.remove()">Close</button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+
+        
+        async function respondToRequest(requestId, action) {
+            try {
+                const response = await fetch(`/api/chat/friend-requests/${requestId}/${action}`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`Friend request ${action}ed successfully!`);
+                    document.querySelector('.modal').remove();
+                    loadConversations();
+                    loadFriendRequests();
+                } else {
+                    alert(`Failed to ${action} friend request: ` + data.error);
+                }
+            } catch (error) {
+                console.error(`Error ${action}ing friend request:`, error);
+                alert(`Failed to ${action} friend request`);
+            }
+        }
+        
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('add-friend-modal');
+            if (event.target === modal) {
+                closeAddFriendModal();
+            }
+        }
+    </script>
+</body>
+</html>

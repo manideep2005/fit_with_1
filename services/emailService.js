@@ -568,6 +568,69 @@ The Fit-With-AI Team
     }
 };
 
+// Send friend request notification email
+const sendFriendRequestEmail = async (recipientEmail, recipientName, senderName, message) => {
+  try {
+    const transporter = createTransporter();
+    const mailOptions = {
+      from: { name: 'Fit-With-AI', address: process.env.EMAIL_USER },
+      to: recipientEmail,
+      subject: `${senderName} wants to connect with you on Fit-With-AI`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #6C63FF;">New Friend Request!</h2>
+          <p>Hi ${recipientName},</p>
+          <p><strong>${senderName}</strong> wants to connect with you on Fit-With-AI.</p>
+          ${message ? `<p><em>"${message}"</em></p>` : ''}
+          <p>Log in to your account to accept or decline this request.</p>
+          <a href="${process.env.APP_URL || 'http://localhost:3001'}/chat" 
+             style="background: #6C63FF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;">
+            View Request
+          </a>
+          <p>Happy training!<br>The Fit-With-AI Team</p>
+        </div>
+      `
+    };
+    
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending friend request email:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Send friend request accepted notification email
+const sendFriendRequestAcceptedEmail = async (recipientEmail, recipientName, accepterName) => {
+  try {
+    const transporter = createTransporter();
+    const mailOptions = {
+      from: { name: 'Fit-With-AI', address: process.env.EMAIL_USER },
+      to: recipientEmail,
+      subject: `${accepterName} accepted your friend request!`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #28A745;">Friend Request Accepted! 🎉</h2>
+          <p>Hi ${recipientName},</p>
+          <p>Great news! <strong>${accepterName}</strong> has accepted your friend request.</p>
+          <p>You can now chat and share your fitness journey together!</p>
+          <a href="${process.env.APP_URL || 'http://localhost:3001'}/chat" 
+             style="background: #28A745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;">
+            Start Chatting
+          </a>
+          <p>Happy training!<br>The Fit-With-AI Team</p>
+        </div>
+      `
+    };
+    
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending friend request accepted email:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
     sendWelcomeEmail,
     sendTestEmail,
@@ -575,5 +638,7 @@ module.exports = {
     sendOnboardingCompletionEmail,
     generateOTP,
     sendPasswordResetOTP,
-    sendPasswordResetConfirmation
+    sendPasswordResetConfirmation,
+    sendFriendRequestEmail,
+    sendFriendRequestAcceptedEmail
 };

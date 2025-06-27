@@ -8,9 +8,10 @@ const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
+const jwt = require('jsonwebtoken'); // Add at the top if not already present
 
 console.log('Loading services...');
-const { sendWelcomeEmail, generateOTP, sendPasswordResetOTP, sendPasswordResetConfirmation } = require('./services/emailService');
+const { sendWelcomeEmail, generateOTP, sendPasswordResetOTP, sendPasswordResetConfirmation, sendFriendRequestEmail, sendFriendRequestAcceptedEmail } = require('./services/emailService');
 
 
 const database = require('./config/database');
@@ -151,6 +152,29 @@ const isAuthenticated = (req, res, next) => {
   return res.status(401).json({ error: 'Unauthorized' });
 };
 
+// Session validation middleware for API routes
+const validateSession = (req, res, next) => {
+  if (!req.session.user) {
+    console.log('Session validation failed - no user in session');
+    return res.status(401).json({
+      success: false,
+      error: 'Session expired. Please log in again.',
+      code: 'SESSION_EXPIRED'
+    });
+  }
+  
+  if (!req.session.user._id) {
+    console.log('Session validation failed - no user ID in session');
+    return res.status(401).json({
+      success: false,
+      error: 'Invalid session. Please log in again.',
+      code: 'INVALID_SESSION'
+    });
+  }
+  
+  next();
+};
+
 // Onboarding Check Middleware - FIXED
 const checkOnboarding = (req, res, next) => {
   console.log('Onboarding check - User:', req.session.user); // Debug log
@@ -236,7 +260,69 @@ if (process.env.NODE_ENV !== 'production') {
     });
 }
 
-// Signup Route - Updated to use MongoDB with enhanced error logging
+// Session debugging endpoint (development only)
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/debug-session-detailed', (req, res) => {
+    res.json({
+      sessionExists: !!req.session,
+      sessionID: req.sessionID,
+      sessionUser: req.session.user,
+      sessionData: req.session,
+      cookies: req.headers.cookie,
+      userAgent: req.headers['user-agent'],
+      timestamp: new Date().toISOString(),
+      sessionSaveMethod: req.session.save ? 'Available' : 'Not available',
+      sessionDestroyMethod: req.session.destroy ? 'Available' : 'Not available'
+    });
+  });
+
+  app.post('/debug-create-test-session', async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: 'Email required' });
+      }
+      
+      // Find user in database
+      const User = require('./models/User');
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
+      
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Create test session
+      req.session.user = {
+        _id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        onboardingCompleted: user.onboardingCompleted,
+        personalInfo: user.personalInfo,
+        testSession: true,
+        createdAt: new Date()
+      };
+      
+      req.session.save((err) => {
+        if (err) {
+          console.error('Test session save error:', err);
+          return res.status(500).json({ error: 'Failed to save test session' });
+        }
+        
+        res.json({
+          success: true,
+          message: 'Test session created',
+          sessionUser: req.session.user,
+          sessionID: req.sessionID
+        });
+      });
+      
+    } catch (error) {
+      console.error('Create test session error:', error);
+      res.status(500).json({ error: 'Failed to create test session' });
+    }
+  });
+} 
 app.post('/signup', ensureDbConnection, async (req, res) => {
   console.log('Signup request received:', { body: req.body });
   
@@ -349,6 +435,28 @@ app.post('/signup', ensureDbConnection, async (req, res) => {
     });
   }
 });
+   
+
+// ...existing code...
+
+// Remove this block entirely:
+// app.post('/debug-create-test-session', async (req, res) => {async (req, res) => {
+//   // ...code...
+// });
+
+app.post('/debug-create-test-session', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email required' });
+    }
+    // ...rest of the code...
+  } catch (error) {
+    // ...error handling...
+  }
+});
+
+// ...existing code...
 
 // Login Route - Updated to use MongoDB
 app.post('/login', ensureDbConnection, async (req, res) => {
@@ -659,10 +767,81 @@ const protectedRoutes = [
   '/schedule',
   '/community',
   '/ai-coach',
+  '/chat',
   '/settings'
 ];
+// Special handling for chat route
+app.get('/chat', isAuthenticated, validateSession, checkOnboarding, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const conversationId = req.query.conversation;
+    const friendId = req.query.friend;
+    
+    console.log(`Accessing chat for user:`, req.session.user?.email);
+    
+    // Get user's conversations
+    const conversations = await chatService.getUserConversations(userId);
+    
+    let currentConversation = null;
+    let currentFriend = null;
+    let messages = [];
+    
+    // If a specific conversation or friend is requested
+    if (conversationId || friendId) {
+      if (friendId) {
+        // Get friend info and messages
+        const friends = await chatService.getUserFriends(userId);
+        currentFriend = friends.find(f => f._id.toString() === friendId);
+        
+        if (currentFriend) {
+          messages = await chatService.getConversationMessages(userId, friendId, 50, 0);
+          currentConversation = conversationId || `${userId}_${friendId}`;
+        }
+      } else if (conversationId) {
+        // Find conversation in the list
+        const conv = conversations.find(c => c.conversationId === conversationId);
+        if (conv) {
+          currentConversation = conversationId;
+          currentFriend = conv.friend;
+          messages = await chatService.getConversationMessages(userId, currentFriend._id, 50, 0);
+        }
+      }
+    }
+    
+    // Generate navigation token
+    const navToken = Buffer.from(JSON.stringify({
+      email: req.session.user.email || 'unknown',
+      fullName: req.session.user.fullName || 'User',
+      firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
+      timestamp: Date.now(),
+      sessionId: req.sessionID || 'no-session',
+      route: '/chat',
+      onboardingData: req.session.user.onboardingData || null
+    })).toString('base64');
+    
+    res.render('chat-simple', {
+      user: req.session.user,
+      currentPath: '/chat',
+      navToken: navToken,
+      conversations: conversations,
+      currentConversation: currentConversation,
+      currentFriend: currentFriend,
+      messages: messages,
+      currentConversationId: currentConversation
+    });
+    
+  } catch (error) {
+    console.error('Error rendering chat:', error);
+    res.status(500).json({
+      error: 'Failed to render chat page',
+      details: error.message
+    });
+  }
+});
 
-protectedRoutes.forEach(route => {
+// Handle other protected routes (excluding chat)
+const otherProtectedRoutes = protectedRoutes.filter(route => route !== '/chat');
+otherProtectedRoutes.forEach(route => {
   app.get(route, isAuthenticated, checkOnboarding, (req, res) => {
     const viewName = route.substring(1); // Remove leading slash
     console.log(`Accessing ${route} for user:`, req.session.user?.email); // Debug log
@@ -1371,6 +1550,12 @@ const gamificationService = require('./services/gamificationService');
 // NutriScan Service
 const nutriScanService = require('./services/nutriScanService');
 
+// Health Service
+const healthService = require('./services/healthService');
+
+// Chat Service
+const chatService = require('./services/chatService');
+
 // AI Chat endpoint
 app.post('/api/ai-chat', isAuthenticated, async (req, res) => {
   try {
@@ -1736,6 +1921,990 @@ app.get('/api/nutriscan/popular', isAuthenticated, async (req, res) => {
   }
 });
 
+// Health Rewards API Routes
+
+// Get nearby health facilities
+app.get('/api/health/facilities', isAuthenticated, async (req, res) => {
+  try {
+    const { lat, lng, rewardType, maxDistance = 10 } = req.query;
+    
+    // Mock user location if not provided
+    const userLocation = lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null;
+    
+    console.log(`Finding health facilities - Location: ${lat}, ${lng}, Reward Type: ${rewardType}`);
+    
+    const facilities = await healthService.findNearbyFacilities(userLocation, rewardType, parseInt(maxDistance));
+    
+    res.json({
+      success: true,
+      facilities: facilities,
+      count: facilities.length,
+      userLocation: userLocation
+    });
+    
+  } catch (error) {
+    console.error('Get health facilities error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to find health facilities'
+    });
+  }
+});
+
+// Search health facilities
+app.get('/api/health/facilities/search', isAuthenticated, async (req, res) => {
+  try {
+    const { q: query, lat, lng } = req.query;
+    
+    if (!query || query.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: 'Search query must be at least 2 characters long'
+      });
+    }
+    
+    const userLocation = lat && lng ? { lat: parseFloat(lat), lng: parseFloat(lng) } : null;
+    const facilities = healthService.searchFacilities(query.trim(), userLocation);
+    
+    res.json({
+      success: true,
+      facilities: facilities,
+      query: query.trim(),
+      count: facilities.length
+    });
+    
+  } catch (error) {
+    console.error('Search health facilities error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search health facilities'
+    });
+  }
+});
+
+// Get facility details
+app.get('/api/health/facilities/:facilityId', isAuthenticated, async (req, res) => {
+  try {
+    const { facilityId } = req.params;
+    const facility = healthService.getFacilityById(facilityId);
+    
+    if (!facility) {
+      return res.status(404).json({
+        success: false,
+        error: 'Health facility not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      facility: facility
+    });
+    
+  } catch (error) {
+    console.error('Get facility details error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get facility details'
+    });
+  }
+});
+
+// Get available appointment slots
+app.get('/api/health/facilities/:facilityId/slots', isAuthenticated, async (req, res) => {
+  try {
+    const { facilityId } = req.params;
+    const { date } = req.query;
+    
+    if (!date) {
+      return res.status(400).json({
+        success: false,
+        error: 'Date is required'
+      });
+    }
+    
+    const slots = await healthService.getAvailableSlots(facilityId, date);
+    
+    res.json({
+      success: true,
+      slots: slots,
+      date: date,
+      facilityId: facilityId
+    });
+    
+  } catch (error) {
+    console.error('Get available slots error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get available slots'
+    });
+  }
+});
+
+// Book appointment with health reward
+app.post('/api/health/book-appointment', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { facilityId, rewardId, appointmentData } = req.body;
+    const userEmail = req.session.user.email;
+    
+    if (!facilityId || !appointmentData) {
+      return res.status(400).json({
+        success: false,
+        error: 'Facility ID and appointment data are required'
+      });
+    }
+    
+    // Get user to check rewards
+    const user = await UserService.getUserByEmail(userEmail);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+    
+    let rewardUsed = null;
+    
+    // If reward is being used, validate it
+    if (rewardId) {
+      const reward = user.gamification?.rewards?.find(r => r.id === rewardId);
+      if (!reward) {
+        return res.status(404).json({
+          success: false,
+          error: 'Reward not found'
+        });
+      }
+      
+      const validation = healthService.validateRewardForBooking(reward, appointmentData.serviceType);
+      if (!validation.valid) {
+        return res.status(400).json({
+          success: false,
+          error: validation.reason
+        });
+      }
+      
+      rewardUsed = reward;
+    }
+    
+    // Book the appointment
+    const booking = await healthService.bookAppointment(facilityId, rewardId, user._id, appointmentData);
+    
+    // Mark reward as used if applicable
+    if (rewardUsed) {
+      const rewardIndex = user.gamification.rewards.findIndex(r => r.id === rewardId);
+      if (rewardIndex !== -1) {
+        user.gamification.rewards[rewardIndex].used = true;
+        user.gamification.rewards[rewardIndex].usedAt = new Date();
+        await user.save();
+      }
+    }
+    
+    res.json({
+      success: true,
+      booking: booking,
+      rewardUsed: rewardUsed ? {
+        id: rewardUsed.id,
+        name: rewardUsed.name,
+        type: rewardUsed.subType
+      } : null
+    });
+    
+  } catch (error) {
+    console.error('Book appointment error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to book appointment'
+    });
+  }
+});
+
+// Get user's health rewards
+app.get('/api/health/rewards', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const user = await UserService.getUserByEmail(userEmail);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+    
+    const healthRewards = user.gamification?.rewards?.filter(reward => reward.type === 'health') || [];
+    
+    // Add benefit information to each reward
+    const rewardsWithBenefits = healthRewards.map(reward => ({
+      ...reward.toObject(),
+      benefit: healthService.getRewardBenefit(reward.subType),
+      isExpired: new Date() > new Date(reward.expiresAt),
+      daysUntilExpiry: Math.ceil((new Date(reward.expiresAt) - new Date()) / (1000 * 60 * 60 * 24))
+    }));
+    
+    res.json({
+      success: true,
+      rewards: rewardsWithBenefits,
+      count: rewardsWithBenefits.length,
+      activeCount: rewardsWithBenefits.filter(r => !r.used && !r.isExpired).length
+    });
+    
+  } catch (error) {
+    console.error('Get health rewards error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get health rewards'
+    });
+  }
+});
+
+// Get streak rewards and upcoming milestones
+app.get('/api/streak-rewards', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const user = await UserService.getUserByEmail(userEmail);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    const streaks = user.gamification?.streaks || {};
+    const workoutStreak = streaks.workout?.current || 0;
+    const nutritionStreak = streaks.nutrition?.current || 0;
+
+    // Get upcoming rewards for motivation
+    const upcomingWorkoutRewards = gamificationService.getUpcomingStreakRewards(workoutStreak, 'workout');
+    const upcomingNutritionRewards = gamificationService.getUpcomingStreakRewards(nutritionStreak, 'nutrition');
+
+    // Get all streak rewards earned
+    const allRewards = user.gamification?.rewards || [];
+    const streakRewards = allRewards.filter(reward => reward.streakType);
+
+    // Separate by type
+    const healthRewards = streakRewards.filter(r => r.type === 'health');
+    const fitnessRewards = streakRewards.filter(r => r.type === 'fitness');
+
+    res.json({
+      success: true,
+      data: {
+        currentStreaks: {
+          workout: workoutStreak,
+          nutrition: nutritionStreak,
+          longestWorkout: streaks.workout?.longest || 0,
+          longestNutrition: streaks.nutrition?.longest || 0
+        },
+        earnedRewards: {
+          health: healthRewards.map(reward => ({
+            ...reward.toObject(),
+            isExpired: reward.expiresAt ? new Date() > new Date(reward.expiresAt) : false,
+            daysUntilExpiry: reward.expiresAt ? Math.ceil((new Date(reward.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) : null
+          })),
+          fitness: fitnessRewards.map(reward => ({
+            ...reward.toObject(),
+            isExpired: reward.expiresAt ? new Date() > new Date(reward.expiresAt) : false,
+            daysUntilExpiry: reward.expiresAt ? Math.ceil((new Date(reward.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) : null
+          }))
+        },
+        upcomingRewards: {
+          workout: upcomingWorkoutRewards,
+          nutrition: upcomingNutritionRewards
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('Get streak rewards error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get streak rewards'
+    });
+  }
+});
+
+// Use a streak reward
+app.post('/api/streak-rewards/use', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { rewardId } = req.body;
+    const userEmail = req.session.user.email;
+    
+    if (!rewardId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Reward ID is required'
+      });
+    }
+
+    const user = await UserService.getUserByEmail(userEmail);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // Find the reward
+    const rewardIndex = user.gamification.rewards.findIndex(r => r.id === rewardId);
+    if (rewardIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Reward not found'
+      });
+    }
+
+    const reward = user.gamification.rewards[rewardIndex];
+
+    // Check if reward is already used
+    if (reward.used) {
+      return res.status(400).json({
+        success: false,
+        error: 'Reward has already been used'
+      });
+    }
+
+    // Check if reward is expired
+    if (reward.expiresAt && new Date() > new Date(reward.expiresAt)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Reward has expired'
+      });
+    }
+
+    // Mark reward as used
+    user.gamification.rewards[rewardIndex].used = true;
+    user.gamification.rewards[rewardIndex].usedAt = new Date();
+    
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Reward used successfully',
+      reward: {
+        id: reward.id,
+        name: reward.name,
+        type: reward.type,
+        subType: reward.subType,
+        value: reward.value,
+        usedAt: user.gamification.rewards[rewardIndex].usedAt
+      }
+    });
+    
+  } catch (error) {
+    console.error('Use streak reward error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to use reward'
+    });
+  }
+});
+
+// Get user's booking history
+app.get('/api/health/bookings', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const bookings = await healthService.getUserBookings(userId);
+    
+    res.json({
+      success: true,
+      bookings: bookings,
+      count: bookings.length
+    });
+    
+  } catch (error) {
+    console.error('Get booking history error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get booking history'
+    });
+  }
+});
+
+// Generate external booking link
+app.post('/api/health/generate-booking-link', isAuthenticated, async (req, res) => {
+  try {
+    const { facilityId, rewardId } = req.body;
+    const userId = req.session.user._id;
+    
+    if (!facilityId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Facility ID is required'
+      });
+    }
+    
+    const bookingLink = healthService.generateBookingLink(facilityId, rewardId, userId);
+    
+    res.json({
+      success: true,
+      bookingLink: bookingLink,
+      facilityId: facilityId,
+      rewardId: rewardId
+    });
+    
+  } catch (error) {
+    console.error('Generate booking link error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate booking link'
+    });
+  }
+});
+
+// Chat API Routes
+
+// Get user's conversations
+app.get('/api/chat/conversations', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const conversations = await chatService.getUserConversations(userId);
+    
+    res.json({
+      success: true,
+      conversations: conversations
+    });
+    
+  } catch (error) {
+    console.error('Get conversations error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get conversations'
+    });
+  }
+});
+
+// Get conversation messages
+app.get('/api/chat/messages/:friendId', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { friendId } = req.params;
+    const { limit = 50, skip = 0 } = req.query;
+    
+    const messages = await chatService.getConversationMessages(
+      userId, 
+      friendId, 
+      parseInt(limit), 
+      parseInt(skip)
+    );
+    
+    // Mark messages as read
+    await chatService.markMessagesAsRead(userId, friendId, userId);
+    
+    res.json({
+      success: true,
+      messages: messages
+    });
+    
+  } catch (error) {
+    console.error('Get messages error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get messages'
+    });
+  }
+});
+
+// Send message
+app.post('/api/chat/send', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const senderId = req.session.user._id;
+    const { receiverId, content, messageType = 'text', attachmentData = null } = req.body;
+    
+    if (!receiverId || !content || content.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Receiver ID and message content are required'
+      });
+    }
+    
+    if (content.trim().length > 1000) {
+      return res.status(400).json({
+        success: false,
+        error: 'Message content too long (max 1000 characters)'
+      });
+    }
+    
+    const message = await chatService.sendMessage(
+      senderId, 
+      receiverId, 
+      content, 
+      messageType, 
+      attachmentData
+    );
+    
+    res.json({
+      success: true,
+      message: message
+    });
+    
+  } catch (error) {
+    console.error('Send message error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to send message'
+    });
+  }
+});
+
+// Get user's friends
+app.get('/api/chat/friends', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const friends = await chatService.getUserFriends(userId);
+    
+    res.json({
+      success: true,
+      friends: friends
+    });
+    
+  } catch (error) {
+    console.error('Get friends error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get friends list'
+    });
+  }
+});
+
+// Send friend request
+app.post('/api/chat/send-friend-request', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { friendEmail, message } = req.body;
+    
+    if (!friendEmail || friendEmail.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Friend email is required'
+      });
+    }
+    
+    const friendRequest = await chatService.sendFriendRequest(userId, friendEmail, message);
+    
+    res.json({
+      success: true,
+      message: 'Friend request sent successfully',
+      request: friendRequest
+    });
+    
+  } catch (error) {
+    console.error('Send friend request error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to send friend request'
+    });
+  }
+});
+
+// Get friend requests
+app.get('/api/chat/friend-requests', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const pendingRequests = await chatService.getPendingFriendRequests(userId);
+    const sentRequests = await chatService.getSentFriendRequests(userId);
+    
+    res.json({
+      success: true,
+      requests: pendingRequests,
+      sentRequests: sentRequests
+    });
+    
+  } catch (error) {
+    console.error('Get friend requests error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get friend requests'
+    });
+  }
+});
+
+// Accept friend request
+app.post('/api/chat/friend-requests/:requestId/accept', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { requestId } = req.params;
+    
+    const result = await chatService.acceptFriendRequest(requestId, userId);
+    
+    res.json({
+      success: true,
+      message: 'Friend request accepted successfully',
+      request: result
+    });
+    
+  } catch (error) {
+    console.error('Accept friend request error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to accept friend request'
+    });
+  }
+});
+
+// Reject friend request
+app.post('/api/chat/friend-requests/:requestId/reject', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { requestId } = req.params;
+    
+    const result = await chatService.rejectFriendRequest(requestId, userId);
+    
+    res.json({
+      success: true,
+      message: 'Friend request rejected successfully',
+      request: result
+    });
+    
+  } catch (error) {
+    console.error('Reject friend request error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to reject friend request'
+    });
+  }
+});
+
+// Legacy add friend endpoint (now sends friend request)
+app.post('/api/chat/add-friend', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { friendEmail } = req.body;
+    
+    if (!friendEmail || friendEmail.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Friend email is required'
+      });
+    }
+    
+    const friendRequest = await chatService.addFriend(userId, friendEmail);
+    
+    res.json({
+      success: true,
+      message: 'Friend request sent successfully',
+      request: friendRequest
+    });
+    
+  } catch (error) {
+    console.error('Add friend (legacy) error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to send friend request'
+    });
+  }
+});
+
+// Remove friend
+app.delete('/api/chat/friends/:friendId', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { friendId } = req.params;
+    
+    await chatService.removeFriend(userId, friendId);
+    
+    res.json({
+      success: true,
+      message: 'Friend removed successfully'
+    });
+    
+  } catch (error) {
+    console.error('Remove friend error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to remove friend'
+    });
+  }
+});
+
+// Search users
+app.get('/api/chat/search-users', isAuthenticated, ensureDbConnection, async (req, res) => {
+
+  try {
+    const userId = req.session.user._id;
+    const { q: query, limit = 10 } = req.query;
+    
+    if (!query || query.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: 'Search query must be at least 2 characters long'
+      });
+    }
+    
+    const users = await chatService.searchUsers(userId, query.trim(), parseInt(limit));
+    
+    res.json({
+      success: true,
+      users: users
+    });
+    
+  } catch (error) {
+    console.error('Search users error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search users'
+    });
+  }
+});
+
+// Share workout with friend
+app.post('/api/chat/share-workout', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const senderId = req.session.user._id;
+    const { friendId, workoutData } = req.body;
+    
+    if (!friendId || !workoutData) {
+      return res.status(400).json({
+        success: false,
+        error: 'Friend ID and workout data are required'
+      });
+    }
+    
+    const message = await chatService.shareWorkout(senderId, friendId, workoutData);
+    
+    res.json({
+      success: true,
+      message: 'Workout shared successfully',
+      chatMessage: message
+    });
+    
+  } catch (error) {
+    console.error('Share workout error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to share workout'
+    });
+  }
+});
+
+// Share progress with friend
+app.post('/api/chat/share-progress', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const senderId = req.session.user._id;
+    const { friendId, progressData } = req.body;
+    
+    if (!friendId || !progressData) {
+      return res.status(400).json({
+        success: false,
+        error: 'Friend ID and progress data are required'
+      });
+    }
+    
+    const message = await chatService.shareProgress(senderId, friendId, progressData);
+    
+    res.json({
+      success: true,
+      message: 'Progress shared successfully',
+      chatMessage: message
+    });
+    
+  } catch (error) {
+    console.error('Share progress error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to share progress'
+    });
+  }
+});
+
+
+app.get('/api/chat/unread-count', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const count = await chatService.getUnreadMessageCount(userId);
+    
+    res.json({
+      success: true,
+      unreadCount: count
+    });
+    
+  } catch (error) {
+    console.error('Get unread count error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get unread count'
+    });
+  }
+});
+
+// Delete message
+app.delete('/api/chat/messages/:messageId', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { messageId } = req.params;
+    
+    await chatService.deleteMessage(messageId, userId);
+    
+    res.json({
+      success: true,
+      message: 'Message deleted successfully'
+    });
+    
+  } catch (error) {
+    console.error('Delete message error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to delete message'
+    });
+  }
+});
+
+// Search users for friend requests
+app.post('/api/users/search', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { query } = req.body;
+    
+    if (!query || query.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: 'Search query must be at least 2 characters long'
+      });
+    }
+    
+    const users = await chatService.searchUsers(userId, query.trim(), 10);
+    
+    res.json({
+      success: true,
+      users: users
+    });
+    
+  } catch (error) {
+    console.error('Search users error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search users'
+    });
+  }
+});
+
+// Send friend request by user ID
+app.post('/api/chat/send-friend-request-by-id', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const senderId = req.session.user._id;
+    const senderName = req.session.user.fullName;
+    const { userId, message } = req.body;
+    
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID is required'
+      });
+    }
+    
+    // Get target user
+    const targetUser = await UserService.getUserById(userId);
+    if (!targetUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+    
+    const friendRequest = await chatService.sendFriendRequest(
+      senderId, 
+      targetUser.email, 
+      message || 'Hi! I would like to connect with you on our fitness journey.'
+    );
+    
+    // Send email notification
+    try {
+      await sendFriendRequestEmail(targetUser.email, targetUser.fullName, senderName, message);
+    } catch (emailError) {
+      console.error('Failed to send friend request email:', emailError);
+    }
+    
+    res.json({
+      success: true,
+      message: 'Friend request sent successfully',
+      request: friendRequest
+    });
+    
+  } catch (error) {
+    console.error('Send friend request error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to send friend request'
+    });
+  }
+});
+
+// Get friend requests
+app.get('/api/friends/requests', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const pendingRequests = await chatService.getPendingFriendRequests(userId);
+    
+    res.json({
+      success: true,
+      requests: pendingRequests.map(req => ({
+        ...req,
+        from: req.sender
+      }))
+    });
+    
+  } catch (error) {
+    console.error('Get friend requests error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get friend requests'
+    });
+  }
+});
+
+// Respond to friend request
+app.post('/api/friends/respond', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { userId: senderId, action } = req.body;
+    
+    if (!senderId || !action) {
+      return res.status(400).json({
+        success: false,
+        error: 'User ID and action are required'
+      });
+    }
+    
+    // Find the friend request
+    const FriendRequest = require('./models/FriendRequest');
+    const request = await FriendRequest.findOne({
+      sender: senderId,
+      receiver: userId,
+      status: 'pending'
+    });
+    
+    if (!request) {
+      return res.status(404).json({
+        success: false,
+        error: 'Friend request not found'
+      });
+    }
+    
+    let result;
+    if (action === 'accept') {
+      result = await chatService.acceptFriendRequest(request._id, userId);
+    } else if (action === 'decline') {
+      result = await chatService.rejectFriendRequest(request._id, userId);
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid action'
+      });
+    }
+    
+    res.json({
+      success: true,
+      message: `Friend request ${action}ed successfully`,
+      request: result
+    });
+    
+  } catch (error) {
+    console.error('Respond to friend request error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to respond to friend request'
+    });
+  }
+});
+
 // Logout Route
 app.get('/logout', (req, res) => {
   req.session.destroy(() => {
@@ -1764,7 +2933,7 @@ app.use((req, res) => {
 
 // Start Server (only in non-serverless environment)
 if (!process.env.VERCEL) {
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3005;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
@@ -1791,5 +2960,27 @@ if (!youtubeApiKey || youtubeApiKey === 'YOUR_YOUTUBE_API_KEY') {
   console.log('🎥 YouTube API: Enabled - Real video search available');
 }
 
-// Export for Vercel
+// Token-based authentication middleware
+app.use(async (req, res, next) => {
+  if (!req.session.user && req.query.token) {
+    try {
+      // Replace 'your_jwt_secret' with your actual JWT secret or logic
+      const decoded = jwt.decode(req.query.token);
+      if (decoded && decoded.email) {
+        // Optionally, you can verify the token with jwt.verify if you use a secret
+        // const decoded = jwt.verify(req.query.token, 'your_jwt_secret');
+        // Find the user in the database
+        const User = require('./models/User');
+        const user = await User.findOne({ email: decoded.email });
+        if (user) {
+          req.session.user = user;
+        }
+      }
+    } catch (err) {
+      // Invalid token, ignore and proceed
+    }
+  }
+  next();
+});
+
 module.exports = app;
