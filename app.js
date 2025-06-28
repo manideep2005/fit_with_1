@@ -81,17 +81,38 @@ if (!process.env.SESSION_SECRET) {
     console.error('WARNING: SESSION_SECRET environment variable is not set. Using a default secret is not secure for production.');
 }
 
+// Configure session store
+let sessionStore = undefined;
+if (redisClient && !process.env.VERCEL) {
+    try {
+        const RedisStore = require('connect-redis');
+        // Try different import patterns for connect-redis
+        const Store = RedisStore.default || RedisStore;
+        sessionStore = new Store({
+            client: redisClient,
+            prefix: 'fit-with-ai:sess:'
+        });
+        console.log('Redis session store configured');
+    } catch (error) {
+        console.log('Redis session store configuration failed, using memory store:', error.message);
+        // For Vercel deployment, we'll use memory store which is fine for serverless
+    }
+} else if (process.env.VERCEL) {
+    console.log('Vercel environment detected, using memory store for sessions');
+}
+
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-here-change-in-production',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: { 
         maxAge: 1000 * 60 * 60 * 24, // 24 hours
         httpOnly: true,
-        secure: false, // Keep false for now to avoid HTTPS issues
-        sameSite: 'lax'
+        secure: process.env.NODE_ENV === 'production' && !process.env.VERCEL, // Only secure in production non-Vercel
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // Allow cross-site for Vercel
     },
-    name: 'fit-with-ai-session'
+    name: 'fit-with-ai-session',
+    store: sessionStore
 }));
 
 // Authentication Middleware - Enhanced for serverless with persistent session handling
@@ -437,26 +458,6 @@ app.post('/signup', ensureDbConnection, async (req, res) => {
 });
    
 
-// ...existing code...
-
-// Remove this block entirely:
-// app.post('/debug-create-test-session', async (req, res) => {async (req, res) => {
-//   // ...code...
-// });
-
-app.post('/debug-create-test-session', async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ error: 'Email required' });
-    }
-    // ...rest of the code...
-  } catch (error) {
-    // ...error handling...
-  }
-});
-
-// ...existing code...
 
 // Login Route - Updated to use MongoDB
 app.post('/login', ensureDbConnection, async (req, res) => {
@@ -2634,7 +2635,6 @@ app.delete('/api/chat/friends/:friendId', isAuthenticated, ensureDbConnection, a
 
 // Search users
 app.get('/api/chat/search-users', isAuthenticated, ensureDbConnection, async (req, res) => {
-
   try {
     const userId = req.session.user._id;
     const { q: query, limit = 10 } = req.query;
@@ -2662,34 +2662,73 @@ app.get('/api/chat/search-users', isAuthenticated, ensureDbConnection, async (re
   }
 });
 
-// Share workout with friend
-app.post('/api/chat/share-workout', isAuthenticated, ensureDbConnection, async (req, res) => {
+// Send friend request by user ID (for search results)
+app.post('/api/chat/send-friend-request-by-id', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const senderId = req.session.user._id;
-    const { friendId, workoutData } = req.body;
+    const { userId, message } = req.body;
     
-    if (!friendId || !workoutData) {
+    if (!userId) {
       return res.status(400).json({
         success: false,
-        error: 'Friend ID and workout data are required'
+        error: 'User ID is required'
       });
     }
     
-    const message = await chatService.shareWorkout(senderId, friendId, workoutData);
+    // Get the target user's email
+    const targetUser = await UserService.getUserById(userId);
+    if (!targetUser) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+    
+    const friendRequest = await chatService.sendFriendRequest(senderId, targetUser.email, message || 'Hi! I would like to connect with you.');
     
     res.json({
       success: true,
-      message: 'Workout shared successfully',
-      chatMessage: message
+      message: 'Friend request sent successfully',
+      request: friendRequest
     });
     
   } catch (error) {
-    console.error('Share workout error:', error);
+    console.error('Send friend request by ID error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to share workout'
+      error: error.message || 'Failed to send friend request'
     });
   }
+});
+
+// Share workout with friend
+app.post('/api/chat/share-workout', isAuthenticated, ensureDbConnection, async (req, res) => {
+try {
+const senderId = req.session.user._id;
+const { friendId, workoutData } = req.body;
+
+if (!friendId || !workoutData) {
+return res.status(400).json({
+success: false,
+error: 'Friend ID and workout data are required'
+});
+}
+
+const message = await chatService.shareWorkout(senderId, friendId, workoutData);
+
+res.json({
+success: true,
+message: 'Workout shared successfully',
+chatMessage: message
+});
+
+} catch (error) {
+console.error('Share workout error:', error);
+res.status(500).json({
+success: false,
+error: 'Failed to share workout'
+});
+}
 });
 
 // Share progress with friend
@@ -2924,38 +2963,38 @@ app.post('/api/friends/respond', isAuthenticated, ensureDbConnection, async (req
 
 // Logout Route
 app.get('/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.clearCookie('connect.sid');
-    res.redirect('/');
-  });
+req.session.destroy(() => {
+res.clearCookie('connect.sid');
+res.redirect('/');
+});
 });
 
 // Add error handling middleware
 app.use((err, req, res, next) => {
-    console.error('Server error:', err);
-    res.status(500).json({
-        success: false,
-        error: process.env.NODE_ENV === 'production' 
-            ? 'Internal server error' 
-            : err.message
-    });
+console.error('Server error:', err);
+res.status(500).json({
+success: false,
+error: process.env.NODE_ENV === 'production'
+? 'Internal server error'
+: err.message
+});
 });
 
 // 404 Handler
 app.use((req, res) => {
-  res.status(404).render('404', {
-    path: req.path
-  });
+res.status(404).render('404', {
+path: req.path
+});
 });
 
 // Start Server (only in non-serverless environment)
 if (!process.env.VERCEL) {
-const PORT = process.env.PORT || 3005;
+const PORT = process.env.PORT || 3008;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🤖 AI Coach Status: ${process.env.GOOGLE_AI_API_KEY ? 'Google AI Enabled' : 'Enhanced Fallback Mode'}`);
-  console.log(`🌐 Access your app at: http://localhost:${PORT}`);
+console.log(`Server running on port ${PORT}`);
+console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`🤖 AI Coach Status: ${process.env.GOOGLE_AI_API_KEY ? 'Google AI Enabled' : 'Enhanced Fallback Mode'}`);
+console.log(`🌐 Access your app at: http://localhost:${PORT}`);
 });
 }
 

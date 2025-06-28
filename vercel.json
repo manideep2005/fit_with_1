@@ -3,110 +3,46 @@
   "builds": [
     {
       "src": "api/index.js",
-      "use": "@vercel/node",
-      "config": {
-        "maxLambdaSize": "50mb",
-        "maxDuration": 30
-      }
-    },
-    {
-      "src": "api/health.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "api/debug.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/test.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/db-test.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/test-onboarding.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "api/json-test.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "public/**/*",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
-    {
-      "src": "/api/health",
-      "dest": "/api/health.js"
-    },
-    {
-      "src": "/api/debug",
-      "dest": "/api/debug.js"
-    },
-    {
-      "src": "/api/test",
-      "dest": "/api/test.js"
-    },
-    {
-      "src": "/api/db-test",
-      "dest": "/api/db-test.js"
-    },
-    {
-      "src": "/api/test-onboarding",
-      "dest": "/api/test-onboarding.js"
-    },
-    {
-      "src": "/api/json-test",
-      "dest": "/api/json-test.js"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/public/(.*)",
-      "dest": "/public/$1"
-    },
-    {
-      "src": "/css/(.*)",
-      "dest": "/public/css/$1"
-    },
-    {
-      "src": "/js/(.*)",
-      "dest": "/public/js/$1"
-    },
-    {
-      "src": "/images/(.*)",
-      "dest": "/public/images/$1"
-    },
-    {
-      "src": "/assets/(.*)",
-      "dest": "/public/assets/$1"
-    },
-    {
-      "src": "/(.*\\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|pdf|txt|xml|json))",
-      "dest": "/public/$1"
-    },
-    {
-      "src": "/favicon.ico",
-      "dest": "/public/favicon.ico"
-    },
-    {
-      "src": "/robots.txt",
-      "dest": "/public/robots.txt"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.js"
-    }
+    { "src": "/api/(.*)", "dest": "/api/index.js" },
+    { "src": "/", "dest": "/api/index.js" },
+    { "src": "/login", "dest": "/api/index.js" },
+    { "src": "/register", "dest": "/api/index.js" },
+    { "src": "/dashboard", "dest": "/api/index.js" },
+    { "src": "/chat", "dest": "/api/index.js" },
+    { "src": "/workouts", "dest": "/api/index.js" },
+    { "src": "/progress", "dest": "/api/index.js" },
+    { "src": "/nutrition", "dest": "/api/index.js" },
+    { "src": "/nutriscan", "dest": "/api/index.js" },
+    { "src": "/meal-planner", "dest": "/api/index.js" },
+    { "src": "/challenges", "dest": "/api/index.js" },
+    { "src": "/health", "dest": "/api/index.js" },
+    { "src": "/biometrics", "dest": "/api/index.js" },
+    { "src": "/schedule", "dest": "/api/index.js" },
+    { "src": "/community", "dest": "/api/index.js" },
+    { "src": "/ai-coach", "dest": "/api/index.js" },
+    { "src": "/settings", "dest": "/api/index.js" },
+    { "src": "/CustomOnboarding", "dest": "/api/index.js" },
+    { "src": "/forgot-password", "dest": "/api/index.js" },
+    { "src": "/reset-password", "dest": "/api/index.js" },
+    { "src": "/logout", "dest": "/api/index.js" },
+    { "src": "/signup", "dest": "/api/index.js" },
+    { "src": "/send", "dest": "/api/index.js" },
+    { "src": "/friend-requests", "dest": "/api/index.js" },
+    { "src": "/css/(.*)", "dest": "/api/index.js" },
+    { "src": "/js/(.*)", "dest": "/api/index.js" },
+    { "src": "/images/(.*)", "dest": "/api/index.js" },
+    { "src": "/(.*)", "dest": "/api/index.js" }
   ],
   "env": {
     "NODE_ENV": "production"
+  },
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 30
+    }
   }
 }
-
-

@@ -9,14 +9,27 @@ class ChatService {
     try {
       console.log('ChatService.sendMessage called:', { senderId, receiverId, content, messageType });
       
+      // Validate input parameters
+      if (!senderId || !receiverId || !content) {
+        throw new Error('Sender ID, receiver ID, and content are required');
+      }
+      
+      if (senderId === receiverId) {
+        throw new Error('Cannot send message to yourself');
+      }
+      
       // Validate that both users exist and are friends
       const sender = await User.findById(senderId);
       const receiver = await User.findById(receiverId);
       
       console.log('Users found:', { sender: !!sender, receiver: !!receiver });
       
-      if (!sender || !receiver) {
-        throw new Error('Sender or receiver not found');
+      if (!sender) {
+        throw new Error('Sender not found');
+      }
+      
+      if (!receiver) {
+        throw new Error('Receiver not found');
       }
       
       // Check if they are friends
@@ -65,6 +78,16 @@ class ChatService {
         receiverId,
         content: content?.substring(0, 50)
       });
+      
+      // Provide more specific error messages for common issues
+      if (error.name === 'CastError') {
+        throw new Error('Invalid user ID format');
+      }
+      
+      if (error.name === 'ValidationError') {
+        throw new Error('Message validation failed: ' + error.message);
+      }
+      
       throw error;
     }
   }
