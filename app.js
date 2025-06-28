@@ -81,96 +81,105 @@ if (!process.env.SESSION_SECRET) {
     console.error('WARNING: SESSION_SECRET environment variable is not set. Using a default secret is not secure for production.');
 }
 
-// Configure session store
-let sessionStore = undefined;
-if (redisClient && !process.env.VERCEL) {
-    try {
-        const RedisStore = require('connect-redis');
-        // Try different import patterns for connect-redis
-        const Store = RedisStore.default || RedisStore;
-        sessionStore = new Store({
-            client: redisClient,
-            prefix: 'fit-with-ai:sess:'
-        });
-        console.log('Redis session store configured');
-    } catch (error) {
-        console.log('Redis session store configuration failed, using memory store:', error.message);
-        // For Vercel deployment, we'll use memory store which is fine for serverless
-    }
-} else if (process.env.VERCEL) {
-    console.log('Vercel environment detected, using memory store for sessions');
-}
+// Session Configuration - Fixed for persistence
+console.log('🍪 Configuring session for environment:', process.env.NODE_ENV);
 
 app.use(session({
     secret: process.env.SESSION_SECRET || 'your-secret-key-here-change-in-production',
-    resave: false,
-    saveUninitialized: false,
+    resave: true,
+    saveUninitialized: false, // Changed to false to avoid empty sessions
+    rolling: true, // Reset expiry on each request
     cookie: { 
         maxAge: 1000 * 60 * 60 * 24, // 24 hours
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production' && !process.env.VERCEL, // Only secure in production non-Vercel
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // Allow cross-site for Vercel
+        httpOnly: false, // Allow debugging
+        secure: false, // Keep false for now
+        sameSite: 'lax' // Simple setting
     },
-    name: 'fit-with-ai-session',
-    store: sessionStore
+    name: 'fit-with-ai-session'
 }));
 
-// Authentication Middleware - Enhanced for serverless with persistent session handling
-const isAuthenticated = (req, res, next) => {
-  console.log('Auth check - Session user:', req.session.user); // Debug log
-  console.log('Auth check - Session ID:', req.sessionID); // Debug log
-  console.log('Auth check - Query token:', req.query.token); // Debug log
+console.log('✅ Session configured with persistence fixes');
 
-  // Check if user is in session and has completed onboarding
-  if (req.session.user && req.session.user.onboardingCompleted) {
-    console.log('User authenticated via existing session');
-    return next();
+// Authentication Middleware - Works for Local and Vercel
+const isAuthenticated = async (req, res, next) => {
+  console.log('🔐 AUTH CHECK');
+  console.log('📍 URL:', req.url);
+  console.log('🌍 Environment:', process.env.NODE_ENV);
+  console.log('☁️ Vercel:', !!process.env.VERCEL);
+  console.log('🍪 Session exists:', !!req.session);
+  console.log('🆔 Session ID:', req.sessionID);
+  console.log('👤 Session user exists:', !!req.session.user);
+  
+  // DETAILED SESSION DEBUG
+  if (req.session) {
+    console.log('📊 Full session data:', JSON.stringify(req.session, null, 2));
+  }
+  
+  if (req.session.user) {
+    console.log('📧 User email:', req.session.user.email);
+    console.log('✅ Onboarding completed:', req.session.user.onboardingCompleted);
+  } else {
+    console.log('❌ Session user is missing or undefined');
+    console.log('🔍 Session keys:', Object.keys(req.session || {}));
   }
 
-  // If no session, check for token in query params
-  const token = req.query.token;
-  if (token) {
-    try {
-      const tokenData = JSON.parse(Buffer.from(token, 'base64').toString());
-      console.log('Decoded token for auth:', tokenData);
-
-      // Validate token (basic validation - in production, add expiry check)
-      if (tokenData.email && tokenData.timestamp) {
-        // Create/update session from token with proper fullName handling
-        req.session.user = {
-          email: tokenData.email,
-          fullName: tokenData.fullName || tokenData.firstName || 'User',
-          onboardingCompleted: true,
-          fromToken: true,
-          lastTokenRefresh: Date.now(),
-          // Preserve onboarding data if available
-          onboardingData: tokenData.onboardingData || null
-        };
-
-        console.log('Created/updated session from token:', req.session.user);
-        
-        // Save session immediately after creating from token
-        req.session.save((err) => {
-          if (err) {
-            console.error('Session save error after token auth:', err);
-            return res.status(500).json({ error: 'Session creation failed' });
-          }
-          console.log('Session saved successfully after token auth');
-          return next();
-        });
-        return; // Don't call next() here, it's called in the callback
-      }
-    } catch (tokenError) {
-      console.error('Token validation error:', tokenError);
+  try {
+    // Method 1: Check Express session (works locally)
+    if (req.session && req.session.user && req.session.user.onboardingCompleted) {
+      console.log('✅ USER AUTHENTICATED VIA SESSION - ALLOWING ACCESS');
+      return next();
     }
-  }
 
-  // No valid session or token
-  console.log('No valid authentication found, redirecting to home');
-  if (req.accepts('html')) {
+    // Method 2: For Vercel - check database session as fallback
+    if (process.env.VERCEL && req.sessionID && (!req.session.user)) {
+      console.log('🗄️ Vercel environment - checking database session...');
+      try {
+        const UserSession = require('./models/UserSession');
+        const dbSession = await UserSession.getSession(req.sessionID);
+        
+        if (dbSession && dbSession.onboardingCompleted) {
+          console.log('✅ USER AUTHENTICATED VIA DATABASE SESSION');
+          
+          // Restore Express session from database
+          req.session.user = {
+            _id: dbSession.userId,
+            email: dbSession.email,
+            fullName: dbSession.fullName,
+            onboardingCompleted: dbSession.onboardingCompleted,
+            personalInfo: dbSession.personalInfo,
+            fromDatabase: true
+          };
+          
+          return next();
+        }
+      } catch (dbError) {
+        console.log('❌ Database session check failed:', dbError.message);
+      }
+    }
+
+    // If user exists but onboarding not complete
+    if (req.session && req.session.user && !req.session.user.onboardingCompleted) {
+      console.log('⚠️ USER EXISTS BUT ONBOARDING NOT COMPLETE');
+      const email = req.session.user.email || '';
+      return res.redirect(`/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(email)}`);
+    }
+
+    // No valid authentication found
+    console.log('❌ NO VALID AUTHENTICATION FOUND - REDIRECTING TO LOGIN');
+    console.log('🔍 Debug info:', {
+      sessionExists: !!req.session,
+      sessionID: req.sessionID,
+      userExists: !!req.session?.user,
+      isVercel: !!process.env.VERCEL,
+      cookies: req.headers.cookie?.substring(0, 100) + '...'
+    });
+    
+    return res.redirect('/');
+
+  } catch (error) {
+    console.error('❌ Authentication error:', error);
     return res.redirect('/');
   }
-  return res.status(401).json({ error: 'Unauthorized' });
 };
 
 // Session validation middleware for API routes
@@ -212,6 +221,29 @@ const checkOnboarding = (req, res, next) => {
 app.get('/', (req, res) => {
   res.render('index');
 });
+
+// Debug route for session testing (development only)
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/test-session-flow', (req, res) => {
+    res.sendFile(__dirname + '/test-session-flow.html');
+  });
+  
+  // Test session persistence
+  app.get('/test-session-check', (req, res) => {
+    console.log('🧪 SESSION CHECK TEST');
+    console.log('🆔 Session ID:', req.sessionID);
+    console.log('👤 Session user exists:', !!req.session.user);
+    console.log('📊 Full session:', JSON.stringify(req.session, null, 2));
+    
+    res.json({
+      sessionID: req.sessionID,
+      sessionExists: !!req.session,
+      userExists: !!req.session.user,
+      sessionData: req.session,
+      cookies: req.headers.cookie
+    });
+  });
+}
 
 // Debug routes - only available in development
 if (process.env.NODE_ENV !== 'production') {
@@ -389,13 +421,23 @@ app.post('/signup', ensureDbConnection, async (req, res) => {
     console.log('Session user set:', req.session.user);
 
     // Save session before responding
-    req.session.save((err) => {
+    req.session.save(async (err) => {
       if (err) {
         console.error('Session save error:', err);
         return res.status(500).json({ 
           success: false,
           error: 'Session creation failed' 
         });
+      }
+      
+      try {
+        // Create database session for serverless persistence
+        const UserSession = require('./models/UserSession');
+        await UserSession.createSession(req.sessionID, user);
+        console.log('Database session created for signup');
+      } catch (dbError) {
+        console.error('Database session creation error:', dbError);
+        // Don't fail signup if database session fails
       }
       
       console.log('Session saved successfully');
@@ -474,34 +516,52 @@ app.post('/login', ensureDbConnection, async (req, res) => {
     // Authenticate user against database
     const user = await UserService.authenticateUser(email.trim(), password);
     
-    // Create user session
+    // SIMPLE session creation
+    console.log('🔄 Creating simple session...');
+    
     req.session.user = {
       _id: user._id,
       email: user.email,
       fullName: user.fullName,
       onboardingCompleted: user.onboardingCompleted,
-      personalInfo: user.personalInfo,
-      onboardingData: {
-        personalInfo: user.personalInfo,
-        fitnessGoals: user.fitnessGoals,
-        healthInfo: user.healthInfo,
-        preferences: user.preferences
-      }
+      personalInfo: user.personalInfo
     };
     
-    req.session.save((err) => {
+    console.log('✅ Session user set:', req.session.user.email);
+    console.log('✅ Onboarding completed:', req.session.user.onboardingCompleted);
+    console.log('📊 Full session before save:', JSON.stringify(req.session, null, 2));
+    
+    // Force session save
+    req.session.save(async (err) => {
       if (err) {
-        console.error('Session save error:', err);
+        console.error('❌ Session save error:', err);
         return res.status(500).json({ 
           success: false,
-          error: 'Login failed' 
+          error: 'Login failed - session save error' 
         });
       }
       
-      // Redirect based on onboarding status
-      const redirectUrl = user.onboardingCompleted 
-        ? '/dashboard' 
-        : `/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(user.email)}`;
+      console.log('✅ EXPRESS SESSION SAVED SUCCESSFULLY!');
+      console.log('🍪 Session ID:', req.sessionID);
+      console.log('📊 Full session after save:', JSON.stringify(req.session, null, 2));
+      
+      // For Vercel - also create database session
+      if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+        try {
+          console.log('🗄️ Creating database session for Vercel...');
+          const UserSession = require('./models/UserSession');
+          await UserSession.createSession(req.sessionID, user);
+          console.log('✅ Database session created for Vercel');
+        } catch (dbError) {
+          console.error('❌ Database session creation failed:', dbError.message);
+          // Don't fail login if database session fails
+        }
+      }
+      
+      // Simple redirect logic
+      const redirectUrl = user.onboardingCompleted ? '/dashboard' : '/CustomOnboarding';
+      
+      console.log('🔄 Redirecting to:', redirectUrl);
       
       res.json({ 
         success: true,
@@ -2948,10 +3008,23 @@ app.post('/api/friends/respond', isAuthenticated, ensureDbConnection, async (req
   }
 });
 
-// Logout Route
-app.get('/logout', (req, res) => {
+// Logout Route - Enhanced to clean up database sessions
+app.get('/logout', async (req, res) => {
+try {
+// Clean up database session
+if (req.sessionID) {
+const UserSession = require('./models/UserSession');
+await UserSession.deleteSession(req.sessionID);
+console.log('Database session cleaned up');
+}
+} catch (error) {
+console.error('Error cleaning up database session:', error);
+}
+
+// Clean up Express session
 req.session.destroy(() => {
 res.clearCookie('connect.sid');
+res.clearCookie('fit-with-ai-session');
 res.redirect('/');
 });
 });
@@ -2976,7 +3049,7 @@ path: req.path
 
 // Start Server (only in non-serverless environment)
 if (!process.env.VERCEL) {
-const PORT = process.env.PORT || 3008;
+const PORT = process.env.PORT || 3007;
 app.listen(PORT, () => {
 console.log(`Server running on port ${PORT}`);
 console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
@@ -3010,9 +3083,7 @@ app.use(async (req, res, next) => {
       // Replace 'your_jwt_secret' with your actual JWT secret or logic
       const decoded = jwt.decode(req.query.token);
       if (decoded && decoded.email) {
-        // Optionally, you can verify the token with jwt.verify if you use a secret
-        // const decoded = jwt.verify(req.query.token, 'your_jwt_secret');
-        // Find the user in the database
+       
         const User = require('./models/User');
         const user = await User.findOne({ email: decoded.email });
         if (user) {
