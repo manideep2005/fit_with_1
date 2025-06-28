@@ -81,24 +81,75 @@ if (!process.env.SESSION_SECRET) {
     console.error('WARNING: SESSION_SECRET environment variable is not set. Using a default secret is not secure for production.');
 }
 
-// Session Configuration - Fixed for persistence
-console.log('🍪 Configuring session for environment:', process.env.NODE_ENV);
+// EMERGENCY SESSION FIX - Use database-only approach
+console.log('🚨 Using database-only session approach...');
 
-app.use(session({
-    secret: process.env.SESSION_SECRET || 'your-secret-key-here-change-in-production',
-    resave: true,
-    saveUninitialized: false, // Changed to false to avoid empty sessions
-    rolling: true, // Reset expiry on each request
-    cookie: { 
-        maxAge: 1000 * 60 * 60 * 24, // 24 hours
-        httpOnly: false, // Allow debugging
-        secure: false, // Keep false for now
-        sameSite: 'lax' // Simple setting
+// Simple middleware to create our own session system
+app.use(async (req, res, next) => {
+  // Get session ID from cookie
+  const sessionCookie = req.headers.cookie?.match(/fit-with-ai-session=([^;]+)/);
+  let sessionId = null;
+  
+  if (sessionCookie) {
+    try {
+      // Decode the session ID from the cookie
+      sessionId = sessionCookie[1].split('.')[0].replace('s%3A', '');
+      console.log('🍪 Found session ID in cookie:', sessionId);
+    } catch (e) {
+      console.log('❌ Failed to decode session cookie');
+    }
+  }
+  
+  // If no session ID, create a new one
+  if (!sessionId) {
+    sessionId = require('crypto').randomBytes(16).toString('hex');
+    console.log('🆕 Created new session ID:', sessionId);
+    
+    // Set the cookie
+    res.cookie('fit-with-ai-session', `s%3A${sessionId}.dummy`, {
+      maxAge: 1000 * 60 * 60 * 24, // 24 hours
+      httpOnly: false,
+      secure: false,
+      sameSite: 'lax'
+    });
+  }
+  
+  // Create a simple session object
+  req.session = {
+    id: sessionId,
+    save: (callback) => {
+      if (callback) callback();
     },
-    name: 'fit-with-ai-session'
-}));
+    regenerate: (callback) => {
+      if (callback) callback();
+    }
+  };
+  
+  req.sessionID = sessionId;
+  
+  // Try to load user from database
+  try {
+    const UserSession = require('./models/UserSession');
+    const dbSession = await UserSession.getSession(sessionId);
+    
+    if (dbSession) {
+      req.session.user = {
+        _id: dbSession.userId,
+        email: dbSession.email,
+        fullName: dbSession.fullName,
+        onboardingCompleted: dbSession.onboardingCompleted,
+        personalInfo: dbSession.personalInfo
+      };
+      console.log('✅ Loaded user from database session:', req.session.user.email);
+    }
+  } catch (error) {
+    console.log('❌ Failed to load database session:', error.message);
+  }
+  
+  next();
+});
 
-console.log('✅ Session configured with persistence fixes');
+console.log('✅ Database-only session system configured');
 
 // Authentication Middleware - Works for Local and Vercel
 const isAuthenticated = async (req, res, next) => {
@@ -516,47 +567,26 @@ app.post('/login', ensureDbConnection, async (req, res) => {
     // Authenticate user against database
     const user = await UserService.authenticateUser(email.trim(), password);
     
-    // SIMPLE session creation
-    console.log('🔄 Creating simple session...');
+    // Create database session (our new approach)
+    console.log('🗄️ Creating database session...');
     
-    req.session.user = {
-      _id: user._id,
-      email: user.email,
-      fullName: user.fullName,
-      onboardingCompleted: user.onboardingCompleted,
-      personalInfo: user.personalInfo
-    };
-    
-    console.log('✅ Session user set:', req.session.user.email);
-    console.log('✅ Onboarding completed:', req.session.user.onboardingCompleted);
-    console.log('📊 Full session before save:', JSON.stringify(req.session, null, 2));
-    
-    // Force session save
-    req.session.save(async (err) => {
-      if (err) {
-        console.error('❌ Session save error:', err);
-        return res.status(500).json({ 
-          success: false,
-          error: 'Login failed - session save error' 
-        });
-      }
+    try {
+      const UserSession = require('./models/UserSession');
+      await UserSession.createSession(req.sessionID, user);
       
-      console.log('✅ EXPRESS SESSION SAVED SUCCESSFULLY!');
+      // Set user data in session
+      req.session.user = {
+        _id: user._id.toString(),
+        email: user.email,
+        fullName: user.fullName,
+        onboardingCompleted: user.onboardingCompleted,
+        personalInfo: user.personalInfo
+      };
+      
+      console.log('✅ Database session created successfully!');
+      console.log('✅ Session user set:', req.session.user.email);
+      console.log('✅ Onboarding completed:', req.session.user.onboardingCompleted);
       console.log('🍪 Session ID:', req.sessionID);
-      console.log('📊 Full session after save:', JSON.stringify(req.session, null, 2));
-      
-      // For Vercel - also create database session
-      if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
-        try {
-          console.log('🗄️ Creating database session for Vercel...');
-          const UserSession = require('./models/UserSession');
-          await UserSession.createSession(req.sessionID, user);
-          console.log('✅ Database session created for Vercel');
-        } catch (dbError) {
-          console.error('❌ Database session creation failed:', dbError.message);
-          // Don't fail login if database session fails
-        }
-      }
       
       // Simple redirect logic
       const redirectUrl = user.onboardingCompleted ? '/dashboard' : '/CustomOnboarding';
@@ -567,7 +597,14 @@ app.post('/login', ensureDbConnection, async (req, res) => {
         success: true,
         redirectUrl: redirectUrl
       });
-    });
+      
+    } catch (dbError) {
+      console.error('❌ Database session creation failed:', dbError.message);
+      return res.status(500).json({ 
+        success: false,
+        error: 'Login failed - session creation error' 
+      });
+    }
     
   } catch (error) {
     console.error('Login error:', error);
@@ -838,7 +875,7 @@ app.get('/chat', isAuthenticated, validateSession, checkOnboarding, ensureDbConn
     const conversationId = req.query.conversation;
     const friendId = req.query.friend;
     
-    console.log(`Accessing chat for user:`, req.session.user?.email);
+    console.log(`💬 Accessing chat for user:`, req.session.user?.email);
     
     // Get user's conversations
     const conversations = await chatService.getUserConversations(userId);
@@ -880,6 +917,11 @@ app.get('/chat', isAuthenticated, validateSession, checkOnboarding, ensureDbConn
       onboardingData: req.session.user.onboardingData || null
     })).toString('base64');
     
+    console.log('✅ Chat data loaded successfully');
+    console.log(`📊 Conversations: ${conversations.length}`);
+    console.log(`👥 Current friend: ${currentFriend?.fullName || 'None'}`);
+    console.log(`💬 Messages: ${messages.length}`);
+    
     res.render('chat-simple', {
       user: req.session.user,
       currentPath: '/chat',
@@ -892,7 +934,7 @@ app.get('/chat', isAuthenticated, validateSession, checkOnboarding, ensureDbConn
     });
     
   } catch (error) {
-    console.error('Error rendering chat:', error);
+    console.error('❌ Error rendering chat:', error);
     res.status(500).json({
       error: 'Failed to render chat page',
       details: error.message
@@ -2470,116 +2512,139 @@ app.get('/api/chat/messages/:friendId', isAuthenticated, ensureDbConnection, asy
 
 // Send message
 app.post('/api/chat/send', isAuthenticated, ensureDbConnection, async (req, res) => {
-  try {
-    const senderId = req.session.user._id;
-    const { receiverId, content, messageType = 'text', attachmentData = null } = req.body;
-    
-    if (!receiverId || !content || content.trim().length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Receiver ID and message content are required'
-      });
-    }
-    
-    if (content.trim().length > 1000) {
-      return res.status(400).json({
-        success: false,
-        error: 'Message content too long (max 1000 characters)'
-      });
-    }
-    
-    const message = await chatService.sendMessage(
-      senderId, 
-      receiverId, 
-      content, 
-      messageType, 
-      attachmentData
-    );
-    
-    res.json({
-      success: true,
-      message: message
-    });
-    
-  } catch (error) {
-    console.error('Send message error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message || 'Failed to send message'
-    });
-  }
+try {
+const senderId = req.session.user._id;
+const { receiverId, content, messageType = 'text', attachmentData = null } = req.body;
+
+console.log('💬 Sending message:', {
+senderId,
+receiverId,
+content: content?.substring(0, 50) + '...',
+messageType
+});
+
+if (!receiverId || !content || content.trim().length === 0) {
+return res.status(400).json({
+success: false,
+error: 'Receiver ID and message content are required'
+});
+}
+
+if (content.trim().length > 1000) {
+return res.status(400).json({
+success: false,
+error: 'Message content too long (max 1000 characters)'
+});
+}
+
+const message = await chatService.sendMessage(
+senderId,
+receiverId,
+content.trim(),
+messageType,
+attachmentData
+);
+
+console.log('✅ Message sent successfully:', message._id);
+
+res.json({
+success: true,
+message: message
+});
+
+} catch (error) {
+console.error('❌ Send message error:', error);
+res.status(500).json({
+success: false,
+error: error.message || 'Failed to send message'
+});
+}
 });
 
 // Get user's friends
 app.get('/api/chat/friends', isAuthenticated, ensureDbConnection, async (req, res) => {
-  try {
-    const userId = req.session.user._id;
-    const friends = await chatService.getUserFriends(userId);
-    
-    res.json({
-      success: true,
-      friends: friends
-    });
-    
-  } catch (error) {
-    console.error('Get friends error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get friends list'
-    });
-  }
+try {
+const userId = req.session.user._id;
+console.log('👥 Getting friends for user:', userId);
+
+const friends = await chatService.getUserFriends(userId);
+console.log('✅ Friends retrieved:', friends.length);
+
+res.json({
+success: true,
+friends: friends
+});
+
+} catch (error) {
+console.error('❌ Get friends error:', error);
+res.status(500).json({
+success: false,
+error: 'Failed to get friends list'
+});
+}
 });
 
 // Send friend request
 app.post('/api/chat/send-friend-request', isAuthenticated, ensureDbConnection, async (req, res) => {
-  try {
-    const userId = req.session.user._id;
-    const { friendEmail, message } = req.body;
-    
-    if (!friendEmail || friendEmail.trim().length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Friend email is required'
-      });
-    }
-    
-    const friendRequest = await chatService.sendFriendRequest(userId, friendEmail, message);
-    
-    res.json({
-      success: true,
-      message: 'Friend request sent successfully',
-      request: friendRequest
-    });
-    
-  } catch (error) {
-    console.error('Send friend request error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message || 'Failed to send friend request'
-    });
-  }
+try {
+const userId = req.session.user._id;
+const { friendEmail, message } = req.body;
+
+console.log('📤 Sending friend request:', { userId, friendEmail });
+
+if (!friendEmail || friendEmail.trim().length === 0) {
+return res.status(400).json({
+success: false,
+error: 'Friend email is required'
+});
+}
+
+const friendRequest = await chatService.sendFriendRequest(userId, friendEmail.trim(), message || '');
+
+console.log('✅ Friend request sent successfully');
+
+res.json({
+success: true,
+message: 'Friend request sent successfully',
+request: friendRequest
+});
+
+} catch (error) {
+console.error('❌ Send friend request error:', error);
+res.status(500).json({
+success: false,
+error: error.message || 'Failed to send friend request'
+});
+}
 });
 
 // Get friend requests
 app.get('/api/chat/friend-requests', isAuthenticated, ensureDbConnection, async (req, res) => {
-  try {
-    const userId = req.session.user._id;
-    const pendingRequests = await chatService.getPendingFriendRequests(userId);
-    const sentRequests = await chatService.getSentFriendRequests(userId);
-    
-    res.json({
-      success: true,
-      requests: pendingRequests,
-      sentRequests: sentRequests
-    });
-    
-  } catch (error) {
-    console.error('Get friend requests error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get friend requests'
-    });
-  }
+try {
+const userId = req.session.user._id;
+console.log('📥 Getting friend requests for user:', userId);
+
+const pendingRequests = await chatService.getPendingFriendRequests(userId);
+const sentRequests = await chatService.getSentFriendRequests(userId);
+
+console.log('✅ Friend requests retrieved:', {
+pending: pendingRequests.length,
+sent: sentRequests.length
+});
+
+res.json({
+success: true,
+requests: pendingRequests,
+sentRequests: sentRequests
+});
+
+} catch (error) {
+console.error('❌ Get friend requests error:', error);
+res.status(500).json({
+success: false,
+error: 'Failed to get friend requests'
+});
+}
 });
 
 // Accept friend request
@@ -2682,31 +2747,35 @@ app.delete('/api/chat/friends/:friendId', isAuthenticated, ensureDbConnection, a
 
 // Search users
 app.get('/api/chat/search-users', isAuthenticated, ensureDbConnection, async (req, res) => {
-  try {
-    const userId = req.session.user._id;
-    const { q: query, limit = 10 } = req.query;
-    
-    if (!query || query.trim().length < 2) {
-      return res.status(400).json({
-        success: false,
-        error: 'Search query must be at least 2 characters long'
-      });
-    }
-    
-    const users = await chatService.searchUsers(userId, query.trim(), parseInt(limit));
-    
-    res.json({
-      success: true,
-      users: users
-    });
-    
-  } catch (error) {
-    console.error('Search users error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to search users'
-    });
-  }
+try {
+const userId = req.session.user._id;
+const { q: query, limit = 10 } = req.query;
+
+console.log('🔍 Searching users:', { userId, query, limit });
+
+if (!query || query.trim().length < 2) {
+return res.status(400).json({
+success: false,
+error: 'Search query must be at least 2 characters long'
+});
+}
+
+const users = await chatService.searchUsers(userId, query.trim(), parseInt(limit));
+
+console.log('✅ Search results:', users.length);
+
+res.json({
+success: true,
+users: users
+});
+
+} catch (error) {
+console.error('❌ Search users error:', error);
+res.status(500).json({
+success: false,
+error: 'Failed to search users'
+});
+}
 });
 
 // Send friend request by user ID (for search results)
@@ -2778,7 +2847,6 @@ error: 'Failed to share workout'
 }
 });
 
-// Share progress with friend
 app.post('/api/chat/share-progress', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const senderId = req.session.user._id;
@@ -3008,25 +3076,28 @@ app.post('/api/friends/respond', isAuthenticated, ensureDbConnection, async (req
   }
 });
 
-// Logout Route - Enhanced to clean up database sessions
+// Logout Route - Updated for custom session system
 app.get('/logout', async (req, res) => {
-try {
-// Clean up database session
-if (req.sessionID) {
-const UserSession = require('./models/UserSession');
-await UserSession.deleteSession(req.sessionID);
-console.log('Database session cleaned up');
-}
-} catch (error) {
-console.error('Error cleaning up database session:', error);
-}
+  try {
+    // Clean up database session
+    if (req.sessionID) {
+      const UserSession = require('./models/UserSession');
+      await UserSession.deleteSession(req.sessionID);
+      console.log('✅ Database session cleaned up');
+    }
+  } catch (error) {
+    console.error('❌ Error cleaning up database session:', error);
+  }
 
-// Clean up Express session
-req.session.destroy(() => {
-res.clearCookie('connect.sid');
-res.clearCookie('fit-with-ai-session');
-res.redirect('/');
-});
+  // Clear session data
+  req.session.user = null;
+  
+  // Clear cookies
+  res.clearCookie('connect.sid');
+  res.clearCookie('fit-with-ai-session');
+  
+  console.log('✅ User logged out successfully');
+  res.redirect('/');
 });
 
 // Add error handling middleware
