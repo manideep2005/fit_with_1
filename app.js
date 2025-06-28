@@ -914,16 +914,12 @@ app.post('/forgot-password', ensureDbConnection, async (req, res) => {
     
     console.log('User found, generating OTP for:', user.email);
     
-    // Generate OTP and store it temporarily
+    // Generate OTP and store it in database
     const otp = generateOTP();
+    const PasswordReset = require('./models/PasswordReset');
     
-    // Store OTP in session temporarily (in production, use Redis or database)
-    req.session.passwordReset = {
-      email: email.trim(),
-      otp: otp,
-      timestamp: Date.now(),
-      attempts: 0
-    };
+    // Create password reset record in database
+    await PasswordReset.createReset(email.trim(), otp);
     
     console.log('Attempting to send password reset OTP email...');
     
@@ -964,64 +960,46 @@ app.post('/forgot-password', ensureDbConnection, async (req, res) => {
 });
 
 app.get('/reset-password', (req, res) => {
-  // Check if there's a valid password reset session
-  if (!req.session.passwordReset) {
+  // For database-based reset, we'll get email from query parameter
+  const email = req.query.email;
+  
+  if (!email) {
     return res.redirect('/forgot-password');
   }
   
   res.render('reset-password', {
-    email: req.session.passwordReset.email
+    email: email
   });
 });
 
-app.post('/verify-reset-otp', async (req, res) => {
+app.post('/verify-reset-otp', ensureDbConnection, async (req, res) => {
   try {
-    const { otp } = req.body;
+    const { otp, email } = req.body;
     
-    if (!req.session.passwordReset) {
+    if (!otp || !email) {
       return res.status(400).json({
         success: false,
-        error: 'No password reset session found. Please request a new reset code.'
+        error: 'OTP and email are required'
       });
     }
     
-    const resetData = req.session.passwordReset;
+    const PasswordReset = require('./models/PasswordReset');
     
-    // Check if OTP has expired (10 minutes)
-    if (Date.now() - resetData.timestamp > 10 * 60 * 1000) {
-      delete req.session.passwordReset;
+    try {
+      // Verify OTP using database
+      await PasswordReset.verifyOTP(email.trim(), otp);
+      
+      res.json({
+        success: true,
+        message: 'Reset code verified successfully.'
+      });
+      
+    } catch (verifyError) {
       return res.status(400).json({
         success: false,
-        error: 'Reset code has expired. Please request a new one.'
+        error: verifyError.message
       });
     }
-    
-    // Check attempts limit
-    if (resetData.attempts >= 3) {
-      delete req.session.passwordReset;
-      return res.status(400).json({
-        success: false,
-        error: 'Too many failed attempts. Please request a new reset code.'
-      });
-    }
-    
-    // Verify OTP
-    if (otp !== resetData.otp) {
-      req.session.passwordReset.attempts += 1;
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid reset code. Please try again.',
-        attemptsLeft: 3 - req.session.passwordReset.attempts
-      });
-    }
-    
-    // OTP is valid, mark as verified
-    req.session.passwordReset.verified = true;
-    
-    res.json({
-      success: true,
-      message: 'Reset code verified successfully.'
-    });
     
   } catch (error) {
     console.error('OTP verification error:', error);
@@ -1034,12 +1012,23 @@ app.post('/verify-reset-otp', async (req, res) => {
 
 app.post('/reset-password', ensureDbConnection, async (req, res) => {
   try {
-    const { newPassword, confirmPassword } = req.body;
+    const { newPassword, confirmPassword, email } = req.body;
     
-    if (!req.session.passwordReset || !req.session.passwordReset.verified) {
+    if (!email) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid password reset session. Please start over.'
+        error: 'Email is required'
+      });
+    }
+    
+    // Check if reset is verified in database
+    const PasswordReset = require('./models/PasswordReset');
+    const isVerified = await PasswordReset.isVerified(email.trim());
+    
+    if (!isVerified) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid or expired password reset. Please start over.'
       });
     }
     
@@ -1064,17 +1053,15 @@ app.post('/reset-password', ensureDbConnection, async (req, res) => {
       });
     }
     
-    const email = req.session.passwordReset.email;
-    
     // Reset the password
-    await UserService.resetPassword(email, newPassword);
+    await UserService.resetPassword(email.trim(), newPassword);
     
     // Send confirmation email
-    const user = await UserService.getUserByEmail(email);
-    await sendPasswordResetConfirmation(email, user.fullName);
+    const user = await UserService.getUserByEmail(email.trim());
+    await sendPasswordResetConfirmation(email.trim(), user.fullName);
     
-    // Clear the password reset session
-    delete req.session.passwordReset;
+    // Clear the password reset record from database
+    await PasswordReset.completeReset(email.trim());
     
     res.json({
       success: true,
