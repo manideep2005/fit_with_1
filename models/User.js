@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { nanoid } = require('nanoid');
+const crypto = require('crypto');
 
 // Personal Information Schema
 const personalInfoSchema = new mongoose.Schema({
@@ -388,7 +388,7 @@ userSchema.virtual('subscriptionDisplayName').get(function() {
 // Pre-save middleware to generate fitnessId
 userSchema.pre('save', function(next) {
   if (this.isNew && !this.fitnessId) {
-    this.fitnessId = nanoid(10);
+    this.fitnessId = crypto.randomBytes(5).toString('hex').toUpperCase();
   }
   next();
 });
