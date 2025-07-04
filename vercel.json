@@ -7,81 +7,25 @@
     }
   ],
   "routes": [
-    {
-      "src": "/public/(.*)",
-      "dest": "/public/$1"
-    },
-    {
-      "src": "/dashboard",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/workouts",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/progress",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/meal-planner",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/nutrition",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/nutriscan",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/health",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/challenges",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/biometrics",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/schedule",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/community",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/ai-coach",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/chat",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/settings",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/CustomOnboarding",
-      "dest": "/app.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/app.js"
-    }
+    { "src": "/public/(.*)", "dest": "/public/$1" },
+    { "src": "/dashboard", "dest": "/app.js" },
+    { "src": "/workouts", "dest": "/app.js" },
+    { "src": "/progress", "dest": "/app.js" },
+    { "src": "/meal-planner", "dest": "/app.js" },
+    { "src": "/nutrition", "dest": "/app.js" },
+    { "src": "/nutriscan", "dest": "/app.js" },
+    { "src": "/health", "dest": "/app.js" },
+    { "src": "/challenges", "dest": "/app.js" },
+    { "src": "/biometrics", "dest": "/app.js" },
+    { "src": "/schedule", "dest": "/app.js" },
+    { "src": "/community", "dest": "/app.js" },
+    { "src": "/ai-coach", "dest": "/app.js" },
+    { "src": "/chat", "dest": "/app.js" },
+    { "src": "/settings", "dest": "/app.js" },
+    { "src": "/CustomOnboarding", "dest": "/app.js" },
+    { "src": "/(.*)", "dest": "/app.js" }
   ],
   "env": {
     "NODE_ENV": "production"
-  },
-  "functions": {
-    "app.js": {
-      "maxDuration": 30
-    }
   }
 }
