@@ -750,14 +750,16 @@
                 <li class="nav-item"><a href="/workouts" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
                 <li class="nav-item"><a href="/progress" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
                 <li class="nav-item"><a href="/nutrition" class="nav-link"><i class="fas fa-utensils"></i> Nutrition</a></li>
-                <li class="nav-item"><a href="/meal-planner" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
+                <li class="nav-item"><a href="/meal-planner" class="nav-link active"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
                 <li class="nav-item"><a href="/challenges" class="nav-link"><i class="fas fa-trophy"></i> Challenges</a></li>
                 <li class="nav-item"><a href="/health" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
-                <li class="nav-item"><a href="/biometrics" class="nav-link active"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
+                <li class="nav-item"><a href="/biometrics" class="nav-link"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
                 <li class="nav-item"><a href="/schedule" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
                 <li class="nav-item"><a href="/community" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
                 <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
-                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>            
+                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+            
             <!-- Logout Section -->
             <div class="logout-section">
                 <a href="/logout" class="logout-link" onclick="return confirmLogout()">
@@ -1142,6 +1144,35 @@
         </div>
     </div>  
     <script>
+        let currentWeekStart = new Date();
+        let mealPlans = [];
+        
+        // Load meal plans on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMealPlans();
+            initializeMealCalendar();
+        });
+        
+        // Load meal plans from database
+        async function loadMealPlans() {
+            try {
+                const startDate = new Date(currentWeekStart);
+                const endDate = new Date(currentWeekStart);
+                endDate.setDate(endDate.getDate() + 6);
+                
+                const response = await fetch(`/api/meal-planner/plans?startDate=${startDate.toISOString()}&endDate=${endDate.toISOString()}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    mealPlans = result.mealPlans;
+                    renderMealCalendar();
+                    updateNutritionSummary();
+                }
+            } catch (error) {
+                console.error('Error loading meal plans:', error);
+            }
+        }
+        
         // JavaScript functions for handling modals, meal planning, and AI generation
         function openAddMealModal(day) {
             document.getElementById('selectedDay').value = day;
@@ -1256,10 +1287,40 @@
             };
             return recipes[recipe];
         }
-        function getNewRecipeSuggestions() {
-            // This function would typically fetch new recipe suggestions from your server
-            // For demonstration, we'll just show a toast notification
-            showToast('New recipe suggestions fetched!', 'success');
+        async function getNewRecipeSuggestions() {
+            try {
+                showToast('Fetching new recipe suggestions...', 'info');
+                const response = await fetch('/api/meal-planner/recipe-suggestions');
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateRecipeSuggestions(result.recipes);
+                    showToast('New recipe suggestions loaded!', 'success');
+                } else {
+                    showToast('Failed to fetch recipes', 'error');
+                }
+            } catch (error) {
+                console.error('Error fetching recipes:', error);
+                showToast('Failed to fetch recipes', 'error');
+            }
+        }
+        
+        function updateRecipeSuggestions(recipes) {
+            // Update the recipe cards in the sidebar
+            const recipesContainer = document.querySelector('.sidebar-panel');
+            const recipeCards = recipesContainer.querySelectorAll('.recipe-card');
+            
+            recipes.slice(0, 3).forEach((recipe, index) => {
+                if (recipeCards[index]) {
+                    const img = recipeCards[index].querySelector('img');
+                    const title = recipeCards[index].querySelector('.recipe-title');
+                    const meta = recipeCards[index].querySelector('.recipe-meta');
+                    
+                    if (img) img.src = recipe.image;
+                    if (title) title.textContent = recipe.name;
+                    if (meta) meta.innerHTML = `<span>${recipe.time} min</span><span>${recipe.calories} cal</span>`;
+                }
+            });
         }
         function showToast(message, type) {
             const toastContainer = document.getElementById('toastContainer');
@@ -1273,12 +1334,135 @@
             }, 3000);
         }
         function previousWeek() {
-            // Logic to navigate to the previous week
-            console.log('Navigating to previous week');
+            currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+            updateWeekTitle();
+            loadMealPlans();
         }
+        
         function nextWeek() {
-            // Logic to navigate to the next week
-            console.log('Navigating to next week');
+            currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+            updateWeekTitle();
+            loadMealPlans();
+        }
+        
+        // Add meal form submission
+        document.getElementById('addMealForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                date: document.getElementById('selectedDay').value,
+                mealType: document.getElementById('mealType').value,
+                name: document.getElementById('mealName').value,
+                calories: document.getElementById('mealCalories').value,
+                protein: document.getElementById('mealProtein').value,
+                carbs: document.getElementById('mealCarbs').value,
+                fat: document.getElementById('mealFat').value,
+                notes: document.getElementById('mealNotes').value
+            };
+            
+            try {
+                const response = await fetch('/api/meal-planner/meals', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Meal added successfully!', 'success');
+                    closeModal();
+                    loadMealPlans();
+                    document.getElementById('addMealForm').reset();
+                } else {
+                    showToast('Failed to add meal: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Add meal error:', error);
+                showToast('Failed to add meal', 'error');
+            }
+        });
+        
+        // Edit meal function
+        async function editMeal(mealId) {
+            const meal = mealPlans.find(m => m.id === mealId);
+            if (!meal) return;
+            
+            // Populate edit form
+            document.getElementById('editMealId').value = meal.id;
+            document.getElementById('editMealType').value = meal.mealType;
+            document.getElementById('editMealName').value = meal.name;
+            document.getElementById('editMealCalories').value = meal.calories;
+            document.getElementById('editMealProtein').value = meal.protein;
+            document.getElementById('editMealCarbs').value = meal.carbs;
+            document.getElementById('editMealFat').value = meal.fat;
+            document.getElementById('editMealNotes').value = meal.notes;
+            
+            document.getElementById('editMealModal').style.display = 'block';
+        }
+        
+        // Edit meal form submission
+        document.getElementById('editMealForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const mealId = document.getElementById('editMealId').value;
+            const formData = {
+                mealType: document.getElementById('editMealType').value,
+                name: document.getElementById('editMealName').value,
+                calories: document.getElementById('editMealCalories').value,
+                protein: document.getElementById('editMealProtein').value,
+                carbs: document.getElementById('editMealCarbs').value,
+                fat: document.getElementById('editMealFat').value,
+                notes: document.getElementById('editMealNotes').value
+            };
+            
+            try {
+                const response = await fetch(`/api/meal-planner/meals/${mealId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Meal updated successfully!', 'success');
+                    closeModal();
+                    loadMealPlans();
+                } else {
+                    showToast('Failed to update meal: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Update meal error:', error);
+                showToast('Failed to update meal', 'error');
+            }
+        });
+        
+        // Delete meal function
+        async function deleteMealFromPlan(mealId) {
+            if (!confirm('Are you sure you want to delete this meal?')) return;
+            
+            try {
+                const response = await fetch(`/api/meal-planner/meals/${mealId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Meal deleted successfully!', 'success');
+                    loadMealPlans();
+                } else {
+                    showToast('Failed to delete meal: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Delete meal error:', error);
+                showToast('Failed to delete meal', 'error');
+            }
         }       
         function selectDay(day) {
             // Store the selected day for later use
@@ -1286,29 +1470,53 @@
             document.getElementById('daySelectionModal').style.display = 'none';
             showToast(`Selected ${day.charAt(0).toUpperCase() + day.slice(1)} for recipe`, 'success');
         }
-        function generateAIMealPlan() {
-            const vegetarian = document.getElementById('vegetarian').checked;
-            const vegan = document.getElementById('vegan').checked;
-            const glutenFree = document.getElementById('glutenFree').checked;
-            const dairyFree = document.getElementById('dairyFree').checked;
-            const lowCarb = document.getElementById('lowCarb').checked;
-            const highProtein = document.getElementById('highProtein').checked;
+        async function generateAIMealPlan() {
+            const preferences = [];
+            if (document.getElementById('vegetarian').checked) preferences.push('vegetarian');
+            if (document.getElementById('vegan').checked) preferences.push('vegan');
+            if (document.getElementById('glutenFree').checked) preferences.push('gluten-free');
+            if (document.getElementById('dairyFree').checked) preferences.push('dairy-free');
+            if (document.getElementById('lowCarb').checked) preferences.push('low-carb');
+            if (document.getElementById('highProtein').checked) preferences.push('high-protein');
+            
             const calorieTarget = document.getElementById('calorieTarget').value || 2000;
 
             // Show loading state
             document.getElementById('aiLoading').style.display = 'block';
 
-            // Simulate AI generation with a timeout
-            setTimeout(() => {
+            try {
+                const response = await fetch('/api/meal-planner/ai-generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        preferences,
+                        calorieTarget: parseInt(calorieTarget),
+                        days: 7
+                    })
+                });
+                
+                const result = await response.json();
+                
                 // Hide loading state
                 document.getElementById('aiLoading').style.display = 'none';
                 
-                // Show success message
-                showToast('AI meal plan generated successfully!', 'success');
+                if (result.success) {
+                    showToast('AI meal plan generated successfully!', 'success');
+                    // Reload meal plans to show new AI generated meals
+                    loadMealPlans();
+                } else {
+                    showToast('Failed to generate meal plan: ' + result.error, 'error');
+                }
                 
-                // Close the modal
                 closeAIGenerationModal();
-            }, 2000);
+            } catch (error) {
+                document.getElementById('aiLoading').style.display = 'none';
+                console.error('AI generation error:', error);
+                showToast('Failed to generate meal plan', 'error');
+                closeAIGenerationModal();
+            }
         }
         function deleteMeal() {
             const mealId = document.getElementById('editMealId').value;
@@ -1320,30 +1528,75 @@
         }
         // Initialize the meal calendar with days
         function initializeMealCalendar() {
+            // Set current week start to Monday
+            const today = new Date();
+            currentWeekStart = new Date(today.setDate(today.getDate() - today.getDay() + 1));
+            
+            renderMealCalendar();
+            updateWeekTitle();
+        }
+        
+        function renderMealCalendar() {
             const mealCalendar = document.getElementById('mealCalendar');
             const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
             
-            daysOfWeek.forEach(day => {
+            // Clear existing content except headers
+            const headers = mealCalendar.querySelectorAll('.day-header');
+            mealCalendar.innerHTML = '';
+            headers.forEach(header => mealCalendar.appendChild(header));
+            
+            daysOfWeek.forEach((day, index) => {
+                const dayDate = new Date(currentWeekStart);
+                dayDate.setDate(dayDate.getDate() + index);
+                
+                const dayMeals = mealPlans.filter(meal => {
+                    const mealDate = new Date(meal.date);
+                    return mealDate.toDateString() === dayDate.toDateString();
+                });
+                
                 const dayDiv = document.createElement('div');
-                dayDiv.className = 'day';
+                dayDiv.className = 'day-meals';
                 dayDiv.innerHTML = `
-                    <div class="day-header">${day}</div>
-                    <div class="day-content" onclick="openAddMealModal('${day.toLowerCase()}')">
-                        <span class="add-meal">+</span>
+                    ${dayMeals.map(meal => `
+                        <div class="meal-item" onclick="editMeal('${meal.id}')">
+                            <div class="meal-type">${meal.mealType}</div>
+                            <div>${meal.name}</div>
+                            <div class="meal-calories">${meal.calories} cal</div>
+                            <div class="meal-actions">
+                                <button class="meal-action-btn" onclick="event.stopPropagation(); deleteMealFromPlan('${meal.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                    <div class="meal-item" onclick="openAddMealModal('${dayDate.toISOString()}')" style="background: rgba(108, 99, 255, 0.05); border: 2px dashed var(--primary); text-align: center; color: var(--primary);">
+                        <i class="fas fa-plus"></i> Add Meal
                     </div>
                 `;
-                mealCalendar.appendChild(dayDiv);   
+                mealCalendar.appendChild(dayDiv);
             });
-            // Set the week title
-            const weekTitle = document.getElementById('weekTitle');
-            const currentDate = new Date();
-            const startOfWeek = new Date(currentDate.setDate(currentDate.getDate() - currentDate.getDay() + 1));
-            const endOfWeek = new Date(startOfWeek);    
-            endOfWeek.setDate(endOfWeek.getDate() + 6);
-            weekTitle.innerText = `Week of ${startOfWeek.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`;
         }
-        // Call the initialization function on page load
-        document.addEventListener('DOMContentLoaded', initializeMealCalendar);
+        
+        function updateWeekTitle() {
+            const weekTitle = document.getElementById('weekTitle');
+            const endOfWeek = new Date(currentWeekStart);
+            endOfWeek.setDate(endOfWeek.getDate() + 6);
+            weekTitle.innerText = `Week of ${currentWeekStart.toLocaleDateString()} - ${endOfWeek.toLocaleDateString()}`;
+        }
+        
+        function updateNutritionSummary() {
+            const weeklyCalories = mealPlans.reduce((sum, meal) => sum + (meal.calories || 0), 0);
+            const weeklyProtein = mealPlans.reduce((sum, meal) => sum + (meal.protein || 0), 0);
+            const weeklyCarbs = mealPlans.reduce((sum, meal) => sum + (meal.carbs || 0), 0);
+            const weeklyFat = mealPlans.reduce((sum, meal) => sum + (meal.fat || 0), 0);
+            
+            document.getElementById('weeklyCalories').textContent = weeklyCalories;
+            document.getElementById('avgDailyCalories').textContent = Math.round(weeklyCalories / 7);
+            document.getElementById('weeklyProtein').textContent = Math.round(weeklyProtein) + 'g';
+            document.getElementById('weeklyCarbs').textContent = Math.round(weeklyCarbs) + 'g';
+            document.getElementById('weeklyFat').textContent = Math.round(weeklyFat) + 'g';
+        }
+
         // Logout confirmation
         function confirmLogout() {
             return confirm('Are you sure you want to logout?');

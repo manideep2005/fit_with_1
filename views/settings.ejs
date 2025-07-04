@@ -548,11 +548,11 @@
                 <li class="nav-item"><a href="/meal-planner" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
                 <li class="nav-item"><a href="/challenges" class="nav-link"><i class="fas fa-trophy"></i> Challenges</a></li>
                 <li class="nav-item"><a href="/health" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
-                <li class="nav-item"><a href="/biometrics" class="nav-link active"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
+                <li class="nav-item"><a href="/biometrics" class="nav-link"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
                 <li class="nav-item"><a href="/schedule" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
                 <li class="nav-item"><a href="/community" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
                 <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
-                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+                <li class="nav-item"><a href="/settings" class="nav-link active"><i class="fas fa-cog"></i> Settings</a></li>
             </ul>
             
             <!-- Logout Section -->
@@ -591,31 +591,45 @@
                 <form>
                     <div class="form-group">
                         <label class="form-label">Full Name</label>
-                        <input type="text" class="form-control" value="<%= user.fullName %>">
+                        <input type="text" name="fullName" class="form-control" value="<%= user.fullName %>">
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label">Email Address</label>
-                        <input type="email" class="form-control" value="<%= user.email %>">
+                        <input type="email" name="email" class="form-control" value="<%= user.email %>">
                         <small class="text-muted">This is the email you use to log in</small>
                     </div>
                     
                     <div class="form-group">
                         <label class="form-label">Profile Photo</label>
                         <div style="display: flex; align-items: center; gap: 20px;">
-                            <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar" style="width: 80px; height: 80px; border-radius: 50%;">
+                            <img id="profileImage" src="<%= user.profilePhoto ? user.profilePhoto + '?t=' + Date.now() : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.fullName) + '&background=6C63FF&color=fff' %>" alt="User Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
                             <div>
-                                <button type="button" class="btn btn-outline" style="margin-right: 10px;">
-                                    <i class="fas fa-upload"></i> Upload New
+                                <button type="button" class="btn btn-outline" onclick="showPhotoOptions()" style="margin-right: 10px;">
+                                    <i class="fas fa-camera"></i> Change Photo
                                 </button>
-                                <button type="button" class="btn btn-outline">
+                                <button type="button" class="btn btn-outline" onclick="removeProfilePhoto()">
                                     <i class="fas fa-trash"></i> Remove
                                 </button>
                             </div>
                         </div>
+                        <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="handlePhotoUpload(event)">
+                        <video id="cameraPreview" style="display: none; width: 300px; height: 200px; border-radius: 8px; margin-top: 10px;"></video>
+                        <canvas id="photoCanvas" style="display: none;"></canvas>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <div class="form-group">
+                        <label class="form-label">Fitness ID</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="text" class="form-control" value="<%= user.fitnessId || 'N/A' %>" readonly style="background: #f0f0f0;">
+                            <button type="button" class="btn btn-outline" onclick="copyFitnessId('<%= user.fitnessId %>')">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <small class="text-muted">Share this ID with friends to connect.</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" onclick="updateProfile(event)">Save Changes</button>
                 </form>
             </div>
             
@@ -717,7 +731,7 @@
                             <h4 style="margin: 0;">Delete Account</h4>
                             <small style="color: var(--gray);">Permanently delete your account and all data</small>
                         </div>
-                        <button class="btn btn-outline" style="border-color: var(--danger); color: var(--danger);">Delete Account</button>
+                        <button class="btn btn-outline" style="border-color: var(--danger); color: var(--danger);" onclick="deleteAccount()">Delete Account</button>
                     </div>
                 </div>
                 
@@ -727,7 +741,7 @@
                             <h4 style="margin: 0;">Reset All Data</h4>
                             <small style="color: var(--gray);">Clear all your workout and progress data</small>
                         </div>
-                        <button class="btn btn-outline" style="border-color: var(--danger); color: var(--danger);">Reset Data</button>
+                        <button class="btn btn-outline" style="border-color: var(--danger); color: var(--danger);" onclick="resetAllData()">Reset Data</button>
                     </div>
                 </div>
             </div>
@@ -1009,10 +1023,390 @@
             }, 4000);
         }
 
+        function copyFitnessId(fitnessId) {
+            navigator.clipboard.writeText(fitnessId).then(() => {
+                showNotification('Fitness ID copied to clipboard!', 'success');
+            }, () => {
+                showNotification('Failed to copy Fitness ID', 'error');
+            });
+        }
+
         // Logout confirmation
         function confirmLogout() {
             return confirm('Are you sure you want to logout?');
         }
+
+        // Profile photo management
+        let cameraStream = null;
+
+        function showPhotoOptions() {
+            const options = [
+                { text: 'Take Photo', action: 'camera' },
+                { text: 'Upload Photo', action: 'upload' },
+                { text: 'Cancel', action: 'cancel' }
+            ];
+
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
+            `;
+
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: white;
+                padding: 2rem;
+                border-radius: 12px;
+                text-align: center;
+                min-width: 300px;
+            `;
+
+            content.innerHTML = `
+                <h3 style="margin-bottom: 1.5rem;">Choose Photo Option</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-primary" onclick="startCamera(); closeModal();">📷 Take Photo</button>
+                    <button class="btn btn-outline" onclick="document.getElementById('photoInput').click(); closeModal();">📁 Upload Photo</button>
+                    <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                </div>
+            `;
+
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+
+            window.closeModal = function() {
+                document.body.removeChild(modal);
+            };
+        }
+
+        async function startCamera() {
+            try {
+                const video = document.getElementById('cameraPreview');
+                video.style.display = 'block';
+                
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = cameraStream;
+                video.play();
+
+                // Add capture button
+                if (!document.getElementById('captureBtn')) {
+                    const captureBtn = document.createElement('button');
+                    captureBtn.id = 'captureBtn';
+                    captureBtn.className = 'btn btn-primary';
+                    captureBtn.innerHTML = '📸 Capture Photo';
+                    captureBtn.style.marginTop = '10px';
+                    captureBtn.onclick = capturePhoto;
+                    video.parentNode.appendChild(captureBtn);
+
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.className = 'btn btn-outline';
+                    cancelBtn.innerHTML = 'Cancel';
+                    cancelBtn.style.marginTop = '10px';
+                    cancelBtn.style.marginLeft = '10px';
+                    cancelBtn.onclick = stopCamera;
+                    video.parentNode.appendChild(cancelBtn);
+                }
+            } catch (error) {
+                console.error('Camera access error:', error);
+                showNotification('Camera access denied or not available', 'error');
+            }
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('cameraPreview');
+            const canvas = document.getElementById('photoCanvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0);
+
+            canvas.toBlob(function(blob) {
+                const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
+                uploadPhotoFile(file);
+                stopCamera();
+            }, 'image/jpeg', 0.8);
+        }
+
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            document.getElementById('cameraPreview').style.display = 'none';
+            const captureBtn = document.getElementById('captureBtn');
+            if (captureBtn) captureBtn.remove();
+        }
+
+        function handlePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                uploadPhotoFile(file);
+            }
+        }
+
+        async function uploadPhotoFile(file) {
+            try {
+                const formData = new FormData();
+                formData.append('photo', file);
+
+                showNotification('Uploading photo...', 'info');
+
+                const response = await fetch('/api/settings/profile-photo', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                console.log('Upload result:', result);
+
+                if (result.success) {
+                    console.log('Setting image src to:', result.photoUrl);
+                    const img = document.getElementById('profileImage');
+                    const newSrc = result.photoUrl.split('?')[0] + '?t=' + Date.now();
+                    img.src = newSrc;
+                    showNotification('Profile photo updated successfully!', 'success');
+                } else {
+                    showNotification('Failed to upload photo: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Photo upload error:', error);
+                showNotification('Failed to upload photo', 'error');
+            }
+        }
+
+        async function removeProfilePhoto() {
+            if (!confirm('Are you sure you want to remove your profile photo?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/settings/profile-photo', {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('profileImage').src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent('<%= user.fullName %>') + '&background=6C63FF&color=fff';
+                    showNotification('Profile photo removed successfully!', 'success');
+                } else {
+                    showNotification('Failed to remove photo: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Remove photo error:', error);
+                showNotification('Failed to remove photo', 'error');
+            }
+        }
+
+        // Update profile information
+        async function updateProfile(event) {
+            event.preventDefault();
+            
+            const fullNameInput = document.querySelector('input[name="fullName"]');
+            const emailInput = document.querySelector('input[name="email"]');
+            
+            const fullName = fullNameInput.value;
+            const email = emailInput.value;
+
+            if (!fullName || !email) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+
+            try {
+                showNotification('Updating profile...', 'info');
+
+                const response = await fetch('/api/settings/profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        fullName: fullName,
+                        email: email
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification('Profile updated successfully!', 'success');
+                    // Reload page after a short delay to reflect changes
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                } else {
+                    showNotification('Failed to update profile: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Update profile error:', error);
+                showNotification('Failed to update profile', 'error');
+            }
+        }
+
+        // Reset all data
+        async function resetAllData() {
+            const confirmation = prompt('This will permanently delete all your workout data, progress, and achievements. Type "RESET" to confirm:');
+            
+            if (confirmation !== 'RESET') {
+                showNotification('Data reset cancelled', 'info');
+                return;
+            }
+
+            try {
+                showNotification('Resetting all data...', 'info');
+
+                const response = await fetch('/api/settings/reset-data', {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification('All data has been reset successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/dashboard';
+                    }, 2000);
+                } else {
+                    showNotification('Failed to reset data: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Reset data error:', error);
+                showNotification('Failed to reset data', 'error');
+            }
+        }
+
+        // Delete account
+        async function deleteAccount() {
+            const confirmation = prompt('This will permanently delete your account and all data. Type "DELETE" to confirm:');
+            
+            if (confirmation !== 'DELETE') {
+                showNotification('Account deletion cancelled', 'info');
+                return;
+            }
+
+            const password = prompt('Please enter your password to confirm account deletion:');
+            
+            if (!password) {
+                showNotification('Password is required to delete account', 'error');
+                return;
+            }
+
+            try {
+                showNotification('Deleting account...', 'info');
+
+                const response = await fetch('/api/settings/account', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showNotification('Account deleted successfully. Redirecting...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                } else {
+                    showNotification('Failed to delete account: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Delete account error:', error);
+                showNotification('Failed to delete account', 'error');
+            }
+        }
+
+        // Enhanced notification function
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            const colors = {
+                success: '#28A745',
+                error: '#DC3545',
+                info: '#17A2B8',
+                warning: '#FFC107'
+            };
+            
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 2000;
+                background: ${colors[type] || colors.info};
+                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+                max-width: 400px;
+                word-wrap: break-word;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 4000);
+        }
     </script>
+
+    <!-- Photo Options Modal Styles -->
+    <style>
+        .photo-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .photo-modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            min-width: 300px;
+        }
+        
+        #cameraPreview {
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+        }
+        
+        .notification {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
 </body>
 </html>

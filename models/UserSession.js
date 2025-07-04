@@ -27,6 +27,10 @@ const userSessionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+
+  fitnessId: {
+    type: String
+  },
   
   onboardingCompleted: {
     type: Boolean,
@@ -58,19 +62,47 @@ userSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 // Static method to create or update session
 userSessionSchema.statics.createSession = async function(sessionId, user) {
-  // Remove any existing session for this user
-  await this.deleteMany({ userId: user._id });
-  
-  // Create new session
-  return await this.create({
-    sessionId: sessionId,
-    userId: user._id,
-    email: user.email,
-    fullName: user.fullName,
-    onboardingCompleted: user.onboardingCompleted,
-    personalInfo: user.personalInfo,
-    lastAccess: new Date()
-  });
+  try {
+    // Remove any existing session with this sessionId or userId
+    await this.deleteMany({ 
+      $or: [
+        { sessionId: sessionId },
+        { userId: user._id }
+      ]
+    });
+    
+    // Create new session
+    return await this.create({
+      sessionId: sessionId,
+      userId: user._id,
+      email: user.email,
+      fullName: user.fullName,
+      fitnessId: user.fitnessId, // Add fitnessId
+      onboardingCompleted: user.onboardingCompleted,
+      personalInfo: user.personalInfo,
+      lastAccess: new Date()
+    });
+  } catch (error) {
+    // If still duplicate key error, try to update existing
+    if (error.code === 11000) {
+      console.log('Duplicate session detected, updating existing session');
+      return await this.findOneAndUpdate(
+        { sessionId: sessionId },
+        {
+          userId: user._id,
+          email: user.email,
+          fullName: user.fullName,
+          fitnessId: user.fitnessId,
+          onboardingCompleted: user.onboardingCompleted,
+          personalInfo: user.personalInfo,
+          lastAccess: new Date(),
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+        },
+        { new: true, upsert: true }
+      );
+    }
+    throw error;
+  }
 };
 
 // Static method to get session

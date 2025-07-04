@@ -357,11 +357,14 @@
                 <li class="nav-item"><a href="/meal-planner" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
                 <li class="nav-item"><a href="/challenges" class="nav-link"><i class="fas fa-trophy"></i> Challenges</a></li>
                 <li class="nav-item"><a href="/health" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
-                <li class="nav-item"><a href="/biometrics" class="nav-link active"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
+                <li class="nav-item"><a href="/biometrics" class="nav-link"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
                 <li class="nav-item"><a href="/schedule" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
-                <li class="nav-item"><a href="/community" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
+                <li class="nav-item"><a href="/community" class="nav-link active"><i class="fas fa-users"></i> Community</a></li>
                 <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
+                <li class="nav-item"><a href="/chat" class="nav-link"><i class="fas fa-comments"></i> Chat</a></li>
                 <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>            
+            </ul>
+            
             <!-- Logout Section -->
             <div class="logout-section">
                 <a href="/logout" class="logout-link" onclick="return confirmLogout()">
@@ -375,110 +378,708 @@
             <div class="page-header">
                 <h1 class="page-title">Community</h1>
                 <div>
-                    <button class="btn btn-primary"><i class="fas fa-plus"></i> New Post</button>
+                    <button class="btn btn-primary" onclick="showCreatePostModal()"><i class="fas fa-plus"></i> New Post</button>
+                    <button class="btn btn-outline" onclick="showCreateGroupModal()" style="margin-left: 10px;"><i class="fas fa-users"></i> Create Group</button>
                 </div>
             </div>
             
             <div class="search-bar">
-                <input type="text" placeholder="Search discussions, groups, or members...">
-                <button><i class="fas fa-search"></i></button>
+                <input type="text" id="searchInput" placeholder="Search discussions, groups, or members...">
+                <button onclick="performSearch()"><i class="fas fa-search"></i></button>
             </div>
             
-            <h2>Your Groups</h2>
-            <div class="community-grid">
-                <div class="community-card">
-                    <div class="community-banner" style="background: #6C63FF;"></div>
-                    <div class="community-avatar">FW</div>
-                    <div class="community-content">
-                        <h3 class="community-title">Fit-With-AI Official</h3>
-                        <div class="community-meta">12,345 members • Public group</div>
-                        <p class="community-description">Official community for all Fit-With-AI users. Share your progress, ask questions, and get support.</p>
-                        <div class="community-stats">
-                            <span>1.2K posts today</span>
-                            <span>Online: 843</span>
-                        </div>
-                    </div>
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-btn active" onclick="showTab('feed')">My Feed</button>
+                <button class="tab-btn" onclick="showTab('groups')">My Groups</button>
+                <button class="tab-btn" onclick="showTab('discover')">Discover</button>
+            </div>
+            
+            <!-- My Feed Tab -->
+            <div id="feedTab" class="tab-content active">
+                <div id="feedPosts" class="discussion-list">
+                    <div class="loading">Loading your feed...</div>
                 </div>
-                
-                <div class="community-card">
-                    <div class="community-banner" style="background: #4D44DB;"></div>
-                    <div class="community-avatar">WL</div>
-                    <div class="community-content">
-                        <h3 class="community-title">Weight Loss Warriors</h3>
-                        <div class="community-meta">8,742 members • Private group</div>
-                        <p class="community-description">Support group for people on weight loss journeys. Share tips, recipes, and motivation.</p>
-                        <div class="community-stats">
-                            <span>456 posts today</span>
-                            <span>Online: 312</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="community-card">
-                    <div class="community-banner" style="background: #FF6584;"></div>
-                    <div class="community-avatar">BB</div>
-                    <div class="community-content">
-                        <h3 class="community-title">Bodybuilding Pros</h3>
-                        <div class="community-meta">5,678 members • Private group</div>
-                        <p class="community-description">For serious bodybuilders to share workout routines, diet plans, and competition prep.</p>
-                        <div class="community-stats">
-                            <span>289 posts today</span>
-                            <span>Online: 198</span>
-                        </div>
-                    </div>
+                <button class="btn btn-outline" id="loadMoreFeed" style="width: 100%; display: none;" onclick="loadMoreFeed()">Load More Posts</button>
+            </div>
+            
+            <!-- My Groups Tab -->
+            <div id="groupsTab" class="tab-content">
+                <h3>Your Groups</h3>
+                <div id="userGroups" class="community-grid">
+                    <div class="loading">Loading your groups...</div>
                 </div>
             </div>
             
-            <h2>Recent Discussions</h2>
-            <div class="discussion-list">
-                <div class="discussion-item">
-                    <div class="discussion-header">
-                        <img src="https://randomuser.me/api/portraits/women/32.jpg" class="discussion-avatar">
-                        <span class="discussion-author">Sarah Johnson</span>
-                        <span class="discussion-time">2 hours ago</span>
-                    </div>
-                    <h4 class="discussion-title">How do you stay motivated on rest days?</h4>
-                    <p class="discussion-excerpt">I've been struggling with feeling guilty on rest days even though I know they're important. What strategies do you use to stay mentally positive...</p>
-                    <div class="discussion-stats">
-                        <span><i class="fas fa-comment"></i> 24 comments</span>
-                        <span><i class="fas fa-heart"></i> 56 likes</span>
-                        <span><i class="fas fa-eye"></i> 342 views</span>
-                    </div>
+            <!-- Discover Tab -->
+            <div id="discoverTab" class="tab-content">
+                <h3>Discover New Groups</h3>
+                <div class="filter-bar">
+                    <select id="categoryFilter" onchange="filterGroups()">
+                        <option value="">All Categories</option>
+                        <option value="fitness">Fitness</option>
+                        <option value="nutrition">Nutrition</option>
+                        <option value="weight-loss">Weight Loss</option>
+                        <option value="bodybuilding">Bodybuilding</option>
+                        <option value="yoga">Yoga</option>
+                        <option value="running">Running</option>
+                    </select>
                 </div>
-                
-                <div class="discussion-item">
-                    <div class="discussion-header">
-                        <img src="https://randomuser.me/api/portraits/men/45.jpg" class="discussion-avatar">
-                        <span class="discussion-author">Mike Rodriguez</span>
-                        <span class="discussion-time">5 hours ago</span>
-                    </div>
-                    <h4 class="discussion-title">My 6-month transformation with Fit-With-AI</h4>
-                    <p class="discussion-excerpt">Sharing my progress pics and how the AI coach helped me break through plateaus. Before/after photos included...</p>
-                    <div class="discussion-stats">
-                        <span><i class="fas fa-comment"></i> 42 comments</span>
-                        <span><i class="fas fa-heart"></i> 128 likes</span>
-                        <span><i class="fas fa-eye"></i> 876 views</span>
-                    </div>
-                </div>
-                
-                <div class="discussion-item">
-                    <div class="discussion-header">
-                        <img src="https://randomuser.me/api/portraits/women/68.jpg" class="discussion-avatar">
-                        <span class="discussion-author">Priya Patel</span>
-                        <span class="discussion-time">1 day ago</span>
-                    </div>
-                    <h4 class="discussion-title">Vegetarian high-protein meal ideas?</h4>
-                    <p class="discussion-excerpt">Looking for creative vegetarian meal options that pack at least 30g protein per serving. What are your go-to recipes...</p>
-                    <div class="discussion-stats">
-                        <span><i class="fas fa-comment"></i> 37 comments</span>
-                        <span><i class="fas fa-heart"></i> 89 likes</span>
-                        <span><i class="fas fa-eye"></i> 512 views</span>
-                    </div>
+                <div id="publicGroups" class="community-grid">
+                    <div class="loading">Loading public groups...</div>
                 </div>
             </div>
-            
-            <button class="btn btn-outline" style="width: 100%;">Load More Discussions</button>
         </div>
     </div>
+    
+    <!-- Create Post Modal -->
+    <div id="createPostModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Post</h3>
+                <span class="close" onclick="closeModal('createPostModal')">&times;</span>
+            </div>
+            <form id="createPostForm">
+                <div class="form-group">
+                    <label>Select Group</label>
+                    <select id="postGroupSelect" required>
+                        <option value="">Choose a group...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Post Type</label>
+                    <select id="postTypeSelect" onchange="togglePostFields()">
+                        <option value="text">Text Post</option>
+                        <option value="question">Question</option>
+                        <option value="achievement">Achievement</option>
+                        <option value="progress">Progress Update</option>
+                        <option value="workout">Workout Share</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="postTitle" maxlength="200" required>
+                </div>
+                <div class="form-group">
+                    <label>Content</label>
+                    <textarea id="postContent" rows="6" maxlength="5000" required></textarea>
+                </div>
+                <div class="form-group" id="tagsGroup">
+                    <label>Tags (comma separated)</label>
+                    <input type="text" id="postTags" placeholder="fitness, motivation, tips">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('createPostModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Post</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Create Group Modal -->
+    <div id="createGroupModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Group</h3>
+                <span class="close" onclick="closeModal('createGroupModal')">&times;</span>
+            </div>
+            <form id="createGroupForm">
+                <div class="form-group">
+                    <label>Group Name</label>
+                    <input type="text" id="groupName" maxlength="100" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="groupDescription" rows="4" maxlength="500" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="groupCategory" required>
+                        <option value="general">General</option>
+                        <option value="fitness">Fitness</option>
+                        <option value="nutrition">Nutrition</option>
+                        <option value="weight-loss">Weight Loss</option>
+                        <option value="bodybuilding">Bodybuilding</option>
+                        <option value="yoga">Yoga</option>
+                        <option value="running">Running</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Privacy</label>
+                    <select id="groupPrivacy">
+                        <option value="public">Public - Anyone can join</option>
+                        <option value="private">Private - Invite only</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Tags (comma separated)</label>
+                    <input type="text" id="groupTags" placeholder="fitness, support, beginners">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('createGroupModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Group</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        let currentTab = 'feed';
+        let feedSkip = 0;
+        let userGroups = [];
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserGroups();
+            loadFeed();
+            loadPublicGroups();
+        });
+        
+        // Tab Management
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+            
+            currentTab = tabName;
+        }
+        
+        // Load user's groups
+        async function loadUserGroups() {
+            try {
+                const response = await fetch('/api/community/groups');
+                const data = await response.json();
+                
+                if (data.success) {
+                    userGroups = data.groups;
+                    displayUserGroups(data.groups);
+                    populateGroupSelect(data.groups);
+                } else {
+                    console.error('Failed to load groups:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading groups:', error);
+            }
+        }
+        
+        // Display user groups
+        function displayUserGroups(groups) {
+            const container = document.getElementById('userGroups');
+            
+            if (groups.length === 0) {
+                container.innerHTML = '<p>You haven\'t joined any groups yet. <a href="#" onclick="showTab(\'discover\')">Discover groups</a></p>';
+                return;
+            }
+            
+            container.innerHTML = groups.map(group => `
+                <div class="community-card" onclick="viewGroup('${group._id}')">
+                    <div class="community-banner" style="background: ${getGroupColor(group.category)};"></div>
+                    <div class="community-avatar">${group.name.substring(0, 2).toUpperCase()}</div>
+                    <div class="community-content">
+                        <h3 class="community-title">${group.name}</h3>
+                        <div class="community-meta">${group.stats.totalMembers} members • ${group.privacy} group</div>
+                        <p class="community-description">${group.description}</p>
+                        <div class="community-stats">
+                            <span>${group.stats.totalPosts} posts</span>
+                            <span>${group.category}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Load public groups
+        async function loadPublicGroups() {
+            try {
+                const response = await fetch('/api/community/groups/public');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayPublicGroups(data.groups);
+                } else {
+                    console.error('Failed to load public groups:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading public groups:', error);
+            }
+        }
+        
+        // Display public groups
+        function displayPublicGroups(groups) {
+            const container = document.getElementById('publicGroups');
+            
+            container.innerHTML = groups.map(group => {
+                const isMember = userGroups.some(ug => ug._id === group._id);
+                return `
+                    <div class="community-card">
+                        <div class="community-banner" style="background: ${getGroupColor(group.category)};"></div>
+                        <div class="community-avatar">${group.name.substring(0, 2).toUpperCase()}</div>
+                        <div class="community-content">
+                            <h3 class="community-title">${group.name}</h3>
+                            <div class="community-meta">${group.stats.totalMembers} members • ${group.privacy} group</div>
+                            <p class="community-description">${group.description}</p>
+                            <div class="community-stats">
+                                <span>${group.stats.totalPosts} posts</span>
+                                <span>${group.category}</span>
+                            </div>
+                            <div style="margin-top: 15px;">
+                                ${isMember ? 
+                                    '<button class="btn btn-outline" disabled>Already Joined</button>' :
+                                    `<button class="btn btn-primary" onclick="joinGroup('${group._id}')">Join Group</button>`
+                                }
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Load user feed
+        async function loadFeed() {
+            try {
+                const response = await fetch(`/api/community/feed?limit=10&skip=${feedSkip}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayFeedPosts(data.posts, feedSkip === 0);
+                    feedSkip += data.posts.length;
+                    
+                    if (data.posts.length === 10) {
+                        document.getElementById('loadMoreFeed').style.display = 'block';
+                    }
+                } else {
+                    console.error('Failed to load feed:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading feed:', error);
+            }
+        }
+        
+        // Display feed posts
+        function displayFeedPosts(posts, replace = false) {
+            const container = document.getElementById('feedPosts');
+            
+            if (posts.length === 0 && replace) {
+                container.innerHTML = '<p>No posts in your feed yet. <a href="#" onclick="showTab(\'discover\')">Join some groups</a> to see posts!</p>';
+                return;
+            }
+            
+            const postsHtml = posts.map(post => `
+                <div class="discussion-item" data-post-id="${post._id}">
+                    <div class="discussion-header">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(post.author.fullName)}&background=6C63FF&color=fff" class="discussion-avatar">
+                        <span class="discussion-author">${post.author.fullName}</span>
+                        <span class="discussion-group">in ${post.group.name}</span>
+                        <span class="discussion-time">${formatTimeAgo(post.createdAt)}</span>
+                    </div>
+                    <h4 class="discussion-title">${post.title}</h4>
+                    <p class="discussion-excerpt">${post.content.substring(0, 200)}${post.content.length > 200 ? '...' : ''}</p>
+                    <div class="discussion-stats">
+                        <span onclick="likePost('${post._id}')" class="like-btn">
+                            <i class="fas fa-heart"></i> <span class="like-count">${post.stats.totalLikes}</span> likes
+                        </span>
+                        <span><i class="fas fa-comment"></i> ${post.stats.totalComments} comments</span>
+                        <span><i class="fas fa-eye"></i> ${post.views} views</span>
+                        ${post.tags && post.tags.length > 0 ? `<span class="post-tags">${post.tags.map(tag => `#${tag}`).join(' ')}</span>` : ''}
+                    </div>
+                </div>
+            `).join('');
+            
+            if (replace) {
+                container.innerHTML = postsHtml;
+            } else {
+                container.innerHTML += postsHtml;
+            }
+        }
+        
+        // Join group
+        async function joinGroup(groupId) {
+            try {
+                const response = await fetch(`/api/community/groups/${groupId}/join`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Successfully joined the group!', 'success');
+                    loadUserGroups();
+                    loadPublicGroups();
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error joining group:', error);
+                showNotification('Failed to join group', 'error');
+            }
+        }
+        
+        // Like post
+        async function likePost(postId) {
+            try {
+                const response = await fetch(`/api/community/posts/${postId}/like`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    const likeCountElement = document.querySelector(`[data-post-id="${postId}"] .like-count`);
+                    if (likeCountElement) {
+                        likeCountElement.textContent = data.likes;
+                    }
+                } else {
+                    console.error('Failed to like post:', data.error);
+                }
+            } catch (error) {
+                console.error('Error liking post:', error);
+            }
+        }
+        
+        // Create post
+        document.getElementById('createPostForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                group: document.getElementById('postGroupSelect').value,
+                type: document.getElementById('postTypeSelect').value,
+                title: document.getElementById('postTitle').value,
+                content: document.getElementById('postContent').value,
+                tags: document.getElementById('postTags').value.split(',').map(tag => tag.trim()).filter(tag => tag)
+            };
+            
+            try {
+                const response = await fetch('/api/community/posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Post created successfully!', 'success');
+                    closeModal('createPostModal');
+                    document.getElementById('createPostForm').reset();
+                    feedSkip = 0;
+                    loadFeed();
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error creating post:', error);
+                showNotification('Failed to create post', 'error');
+            }
+        });
+        
+        // Create group
+        document.getElementById('createGroupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('groupName').value,
+                description: document.getElementById('groupDescription').value,
+                category: document.getElementById('groupCategory').value,
+                privacy: document.getElementById('groupPrivacy').value,
+                tags: document.getElementById('groupTags').value.split(',').map(tag => tag.trim()).filter(tag => tag)
+            };
+            
+            try {
+                const response = await fetch('/api/community/groups', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Group created successfully!', 'success');
+                    closeModal('createGroupModal');
+                    document.getElementById('createGroupForm').reset();
+                    loadUserGroups();
+                    loadPublicGroups();
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error creating group:', error);
+                showNotification('Failed to create group', 'error');
+            }
+        });
+        
+        // Utility functions
+        function getGroupColor(category) {
+            const colors = {
+                fitness: '#6C63FF',
+                nutrition: '#28A745',
+                'weight-loss': '#FF6584',
+                bodybuilding: '#FFC107',
+                yoga: '#17A2B8',
+                running: '#DC3545',
+                general: '#6C757D'
+            };
+            return colors[category] || colors.general;
+        }
+        
+        function formatTimeAgo(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+            
+            if (diffInSeconds < 60) return 'Just now';
+            if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+            if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+            return `${Math.floor(diffInSeconds / 86400)}d ago`;
+        }
+        
+        function populateGroupSelect(groups) {
+            const select = document.getElementById('postGroupSelect');
+            select.innerHTML = '<option value="">Choose a group...</option>' + 
+                groups.map(group => `<option value="${group._id}">${group.name}</option>`).join('');
+        }
+        
+        function showCreatePostModal() {
+            if (userGroups.length === 0) {
+                showNotification('You need to join a group first to create posts', 'warning');
+                return;
+            }
+            document.getElementById('createPostModal').style.display = 'block';
+        }
+        
+        function showCreateGroupModal() {
+            document.getElementById('createGroupModal').style.display = 'block';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function loadMoreFeed() {
+            loadFeed();
+        }
+        
+        function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (query.length < 2) {
+                showNotification('Search query must be at least 2 characters', 'warning');
+                return;
+            }
+            // Implement search functionality
+            console.log('Searching for:', query);
+        }
+        
+        function showNotification(message, type = 'info') {
+            // Simple notification system
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                border-radius: 8px;
+                color: white;
+                z-index: 10000;
+                font-weight: 500;
+            `;
+            
+            const colors = {
+                success: '#28A745',
+                error: '#DC3545',
+                warning: '#FFC107',
+                info: '#17A2B8'
+            };
+            
+            notification.style.backgroundColor = colors[type] || colors.info;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+        
+        function confirmLogout() {
+            return confirm('Are you sure you want to logout?');
+        }
+        
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        }
+    </script>
+    
+    <style>
+        .tab-navigation {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--light-gray);
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            color: var(--gray);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+        }
+        
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .close:hover {
+            color: var(--dark);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 20px;
+            border-top: 1px solid var(--light-gray);
+        }
+        
+        .filter-bar {
+            margin-bottom: 20px;
+        }
+        
+        .filter-bar select {
+            padding: 8px 12px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+        }
+        
+        .discussion-group {
+            color: var(--primary);
+            font-size: 0.9rem;
+            margin: 0 10px;
+        }
+        
+        .like-btn {
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .like-btn:hover {
+            color: var(--accent);
+        }
+        
+        .post-tags {
+            color: var(--primary);
+            font-size: 0.8rem;
+        }
+        
+        .community-card {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .community-card:hover {
+            transform: translateY(-2px);
+        }
+    </style>
 </body>
 </html>

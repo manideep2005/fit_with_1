@@ -1,6 +1,7 @@
 // Chat functionality for real-time messaging
 class ChatManager {
     constructor() {
+        this.socket = io();
         this.currentConversationId = null;
         this.currentFriendId = null;
         this.messageInput = document.getElementById('message-input');
@@ -20,15 +21,44 @@ class ChatManager {
         try {
             this.setupEventListeners();
             this.loadConversations();
-            this.startPolling(); // Simple polling for new messages
+            this.setupSocket();
             console.log('ChatManager initialization completed');
         } catch (error) {
             console.error('ChatManager initialization failed:', error);
         }
     }
+
+    setupSocket() {
+      this.socket.on('connect', () => {
+        console.log('Connected to Socket.IO server');
+        this.socket.emit('join', window.currentUserId);
+      });
+
+      this.socket.on('new message', (message) => {
+        this.addMessageToUI(message, false);
+      });
+    }
     
     setupEventListeners() {
         console.log('Setting up event listeners...');
+
+        // Event delegation for conversation list
+        if (this.conversationsList) {
+            this.conversationsList.addEventListener('click', (e) => {
+                const conversationItem = e.target.closest('.conversation-item');
+                if (conversationItem) {
+                    const friendId = conversationItem.dataset.friendId;
+                    const friendName = conversationItem.querySelector('.conversation-name').textContent;
+                    const friendAvatar = conversationItem.querySelector('.conversation-avatar').style.backgroundImage;
+                    const friendInfo = {
+                        _id: friendId,
+                        fullName: friendName,
+                        avatar: friendAvatar
+                    };
+                    this.loadConversation(friendId, friendInfo);
+                }
+            });
+        }
         
         // Send message on button click
         const sendBtn = document.querySelector('.send-btn');
@@ -137,10 +167,6 @@ class ChatManager {
                     ${conv.unreadCount > 0 ? `<div class="unread-count">${conv.unreadCount}</div>` : ''}
                 </div>
             `;
-            
-            conversationItem.addEventListener('click', () => {
-                this.loadConversation(conv.friend._id, conv.friend);
-            });
             
             this.conversationsList.appendChild(conversationItem);
         });
@@ -255,45 +281,20 @@ class ChatManager {
         }
         
         console.log('Sending message:', { receiverId: this.currentFriendId, content });
-        
-        try {
-            const response = await fetch('/api/chat/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    receiverId: this.currentFriendId,
-                    content: content
-                })
-            });
-            
-            console.log('Send message response status:', response.status);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const result = await response.json();
-            console.log('Send message result:', result);
-            
-            if (result.success) {
-                console.log('Message sent successfully');
-                // Add message to UI immediately
-                this.addMessageToUI(result.message, true);
-                this.messageInput.value = '';
-                this.scrollToBottom();
-                
-                // Refresh conversations to update last message
-                this.loadConversations();
-            } else {
-                console.error('Failed to send message:', result.error);
-                this.showError('Failed to send message: ' + result.error);
-            }
-        } catch (error) {
-            console.error('Error sending message:', error);
-            this.showError('Failed to send message: ' + error.message);
-        }
+        console.log('Client-side window.currentUserId:', window.currentUserId);
+
+        const message = {
+          sender: window.currentUserId,
+          receiver: this.currentFriendId,
+          content: content,
+          createdAt: new Date().toISOString()
+        };
+
+        this.socket.emit('send message', message);
+        this.addMessageToUI(message, true);
+        this.messageInput.value = '';
+        this.scrollToBottom();
+        this.loadConversations();
     }
     
     addMessageToUI(message, isCurrentUser) {
@@ -614,35 +615,7 @@ class ChatManager {
         }
     }
     
-    startPolling() {
-        // Simple polling for new messages every 5 seconds
-        setInterval(async () => {
-            if (this.currentFriendId) {
-                try {
-                    const response = await fetch(`/api/chat/messages/${this.currentFriendId}?limit=1`);
-                    const result = await response.json();
-                    
-                    if (result.success && result.messages.length > 0) {
-                        const latestMessage = result.messages[0];
-                        const lastMessageInUI = this.messagesContainer?.lastElementChild;
-                        
-                        // Check if this is a new message
-                        if (lastMessageInUI && 
-                            !lastMessageInUI.dataset.messageId === latestMessage._id &&
-                            latestMessage.sender._id !== window.currentUserId) {
-                            this.addMessageToUI(latestMessage, false);
-                            this.scrollToBottom();
-                        }
-                    }
-                } catch (error) {
-                    console.error('Polling error:', error);
-                }
-            }
-            
-            // Update conversations list
-            this.loadConversations();
-        }, 5000);
-    }
+    
     
     // Utility functions
     createConversationId(userId1, userId2) {

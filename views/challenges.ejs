@@ -338,51 +338,6 @@
             height: fit-content;
         }
         
-        .achievement-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-        }
-        
-        .achievement-item:hover {
-            background: var(--light);
-        }
-        
-        .achievement-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: white;
-        }
-        
-        .achievement-info h4 {
-            margin: 0 0 5px 0;
-            font-size: 0.95rem;
-            font-weight: 600;
-        }
-        
-        .achievement-date {
-            font-size: 0.8rem;
-            color: var(--gray);
-        }
-        
-        .locked-achievement {
-            opacity: 0.5;
-        }
-        
-        .locked-achievement .achievement-icon {
-            background: var(--light-gray);
-            color: var(--gray);
-        }
-        
         .btn {
             padding: 10px 20px;
             border-radius: 8px;
@@ -414,6 +369,128 @@
         .btn-small {
             padding: 6px 12px;
             font-size: 0.85rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+        }
+        
+        .quick-actions-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .action-btn-small {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--light);
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+        
+        .action-btn-small:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+        }
+        
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .close:hover {
+            color: var(--dark);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+        }
+        
+        .form-group input[type="number"] {
+            width: 48%;
+            display: inline-block;
+        }
+        
+        .form-group select {
+            width: 48%;
+            display: inline-block;
+            margin-left: 4%;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 20px;
+            border-top: 1px solid var(--light-gray);
         }
         
         @media (max-width: 768px) {
@@ -449,7 +526,7 @@
                 <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
                 <div>
                     <h3 class="user-name"><%= user.fullName %></h3>
-                    <span class="user-plan">Premium Plan</span>
+                    <span class="user-plan">ID: <%= user.fitnessId %></span>
                 </div>
             </div>
             
@@ -464,7 +541,9 @@
                 <li class="nav-item"><a href="/schedule" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
                 <li class="nav-item"><a href="/community" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
                 <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
-                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>            
+                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+            
             <!-- Logout Section -->
             <div class="logout-section">
                 <a href="/logout" class="logout-link" onclick="return confirmLogout()">
@@ -478,244 +557,49 @@
             <div class="page-header">
                 <h1 class="page-title">Challenges & Achievements</h1>
                 <div>
-                    <button class="btn btn-primary"><i class="fas fa-plus"></i> Create Challenge</button>
+                    <button class="btn btn-primary" onclick="showCreateChallengeModal()"><i class="fas fa-plus"></i> Create Challenge</button>
                 </div>
             </div>
             
-            <div class="stats-overview">
-                <div class="stat-card">
-                    <div class="stat-icon gold">
-                        <i class="fas fa-trophy"></i>
-                    </div>
-                    <div class="stat-value">12</div>
-                    <div class="stat-label">Challenges Completed</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon primary">
-                        <i class="fas fa-fire"></i>
-                    </div>
-                    <div class="stat-value">7</div>
-                    <div class="stat-label">Day Streak</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon bronze">
-                        <i class="fas fa-medal"></i>
-                    </div>
-                    <div class="stat-value">28</div>
-                    <div class="stat-label">Achievements Unlocked</div>
-                </div>
-                
-                <div class="stat-card">
-                    <div class="stat-icon silver">
-                        <i class="fas fa-star"></i>
-                    </div>
-                    <div class="stat-value">1,250</div>
-                    <div class="stat-label">Points Earned</div>
-                </div>
+            <div class="stats-overview" id="statsOverview">
+                <div class="loading">Loading your stats...</div>
             </div>
             
             <div class="content-grid">
                 <div class="challenges-section">
                     <div class="section-header">
-                        <h2 class="section-title">Active Challenges</h2>
+                        <h2 class="section-title">Challenges</h2>
                     </div>
                     
                     <div class="challenge-tabs">
                         <button class="tab-btn active" onclick="switchTab('active')">Active</button>
+                        <button class="tab-btn" onclick="switchTab('suggested')">Suggested</button>
                         <button class="tab-btn" onclick="switchTab('completed')">Completed</button>
-                        <button class="tab-btn" onclick="switchTab('upcoming')">Upcoming</button>
                     </div>
                     
-                    <div id="active-challenges">
-                        <div class="challenge-card">
-                            <div class="challenge-header">
-                                <div class="challenge-info">
-                                    <h3>30-Day Push-Up Challenge</h3>
-                                    <div class="challenge-meta">
-                                        <span><i class="fas fa-calendar"></i> 23 days left</span>
-                                        <span><i class="fas fa-users"></i> 1,247 participants</span>
-                                    </div>
-                                </div>
-                                <div class="challenge-badge badge-active">Active</div>
-                            </div>
-                            
-                            <p>Build upper body strength with progressive push-up training. Start with 5 push-ups and work your way up to 50!</p>
-                            
-                            <div class="challenge-progress">
-                                <div class="progress-header">
-                                    <span>Progress: Day 7/30</span>
-                                    <span>23%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 23%"></div>
-                                </div>
-                            </div>
-                            
-                            <div class="challenge-reward">
-                                <i class="fas fa-gift reward-icon"></i>
-                                <span>Reward: "Push-Up Master" badge + 200 points</span>
-                            </div>
-                            
-                            <div style="margin-top: 1rem;">
-                                <button class="btn btn-success btn-small">Log Today's Set</button>
-                                <button class="btn btn-outline btn-small">View Details</button>
-                            </div>
-                        </div>
-                        
-                        <div class="challenge-card">
-                            <div class="challenge-header">
-                                <div class="challenge-info">
-                                    <h3>Weekly Cardio Goal</h3>
-                                    <div class="challenge-meta">
-                                        <span><i class="fas fa-calendar"></i> 4 days left</span>
-                                        <span><i class="fas fa-target"></i> 150 minutes target</span>
-                                    </div>
-                                </div>
-                                <div class="challenge-badge badge-active">Active</div>
-                            </div>
-                            
-                            <p>Complete 150 minutes of cardio this week. Any cardio activity counts - running, cycling, swimming, or dancing!</p>
-                            
-                            <div class="challenge-progress">
-                                <div class="progress-header">
-                                    <span>Progress: 95/150 minutes</span>
-                                    <span>63%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 63%"></div>
-                                </div>
-                            </div>
-                            
-                            <div class="challenge-reward">
-                                <i class="fas fa-gift reward-icon"></i>
-                                <span>Reward: "Cardio Champion" badge + 150 points</span>
-                            </div>
-                            
-                            <div style="margin-top: 1rem;">
-                                <button class="btn btn-success btn-small">Log Cardio</button>
-                                <button class="btn btn-outline btn-small">View Details</button>
-                            </div>
-                        </div>
-                        
-                        <div class="challenge-card">
-                            <div class="challenge-header">
-                                <div class="challenge-info">
-                                    <h3>Hydration Hero</h3>
-                                    <div class="challenge-meta">
-                                        <span><i class="fas fa-calendar"></i> Daily</span>
-                                        <span><i class="fas fa-tint"></i> 8 glasses target</span>
-                                    </div>
-                                </div>
-                                <div class="challenge-badge badge-active">Active</div>
-                            </div>
-                            
-                            <p>Drink 8 glasses of water every day for optimal hydration and health.</p>
-                            
-                            <div class="challenge-progress">
-                                <div class="progress-header">
-                                    <span>Today: 6/8 glasses</span>
-                                    <span>75%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress-fill" style="width: 75%"></div>
-                                </div>
-                            </div>
-                            
-                            <div class="challenge-reward">
-                                <i class="fas fa-gift reward-icon"></i>
-                                <span>Daily: 10 points | Weekly streak: 50 points</span>
-                            </div>
-                            
-                            <div style="margin-top: 1rem;">
-                                <button class="btn btn-success btn-small">Log Water</button>
-                                <button class="btn btn-outline btn-small">View History</button>
-                            </div>
-                        </div>
+                    <div id="challengesContainer">
+                        <div class="loading">Loading challenges...</div>
                     </div>
                 </div>
                 
                 <div class="achievements-sidebar">
-                    <h3 class="section-title">Recent Achievements</h3>
-                    
-                    <div class="achievement-item">
-                        <div class="achievement-icon" style="background: var(--gold);">
-                            <i class="fas fa-fire"></i>
-                        </div>
-                        <div class="achievement-info">
-                            <h4>Week Warrior</h4>
-                            <div class="achievement-date">Earned 2 days ago</div>
-                        </div>
+                    <h3 class="section-title">Leaderboard</h3>
+                    <div id="leaderboard">
+                        <div class="loading">Loading leaderboard...</div>
                     </div>
-                    
-                    <div class="achievement-item">
-                        <div class="achievement-icon" style="background: var(--success);">
-                            <i class="fas fa-dumbbell"></i>
-                        </div>
-                        <div class="achievement-info">
-                            <h4>Strength Builder</h4>
-                            <div class="achievement-date">Earned 5 days ago</div>
-                        </div>
-                    </div>
-                    
-                    <div class="achievement-item">
-                        <div class="achievement-icon" style="background: var(--primary);">
-                            <i class="fas fa-heart"></i>
-                        </div>
-                        <div class="achievement-info">
-                            <h4>Cardio King</h4>
-                            <div class="achievement-date">Earned 1 week ago</div>
-                        </div>
-                    </div>
-                    
-                    <div class="achievement-item locked-achievement">
-                        <div class="achievement-icon">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        <div class="achievement-info">
-                            <h4>Marathon Master</h4>
-                            <div class="achievement-date">Complete 26.2 miles</div>
-                        </div>
-                    </div>
-                    
-                    <div class="achievement-item locked-achievement">
-                        <div class="achievement-icon">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        <div class="achievement-info">
-                            <h4>Consistency Champion</h4>
-                            <div class="achievement-date">30-day streak</div>
-                        </div>
-                    </div>
-                    
-                    <button class="btn btn-outline" style="width: 100%; margin-top: 1rem;">
-                        View All Achievements
-                    </button>
                     
                     <div style="margin-top: 2rem;">
-                        <h4>Leaderboard</h4>
-                        <div style="font-size: 0.9rem; color: var(--gray);">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <span>1. Sarah M.</span>
-                                <span>2,450 pts</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <span>2. Mike R.</span>
-                                <span>2,180 pts</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: var(--primary); font-weight: 600;">
-                                <span>3. You</span>
-                                <span>1,250 pts</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-                                <span>4. Alex K.</span>
-                                <span>1,120 pts</span>
-                            </div>
-                            <div style="display: flex; justify-content: space-between;">
-                                <span>5. Emma L.</span>
-                                <span>980 pts</span>
-                            </div>
+                        <h4>Quick Actions</h4>
+                        <div class="quick-actions-sidebar">
+                            <button class="action-btn-small" onclick="logWorkout()">
+                                <i class="fas fa-dumbbell"></i> Log Workout
+                            </button>
+                            <button class="action-btn-small" onclick="logWater()">
+                                <i class="fas fa-tint"></i> Log Water
+                            </button>
+                            <button class="action-btn-small" onclick="shareProgress()">
+                                <i class="fas fa-share"></i> Share Progress
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -723,51 +607,403 @@
         </div>
     </div>
     
+    <!-- Create Challenge Modal -->
+    <div id="createChallengeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Create New Challenge</h3>
+                <span class="close" onclick="closeModal('createChallengeModal')">&times;</span>
+            </div>
+            <form id="createChallengeForm">
+                <div class="form-group">
+                    <label>Challenge Title</label>
+                    <input type="text" id="challengeTitle" maxlength="100" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="challengeDescription" rows="3" maxlength="500" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Challenge Type</label>
+                    <select id="challengeType" required>
+                        <option value="workout">Workout Challenge</option>
+                        <option value="nutrition">Nutrition Challenge</option>
+                        <option value="habit">Habit Challenge</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Target (e.g., 30 days, 100 reps, 2000 calories)</label>
+                    <input type="number" id="challengeTarget" required>
+                    <select id="challengeUnit" required>
+                        <option value="days">Days</option>
+                        <option value="reps">Reps</option>
+                        <option value="minutes">Minutes</option>
+                        <option value="calories">Calories</option>
+                        <option value="glasses">Glasses</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Duration</label>
+                    <input type="number" id="challengeDuration" value="7" required>
+                    <select id="challengeDurationUnit">
+                        <option value="days">Days</option>
+                        <option value="weeks">Weeks</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Challenge Friend (Fitness ID or Email)</label>
+                    <input type="text" id="challengeFriend" placeholder="Enter friend's Fitness ID or email" required>
+                </div>
+                <div class="form-group">
+                    <label>Reward Points</label>
+                    <input type="number" id="challengePoints" value="100" min="50" max="1000">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('createChallengeModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create & Send Challenge</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <script>
-        function switchTab(tabName) {
-            // Remove active class from all tabs
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Add active class to clicked tab
-            event.target.classList.add('active');
-            
-            // In a real app, this would load different challenge data
-            if (tabName === 'completed') {
-                alert('Loading completed challenges...');
-            } else if (tabName === 'upcoming') {
-                alert('Loading upcoming challenges...');
+        let currentTab = 'active';
+        let userStats = null;
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserStats();
+            loadChallenges('active');
+            loadLeaderboard();
+        });
+        
+        // Load user stats
+        async function loadUserStats() {
+            try {
+                const response = await fetch('/api/challenges/stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    userStats = data.stats;
+                    displayStats(data.stats);
+                } else {
+                    console.error('Failed to load stats');
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
             }
         }
         
-        // Add click handlers for challenge actions
-        document.addEventListener('DOMContentLoaded', function() {
-            // Log workout buttons
-            document.querySelectorAll('.btn-success').forEach(btn => {
-                if (btn.textContent.includes('Log')) {
-                    btn.addEventListener('click', function() {
-                        const challengeName = this.closest('.challenge-card').querySelector('h3').textContent;
-                        alert(`Logging progress for: ${challengeName}`);
-                        // In a real app, this would open a logging modal
-                    });
-                }
-            });
+        // Display user stats
+        function displayStats(stats) {
+            const container = document.getElementById('statsOverview');
+            container.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-icon gold">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-value">${stats.challengesCompleted}</div>
+                    <div class="stat-label">Challenges Completed</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-value">${stats.currentStreak}</div>
+                    <div class="stat-label">Day Streak</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon bronze">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                    <div class="stat-value">${stats.achievementsUnlocked}</div>
+                    <div class="stat-label">Achievements Unlocked</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon silver">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-value">${stats.totalPoints.toLocaleString()}</div>
+                    <div class="stat-label">Points Earned</div>
+                </div>
+            `;
+        }
+        
+        // Switch tabs
+        function switchTab(tabName) {
+            currentTab = tabName;
             
-            // View details buttons
-            document.querySelectorAll('.btn-outline').forEach(btn => {
-                if (btn.textContent.includes('View Details') || btn.textContent.includes('View History')) {
-                    btn.addEventListener('click', function() {
-                        const challengeName = this.closest('.challenge-card').querySelector('h3').textContent;
-                        alert(`Viewing details for: ${challengeName}`);
-                        // In a real app, this would open a details modal
-                    });
-                }
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
             });
+            event.target.classList.add('active');
+            
+            loadChallenges(tabName);
+        }
+        
+        // Load challenges based on tab
+        async function loadChallenges(type) {
+            try {
+                let endpoint = '/api/challenges/active';
+                if (type === 'suggested') endpoint = '/api/challenges/suggested';
+                
+                const response = await fetch(endpoint);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayChallenges(data.challenges, type);
+                } else {
+                    console.error('Failed to load challenges');
+                }
+            } catch (error) {
+                console.error('Error loading challenges:', error);
+            }
+        }
+        
+        // Display challenges
+        function displayChallenges(challenges, type) {
+            const container = document.getElementById('challengesContainer');
+            
+            if (challenges.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-trophy" style="font-size: 3rem; color: var(--gray); margin-bottom: 1rem;"></i>
+                        <h3>No ${type} challenges</h3>
+                        <p>${type === 'active' ? 'Join some challenges to get started!' : 'Check back later for new challenges.'}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = challenges.map(challenge => `
+                <div class="challenge-card" data-challenge-id="${challenge._id}">
+                    <div class="challenge-header">
+                        <div class="challenge-info">
+                            <h3>${challenge.title}</h3>
+                            <div class="challenge-meta">
+                                ${challenge.daysLeft ? `<span><i class="fas fa-calendar"></i> ${challenge.daysLeft} days left</span>` : ''}
+                                <span><i class="fas fa-users"></i> ${challenge.participantCount || 0} participants</span>
+                                <span><i class="fas fa-signal"></i> ${challenge.difficulty}</span>
+                            </div>
+                        </div>
+                        <div class="challenge-badge badge-${type === 'suggested' ? 'upcoming' : 'active'}">
+                            ${type === 'suggested' ? 'Suggested' : 'Active'}
+                        </div>
+                    </div>
+                    
+                    <p>${challenge.description}</p>
+                    
+                    ${type === 'active' && challenge.userProgress ? `
+                        <div class="challenge-progress">
+                            <div class="progress-header">
+                                <span>Progress: ${challenge.userProgress.current}/${challenge.target.value} ${challenge.target.unit}</span>
+                                <span>${Math.round(challenge.userProgress.percentage)}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${challenge.userProgress.percentage}%"></div>
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="challenge-reward">
+                        <i class="fas fa-gift reward-icon"></i>
+                        <span>Reward: ${challenge.rewards.points} points${challenge.rewards.badges ? ' + ' + challenge.rewards.badges.join(', ') : ''}</span>
+                    </div>
+                    
+                    <div style="margin-top: 1rem;">
+                        ${type === 'active' ? `
+                            <button class="btn btn-success btn-small" onclick="logProgress('${challenge._id}', '${challenge.type}')">Log Progress</button>
+                            <button class="btn btn-outline btn-small" onclick="viewDetails('${challenge._id}')">View Details</button>
+                        ` : `
+                            <button class="btn btn-primary btn-small" onclick="joinChallenge('${challenge._id}')">Join Challenge</button>
+                            <button class="btn btn-outline btn-small" onclick="viewDetails('${challenge._id}')">View Details</button>
+                        `}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Load leaderboard
+        async function loadLeaderboard() {
+            try {
+                const response = await fetch('/api/challenges/leaderboard?limit=5');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayLeaderboard(data.leaderboard);
+                } else {
+                    console.error('Failed to load leaderboard');
+                }
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+            }
+        }
+        
+        // Display leaderboard
+        function displayLeaderboard(leaderboard) {
+            const container = document.getElementById('leaderboard');
+            container.innerHTML = leaderboard.map((user, index) => `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; ${user.name === '<%= user.fullName %>' ? 'color: var(--primary); font-weight: 600;' : 'color: var(--gray);'}">
+                    <span>${user.rank}. ${user.name}</span>
+                    <span>${user.points.toLocaleString()} pts</span>
+                </div>
+            `).join('');
+        }
+        
+        // Join challenge
+        async function joinChallenge(challengeId) {
+            try {
+                const response = await fetch(`/api/challenges/${challengeId}/join`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Successfully joined challenge!', 'success');
+                    loadChallenges(currentTab);
+                    loadUserStats();
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Join challenge error:', error);
+                showNotification('Failed to join challenge', 'error');
+            }
+        }
+        
+        // Log progress
+        async function logProgress(challengeId, challengeType) {
+            const progress = prompt(`Enter your progress (e.g., number of reps, minutes, glasses):`);
+            if (!progress || isNaN(progress)) return;
+            
+            try {
+                const response = await fetch(`/api/challenges/${challengeId}/progress`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ progress: parseFloat(progress) })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Progress logged successfully!', 'success');
+                    loadChallenges(currentTab);
+                    loadUserStats();
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Log progress error:', error);
+                showNotification('Failed to log progress', 'error');
+            }
+        }
+        
+        // Quick actions
+        function logWorkout() {
+            window.location.href = '/workouts';
+        }
+        
+        function logWater() {
+            window.location.href = '/nutrition';
+        }
+        
+        function shareProgress() {
+            if (navigator.share && userStats) {
+                navigator.share({
+                    title: 'My Fitness Progress',
+                    text: `I've completed ${userStats.challengesCompleted} challenges and have a ${userStats.currentStreak}-day streak!`,
+                    url: window.location.href
+                });
+            } else {
+                showNotification('Share feature coming soon!', 'info');
+            }
+        }
+        
+        function viewDetails(challengeId) {
+            showNotification('Challenge details coming soon!', 'info');
+        }
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed; top: 20px; right: 20px; padding: 15px 20px;
+                border-radius: 8px; color: white; z-index: 10000; font-weight: 500;
+                background-color: ${type === 'success' ? '#28A745' : type === 'error' ? '#DC3545' : '#17A2B8'};
+            `;
+            
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
+        // Create challenge modal
+        function showCreateChallengeModal() {
+            document.getElementById('createChallengeModal').style.display = 'block';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Create challenge form
+        document.getElementById('createChallengeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                title: document.getElementById('challengeTitle').value,
+                description: document.getElementById('challengeDescription').value,
+                type: document.getElementById('challengeType').value,
+                target: {
+                    value: parseInt(document.getElementById('challengeTarget').value),
+                    unit: document.getElementById('challengeUnit').value
+                },
+                duration: {
+                    value: parseInt(document.getElementById('challengeDuration').value),
+                    unit: document.getElementById('challengeDurationUnit').value
+                },
+                friendIdentifier: document.getElementById('challengeFriend').value,
+                points: parseInt(document.getElementById('challengePoints').value)
+            };
+            
+            try {
+                const response = await fetch('/api/challenges/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Challenge created and invitation sent!', 'success');
+                    closeModal('createChallengeModal');
+                    document.getElementById('createChallengeForm').reset();
+                    loadChallenges(currentTab);
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Create challenge error:', error);
+                showNotification('Failed to create challenge', 'error');
+            }
         });
-        // Logout confirmation
+        
         function confirmLogout() {
             return confirm('Are you sure you want to logout?');
+        }
+        
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
         }
     </script>
 </body>

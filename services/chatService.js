@@ -2,7 +2,14 @@ const Message = require('../models/Message');
 const User = require('../models/User');
 const mongoose = require('mongoose');
 
+let io = null;
+
 class ChatService {
+
+  static init(socketIoInstance) {
+    io = socketIoInstance;
+    console.log('ChatService initialized with Socket.IO');
+  }
   
   // Send a message between friends
   static async sendMessage(senderId, receiverId, content, messageType = 'text', attachmentData = null) {
@@ -14,7 +21,7 @@ class ChatService {
         throw new Error('Sender ID, receiver ID, and content are required');
       }
       
-      if (senderId === receiverId) {
+      if (senderId.toString() === receiverId.toString()) {
         throw new Error('Cannot send message to yourself');
       }
       
@@ -32,12 +39,21 @@ class ChatService {
         throw new Error('Receiver not found');
       }
       
-      // Check if they are friends
-      const areFriends = sender.friends.includes(receiverId) && receiver.friends.includes(senderId);
+      // Check if they are friends - convert ObjectIds to strings for comparison
+      const senderFriendsIds = sender.friends.map(friendId => friendId.toString());
+      const receiverFriendsIds = receiver.friends.map(friendId => friendId.toString());
+      
+      const areFriends = senderFriendsIds.includes(receiverId.toString()) && 
+                        receiverFriendsIds.includes(senderId.toString());
+      
       console.log('Friendship check:', { 
         areFriends, 
         senderFriends: sender.friends.length, 
-        receiverFriends: receiver.friends.length 
+        receiverFriends: receiver.friends.length,
+        senderFriendsIds,
+        receiverFriendsIds,
+        senderId: senderId.toString(),
+        receiverId: receiverId.toString()
       });
       
       if (!areFriends) {
@@ -66,6 +82,10 @@ class ChatService {
       // Populate sender and receiver info
       await message.populate('sender', 'fullName personalInfo.firstName personalInfo.lastName');
       await message.populate('receiver', 'fullName personalInfo.firstName personalInfo.lastName');
+
+      if (io) {
+        io.to(receiverId.toString()).emit('new message', message);
+      }
       
       console.log('Message populated and ready to return');
       return message;

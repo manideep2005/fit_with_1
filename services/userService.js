@@ -70,6 +70,7 @@ class UserService {
         _id: user._id,
         email: user.email,
         fullName: user.fullName,
+        fitnessId: user.fitnessId, // Add fitnessId
         isActive: user.isActive !== false, // Default to true if undefined
         isVerified: user.isVerified || false,
         onboardingCompleted: user.onboardingCompleted || false,
@@ -115,6 +116,7 @@ class UserService {
         _id: user._id,
         email: user.email,
         fullName: user.fullName,
+        profilePhoto: user.profilePhoto || null,
         isActive: user.isActive !== false,
         isVerified: user.isVerified || false,
         onboardingCompleted: user.onboardingCompleted || false,
@@ -654,6 +656,251 @@ class UserService {
       return user.subscription || { plan: 'free', status: 'active' };
     } catch (error) {
       console.error('Error getting subscription:', error);
+      throw error;
+    }
+  }
+
+  // Settings-specific methods
+  
+  // Update profile information
+  static async updateProfile(email, profileData) {
+    try {
+      const mongoose = require('mongoose');
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      const updateData = {};
+      if (profileData.fullName) updateData.fullName = profileData.fullName;
+      if (profileData.email) updateData.email = profileData.email.toLowerCase().trim();
+      
+      const result = await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { $set: updateData }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('User not found');
+      }
+      
+      const updatedUser = await collection.findOne({ email: profileData.email?.toLowerCase().trim() || email.toLowerCase().trim() });
+      delete updatedUser.password;
+      
+      return updatedUser;
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      throw error;
+    }
+  }
+  
+  // Update profile photo
+  static async updateProfilePhoto(email, photoUrl) {
+    try {
+      const mongoose = require('mongoose');
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      const result = await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { $set: { profilePhoto: photoUrl } }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('User not found');
+      }
+      
+      return { photoUrl };
+    } catch (error) {
+      console.error('Error updating profile photo:', error);
+      throw error;
+    }
+  }
+  
+  // Remove profile photo
+  static async removeProfilePhoto(email) {
+    try {
+      const mongoose = require('mongoose');
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      const result = await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { $unset: { profilePhoto: "" } }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('User not found');
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error removing profile photo:', error);
+      throw error;
+    }
+  }
+  
+  // Reset all user data
+  static async resetUserData(email) {
+    try {
+      const mongoose = require('mongoose');
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      const result = await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { 
+          $set: {
+            workouts: [],
+            biometrics: [],
+            nutritionLogs: [],
+            'gamification.totalXP': 0,
+            'gamification.currentLevel': 1,
+            'gamification.streaks.workout.current': 0,
+            'gamification.streaks.nutrition.current': 0,
+            'gamification.achievements': [],
+            'gamification.rewards': []
+          }
+        }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('User not found');
+      }
+      
+      return { success: true, message: 'All data has been reset successfully' };
+    } catch (error) {
+      console.error('Error resetting user data:', error);
+      throw error;
+    }
+  }
+  
+  // Delete account
+  static async deleteAccount(email) {
+    try {
+      const mongoose = require('mongoose');
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      // Also clean up related data
+      const userSessionsCollection = db.collection('usersessions');
+      const messagesCollection = db.collection('messages');
+      const friendRequestsCollection = db.collection('friendrequests');
+      
+      // Get user ID first
+      const user = await collection.findOne({ email: email.toLowerCase().trim() });
+      if (!user) {
+        throw new Error('User not found');
+      }
+      
+      const userId = user._id;
+      
+      // Delete user sessions
+      await userSessionsCollection.deleteMany({ userId: userId });
+      
+      // Delete messages
+      await messagesCollection.deleteMany({ 
+        $or: [{ sender: userId }, { receiver: userId }] 
+      });
+      
+      // Delete friend requests
+      await friendRequestsCollection.deleteMany({ 
+        $or: [{ sender: userId }, { receiver: userId }] 
+      });
+      
+      // Delete user
+      const result = await collection.deleteOne({ email: email.toLowerCase().trim() });
+      
+      if (result.deletedCount === 0) {
+        throw new Error('Failed to delete account');
+      }
+      
+      return { success: true, message: 'Account deleted successfully' };
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      throw error;
+    }
+  }
+
+  // Meal planner methods
+  
+  // Add meal plan
+  static async addMealPlan(email, mealData) {
+    try {
+      const mongoose = require('mongoose');
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      const result = await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { $push: { mealPlans: mealData } }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('User not found');
+      }
+      
+      return mealData;
+    } catch (error) {
+      console.error('Error adding meal plan:', error);
+      throw error;
+    }
+  }
+  
+  // Update meal plan
+  static async updateMealPlan(email, mealId, updateData) {
+    try {
+      const mongoose = require('mongoose');
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      const result = await collection.updateOne(
+        { 
+          email: email.toLowerCase().trim(),
+          'mealPlans.id': mealId
+        },
+        { 
+          $set: {
+            'mealPlans.$.mealType': updateData.mealType,
+            'mealPlans.$.name': updateData.name,
+            'mealPlans.$.calories': updateData.calories,
+            'mealPlans.$.protein': updateData.protein,
+            'mealPlans.$.carbs': updateData.carbs,
+            'mealPlans.$.fat': updateData.fat,
+            'mealPlans.$.notes': updateData.notes,
+            'mealPlans.$.updatedAt': updateData.updatedAt
+          }
+        }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('User or meal not found');
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating meal plan:', error);
+      throw error;
+    }
+  }
+  
+  // Delete meal plan
+  static async deleteMealPlan(email, mealId) {
+    try {
+      const mongoose = require('mongoose');
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      const result = await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { $pull: { mealPlans: { id: mealId } } }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('User not found');
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error deleting meal plan:', error);
       throw error;
     }
   }

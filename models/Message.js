@@ -31,7 +31,7 @@ const messageSchema = new mongoose.Schema({
   
   // Additional data for special message types
   attachmentData: {
-    workoutId: { type: mongoose.Schema.Types.ObjectId },
+    workoutId: { type: mongoose.Schema.Types.Mixed }, // Allow both ObjectId and String
     imageUrl: { type: String },
     progressData: { type: Object },
     mealData: { type: Object }

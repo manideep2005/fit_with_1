@@ -8,7 +8,7 @@ const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
-const jwt = require('jsonwebtoken'); // Add at the top if not already present
+const jwt = require('jsonwebtoken'); 
 
 console.log('Loading services...');
 const { sendWelcomeEmail, generateOTP, sendPasswordResetOTP, sendPasswordResetConfirmation, sendFriendRequestEmail, sendFriendRequestAcceptedEmail } = require('./services/emailService');
@@ -33,6 +33,62 @@ try {
 }
 
 const app = express();
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server);
+
+io.on('connection', (socket) => {
+  console.log('User connected to socket');
+
+  socket.on('join', (data) => {
+    if (data && data.userId) {
+      socket.userId = data.userId;
+      socket.join(data.userId);
+      console.log(`User ${data.userId} joined their room`);
+    }
+  });
+
+  socket.on('send message', async (data) => {
+    try {
+      console.log('Socket message data (raw): ', data);
+      console.log('Socket userId (before processing): ', socket.userId);
+      // Use socket.userId as sender if not provided
+      const senderId = data.sender || socket.userId;
+      
+      if (!senderId || !data.receiver || !data.content) {
+        console.error('Missing required message data:', {
+          sender: senderId,
+          receiver: data.receiver,
+          content: data.content,
+          socketUserId: socket.userId
+        });
+        socket.emit('message error', 'Missing required message data');
+        return;
+      }
+      
+      const savedMessage = await chatService.sendMessage(
+        senderId, 
+        data.receiver, 
+        data.content,
+        data.messageType || 'text'
+      );
+      
+      io.to(data.receiver).emit('new message', savedMessage);
+      socket.emit('message sent', savedMessage);
+      
+    } catch (error) {
+      console.error('Send message error:', {
+        message: error.message,
+        stack: error.stack,
+        senderId: data?.sender || socket.userId,
+        receiverId: data?.receiver,
+        content: data?.content
+      });
+      socket.emit('message error', error.message);
+    }
+  });
+});
 
 
 const ensureDbConnection = async (req, res, next) => {
@@ -81,7 +137,7 @@ if (!process.env.SESSION_SECRET) {
     console.error('WARNING: SESSION_SECRET environment variable is not set. Using a default secret is not secure for production.');
 }
 
-// EMERGENCY SESSION FIX - Use database-only approach
+
 console.log('🚨 Using database-only session approach...');
 
 // Simple middleware to create our own session system
@@ -92,21 +148,30 @@ app.use(async (req, res, next) => {
   
   if (sessionCookie) {
     try {
-      // Decode the session ID from the cookie
-      sessionId = sessionCookie[1].split('.')[0].replace('s%3A', '');
+      // Clean decode the session ID from the cookie
+      let rawSessionId = sessionCookie[1];
+      // Remove URL encoding and session signature
+      rawSessionId = decodeURIComponent(rawSessionId);
+      if (rawSessionId.startsWith('s:')) {
+        rawSessionId = rawSessionId.substring(2);
+      }
+      if (rawSessionId.includes('.')) {
+        rawSessionId = rawSessionId.split('.')[0];
+      }
+      sessionId = rawSessionId;
       console.log('🍪 Found session ID in cookie:', sessionId);
     } catch (e) {
-      console.log('❌ Failed to decode session cookie');
+      console.log('❌ Failed to decode session cookie:', e.message);
     }
   }
   
-  // If no session ID, create a new one
-  if (!sessionId) {
-    sessionId = require('crypto').randomBytes(16).toString('hex');
+  // If no session ID or invalid, create a new one
+  if (!sessionId || sessionId.length < 10) {
+    sessionId = require('crypto').randomBytes(24).toString('hex');
     console.log('🆕 Created new session ID:', sessionId);
     
-    // Set the cookie
-    res.cookie('fit-with-ai-session', `s%3A${sessionId}.dummy`, {
+    // Set the cookie with clean session ID
+    res.cookie('fit-with-ai-session', sessionId, {
       maxAge: 1000 * 60 * 60 * 24, // 24 hours
       httpOnly: false,
       secure: false,
@@ -132,13 +197,16 @@ app.use(async (req, res, next) => {
     const UserSession = require('./models/UserSession');
     const dbSession = await UserSession.getSession(sessionId);
     
-    if (dbSession) {
+    if (dbSession && dbSession.userId) {
+      // ALWAYS use the populated user object as the source of truth
+      const user = dbSession.userId;
       req.session.user = {
-        _id: dbSession.userId,
-        email: dbSession.email,
-        fullName: dbSession.fullName,
-        onboardingCompleted: dbSession.onboardingCompleted,
-        personalInfo: dbSession.personalInfo
+        _id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        fitnessId: user.fitnessId, // Get ID from the main user profile
+        onboardingCompleted: user.onboardingCompleted,
+        personalInfo: user.personalInfo
       };
       console.log('✅ Loaded user from database session:', req.session.user.email);
     }
@@ -193,11 +261,12 @@ const isAuthenticated = async (req, res, next) => {
           
           // Restore Express session from database
           req.session.user = {
-            _id: dbSession.userId,
-            email: dbSession.email,
-            fullName: dbSession.fullName,
-            onboardingCompleted: dbSession.onboardingCompleted,
-            personalInfo: dbSession.personalInfo,
+            _id: dbSession.userId._id,
+            email: dbSession.userId.email,
+            fullName: dbSession.userId.fullName,
+            fitnessId: dbSession.userId.fitnessId, // Ensure fitnessId is loaded
+            onboardingCompleted: dbSession.userId.onboardingCompleted,
+            personalInfo: dbSession.userId.personalInfo,
             fromDatabase: true
           };
           
@@ -466,6 +535,7 @@ app.post('/signup', ensureDbConnection, async (req, res) => {
       _id: user._id,
       email: user.email,
       fullName: user.fullName,
+      fitnessId: user.fitnessId, // Add fitnessId to session
       onboardingCompleted: user.onboardingCompleted
     };
 
@@ -484,8 +554,20 @@ app.post('/signup', ensureDbConnection, async (req, res) => {
       try {
         // Create database session for serverless persistence
         const UserSession = require('./models/UserSession');
-        await UserSession.createSession(req.sessionID, user);
-        console.log('Database session created for signup');
+        try {
+          await UserSession.createSession(req.sessionID, user);
+          console.log('Database session created for signup');
+        } catch (sessionError) {
+          console.log('Database session creation failed, attempting cleanup and retry:', sessionError.message);
+          // Try to delete existing session and create new one
+          try {
+            await UserSession.deleteSession(req.sessionID);
+            await UserSession.createSession(req.sessionID, user);
+            console.log('Database session created after cleanup');
+          } catch (retryError) {
+            console.error('Failed to create session even after cleanup:', retryError.message);
+          }
+        }
       } catch (dbError) {
         console.error('Database session creation error:', dbError);
         // Don't fail signup if database session fails
@@ -572,6 +654,8 @@ app.post('/login', ensureDbConnection, async (req, res) => {
     
     try {
       const UserSession = require('./models/UserSession');
+      // Clean up any existing session first
+      await UserSession.deleteSession(req.sessionID).catch(() => {});
       await UserSession.createSession(req.sessionID, user);
       
       // Set user data in session
@@ -579,6 +663,7 @@ app.post('/login', ensureDbConnection, async (req, res) => {
         _id: user._id.toString(),
         email: user.email,
         fullName: user.fullName,
+        fitnessId: user.fitnessId, // Add fitnessId to session
         onboardingCompleted: user.onboardingCompleted,
         personalInfo: user.personalInfo
       };
@@ -600,10 +685,25 @@ app.post('/login', ensureDbConnection, async (req, res) => {
       
     } catch (dbError) {
       console.error('❌ Database session creation failed:', dbError.message);
-      return res.status(500).json({ 
-        success: false,
-        error: 'Login failed - session creation error' 
-      });
+      // Try one more time with a new session ID
+      try {
+        const newSessionId = require('crypto').randomBytes(24).toString('hex');
+        req.sessionID = newSessionId;
+        res.cookie('fit-with-ai-session', newSessionId, {
+          maxAge: 1000 * 60 * 60 * 24,
+          httpOnly: false,
+          secure: false,
+          sameSite: 'lax'
+        });
+        await UserSession.createSession(newSessionId, user);
+        console.log('✅ Database session created with new session ID');
+      } catch (finalError) {
+        console.error('❌ Final session creation attempt failed:', finalError.message);
+        return res.status(500).json({ 
+          success: false,
+          error: 'Login failed - session creation error' 
+        });
+      }
     }
     
   } catch (error) {
@@ -868,43 +968,17 @@ const protectedRoutes = [
   '/chat',
   '/settings'
 ];
+// Test chat route
+app.get('/chat-test', (req, res) => {
+  res.render('chat-fixed');
+});
+
 // Special handling for chat route
 app.get('/chat', isAuthenticated, validateSession, checkOnboarding, ensureDbConnection, async (req, res) => {
   try {
     const userId = req.session.user._id;
-    const conversationId = req.query.conversation;
-    const friendId = req.query.friend;
     
     console.log(`💬 Accessing chat for user:`, req.session.user?.email);
-    
-    // Get user's conversations
-    const conversations = await chatService.getUserConversations(userId);
-    
-    let currentConversation = null;
-    let currentFriend = null;
-    let messages = [];
-    
-    // If a specific conversation or friend is requested
-    if (conversationId || friendId) {
-      if (friendId) {
-        // Get friend info and messages
-        const friends = await chatService.getUserFriends(userId);
-        currentFriend = friends.find(f => f._id.toString() === friendId);
-        
-        if (currentFriend) {
-          messages = await chatService.getConversationMessages(userId, friendId, 50, 0);
-          currentConversation = conversationId || `${userId}_${friendId}`;
-        }
-      } else if (conversationId) {
-        // Find conversation in the list
-        const conv = conversations.find(c => c.conversationId === conversationId);
-        if (conv) {
-          currentConversation = conversationId;
-          currentFriend = conv.friend;
-          messages = await chatService.getConversationMessages(userId, currentFriend._id, 50, 0);
-        }
-      }
-    }
     
     // Generate navigation token
     const navToken = Buffer.from(JSON.stringify({
@@ -918,19 +992,15 @@ app.get('/chat', isAuthenticated, validateSession, checkOnboarding, ensureDbConn
     })).toString('base64');
     
     console.log('✅ Chat data loaded successfully');
-    console.log(`📊 Conversations: ${conversations.length}`);
-    console.log(`👥 Current friend: ${currentFriend?.fullName || 'None'}`);
-    console.log(`💬 Messages: ${messages.length}`);
     
-    res.render('chat-simple', {
+    res.render('chat', {
       user: req.session.user,
       currentPath: '/chat',
       navToken: navToken,
-      conversations: conversations,
-      currentConversation: currentConversation,
-      currentFriend: currentFriend,
-      messages: messages,
-      currentConversationId: currentConversation
+      conversations: [], // Client-side will load this
+      currentConversation: null,
+      currentFriend: null,
+      messages: []
     });
     
   } catch (error) {
@@ -1645,6 +1715,31 @@ const healthService = require('./services/healthService');
 
 // Chat Service
 const chatService = require('./services/chatService');
+chatService.init(io);
+
+// Schedule Service
+const scheduleService = require('./services/scheduleService');
+
+// Community Service
+const communityService = require('./services/communityService');
+
+// Dynamic Nutrition Service
+const dynamicNutritionService = require('./services/dynamicNutritionService');
+
+// Challenge Service
+// Challenge Service - conditional loading
+let challengeService;
+try {
+  challengeService = require('./services/challengeService');
+} catch (error) {
+  console.warn('Challenge service not loaded:', error.message);
+}
+
+// Import API routes
+const settingsRoutes = require('./routes/settings');
+
+// Use API routes
+app.use('/api/settings', settingsRoutes);
 
 // AI Chat endpoint
 app.post('/api/ai-chat', isAuthenticated, async (req, res) => {
@@ -2409,6 +2504,264 @@ app.get('/api/health/bookings', isAuthenticated, async (req, res) => {
   }
 });
 
+// Schedule API Routes
+
+// Create schedule event
+app.post('/api/schedule/events', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const result = await scheduleService.createEvent(userId, req.body);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Event created successfully',
+        event: result.event
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error('Create schedule event error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create event'
+    });
+  }
+});
+
+// Get user schedule
+app.get('/api/schedule/events', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { startDate, endDate } = req.query;
+    
+    const start = startDate ? new Date(startDate) : new Date();
+    const end = endDate ? new Date(endDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    
+    const result = await scheduleService.getUserSchedule(userId, start, end);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        events: result.events
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error('Get schedule error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get schedule'
+    });
+  }
+});
+
+// Get today's events
+app.get('/api/schedule/today', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const result = await scheduleService.getTodaysEvents(userId);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        events: result.events
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error('Get today events error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get today\'s events'
+    });
+  }
+});
+
+// Get upcoming events
+app.get('/api/schedule/upcoming', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { limit = 10 } = req.query;
+    
+    const result = await scheduleService.getUpcomingEvents(userId, parseInt(limit));
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        events: result.events
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error('Get upcoming events error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get upcoming events'
+    });
+  }
+});
+
+// Update schedule event
+app.put('/api/schedule/events/:eventId', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { eventId } = req.params;
+    
+    const result = await scheduleService.updateEvent(eventId, userId, req.body);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Event updated successfully',
+        event: result.event
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error('Update schedule event error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update event'
+    });
+  }
+});
+
+// Delete schedule event
+app.delete('/api/schedule/events/:eventId', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { eventId } = req.params;
+    
+    const result = await scheduleService.deleteEvent(eventId, userId);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Event deleted successfully'
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error('Delete schedule event error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete event'
+    });
+  }
+});
+
+// Complete schedule event
+app.post('/api/schedule/events/:eventId/complete', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { eventId } = req.params;
+    const { notes } = req.body;
+    
+    const result = await scheduleService.completeEvent(eventId, userId, notes);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        message: 'Event completed successfully',
+        event: result.event
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error('Complete schedule event error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to complete event'
+    });
+  }
+});
+
+// Get schedule statistics
+app.get('/api/schedule/stats', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { startDate, endDate } = req.query;
+    
+    const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const end = endDate ? new Date(endDate) : new Date();
+    
+    const result = await scheduleService.getScheduleStats(userId, start, end);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        stats: result.stats
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error('Get schedule stats error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get schedule statistics'
+    });
+  }
+});
+
+// Get AI schedule suggestions
+app.get('/api/schedule/suggestions', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const result = await scheduleService.generateScheduleSuggestions(userId);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        suggestions: result.suggestions
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: result.error
+      });
+    }
+  } catch (error) {
+    console.error('Get schedule suggestions error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get schedule suggestions'
+    });
+  }
+});
+
 // Generate external booking link
 app.post('/api/health/generate-booking-link', isAuthenticated, async (req, res) => {
   try {
@@ -2448,7 +2801,6 @@ app.get('/api/chat/conversations', isAuthenticated, ensureDbConnection, async (r
     const userId = req.session.user._id;
     const friends = await chatService.getUserFriends(userId);
     
-    // Convert friends to conversation format
     const conversations = friends.map(friend => ({
       conversationId: `${userId}_${friend._id}`,
       friend: {
@@ -2458,7 +2810,7 @@ app.get('/api/chat/conversations', isAuthenticated, ensureDbConnection, async (r
         avatar: friend.avatar
       },
       lastMessage: {
-        content: 'Start chatting',
+        content: 'Ready to chat',
         timestamp: new Date(),
         isFromCurrentUser: false
       },
@@ -2947,56 +3299,7 @@ app.post('/api/users/search', isAuthenticated, ensureDbConnection, async (req, r
   }
 });
 
-// Send friend request by user ID
-app.post('/api/chat/send-friend-request-by-id', isAuthenticated, ensureDbConnection, async (req, res) => {
-  try {
-    const senderId = req.session.user._id;
-    const senderName = req.session.user.fullName;
-    const { userId, message } = req.body;
-    
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        error: 'User ID is required'
-      });
-    }
-    
-    // Get target user
-    const targetUser = await UserService.getUserById(userId);
-    if (!targetUser) {
-      return res.status(404).json({
-        success: false,
-        error: 'User not found'
-      });
-    }
-    
-    const friendRequest = await chatService.sendFriendRequest(
-      senderId, 
-      targetUser.email, 
-      message || 'Hi! I would like to connect with you on our fitness journey.'
-    );
-    
-    // Send email notification
-    try {
-      await sendFriendRequestEmail(targetUser.email, targetUser.fullName, senderName, message);
-    } catch (emailError) {
-      console.error('Failed to send friend request email:', emailError);
-    }
-    
-    res.json({
-      success: true,
-      message: 'Friend request sent successfully',
-      request: friendRequest
-    });
-    
-  } catch (error) {
-    console.error('Send friend request error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message || 'Failed to send friend request'
-    });
-  }
-});
+
 
 // Get friend requests
 app.get('/api/friends/requests', isAuthenticated, ensureDbConnection, async (req, res) => {
@@ -3100,6 +3403,591 @@ app.get('/logout', async (req, res) => {
   res.redirect('/');
 });
 
+// Settings API Routes
+app.use('/api/settings', isAuthenticated, ensureDbConnection, require('./routes/settings'));
+
+// Meal Planner API Routes
+app.use('/api/meal-planner', isAuthenticated, ensureDbConnection, require('./routes/mealPlanner'));
+
+// Community API Routes
+
+// Get user's groups
+app.get('/api/community/groups', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const groups = await communityService.getUserGroups(userId);
+    
+    res.json({
+      success: true,
+      groups: groups
+    });
+  } catch (error) {
+    console.error('Get user groups error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get groups'
+    });
+  }
+});
+
+// Get public groups
+app.get('/api/community/groups/public', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { limit = 20, category } = req.query;
+    const groups = await communityService.getPublicGroups(parseInt(limit), category);
+    
+    res.json({
+      success: true,
+      groups: groups
+    });
+  } catch (error) {
+    console.error('Get public groups error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get public groups'
+    });
+  }
+});
+
+// Create group
+app.post('/api/community/groups', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const group = await communityService.createGroup(userId, req.body);
+    
+    res.json({
+      success: true,
+      message: 'Group created successfully',
+      group: group
+    });
+  } catch (error) {
+    console.error('Create group error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to create group'
+    });
+  }
+});
+
+// Join group
+app.post('/api/community/groups/:groupId/join', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { groupId } = req.params;
+    
+    await communityService.joinGroup(userId, groupId);
+    
+    res.json({
+      success: true,
+      message: 'Joined group successfully'
+    });
+  } catch (error) {
+    console.error('Join group error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to join group'
+    });
+  }
+});
+
+// Leave group
+app.post('/api/community/groups/:groupId/leave', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { groupId } = req.params;
+    
+    await communityService.leaveGroup(userId, groupId);
+    
+    res.json({
+      success: true,
+      message: 'Left group successfully'
+    });
+  } catch (error) {
+    console.error('Leave group error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to leave group'
+    });
+  }
+});
+
+// Get group posts
+app.get('/api/community/groups/:groupId/posts', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { limit = 20, skip = 0 } = req.query;
+    
+    const posts = await communityService.getGroupPosts(groupId, parseInt(limit), parseInt(skip));
+    
+    res.json({
+      success: true,
+      posts: posts
+    });
+  } catch (error) {
+    console.error('Get group posts error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get group posts'
+    });
+  }
+});
+
+// Get user feed
+app.get('/api/community/feed', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { limit = 20, skip = 0 } = req.query;
+    
+    const posts = await communityService.getUserFeed(userId, parseInt(limit), parseInt(skip));
+    
+    res.json({
+      success: true,
+      posts: posts
+    });
+  } catch (error) {
+    console.error('Get user feed error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get user feed'
+    });
+  }
+});
+
+// Create post
+app.post('/api/community/posts', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const post = await communityService.createPost(userId, req.body);
+    
+    res.json({
+      success: true,
+      message: 'Post created successfully',
+      post: post
+    });
+  } catch (error) {
+    console.error('Create post error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to create post'
+    });
+  }
+});
+
+// Like/unlike post
+app.post('/api/community/posts/:postId/like', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { postId } = req.params;
+    
+    const post = await communityService.likePost(userId, postId);
+    
+    res.json({
+      success: true,
+      likes: post.stats.totalLikes,
+      isLiked: post.likes.some(like => like.user.toString() === userId.toString())
+    });
+  } catch (error) {
+    console.error('Like post error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to like post'
+    });
+  }
+});
+
+// Add comment
+app.post('/api/community/posts/:postId/comments', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { postId } = req.params;
+    const { content } = req.body;
+    
+    if (!content || content.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Comment content is required'
+      });
+    }
+    
+    const comment = await communityService.addComment(userId, postId, content);
+    
+    res.json({
+      success: true,
+      message: 'Comment added successfully',
+      comment: comment
+    });
+  } catch (error) {
+    console.error('Add comment error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to add comment'
+    });
+  }
+});
+
+// Search groups
+app.get('/api/community/search/groups', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { q: query, limit = 10 } = req.query;
+    
+    if (!query || query.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: 'Search query must be at least 2 characters long'
+      });
+    }
+    
+    const groups = await communityService.searchGroups(query.trim(), parseInt(limit));
+    
+    res.json({
+      success: true,
+      groups: groups
+    });
+  } catch (error) {
+    console.error('Search groups error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search groups'
+    });
+  }
+});
+
+// Search posts
+app.get('/api/community/search/posts', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { q: query, groupId, limit = 20 } = req.query;
+    
+    if (!query || query.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: 'Search query must be at least 2 characters long'
+      });
+    }
+    
+    const posts = await communityService.searchPosts(query.trim(), groupId, parseInt(limit));
+    
+    res.json({
+      success: true,
+      posts: posts
+    });
+  } catch (error) {
+    console.error('Search posts error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search posts'
+    });
+  }
+});
+
+// Delete post
+app.delete('/api/community/posts/:postId', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { postId } = req.params;
+    
+    const result = await communityService.deletePost(userId, postId);
+    
+    res.json({
+      success: true,
+      message: result.message
+    });
+  } catch (error) {
+    console.error('Delete post error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to delete post'
+    });
+  }
+});
+
+// Get group stats
+app.get('/api/community/groups/:groupId/stats', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const stats = await communityService.getGroupStats(groupId);
+    
+    res.json({
+      success: true,
+      stats: stats
+    });
+  } catch (error) {
+    console.error('Get group stats error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get group stats'
+    });
+  }
+});
+
+// Dynamic Nutrition API Routes
+
+// Get real-time nutrition progress
+app.get('/api/nutrition/progress', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const progress = await dynamicNutritionService.getRealTimeProgress(userId);
+    
+    res.json({
+      success: true,
+      data: progress
+    });
+  } catch (error) {
+    console.error('Get nutrition progress error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get nutrition progress'
+    });
+  }
+});
+
+// Get smart nutrition suggestions
+app.get('/api/nutrition/suggestions', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const suggestions = await dynamicNutritionService.getSmartSuggestions(userId);
+    
+    res.json({
+      success: true,
+      suggestions: suggestions
+    });
+  } catch (error) {
+    console.error('Get nutrition suggestions error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get suggestions'
+    });
+  }
+});
+
+// Quick log food
+app.post('/api/nutrition/quick-log', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { foodName, quantity = 1 } = req.body;
+    
+    if (!foodName) {
+      return res.status(400).json({
+        success: false,
+        error: 'Food name is required'
+      });
+    }
+    
+    const result = await dynamicNutritionService.quickLogFood(userId, foodName, quantity);
+    
+    res.json({
+      success: true,
+      message: 'Food logged successfully',
+      data: result
+    });
+  } catch (error) {
+    console.error('Quick log food error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to log food'
+    });
+  }
+});
+
+// Get nutrition insights
+app.get('/api/nutrition/insights', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const insights = await dynamicNutritionService.getNutritionInsights(userId);
+    
+    res.json({
+      success: true,
+      insights: insights
+    });
+  } catch (error) {
+    console.error('Get nutrition insights error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get insights'
+    });
+  }
+});
+
+// Challenge API Routes
+
+// Get user challenge stats
+app.get('/api/challenges/stats', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    if (!challengeService) {
+      return res.json({ success: true, stats: { challengesCompleted: 0, currentStreak: 0, achievementsUnlocked: 0, totalPoints: 0 } });
+    }
+    const userId = req.session.user._id;
+    const stats = await challengeService.getUserStats(userId);
+    
+    res.json({
+      success: true,
+      stats: stats
+    });
+  } catch (error) {
+    console.error('Get challenge stats error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get challenge stats'
+    });
+  }
+});
+
+// Get active challenges
+app.get('/api/challenges/active', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    if (!challengeService) {
+      return res.json({ success: true, challenges: [] });
+    }
+    const userId = req.session.user._id;
+    const challenges = await challengeService.getActiveChallenges(userId);
+    
+    res.json({
+      success: true,
+      challenges: challenges
+    });
+  } catch (error) {
+    console.error('Get active challenges error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get active challenges'
+    });
+  }
+});
+
+// Get suggested challenges
+app.get('/api/challenges/suggested', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    if (!challengeService) {
+      return res.json({ success: true, challenges: [] });
+    }
+    const userId = req.session.user._id;
+    const challenges = await challengeService.getSuggestedChallenges(userId);
+    
+    res.json({
+      success: true,
+      challenges: challenges
+    });
+  } catch (error) {
+    console.error('Get suggested challenges error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get suggested challenges'
+    });
+  }
+});
+
+// Join challenge
+app.post('/api/challenges/:challengeId/join', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { challengeId } = req.params;
+    
+    const challenge = await challengeService.joinChallenge(userId, challengeId);
+    
+    res.json({
+      success: true,
+      message: 'Successfully joined challenge',
+      challenge: challenge
+    });
+  } catch (error) {
+    console.error('Join challenge error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to join challenge'
+    });
+  }
+});
+
+// Update challenge progress
+app.post('/api/challenges/:challengeId/progress', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { challengeId } = req.params;
+    const { progress } = req.body;
+    
+    if (typeof progress !== 'number') {
+      return res.status(400).json({
+        success: false,
+        error: 'Progress value is required'
+      });
+    }
+    
+    const challenge = await challengeService.updateProgress(userId, challengeId, progress);
+    
+    res.json({
+      success: true,
+      message: 'Progress updated successfully',
+      challenge: challenge
+    });
+  } catch (error) {
+    console.error('Update challenge progress error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to update progress'
+    });
+  }
+});
+
+// Get leaderboard
+app.get('/api/challenges/leaderboard', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    if (!challengeService) {
+      return res.json({ success: true, leaderboard: [] });
+    }
+    const { limit = 10 } = req.query;
+    const leaderboard = await challengeService.getLeaderboard(parseInt(limit));
+    
+    res.json({
+      success: true,
+      leaderboard: leaderboard
+    });
+  } catch (error) {
+    console.error('Get leaderboard error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get leaderboard'
+    });
+  }
+});
+
+// Create challenge and send to friend
+app.post('/api/challenges/create', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    if (!challengeService) {
+      return res.status(503).json({
+        success: false,
+        error: 'Challenge service temporarily unavailable'
+      });
+    }
+    const creatorId = req.session.user._id;
+    const { title, description, type, target, duration, friendIdentifier, points } = req.body;
+    
+    if (!title || !description || !type || !target || !friendIdentifier) {
+      return res.status(400).json({
+        success: false,
+        error: 'All fields are required'
+      });
+    }
+    
+    const result = await challengeService.createChallengeForFriend(
+      creatorId, 
+      { title, description, type, target, duration, points: points || 100 },
+      friendIdentifier
+    );
+    
+    res.json({
+      success: true,
+      message: 'Challenge created and invitation sent!',
+      challenge: result.challenge
+    });
+  } catch (error) {
+    console.error('Create challenge error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to create challenge'
+    });
+  }
+});
+
 // Add error handling middleware
 app.use((err, req, res, next) => {
 console.error('Server error:', err);
@@ -3120,13 +4008,16 @@ path: req.path
 
 // Start Server (only in non-serverless environment)
 if (!process.env.VERCEL) {
-const PORT = process.env.PORT || 3007;
-app.listen(PORT, () => {
-console.log(`Server running on port ${PORT}`);
-console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-console.log(`🤖 AI Coach Status: ${process.env.GOOGLE_AI_API_KEY ? 'Google AI Enabled' : 'Enhanced Fallback Mode'}`);
-console.log(`🌐 Access your app at: http://localhost:${PORT}`);
+
+// Share io instance with chat service
+chatService.init(io);
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Open http://localhost:${PORT} in your browser`);
 });
+
 }
 
 console.log('App initialization completed successfully');

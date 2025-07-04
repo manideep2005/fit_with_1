@@ -631,6 +631,105 @@ const sendFriendRequestAcceptedEmail = async (recipientEmail, recipientName, acc
   }
 };
 
+// Send challenge invitation email
+const sendChallengeInvitation = async (recipientEmail, recipientName, challengerName, challengeTitle, challengeDescription, target, duration) => {
+  try {
+    const transporter = createTransporter();
+    const mailOptions = {
+      from: { name: 'Fit-With-AI', address: process.env.EMAIL_USER },
+      to: recipientEmail,
+      subject: `🏆 ${challengerName} challenged you to: ${challengeTitle}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #6C63FF; margin-bottom: 10px;">🏆 You've Been Challenged!</h1>
+            <div style="width: 50px; height: 3px; background: #6C63FF; margin: 0 auto;"></div>
+          </div>
+          
+          <p style="font-size: 16px; line-height: 1.6; color: #333;">Hi ${recipientName},</p>
+          
+          <p style="font-size: 16px; line-height: 1.6; color: #333;">
+            <strong>${challengerName}</strong> has challenged you to a fitness challenge on Fit-With-AI!
+          </p>
+          
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #6C63FF;">
+            <h3 style="color: #6C63FF; margin-top: 0;">${challengeTitle}</h3>
+            <p style="margin: 10px 0; color: #333;">${challengeDescription}</p>
+            <div style="display: flex; gap: 20px; margin-top: 15px;">
+              <div style="background: white; padding: 10px; border-radius: 8px; flex: 1; text-align: center;">
+                <strong style="color: #6C63FF;">${target.value} ${target.unit}</strong>
+                <div style="font-size: 12px; color: #666;">Target</div>
+              </div>
+              <div style="background: white; padding: 10px; border-radius: 8px; flex: 1; text-align: center;">
+                <strong style="color: #6C63FF;">${duration.value} ${duration.unit}</strong>
+                <div style="font-size: 12px; color: #666;">Duration</div>
+              </div>
+            </div>
+          </div>
+          
+          <p style="font-size: 16px; line-height: 1.6; color: #333;">
+            Are you ready to take on this challenge? Log in to your Fit-With-AI account to accept and start competing!
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.APP_URL || 'https://fit-with-ai-1.vercel.app'}/challenges" 
+               style="background-color: #6C63FF; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+              Accept Challenge
+            </a>
+          </div>
+          
+          <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; font-size: 14px; color: #856404;">
+              💡 <strong>Tip:</strong> Challenges are a great way to stay motivated and push your limits. Good luck!
+            </p>
+          </div>
+          
+          <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px;">
+            <p style="font-size: 16px; line-height: 1.6; color: #333;">
+              Best of luck with your challenge!<br>
+              <strong>The Fit-With-AI Team</strong>
+            </p>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+            <p style="font-size: 12px; color: #999;">
+              This challenge invitation was sent to ${recipientEmail}
+            </p>
+          </div>
+        </div>
+      `,
+      text: `
+🏆 You've Been Challenged!
+
+Hi ${recipientName},
+
+${challengerName} has challenged you to a fitness challenge on Fit-With-AI!
+
+Challenge: ${challengeTitle}
+Description: ${challengeDescription}
+Target: ${target.value} ${target.unit}
+Duration: ${duration.value} ${duration.unit}
+
+Are you ready to take on this challenge? Log in to your Fit-With-AI account to accept and start competing!
+
+Accept Challenge: ${process.env.APP_URL || 'https://fit-with-ai-1.vercel.app'}/challenges
+
+Tip: Challenges are a great way to stay motivated and push your limits. Good luck!
+
+Best of luck with your challenge!
+The Fit-With-AI Team
+      `
+    };
+    
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Challenge invitation email sent successfully:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending challenge invitation email:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
     sendWelcomeEmail,
     sendTestEmail,
@@ -640,5 +739,6 @@ module.exports = {
     sendPasswordResetOTP,
     sendPasswordResetConfirmation,
     sendFriendRequestEmail,
-    sendFriendRequestAcceptedEmail
+    sendFriendRequestAcceptedEmail,
+    sendChallengeInvitation
 };

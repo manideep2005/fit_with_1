@@ -2,12 +2,11 @@ const fetch = require('node-fetch');
 
 class NutriScanService {
   constructor() {
-    // OpenFoodFacts API - Free nutrition database
+   
     this.openFoodFactsBaseUrl = 'https://world.openfoodfacts.org/api/v0/product';
-    
-    // Fallback nutrition data for common products
+   
     this.fallbackNutritionData = {
-      // Common barcodes and their nutrition data
+   
       '8901030895559': { // Example: Maggi Noodles
         product_name: 'Maggi 2-Minute Noodles',
         brands: 'Maggi',
@@ -347,7 +346,7 @@ class NutriScanService {
       }
     }
 
-    // General health recommendations
+  
     if (nutrition.saturatedFat > 5) {
       recommendations.warnings.push('High saturated fat content');
       recommendations.score -= 10;

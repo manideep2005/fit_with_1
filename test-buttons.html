@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Button Test</title>
+</head>
+<body>
+    <h1>Button Test</h1>
+    
+    <button onclick="alert('Button 1 clicked!')">Test Button 1</button>
+    <button id="test-btn-2">Test Button 2</button>
+    
+    <script>
+        document.getElementById('test-btn-2').addEventListener('click', function() {
+            alert('Button 2 clicked!');
+        });
+        
+        console.log('Test page loaded');
+    </script>
+</body>
+</html>

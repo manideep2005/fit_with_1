@@ -1,139 +1,116 @@
 const FriendRequest = require('../models/FriendRequest');
 const User = require('../models/User');
-const mongoose = require('mongoose');
 
 class FriendRequestService {
   
-  // Send a friend request
+  // Send friend request
   static async sendFriendRequest(senderId, receiverEmail, message = '') {
     try {
-      console.log('FriendRequestService.sendFriendRequest called:', { senderId, receiverEmail, message });
+      console.log('FriendRequestService.sendFriendRequest:', { senderId, receiverEmail });
       
-      // Find the receiver by email
+      // Find receiver by email
       const receiver = await User.findOne({ email: receiverEmail.toLowerCase().trim() });
-      const sender = await User.findById(senderId);
-      
-      console.log('Users found:', { sender: !!sender, receiver: !!receiver });
-      
-      if (!sender || !receiver) {
-        throw new Error('Sender or receiver not found');
+      if (!receiver) {
+        throw new Error('User not found with this email address');
       }
       
-      if (senderId === receiver._id.toString()) {
+      const receiverId = receiver._id;
+      
+      // Check if sender and receiver are the same
+      if (senderId.toString() === receiverId.toString()) {
         throw new Error('Cannot send friend request to yourself');
       }
       
-      // Check if they are already friends
-      if (sender.friends.includes(receiver._id)) {
+      // Check if they're already friends
+      const sender = await User.findById(senderId);
+      if (!sender) {
+        throw new Error('Sender not found');
+      }
+      
+      // Convert friends array to string IDs for comparison
+      const senderFriendsIds = sender.friends.map(friendId => friendId.toString());
+      if (senderFriendsIds.includes(receiverId.toString())) {
         throw new Error('You are already friends with this user');
       }
       
-      // Check if a pending request already exists
-      const existingRequest = await FriendRequest.requestExists(senderId, receiver._id);
+      // Check for existing pending request (either direction)
+      const existingRequest = await FriendRequest.findOne({
+        $or: [
+          { sender: senderId, receiver: receiverId, status: 'pending' },
+          { sender: receiverId, receiver: senderId, status: 'pending' }
+        ]
+      });
+      
       if (existingRequest) {
-        throw new Error('Friend request already sent or received');
+        if (existingRequest.sender.toString() === senderId.toString()) {
+          throw new Error('You have already sent a friend request to this user');
+        } else {
+          throw new Error('This user has already sent you a friend request');
+        }
       }
       
-      // Create new friend request
+      // Create friend request
       const friendRequest = new FriendRequest({
         sender: senderId,
-        receiver: receiver._id,
+        receiver: receiverId,
         message: message.trim(),
         status: 'pending'
       });
       
       await friendRequest.save();
+      await friendRequest.populate('sender', 'fullName email');
+      await friendRequest.populate('receiver', 'fullName email');
       
-      // Populate sender info for response
-      await friendRequest.populate('sender', 'fullName email personalInfo');
-      await friendRequest.populate('receiver', 'fullName email personalInfo');
-      
-      console.log('Friend request sent successfully');
       return friendRequest;
-      
     } catch (error) {
-      console.error('Send friend request error:', {
-        message: error.message,
-        senderId,
-        receiverEmail
-      });
+      console.error('Send friend request error:', error);
       throw error;
     }
   }
   
-  // Get pending friend requests for a user (received)
+  // Get pending friend requests for a user
   static async getPendingRequests(userId) {
     try {
-      console.log('FriendRequestService.getPendingRequests called for user:', userId);
+      const requests = await FriendRequest.find({
+        receiver: userId,
+        status: 'pending'
+      })
+      .populate('sender', 'fullName email personalInfo')
+      .sort({ createdAt: -1 });
       
-      const requests = await FriendRequest.getPendingRequests(userId);
-      
-      const formattedRequests = requests.map(request => ({
-        _id: request._id,
-        sender: {
-          _id: request.sender._id,
-          fullName: request.sender.fullName,
-          firstName: request.sender.personalInfo?.firstName || request.sender.fullName.split(' ')[0],
-          email: request.sender.email,
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(request.sender.fullName)}&background=6C63FF&color=fff`
-        },
-        message: request.message,
-        createdAt: request.createdAt,
-        expiresAt: request.expiresAt
-      }));
-      
-      console.log('Pending requests found:', formattedRequests.length);
-      return formattedRequests;
-      
+      return requests;
     } catch (error) {
       console.error('Get pending requests error:', error);
       throw error;
     }
   }
   
-  // Get sent friend requests for a user
+  // Get sent friend requests
   static async getSentRequests(userId) {
     try {
-      console.log('FriendRequestService.getSentRequests called for user:', userId);
+      const requests = await FriendRequest.find({
+        sender: userId,
+        status: 'pending'
+      })
+      .populate('receiver', 'fullName email personalInfo')
+      .sort({ createdAt: -1 });
       
-      const requests = await FriendRequest.getSentRequests(userId);
-      
-      const formattedRequests = requests.map(request => ({
-        _id: request._id,
-        receiver: {
-          _id: request.receiver._id,
-          fullName: request.receiver.fullName,
-          firstName: request.receiver.personalInfo?.firstName || request.receiver.fullName.split(' ')[0],
-          email: request.receiver.email,
-          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(request.receiver.fullName)}&background=6C63FF&color=fff`
-        },
-        message: request.message,
-        status: request.status,
-        createdAt: request.createdAt,
-        expiresAt: request.expiresAt
-      }));
-      
-      console.log('Sent requests found:', formattedRequests.length);
-      return formattedRequests;
-      
+      return requests;
     } catch (error) {
       console.error('Get sent requests error:', error);
       throw error;
     }
   }
   
-  // Accept a friend request
+  // Accept friend request
   static async acceptFriendRequest(requestId, userId) {
     try {
-      console.log('FriendRequestService.acceptFriendRequest called:', { requestId, userId });
-      
       const request = await FriendRequest.findById(requestId);
       
       if (!request) {
         throw new Error('Friend request not found');
       }
       
-      // Only the receiver can accept the request
       if (request.receiver.toString() !== userId.toString()) {
         throw new Error('Not authorized to accept this request');
       }
@@ -142,34 +119,50 @@ class FriendRequestService {
         throw new Error('Request is no longer pending');
       }
       
-      // Accept the request (this will also add both users as friends)
-      await request.accept();
+      // Add to friends lists
+      const sender = await User.findById(request.sender);
+      const receiver = await User.findById(request.receiver);
       
-      // Populate user info for response
-      await request.populate('sender', 'fullName email personalInfo');
-      await request.populate('receiver', 'fullName email personalInfo');
+      if (!sender || !receiver) {
+        throw new Error('User not found');
+      }
       
-      console.log('Friend request accepted successfully');
+      // Convert friends arrays to string IDs for comparison
+      const senderFriendsIds = sender.friends.map(friendId => friendId.toString());
+      const receiverFriendsIds = receiver.friends.map(friendId => friendId.toString());
+      
+      // Add to friends list if not already there
+      if (!senderFriendsIds.includes(request.receiver.toString())) {
+        sender.friends.push(request.receiver);
+        await sender.save();
+      }
+      
+      if (!receiverFriendsIds.includes(request.sender.toString())) {
+        receiver.friends.push(request.sender);
+        await receiver.save();
+      }
+      
+      // Update request status
+      request.status = 'accepted';
+      request.respondedAt = new Date();
+      await request.save();
+      
       return request;
-      
     } catch (error) {
       console.error('Accept friend request error:', error);
       throw error;
     }
   }
   
-  // Reject a friend request
+  // Reject friend request
   static async rejectFriendRequest(requestId, userId) {
     try {
-      console.log('FriendRequestService.rejectFriendRequest called:', { requestId, userId });
-      
       const request = await FriendRequest.findById(requestId);
       
       if (!request) {
         throw new Error('Friend request not found');
       }
       
-      // Only the receiver can reject the request
       if (request.receiver.toString() !== userId.toString()) {
         throw new Error('Not authorized to reject this request');
       }
@@ -178,66 +171,15 @@ class FriendRequestService {
         throw new Error('Request is no longer pending');
       }
       
-      // Reject the request
-      await request.reject();
+      // Update request status
+      request.status = 'rejected';
+      request.respondedAt = new Date();
+      await request.save();
       
-      console.log('Friend request rejected successfully');
       return request;
-      
     } catch (error) {
       console.error('Reject friend request error:', error);
       throw error;
-    }
-  }
-  
-  // Cancel a sent friend request
-  static async cancelFriendRequest(requestId, userId) {
-    try {
-      console.log('FriendRequestService.cancelFriendRequest called:', { requestId, userId });
-      
-      const request = await FriendRequest.findById(requestId);
-      
-      if (!request) {
-        throw new Error('Friend request not found');
-      }
-      
-      // Only the sender can cancel the request
-      if (request.sender.toString() !== userId.toString()) {
-        throw new Error('Not authorized to cancel this request');
-      }
-      
-      if (request.status !== 'pending') {
-        throw new Error('Request is no longer pending');
-      }
-      
-      // Cancel the request
-      await request.cancel();
-      
-      console.log('Friend request cancelled successfully');
-      return request;
-      
-    } catch (error) {
-      console.error('Cancel friend request error:', error);
-      throw error;
-    }
-  }
-  
-  // Check if users can chat (are friends)
-  static async canUsersChat(userId1, userId2) {
-    try {
-      const user1 = await User.findById(userId1);
-      const user2 = await User.findById(userId2);
-      
-      if (!user1 || !user2) {
-        return false;
-      }
-      
-      // Check if they are friends
-      return user1.friends.includes(userId2) && user2.friends.includes(userId1);
-      
-    } catch (error) {
-      console.error('Check if users can chat error:', error);
-      return false;
     }
   }
   
@@ -245,44 +187,42 @@ class FriendRequestService {
   static async getFriendshipStatus(userId1, userId2) {
     try {
       const user1 = await User.findById(userId1);
-      const user2 = await User.findById(userId2);
       
-      if (!user1 || !user2) {
-        return 'unknown';
+      if (!user1) {
+        return 'not_friends';
       }
       
-      // Check if they are friends
-      if (user1.friends.includes(userId2) && user2.friends.includes(userId1)) {
+      // Convert friends array to string IDs for comparison
+      const user1FriendsIds = user1.friends.map(friendId => friendId.toString());
+      if (user1FriendsIds.includes(userId2.toString())) {
         return 'friends';
       }
       
-      // Check for the most recent request between users
-      const request = await FriendRequest.findOne({
-        $or: [
-          { sender: userId1, receiver: userId2 },
-          { sender: userId2, receiver: userId1 }
-        ]
-      }).sort({ createdAt: -1 }); // Get the most recent request
+      // Check for pending requests
+      const sentRequest = await FriendRequest.findOne({
+        sender: userId1,
+        receiver: userId2,
+        status: 'pending'
+      });
       
-      if (request) {
-        if (request.status === 'pending') {
-          if (request.sender.toString() === userId1.toString()) {
-            return 'request_sent';
-          } else {
-            return 'request_received';
-          }
-        } else if (request.status === 'rejected') {
-          return 'rejected';
-        } else if (request.status === 'cancelled') {
-          return 'cancelled';
-        }
+      if (sentRequest) {
+        return 'request_sent';
+      }
+      
+      const receivedRequest = await FriendRequest.findOne({
+        sender: userId2,
+        receiver: userId1,
+        status: 'pending'
+      });
+      
+      if (receivedRequest) {
+        return 'request_received';
       }
       
       return 'not_friends';
-      
     } catch (error) {
       console.error('Get friendship status error:', error);
-      return 'unknown';
+      return 'not_friends';
     }
   }
 }

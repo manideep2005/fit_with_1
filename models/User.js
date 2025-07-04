@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { nanoid } = require('nanoid');
 
 // Personal Information Schema
 const personalInfoSchema = new mongoose.Schema({
@@ -75,6 +76,11 @@ const preferencesSchema = new mongoose.Schema({
 
 // Main User Schema
 const userSchema = new mongoose.Schema({
+  fitnessId: {
+    type: String,
+    unique: true,
+    index: true
+  },
   // Basic Authentication
   email: { 
     type: String, 
@@ -93,6 +99,10 @@ const userSchema = new mongoose.Schema({
     type: String, 
     required: true,
     trim: true
+  },
+  profilePhoto: {
+    type: String,
+    default: null
   },
 
   // Account Status
@@ -186,6 +196,21 @@ const userSchema = new mongoose.Schema({
     totalCarbs: Number,
     totalFat: Number,
     waterIntake: Number // in ml
+  }],
+
+  // Meal Plans
+  mealPlans: [{
+    id: { type: String, required: true },
+    date: { type: Date, required: true },
+    mealType: { type: String, enum: ['breakfast', 'lunch', 'dinner', 'snack'], required: true },
+    name: { type: String, required: true },
+    calories: { type: Number, default: 0 },
+    protein: { type: Number, default: 0 },
+    carbs: { type: Number, default: 0 },
+    fat: { type: Number, default: 0 },
+    notes: { type: String, default: '' },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date }
   }],
 
   // Social Features
@@ -317,6 +342,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // Indexes for better performance
+userSchema.index({ fitnessId: 1 });
 // userSchema.index({ email: 1 }); // Removed: duplicate index (email already has unique: true)
 userSchema.index({ createdAt: -1 });
 userSchema.index({ lastLogin: -1 });
@@ -357,6 +383,14 @@ userSchema.virtual('subscriptionDisplayName').get(function() {
     'pro': 'Pro Plan'
   };
   return planNames[this.subscription?.plan || 'free'] || 'Free Plan';
+});
+
+// Pre-save middleware to generate fitnessId
+userSchema.pre('save', function(next) {
+  if (this.isNew && !this.fitnessId) {
+    this.fitnessId = nanoid(10);
+  }
+  next();
 });
 
 // Pre-save middleware to hash password

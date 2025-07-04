@@ -326,6 +326,227 @@
             border: 1px solid var(--primary);
         }
         
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 2rem;
+        }
+        
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border: 1px solid var(--light-gray);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: var(--dark);
+        }
+        
+        .action-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .action-btn i {
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+        
+        .nutrition-insights {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .insights-container {
+            margin-top: 1rem;
+        }
+        
+        .insight-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            background: var(--light);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .insight-item i {
+            color: var(--primary);
+            margin-right: 10px;
+            margin-top: 2px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+        }
+        
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--light-gray);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+        }
+        
+        .food-result {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .food-result:hover {
+            background: var(--light);
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 20px;
+            border-top: 1px solid var(--light-gray);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+        }
+        
+        .goal-reached {
+            background: linear-gradient(135deg, #28A745, #20C997);
+            color: white;
+        }
+        
+        .goal-reached .nutrition-label,
+        .goal-reached .nutrition-value {
+            color: white;
+        }
+        
+        .goal-adjustment-alert {
+            background: #FFF3CD;
+            border: 1px solid #FFEAA7;
+            color: #856404;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .goal-adjustment-alert i {
+            margin-right: 10px;
+        }
+        
+        .streak-badge {
+            background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .suggestion-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            background: #F8F9FA;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .suggestion-item i {
+            color: var(--primary);
+            margin-right: 15px;
+            margin-top: 2px;
+        }
+        
+        .suggested-foods {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .food-tag {
+            background: var(--primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .food-tag:hover {
+            background: var(--secondary);
+            transform: translateY(-1px);
+        }
+        
         @media (max-width: 768px) {
             .dashboard-container {
                 flex-direction: column;
@@ -347,6 +568,10 @@
             .macros-section {
                 grid-template-columns: 1fr;
             }
+            
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -367,15 +592,17 @@
                 <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li class="nav-item"><a href="/workouts" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
                 <li class="nav-item"><a href="/progress" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
-                <li class="nav-item"><a href="/nutrition" class="nav-link"><i class="fas fa-utensils"></i> Nutrition</a></li>
+                <li class="nav-item"><a href="/nutrition" class="nav-link active"><i class="fas fa-utensils"></i> Nutrition</a></li>
                 <li class="nav-item"><a href="/meal-planner" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
                 <li class="nav-item"><a href="/challenges" class="nav-link"><i class="fas fa-trophy"></i> Challenges</a></li>
                 <li class="nav-item"><a href="/health" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
-                <li class="nav-item"><a href="/biometrics" class="nav-link active"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
+                <li class="nav-item"><a href="/biometrics" class="nav-link"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
                 <li class="nav-item"><a href="/schedule" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
                 <li class="nav-item"><a href="/community" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
                 <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
-                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>            
+                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+            
             <!-- Logout Section -->
             <div class="logout-section">
                 <a href="/logout" class="logout-link" onclick="return confirmLogout()">
@@ -389,59 +616,14 @@
             <div class="page-header">
                 <h1 class="page-title">Nutrition</h1>
                 <div>
-                    <button class="btn btn-primary"><i class="fas fa-plus"></i> Log Food</button>
+                    <button class="btn btn-primary" onclick="showLogFoodModal()"><i class="fas fa-plus"></i> Log Food</button>
+                    <button class="btn btn-outline" onclick="openNutriScan()" style="margin-left: 10px;"><i class="fas fa-camera"></i> Scan</button>
                 </div>
             </div>
             
             <h2>Today's Summary</h2>
-            <div class="nutrition-summary">
-                <div class="nutrition-card">
-                    <div class="progress-ring">
-                        <svg width="100" height="100" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="45" class="progress-ring-circle" stroke-dashoffset="85" />
-                        </svg>
-                        <div class="progress-ring-text">1,850</div>
-                    </div>
-                    <div class="nutrition-label">Calories</div>
-                    <div class="nutrition-value">1,850</div>
-                    <div class="nutrition-label">of 2,200 goal</div>
-                </div>
-                
-                <div class="nutrition-card">
-                    <div class="progress-ring">
-                        <svg width="100" height="100" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="45" class="progress-ring-circle" stroke-dashoffset="113" style="stroke: #4D44DB;" />
-                        </svg>
-                        <div class="progress-ring-text">145g</div>
-                    </div>
-                    <div class="nutrition-label">Protein</div>
-                    <div class="nutrition-value">145g</div>
-                    <div class="nutrition-label">of 165g goal</div>
-                </div>
-                
-                <div class="nutrition-card">
-                    <div class="progress-ring">
-                        <svg width="100" height="100" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="45" class="progress-ring-circle" stroke-dashoffset="141" style="stroke: #FF6584;" />
-                        </svg>
-                        <div class="progress-ring-text">210g</div>
-                    </div>
-                    <div class="nutrition-label">Carbs</div>
-                    <div class="nutrition-value">210g</div>
-                    <div class="nutrition-label">of 250g goal</div>
-                </div>
-                
-                <div class="nutrition-card">
-                    <div class="progress-ring">
-                        <svg width="100" height="100" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="45" class="progress-ring-circle" stroke-dashoffset="198" style="stroke: #28A745;" />
-                        </svg>
-                        <div class="progress-ring-text">65g</div>
-                    </div>
-                    <div class="nutrition-label">Fat</div>
-                    <div class="nutrition-value">65g</div>
-                    <div class="nutrition-label">of 80g goal</div>
-                </div>
+            <div class="nutrition-summary" id="nutritionSummary">
+                <div class="loading">Loading nutrition data...</div>
             </div>
             
             <div class="macros-section">
@@ -497,104 +679,448 @@
                 </div>
             </div>
             
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <button class="action-btn" onclick="openNutriScan()">
+                    <i class="fas fa-camera"></i>
+                    <span>Scan Food</span>
+                </button>
+                <button class="action-btn" onclick="showLogFoodModal()">
+                    <i class="fas fa-plus"></i>
+                    <span>Log Meal</span>
+                </button>
+                <button class="action-btn" onclick="openMealPlanner()">
+                    <i class="fas fa-calendar"></i>
+                    <span>Meal Plan</span>
+                </button>
+                <button class="action-btn" onclick="shareProgress()">
+                    <i class="fas fa-share"></i>
+                    <span>Share</span>
+                </button>
+            </div>
+            
             <h2>Today's Meals</h2>
             <div class="meals-section">
                 <div class="meal-tabs">
-                    <div class="meal-tab active">All</div>
-                    <div class="meal-tab">Breakfast</div>
-                    <div class="meal-tab">Lunch</div>
-                    <div class="meal-tab">Dinner</div>
-                    <div class="meal-tab">Snacks</div>
+                    <div class="meal-tab active" onclick="filterMeals('all')">All</div>
+                    <div class="meal-tab" onclick="filterMeals('breakfast')">Breakfast</div>
+                    <div class="meal-tab" onclick="filterMeals('lunch')">Lunch</div>
+                    <div class="meal-tab" onclick="filterMeals('dinner')">Dinner</div>
+                    <div class="meal-tab" onclick="filterMeals('snacks')">Snacks</div>
                 </div>
                 
-                <div class="meal-item">
-                    <div class="meal-info">
-                        <div class="meal-icon">
-                            <i class="fas fa-egg"></i>
-                        </div>
-                        <div>
-                            <div class="meal-name">Scrambled Eggs with Avocado</div>
-                            <div class="meal-time">8:30 AM • Breakfast</div>
-                        </div>
-                    </div>
-                    <div class="meal-calories">420 kcal</div>
-                </div>
-                
-                <div class="meal-item">
-                    <div class="meal-info">
-                        <div class="meal-icon">
-                            <i class="fas fa-apple-alt"></i>
-                        </div>
-                        <div>
-                            <div class="meal-name">Greek Yogurt with Berries</div>
-                            <div class="meal-time">11:00 AM • Snack</div>
-                        </div>
-                    </div>
-                    <div class="meal-calories">210 kcal</div>
-                </div>
-                
-                <div class="meal-item">
-                    <div class="meal-info">
-                        <div class="meal-icon">
-                            <i class="fas fa-fish"></i>
-                        </div>
-                        <div>
-                            <div class="meal-name">Grilled Salmon with Quinoa</div>
-                            <div class="meal-time">1:15 PM • Lunch</div>
-                        </div>
-                    </div>
-                    <div class="meal-calories">580 kcal</div>
-                </div>
-                
-                <div class="meal-item">
-                    <div class="meal-info">
-                        <div class="meal-icon">
-                            <i class="fas fa-seedling"></i>
-                        </div>
-                        <div>
-                            <div class="meal-name">Protein Shake</div>
-                            <div class="meal-time">4:30 PM • Snack</div>
-                        </div>
-                    </div>
-                    <div class="meal-calories">240 kcal</div>
-                </div>
-                
-                <div class="meal-item">
-                    <div class="meal-info">
-                        <div class="meal-icon">
-                            <i class="fas fa-drumstick-bite"></i>
-                        </div>
-                        <div>
-                            <div class="meal-name">Chicken & Vegetable Stir Fry</div>
-                            <div class="meal-time">7:45 PM • Dinner</div>
-                        </div>
-                    </div>
-                    <div class="meal-calories">490 kcal</div>
+                <div id="mealsList">
+                    <div class="loading">Loading meals...</div>
                 </div>
             </div>
             
-            <button class="btn btn-outline" style="width: 100%;">View Full Nutrition Log</button>
+            <div class="nutrition-insights">
+                <h3>AI Nutrition Insights</h3>
+                <div id="aiInsights" class="insights-container">
+                    <div class="loading">Generating insights...</div>
+                </div>
+            </div>
+            
+            <button class="btn btn-outline" onclick="viewFullLog()" style="width: 100%;">View Full Nutrition Log</button>
         </div>
     </div>
+    
+    <!-- Log Food Modal -->
+    <div id="logFoodModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Log Food</h3>
+                <span class="close" onclick="closeModal('logFoodModal')">&times;</span>
+            </div>
+            <form id="logFoodForm">
+                <div class="form-group">
+                    <label>Search Food</label>
+                    <input type="text" id="foodSearch" placeholder="Search for food..." oninput="searchFood()">
+                    <div id="foodResults" class="search-results"></div>
+                </div>
+                <div class="form-group">
+                    <label>Meal Type</label>
+                    <select id="mealType">
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                        <option value="snacks">Snacks</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantity</label>
+                    <input type="number" id="quantity" value="1" min="0.1" step="0.1">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('logFoodModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Log Food</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
     <script>
-        // JavaScript for interactive elements can be added here
-        document.querySelectorAll('.meal-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.meal-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                // Logic to filter meals based on selected tab can be added here
-            });
+        let currentMealFilter = 'all';
+        let nutritionData = null;
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNutritionData();
+            loadTodaysMeals();
+            loadAIInsights();
         });
-        // Example for progress ring animation
-        document.querySelectorAll('.progress-ring-circle').forEach(circle => {
-            const radius = circle.r.baseVal.value;
-            const circumference = 2 * Math.PI * radius;
-            circle.style.strokeDasharray = `${circumference} ${circumference}`;
-            circle.style.strokeDashoffset = circumference - (circle.getAttribute('stroke-dashoffset') || 0);
+        
+        // Load dynamic nutrition data
+        async function loadNutritionData() {
+            try {
+                const response = await fetch('/api/nutrition/progress');
+                const data = await response.json();
+                
+                if (data.success) {
+                    nutritionData = data.data;
+                    displayNutritionSummary(data.data.progress);
+                    displayAdjustmentReason(data.data.adjustmentReason);
+                    displayStreak(data.data.streak);
+                } else {
+                    console.error('Failed to load nutrition data');
+                }
+            } catch (error) {
+                console.error('Error loading nutrition data:', error);
+            }
+        }
+        
+        // Display dynamic nutrition summary
+        function displayNutritionSummary(progress) {
+            const container = document.getElementById('nutritionSummary');
+            
+            container.innerHTML = `
+                <div class="nutrition-card ${progress.calories.percentage >= 100 ? 'goal-reached' : ''}">
+                    <div class="progress-ring">
+                        <svg width="100" height="100" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" class="progress-ring-circle" 
+                                stroke-dashoffset="${283 - (283 * Math.min(progress.calories.percentage, 100) / 100)}" />
+                        </svg>
+                        <div class="progress-ring-text">${progress.calories.current}</div>
+                    </div>
+                    <div class="nutrition-label">Calories</div>
+                    <div class="nutrition-value">${progress.calories.current}</div>
+                    <div class="nutrition-label">of ${progress.calories.goal} goal (${progress.calories.percentage}%)</div>
+                </div>
+                
+                <div class="nutrition-card ${progress.protein.percentage >= 100 ? 'goal-reached' : ''}">
+                    <div class="progress-ring">
+                        <svg width="100" height="100" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" class="progress-ring-circle" 
+                                stroke-dashoffset="${283 - (283 * Math.min(progress.protein.percentage, 100) / 100)}" style="stroke: #4D44DB;" />
+                        </svg>
+                        <div class="progress-ring-text">${progress.protein.current}g</div>
+                    </div>
+                    <div class="nutrition-label">Protein</div>
+                    <div class="nutrition-value">${progress.protein.current}g</div>
+                    <div class="nutrition-label">of ${progress.protein.goal}g goal (${progress.protein.percentage}%)</div>
+                </div>
+                
+                <div class="nutrition-card ${progress.carbs.percentage >= 100 ? 'goal-reached' : ''}">
+                    <div class="progress-ring">
+                        <svg width="100" height="100" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" class="progress-ring-circle" 
+                                stroke-dashoffset="${283 - (283 * Math.min(progress.carbs.percentage, 100) / 100)}" style="stroke: #FF6584;" />
+                        </svg>
+                        <div class="progress-ring-text">${progress.carbs.current}g</div>
+                    </div>
+                    <div class="nutrition-label">Carbs</div>
+                    <div class="nutrition-value">${progress.carbs.current}g</div>
+                    <div class="nutrition-label">of ${progress.carbs.goal}g goal (${progress.carbs.percentage}%)</div>
+                </div>
+                
+                <div class="nutrition-card ${progress.water.percentage >= 100 ? 'goal-reached' : ''}">
+                    <div class="progress-ring">
+                        <svg width="100" height="100" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" class="progress-ring-circle" 
+                                stroke-dashoffset="${283 - (283 * Math.min(progress.water.percentage, 100) / 100)}" style="stroke: #28A745;" />
+                        </svg>
+                        <div class="progress-ring-text">${progress.water.current}ml</div>
+                    </div>
+                    <div class="nutrition-label">Water</div>
+                    <div class="nutrition-value">${progress.water.current}ml</div>
+                    <div class="nutrition-label">of ${progress.water.goal}ml goal (${progress.water.percentage}%)</div>
+                </div>
+            `;
+        }
+        
+        // Display goal adjustment reason
+        function displayAdjustmentReason(reason) {
+            if (reason) {
+                const container = document.getElementById('nutritionSummary');
+                const alert = document.createElement('div');
+                alert.className = 'goal-adjustment-alert';
+                alert.innerHTML = `<i class="fas fa-info-circle"></i> ${reason}`;
+                container.parentNode.insertBefore(alert, container);
+            }
+        }
+        
+        // Display nutrition streak
+        function displayStreak(streak) {
+            if (streak > 0) {
+                const header = document.querySelector('.page-header');
+                const streakBadge = document.createElement('div');
+                streakBadge.className = 'streak-badge';
+                streakBadge.innerHTML = `<i class="fas fa-fire"></i> ${streak} day streak!`;
+                header.appendChild(streakBadge);
+            }
+        }
+        
+        // Load today's meals
+        async function loadTodaysMeals() {
+            // This would typically fetch from your nutrition API
+            const mockMeals = [
+                { name: 'Scrambled Eggs with Avocado', time: '8:30 AM', type: 'breakfast', calories: 420, icon: 'egg' },
+                { name: 'Greek Yogurt with Berries', time: '11:00 AM', type: 'snacks', calories: 210, icon: 'apple-alt' },
+                { name: 'Grilled Salmon with Quinoa', time: '1:15 PM', type: 'lunch', calories: 580, icon: 'fish' },
+                { name: 'Protein Shake', time: '4:30 PM', type: 'snacks', calories: 240, icon: 'seedling' },
+                { name: 'Chicken & Vegetable Stir Fry', time: '7:45 PM', type: 'dinner', calories: 490, icon: 'drumstick-bite' }
+            ];
+            
+            displayMeals(mockMeals);
+        }
+        
+        // Display meals
+        function displayMeals(meals) {
+            const container = document.getElementById('mealsList');
+            const filteredMeals = currentMealFilter === 'all' ? meals : meals.filter(meal => meal.type === currentMealFilter);
+            
+            if (filteredMeals.length === 0) {
+                container.innerHTML = '<p>No meals logged for this category yet.</p>';
+                return;
+            }
+            
+            container.innerHTML = filteredMeals.map(meal => `
+                <div class="meal-item">
+                    <div class="meal-info">
+                        <div class="meal-icon">
+                            <i class="fas fa-${meal.icon}"></i>
+                        </div>
+                        <div>
+                            <div class="meal-name">${meal.name}</div>
+                            <div class="meal-time">${meal.time} • ${meal.type.charAt(0).toUpperCase() + meal.type.slice(1)}</div>
+                        </div>
+                    </div>
+                    <div class="meal-calories">${meal.calories} kcal</div>
+                </div>
+            `).join('');
+        }
+        
+        // Filter meals
+        function filterMeals(type) {
+            currentMealFilter = type;
+            document.querySelectorAll('.meal-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            loadTodaysMeals();
+        }
+        
+        // Load smart nutrition insights
+        async function loadAIInsights() {
+            try {
+                const [insightsResponse, suggestionsResponse] = await Promise.all([
+                    fetch('/api/nutrition/insights'),
+                    fetch('/api/nutrition/suggestions')
+                ]);
+                
+                const insightsData = await insightsResponse.json();
+                const suggestionsData = await suggestionsResponse.json();
+                
+                let content = '';
+                
+                if (insightsData.success && insightsData.insights.length > 0) {
+                    content += insightsData.insights.map(insight => `
+                        <div class="insight-item">
+                            <i class="fas fa-lightbulb"></i>
+                            <p>${insight}</p>
+                        </div>
+                    `).join('');
+                }
+                
+                if (suggestionsData.success && suggestionsData.suggestions.length > 0) {
+                    content += '<h4>Smart Suggestions</h4>';
+                    content += suggestionsData.suggestions.map(suggestion => `
+                        <div class="suggestion-item">
+                            <i class="fas fa-${suggestion.type === 'protein' ? 'drumstick-bite' : suggestion.type === 'hydration' ? 'tint' : 'utensils'}"></i>
+                            <div>
+                                <p><strong>${suggestion.message}</strong></p>
+                                <div class="suggested-foods">
+                                    ${suggestion.foods.map(food => `<span class="food-tag" onclick="quickLog('${food}')">${food}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+                document.getElementById('aiInsights').innerHTML = content || `
+                    <div class="insight-item">
+                        <i class="fas fa-info-circle"></i>
+                        <p>Start logging meals to get personalized insights!</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Error loading insights:', error);
+            }
+        }
+        
+        // Modal functions
+        function showLogFoodModal() {
+            document.getElementById('logFoodModal').style.display = 'block';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Food search
+        async function searchFood() {
+            const query = document.getElementById('foodSearch').value;
+            if (query.length < 2) return;
+            
+            try {
+                const response = await fetch(`/api/nutriscan/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayFoodResults(data.products);
+                }
+            } catch (error) {
+                console.error('Error searching food:', error);
+            }
+        }
+        
+        function displayFoodResults(products) {
+            const container = document.getElementById('foodResults');
+            container.innerHTML = products.slice(0, 5).map(product => `
+                <div class="food-result" onclick="selectFood('${product.name}', ${product.calories})">
+                    <strong>${product.name}</strong>
+                    <span>${product.calories} cal per ${product.serving}</span>
+                </div>
+            `).join('');
+        }
+        
+        function selectFood(name, calories) {
+            document.getElementById('foodSearch').value = name;
+            document.getElementById('foodResults').innerHTML = '';
+        }
+        
+        // Log food form
+        document.getElementById('logFoodForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                meals: [{
+                    name: document.getElementById('foodSearch').value,
+                    type: document.getElementById('mealType').value,
+                    quantity: parseFloat(document.getElementById('quantity').value),
+                    time: new Date().toLocaleTimeString()
+                }],
+                totalCalories: 300 // This would be calculated
+            };
+            
+            try {
+                const response = await fetch('/api/nutrition', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Food logged successfully!', 'success');
+                    closeModal('logFoodModal');
+                    loadNutritionData();
+                    loadTodaysMeals();
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error logging food:', error);
+                showNotification('Failed to log food', 'error');
+            }
         });
-        // Logout confirmation
+        
+        // Utility functions
+        function openNutriScan() {
+            window.location.href = '/nutriscan';
+        }
+        
+        function openMealPlanner() {
+            window.location.href = '/meal-planner';
+        }
+        
+        function shareProgress() {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My Nutrition Progress',
+                    text: `I've consumed ${nutritionData?.stats?.todayCalories || 0} calories today!`,
+                    url: window.location.href
+                });
+            } else {
+                // Fallback - copy to clipboard or show share modal
+                showNotification('Share feature coming soon!', 'info');
+            }
+        }
+        
+        function viewFullLog() {
+            // Navigate to detailed nutrition log page
+            showNotification('Full nutrition log coming soon!', 'info');
+        }
+        
+        // Quick log food from suggestions
+        async function quickLog(foodName) {
+            try {
+                const response = await fetch('/api/nutrition/quick-log', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ foodName: foodName, quantity: 1 })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification(`${foodName} logged successfully!`, 'success');
+                    loadNutritionData(); // Refresh data
+                    loadAIInsights(); // Refresh suggestions
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Quick log error:', error);
+                showNotification('Failed to log food', 'error');
+            }
+        }
+        
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed; top: 20px; right: 20px; padding: 15px 20px;
+                border-radius: 8px; color: white; z-index: 10000; font-weight: 500;
+                background-color: ${type === 'success' ? '#28A745' : type === 'error' ? '#DC3545' : '#17A2B8'};
+            `;
+            
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+        
         function confirmLogout() {
             return confirm('Are you sure you want to logout?');
+        }
+        
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
         }
     </script>
 </body>

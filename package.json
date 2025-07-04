@@ -5,7 +5,11 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "setup-community": "node setup-community.js",
+    "setup-challenges": "node setup-challenges.js",
+    "setup-all": "node setup-community.js && node setup-challenges.js",
+    "vercel-build": "npm install"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -19,12 +23,16 @@
     "express": "^4.18.2",
     "express-session": "^1.18.1",
     "jsonwebtoken": "^9.0.2",
+    "moment": "^2.30.1",
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.0",
+    "multer": "^2.0.1",
+    "nanoid": "^5.1.5",
     "node-fetch": "^2.7.0",
     "nodemailer": "^6.9.7",
     "quagga": "^0.12.1",
-    "redis": "^5.5.5"
+    "redis": "^5.5.5",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "ejs-lint": "^2.0.1",
