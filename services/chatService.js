@@ -11,7 +11,6 @@ class ChatService {
     console.log('ChatService initialized with Socket.IO');
   }
   
-  // Send a message between friends
   static async sendMessage(senderId, receiverId, content, messageType = 'text', attachmentData = null) {
     try {
       console.log('ChatService.sendMessage called:', { senderId, receiverId, content, messageType });
@@ -21,67 +20,42 @@ class ChatService {
         throw new Error('Sender ID, receiver ID, and content are required');
       }
       
+      const receiverType = 'User'; // Default to User for now
+      
       if (senderId.toString() === receiverId.toString()) {
         throw new Error('Cannot send message to yourself');
       }
       
-      // Validate that both users exist and are friends
       const sender = await User.findById(senderId);
       const receiver = await User.findById(receiverId);
-      
-      console.log('Users found:', { sender: !!sender, receiver: !!receiver });
-      
-      if (!sender) {
-        throw new Error('Sender not found');
+      if (!sender || !receiver) {
+        throw new Error('Sender or receiver not found');
       }
       
-      if (!receiver) {
-        throw new Error('Receiver not found');
-      }
-      
-      // Check if they are friends - convert ObjectIds to strings for comparison
       const senderFriendsIds = sender.friends.map(friendId => friendId.toString());
-      const receiverFriendsIds = receiver.friends.map(friendId => friendId.toString());
-      
-      const areFriends = senderFriendsIds.includes(receiverId.toString()) && 
-                        receiverFriendsIds.includes(senderId.toString());
-      
-      console.log('Friendship check:', { 
-        areFriends, 
-        senderFriends: sender.friends.length, 
-        receiverFriends: receiver.friends.length,
-        senderFriendsIds,
-        receiverFriendsIds,
-        senderId: senderId.toString(),
-        receiverId: receiverId.toString()
-      });
-      
-      if (!areFriends) {
+      if (!senderFriendsIds.includes(receiverId.toString())) {
         throw new Error('You can only send messages to friends. Please send a friend request first.');
       }
       
-      // Create conversation ID
       const conversationId = Message.createConversationId(senderId, receiverId);
-      console.log('Conversation ID created:', conversationId);
-      
-      // Create message
-      const message = new Message({
+      const messageData = {
         sender: senderId,
         receiver: receiverId,
+        receiverType: 'User',
         content: content.trim(),
         messageType: messageType,
         attachmentData: attachmentData,
-        conversationId: conversationId,
-        status: 'sent'
-      });
+        status: 'sent',
+        conversationId: conversationId
+      };
+
+      const message = new Message(messageData);
       
       console.log('Message object created, saving...');
       await message.save();
       console.log('Message saved successfully');
       
-      // Populate sender and receiver info
       await message.populate('sender', 'fullName personalInfo.firstName personalInfo.lastName');
-      await message.populate('receiver', 'fullName personalInfo.firstName personalInfo.lastName');
 
       if (io) {
         io.to(receiverId.toString()).emit('new message', message);
@@ -99,9 +73,8 @@ class ChatService {
         content: content?.substring(0, 50)
       });
       
-      // Provide more specific error messages for common issues
       if (error.name === 'CastError') {
-        throw new Error('Invalid user ID format');
+        throw new Error('Invalid user or group ID format');
       }
       
       if (error.name === 'ValidationError') {
@@ -112,13 +85,62 @@ class ChatService {
     }
   }
   
-  // Get conversation messages between two users
-  static async getConversationMessages(userId1, userId2, limit = 50, skip = 0) {
+  static async getMessages(userId, conversationId, conversationType, limit = 50, skip = 0) {
     try {
-      console.log('ChatService.getConversationMessages called:', { userId1, userId2, limit, skip });
-      const messages = await Message.getConversationMessages(userId1, userId2, limit, skip);
-      console.log('Messages retrieved:', messages.length);
-      return messages.reverse(); // Return in chronological order (oldest first)
+      console.log('ChatService.getMessages called:', { userId, conversationId, conversationType, limit, skip });
+      let query = {
+        conversationId: conversationId,
+        isDeleted: false
+      };
+
+      const messages = await Message.find(query)
+        .populate('sender', 'fullName')
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .skip(skip);
+
+      const processedMessages = messages.map(message => ({
+        ...message.toObject(),
+        isSender: message.sender._id.toString() === userId.toString(),
+        senderName: message.sender.fullName
+      }));
+
+      console.log('Messages retrieved:', processedMessages.length);
+      return processedMessages.reverse();
+    } catch (error) {
+      console.error('Get messages error:', error);
+      throw error;
+    }
+  }
+  
+  // Get conversation messages between two users
+  static async getConversationMessages(userId, friendId, limit = 50, skip = 0) {
+    try {
+      console.log('ChatService.getConversationMessages called:', { userId, friendId, limit, skip });
+      
+      const conversationId = Message.createConversationId(userId, friendId);
+      
+      const messages = await Message.find({
+        conversationId: conversationId,
+        isDeleted: false
+      })
+      .populate('sender', 'fullName personalInfo.firstName personalInfo.lastName')
+      .sort({ createdAt: 1 }) // Ascending order for chat display
+      .limit(limit)
+      .skip(skip);
+
+      const processedMessages = messages.map(message => ({
+        _id: message._id,
+        content: message.content,
+        messageType: message.messageType,
+        createdAt: message.createdAt,
+        isSender: message.sender._id.toString() === userId.toString(),
+        senderName: message.sender.fullName,
+        status: message.status
+      }));
+
+      console.log('Conversation messages retrieved:', processedMessages.length);
+      return processedMessages;
     } catch (error) {
       console.error('Get conversation messages error:', error);
       throw error;
@@ -238,7 +260,7 @@ class ChatService {
     }
   }
   
-  // Accept friend request
+  
   static async acceptFriendRequest(requestId, userId) {
     try {
       const FriendRequestService = require('./friendRequestService');
@@ -333,18 +355,19 @@ class ChatService {
         throw new Error('Current user not found');
       }
       
-      // Search by name or email
+      // Search by name, email, or fitness ID
       const searchRegex = new RegExp(searchQuery, 'i');
       const users = await User.find({
         _id: { $ne: currentUserId }, // Exclude current user
         $or: [
           { fullName: searchRegex },
           { email: searchRegex },
+          { fitnessId: searchRegex },
           { 'personalInfo.firstName': searchRegex },
           { 'personalInfo.lastName': searchRegex }
         ]
       })
-      .select('fullName email personalInfo')
+      .select('fullName email personalInfo fitnessId')
       .limit(limit);
       
       // Get friendship status for each user
@@ -357,6 +380,7 @@ class ChatService {
           fullName: user.fullName,
           firstName: user.personalInfo?.firstName || user.fullName.split(' ')[0],
           email: user.email,
+          fitnessId: user.fitnessId,
           avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}&background=6C63FF&color=fff`,
           friendshipStatus: friendshipStatus,
           isFriend: friendshipStatus === 'friends'
@@ -427,6 +451,27 @@ class ChatService {
       console.error('Delete message error:', error);
       throw error;
     }
+  }
+
+  static async getContacts(userId) {
+    const user = await User.findById(userId).populate('friends', 'fullName').populate('groups', 'name');
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    const friends = user.friends.map(friend => ({
+        id: friend._id,
+        name: friend.fullName,
+        type: 'User'
+    }));
+
+    const groups = user.groups.map(group => ({
+        id: group._id,
+        name: group.name,
+        type: 'Group'
+    }));
+
+    return [...friends, ...groups];
   }
 }
 

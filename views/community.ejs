@@ -582,7 +582,7 @@
             }
             
             container.innerHTML = groups.map(group => `
-                <div class="community-card" onclick="viewGroup('${group._id}')">
+                <div class="community-card">
                     <div class="community-banner" style="background: ${getGroupColor(group.category)};"></div>
                     <div class="community-avatar">${group.name.substring(0, 2).toUpperCase()}</div>
                     <div class="community-content">
@@ -592,6 +592,18 @@
                         <div class="community-stats">
                             <span>${group.stats.totalPosts} posts</span>
                             <span>${group.category}</span>
+                        </div>
+                        <div class="dropdown" style="margin-top: 15px;">
+                          <button class="btn btn-primary dropdown-toggle" type="button" onclick="toggleDropdown(event)">
+                            Actions
+                          </button>
+                          <ul class="dropdown-menu" style="display: none; position: absolute; background-color: white; border: 1px solid #ccc; list-style: none; padding: 0; margin: 0; z-index: 100;">
+                            <li style="padding: 8px 12px; cursor: pointer;" onmouseover="this.style.backgroundColor='#f0f0f0'" onmouseout="this.style.backgroundColor='white'"><a class="dropdown-item" href="/community/groups/${group._id}" style="text-decoration: none; color: black; display: block;">View Members</a></li>
+                            <li style="padding: 8px 12px; cursor: pointer;" onmouseover="this.style.backgroundColor='#f0f0f0'" onmouseout="this.style.backgroundColor='white'"><a class="dropdown-item" href="/chat?groupId=${group._id}" style="text-decoration: none; color: black; display: block;">Chat</a></li>
+                            <li style="padding: 8px 12px; cursor: pointer;" onmouseover="this.style.backgroundColor='#f0f0f0'" onmouseout="this.style.backgroundColor='white'"><a class="dropdown-item" href="#" onclick="showCreatePostModal('${group._id}')" style="text-decoration: none; color: black; display: block;">Create Post</a></li>
+                            <li style="padding: 0;"><hr class="dropdown-divider" style="margin: 4px 0;"></li>
+                            <li style="padding: 8px 12px; cursor: pointer;" onmouseover="this.style.backgroundColor='#f0f0f0'" onmouseout="this.style.backgroundColor='white'"><a class="dropdown-item" href="#" onclick="leaveGroup('${group._id}')" style="text-decoration: none; color: black; display: block;">Leave Group</a></li>
+                          </ul>
                         </div>
                     </div>
                 </div>
@@ -851,11 +863,16 @@
                 groups.map(group => `<option value="${group._id}">${group.name}</option>`).join('');
         }
         
-        function showCreatePostModal() {
+        function showCreatePostModal(groupId = null) {
             if (userGroups.length === 0) {
                 showNotification('You need to join a group first to create posts', 'warning');
                 return;
             }
+            
+            if (groupId) {
+                document.getElementById('postGroupSelect').value = groupId;
+            }
+            
             document.getElementById('createPostModal').style.display = 'block';
         }
         
@@ -915,6 +932,40 @@
         
         function confirmLogout() {
             return confirm('Are you sure you want to logout?');
+        }
+
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            const dropdownMenu = event.target.nextElementSibling;
+            const allDropdowns = document.querySelectorAll('.dropdown-menu');
+            allDropdowns.forEach(menu => {
+                if (menu !== dropdownMenu) {
+                    menu.style.display = 'none';
+                }
+            });
+            dropdownMenu.style.display = dropdownMenu.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function leaveGroup(groupId) {
+            if (!confirm('Are you sure you want to leave this group?')) return;
+
+            try {
+                const response = await fetch(`/api/community/groups/${groupId}/leave`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showNotification('You have left the group.', 'success');
+                    loadUserGroups();
+                    loadPublicGroups();
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error leaving group:', error);
+                showNotification('Failed to leave group', 'error');
+            }
         }
         
         // Close modals when clicking outside

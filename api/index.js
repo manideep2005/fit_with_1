@@ -3470,24 +3470,64 @@ app.post('/api/community/groups', isAuthenticated, ensureDbConnection, async (re
 });
 
 // Join group
-app.post('/api/community/groups/:groupId/join', isAuthenticated, ensureDbConnection, async (req, res) => {
-  try {
-    const userId = req.session.user._id;
-    const { groupId } = req.params;
-    
-    await communityService.joinGroup(userId, groupId);
-    
-    res.json({
-      success: true,
-      message: 'Joined group successfully'
-    });
-  } catch (error) {
-    console.error('Join group error:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message || 'Failed to join group'
-    });
-  }
+app.post('/api/community/groups/:groupId/join', isAuthenticated, async (req, res) => {
+    try {
+        const group = await communityService.joinGroup(req.user._id, req.params.groupId);
+        res.json({ success: true, group });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/community/groups/:groupId/leave', isAuthenticated, async (req, res) => {
+    try {
+        const group = await communityService.leaveGroup(req.user._id, req.params.groupId);
+        res.json({ success: true, group });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+app.get('/api/community/groups/:groupId/members', isAuthenticated, async (req, res) => {
+    try {
+        const members = await communityService.getGroupMembers(req.params.groupId);
+        res.json({ success: true, members });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+app.get('/community/groups/:groupId', isAuthenticated, (req, res) => {
+    res.render('group-members', { user: req.session.user, groupId: req.params.groupId });
+});
+
+app.get('/api/chat/contacts', isAuthenticated, async (req, res) => {
+    try {
+        const contacts = await chatService.getContacts(req.user._id);
+        res.json({ success: true, contacts });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+app.get('/api/chat/messages', isAuthenticated, async (req, res) => {
+    try {
+        const { id, type } = req.query;
+        const messages = await chatService.getMessages(req.user._id, id, type);
+        res.json({ success: true, messages });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
+});
+
+app.post('/api/chat/messages', isAuthenticated, async (req, res) => {
+    try {
+        const { id, type, content } = req.body;
+        const message = await chatService.sendMessage(req.user._id, id, type, content);
+        res.json({ success: true, message });
+    } catch (error) {
+        res.status(400).json({ success: false, error: error.message });
+    }
 });
 
 // Leave group

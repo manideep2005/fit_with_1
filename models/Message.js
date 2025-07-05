@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-// Message Schema for friend-to-friend chat
+// Message Schema for friend-to-friend and group chat
 const messageSchema = new mongoose.Schema({
   // Sender and receiver information
   sender: {
@@ -10,8 +10,17 @@ const messageSchema = new mongoose.Schema({
   },
   receiver: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+    required: true,
+    refPath: 'receiverType'
+  },
+  receiverType: {
+    type: String,
+    required: true,
+    enum: ['User', 'Group']
+  },
+  group: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Group'
   },
   
   // Message content
@@ -49,7 +58,7 @@ const messageSchema = new mongoose.Schema({
     type: Date
   },
   
-  // Conversation ID (combination of sender and receiver IDs)
+  // Conversation ID (combination of sender and receiver IDs or group ID)
   conversationId: {
     type: String,
     required: true,

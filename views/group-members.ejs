@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group Members - Fit-With-AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --secondary: #4D44DB;
+            --accent: #FF6584;
+            --light: #F8F9FA;
+            --dark: #343A40;
+            --success: #28A745;
+            --warning: #FFC107;
+            --danger: #DC3545;
+            --gray: #6C757D;
+            --light-gray: #E9ECEF;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F5F7FA;
+            color: var(--dark);
+            margin: 0;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        
+        .page-header {
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .member-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .member-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .member-item:last-child {
+            border-bottom: none;
+        }
+        
+        .member-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .member-info h4 {
+            margin: 0;
+            font-weight: 500;
+        }
+        
+        .member-info p {
+            margin: 0;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Group Members</h1>
+        </div>
+        
+        <ul class="member-list" id="memberList">
+            <!-- Members will be dynamically inserted here -->
+        </ul>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const groupId = new URLSearchParams(window.location.search).get('groupId');
+            if (groupId) {
+                loadMembers(groupId);
+            }
+        });
+        
+        async function loadMembers(groupId) {
+            try {
+                const response = await fetch(`/api/community/groups/${groupId}/members`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayMembers(data.members);
+                } else {
+                    console.error('Failed to load members:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading members:', error);
+            }
+        }
+        
+        function displayMembers(members) {
+            const container = document.getElementById('memberList');
+            
+            if (members.length === 0) {
+                container.innerHTML = '<p>This group has no members yet.</p>';
+                return;
+            }
+            
+            container.innerHTML = members.map(member => `
+                <li class="member-item">
+                    <div class="member-avatar">${member.fullName.substring(0, 2).toUpperCase()}</div>
+                    <div class="member-info">
+                        <h4>${member.fullName}</h4>
+                        <p>${member.email}</p>
+                    </div>
+                </li>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

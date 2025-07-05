@@ -57,48 +57,41 @@ class CommunityService {
   }
 
   async joinGroup(userId, groupId) {
-    try {
-      const group = await Group.findById(groupId);
-      if (!group) throw new Error('Group not found');
+        const group = await Group.findById(groupId);
+        if (!group) {
+            throw new Error('Group not found');
+        }
 
-      const isMember = group.members.some(member => 
-        member.user.toString() === userId.toString()
-      );
+        if (group.privacy === 'private') {
+            // Handle private group logic if necessary (e.g., invitations)
+            throw new Error('This group is private and requires an invitation to join');
+        }
 
-      if (isMember) throw new Error('Already a member of this group');
+        const updatedGroup = await Group.findByIdAndUpdate(groupId, { 
+            $addToSet: { members: userId },
+            $inc: { 'stats.totalMembers': 1 }
+        }, { new: true });
 
-      group.members.push({
-        user: userId,
-        joinedAt: new Date(),
-        role: 'member'
-      });
+        await User.findByIdAndUpdate(userId, { $addToSet: { groups: groupId } });
 
-      await group.save();
-      return group;
-    } catch (error) {
-      throw new Error('Failed to join group: ' + error.message);
+        return updatedGroup;
     }
-  }
 
-  async leaveGroup(userId, groupId) {
-    try {
-      const group = await Group.findById(groupId);
-      if (!group) throw new Error('Group not found');
+    async leaveGroup(userId, groupId) {
+        const group = await Group.findById(groupId);
+        if (!group) {
+            throw new Error('Group not found');
+        }
 
-      if (group.creator.toString() === userId.toString()) {
-        throw new Error('Group creator cannot leave the group');
-      }
+        const updatedGroup = await Group.findByIdAndUpdate(groupId, { 
+            $pull: { members: userId },
+            $inc: { 'stats.totalMembers': -1 }
+        }, { new: true });
 
-      group.members = group.members.filter(member => 
-        member.user.toString() !== userId.toString()
-      );
+        await User.findByIdAndUpdate(userId, { $pull: { groups: groupId } });
 
-      await group.save();
-      return group;
-    } catch (error) {
-      throw new Error('Failed to leave group: ' + error.message);
+        return updatedGroup;
     }
-  }
 
   // Post Management
   async createPost(userId, postData) {

@@ -104,6 +104,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
   },
+  fitnessId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
 
   // Account Status
   isActive: { type: Boolean, default: true },
@@ -393,8 +398,13 @@ userSchema.pre('save', function(next) {
   next();
 });
 
-// Pre-save middleware to hash password
+// Pre-save middleware to hash password and generate fitness ID
 userSchema.pre('save', async function(next) {
+  // Generate fitness ID if not exists
+  if (!this.fitnessId) {
+    this.fitnessId = 'FIT' + Date.now().toString().slice(-6) + Math.random().toString(36).substr(2, 3).toUpperCase();
+  }
+  
   // Only hash password if it's modified
   if (!this.isModified('password')) return next();
   

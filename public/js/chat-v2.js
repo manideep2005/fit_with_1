@@ -1,276 +1,276 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const contactList = document.getElementById('contactList');
+    const chatTitle = document.getElementById('chatTitle');
+    const messageArea = document.getElementById('messageArea');
+    const messageInput = document.getElementById('messageInput');
+    const sendMessageBtn = document.getElementById('sendMessageBtn');
+    const newChatBtn = document.getElementById('newChatBtn');
 
-console.log('[ChatManagerV2] Script loaded');
+    let currentChat = null;
+    let friends = [];
 
-class ChatManagerV2 {
-    constructor() {
-        console.log('[ChatManagerV2] Constructor called');
-        this.socket = io();
-        this.messageInput = document.getElementById('message-input');
-        this.messagesContainer = document.getElementById('messages-container');
-        this.conversationsList = document.querySelector('.conversation-list');
-        this.chatMainArea = document.querySelector('.chat-main-area');
-        this.noConversationArea = document.querySelector('.no-conversation');
-        this.init();
-    }
-
-    init() {
-        console.log('[ChatManagerV2] Initializing...');
-        this.setupSocket();
-        this.setupEventListeners();
-        this.loadConversations();
-    }
-
-    setupSocket() {
-        console.log('[ChatManagerV2] Setting up Socket.IO...');
-        this.socket.on('connect', () => {
-            console.log('[ChatManagerV2] Connected to Socket.IO server');
-            this.socket.emit('join', window.currentUserId);
-        });
-
-        this.socket.on('new message', (message) => {
-            console.log('[ChatManagerV2] Received new message:', message);
-            this.addMessageToUI(message, false);
-        });
-    }
-
-    setupEventListeners() {
-        console.log('[ChatManagerV2] Setting up event listeners...');
-        if (this.conversationsList) {
-            this.conversationsList.addEventListener('click', (e) => {
-                const conversationItem = e.target.closest('.conversation-item');
-                if (conversationItem) {
-                    console.log('[ChatManagerV2] Conversation item clicked');
-                    const friendId = conversationItem.dataset.friendId;
-                    const friendName = conversationItem.querySelector('.conversation-name').textContent;
-                    const friendAvatar = conversationItem.querySelector('.conversation-avatar').style.backgroundImage;
-                    const friendInfo = {
-                        _id: friendId,
-                        fullName: friendName,
-                        avatar: friendAvatar
-                    };
-                    this.loadConversation(friendId, friendInfo);
-                }
-            });
-        } else {
-            console.error('[ChatManagerV2] Conversations list not found!');
-        }
-
-        const sendBtn = document.querySelector('.send-btn');
-        if (sendBtn) {
-            sendBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.sendMessage();
-            });
-        } else {
-            console.error('[ChatManagerV2] Send button not found!');
-        }
-
-        if (this.messageInput) {
-            this.messageInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    this.sendMessage();
-                }
-            });
-        } else {
-            console.error('[ChatManagerV2] Message input not found!');
-        }
-    }
-
-    async loadConversations() {
-        console.log('[ChatManagerV2] Loading conversations...');
+    // Fetch friends list
+    async function fetchFriends() {
         try {
-            const response = await fetch('/api/chat/conversations');
-            const result = await response.json();
-            if (result.success) {
-                console.log(`[ChatManagerV2] ${result.conversations.length} conversations loaded`);
-                this.renderConversations(result.conversations);
+            const response = await fetch('/api/chat/friends');
+            const data = await response.json();
+
+            if (data.success) {
+                friends = data.friends;
+                displayFriends(data.friends);
             } else {
-                console.error('[ChatManagerV2] Failed to load conversations:', result.error);
+                console.error('Failed to fetch friends:', data.error);
+                showAddFriendsMessage();
             }
         } catch (error) {
-            console.error('[ChatManagerV2] Error loading conversations:', error);
+            console.error('Error fetching friends:', error);
+            showAddFriendsMessage();
         }
     }
+    
+    // Show message when no friends
+    function showAddFriendsMessage() {
+        contactList.innerHTML = `
+            <div class="no-friends-message">
+                <i class="fas fa-users" style="font-size: 2rem; color: #ccc; margin-bottom: 1rem;"></i>
+                <p>No friends yet</p>
+                <button onclick="showAddFriendModal()" class="btn-add-friend">Add Friends</button>
+            </div>
+        `;
+    }
 
-    renderConversations(conversations) {
-        console.log('[ChatManagerV2] Rendering conversations...');
-        if (!this.conversationsList) return;
-
-        this.conversationsList.innerHTML = '';
-
-        conversations.forEach(conv => {
-            const conversationItem = document.createElement('li');
-            conversationItem.className = 'conversation-item';
-            conversationItem.dataset.friendId = conv.friend._id;
-
-            conversationItem.innerHTML = `
-                <div class="conversation-user">
-                    <div class="conversation-avatar" style="background-image: url('${conv.friend.avatar}'); background-size: cover;">
-                        ${conv.friend.avatar.includes('ui-avatars') ? conv.friend.firstName.charAt(0) : ''}
-                    </div>
-                    <div class="conversation-name">${conv.friend.firstName}</div>
-                    <div class="conversation-time">${this.formatTime(conv.lastMessage.timestamp)}</div>
+    // Display friends in the sidebar
+    function displayFriends(friendsList) {
+        if (friendsList.length === 0) {
+            showAddFriendsMessage();
+            return;
+        }
+        
+        contactList.innerHTML = friendsList.map(friend => `
+            <li class="contact-item" data-id="${friend._id}" data-type="User">
+                <div class="contact-avatar">
+                    <img src="${friend.avatar}" alt="${friend.fullName}" style="width: 40px; height: 40px; border-radius: 50%;">
                 </div>
-                <div class="conversation-preview">
-                    <div class="conversation-message">
-                        ${conv.lastMessage.isFromCurrentUser ? 'You: ' : ''}
-                        ${conv.lastMessage.content.length > 30 ? 
-                            conv.lastMessage.content.substring(0, 30) + '...' : 
-                            conv.lastMessage.content}
-                    </div>
-                    ${conv.unreadCount > 0 ? `<div class="unread-count">${conv.unreadCount}</div>` : ''}
+                <div class="contact-info">
+                    <h4>${friend.fullName}</h4>
+                    <p>${friend.isOnline ? 'Online' : 'Offline'}</p>
                 </div>
-            `;
+            </li>
+        `).join('');
 
-            this.conversationsList.appendChild(conversationItem);
+        // Add click listeners to friends
+        document.querySelectorAll('.contact-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const friendId = item.dataset.id;
+                const friend = friends.find(f => f._id === friendId);
+                
+                currentChat = {
+                    id: friendId,
+                    type: 'User',
+                    name: friend.fullName
+                };
+                
+                chatTitle.textContent = friend.fullName;
+                fetchMessages(friendId);
+                document.querySelectorAll('.contact-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
         });
     }
 
-    async loadConversation(friendId, friendInfo) {
-        console.log(`[ChatManagerV2] Loading conversation with friend: ${friendId}`);
+    // Fetch messages for a chat
+    async function fetchMessages(friendId) {
         try {
-            document.querySelectorAll('.conversation-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector(`[data-friend-id="${friendId}"]`)?.classList.add('active');
-
-            this.currentFriendId = friendId;
-
-            this.updateChatHeader(friendInfo);
-
             const response = await fetch(`/api/chat/messages/${friendId}`);
-            const result = await response.json();
+            const data = await response.json();
 
-            if (result.success) {
-                console.log(`[ChatManagerV2] ${result.messages.length} messages loaded`);
-                this.renderMessages(result.messages);
-                this.showChatArea();
+            if (data.success) {
+                displayMessages(data.messages);
             } else {
-                console.error('[ChatManagerV2] Failed to load messages:', result.error);
+                console.error('Failed to fetch messages:', data.error);
+                messageArea.innerHTML = '<div class="no-messages">Start a conversation!</div>';
             }
         } catch (error) {
-            console.error('[ChatManagerV2] Error loading conversation:', error);
+            console.error('Error fetching messages:', error);
+            messageArea.innerHTML = '<div class="no-messages">Failed to load messages</div>';
         }
     }
 
-    updateChatHeader(friendInfo) {
-        console.log('[ChatManagerV2] Updating chat header');
-        const chatHeader = document.querySelector('.chat-header');
-        if (!chatHeader) return;
-
-        chatHeader.innerHTML = `
-            <div class="chat-user">
-                <div class="chat-avatar" style="background-image: url('${friendInfo.avatar}'); background-size: cover;">
-                    ${friendInfo.avatar.includes('ui-avatars') ? friendInfo.fullName.charAt(0) : ''}
-                </div>
-                <div>
-                    <div class="chat-name">${friendInfo.fullName}</div>
-                    <div class="chat-status">Online</div>
-                </div>
+    // Display messages in the chat window
+    function displayMessages(messages) {
+        messageArea.innerHTML = messages.map(message => `
+            <div class="message ${message.isSender ? 'sent' : 'received'}">
+                ${!message.isSender ? `<strong>${message.senderName}</strong><br>` : ''}
+                ${message.content}
             </div>
-            <div class="chat-actions">
-                <div class="chat-action-btn">
-                    <i class="fas fa-phone"></i>
-                </div>
-                <div class="chat-action-btn">
-                    <i class="fas fa-video"></i>
-                </div>
-                <div class="chat-action-btn">
-                    <i class="fas fa-ellipsis-v"></i>
-                </div>
-            </div>
-        `;
+        `).join('');
+        messageArea.scrollTop = messageArea.scrollHeight;
     }
 
-    renderMessages(messages) {
-        console.log('[ChatManagerV2] Rendering messages...');
-        if (!this.messagesContainer) return;
+    // Send a message
+    async function sendMessage() {
+        if (!currentChat || !messageInput.value.trim()) return;
 
-        this.messagesContainer.innerHTML = '';
+        const messageContent = messageInput.value.trim();
+        messageInput.value = '';
 
-        messages.forEach(msg => {
-            this.addMessageToUI(msg, msg.sender._id === window.currentUserId);
-        });
+        try {
+            const response = await fetch('/api/chat/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    receiverId: currentChat.id,
+                    content: messageContent
+                })
+            });
 
-        this.scrollToBottom();
-    }
+            const data = await response.json();
 
-    sendMessage() {
-        console.log('[ChatManagerV2] Sending message...');
-        const content = this.messageInput.value.trim();
-        if (!content) return;
-
-        const message = {
-            sender: window.currentUserId,
-            receiver: this.currentFriendId,
-            content: content,
-            createdAt: new Date().toISOString()
-        };
-
-        this.socket.emit('send message', message);
-        this.addMessageToUI(message, true);
-        this.messageInput.value = '';
-        this.scrollToBottom();
-        this.loadConversations();
-    }
-
-    addMessageToUI(message, isCurrentUser) {
-        console.log('[ChatManagerV2] Adding message to UI');
-        if (!this.messagesContainer) return;
-
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${isCurrentUser ? 'sent' : 'received'}`;
-
-        const senderName = isCurrentUser ? window.currentUserName : message.sender.fullName;
-        const avatarUrl = isCurrentUser ? 
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(window.currentUserName)}&background=6C63FF&color=fff` :
-            `https://ui-avatars.com/api/?name=${encodeURIComponent(message.sender.fullName)}&background=6C63FF&color=fff`;
-
-        messageDiv.innerHTML = `
-            <div class="message-avatar" style="background-image: url('${avatarUrl}'); background-size: cover;">
-                ${senderName.charAt(0)}
-            </div>
-            <div class="message-content">
-                <div class="message-bubble">${this.escapeHtml(message.content)}</div>
-                <div class="message-time">
-                    ${this.formatTime(message.createdAt)}
-                    ${isCurrentUser ? '<i class="fas fa-check" style="margin-left: 4px;"></i>' : ''}
-                </div>
-            </div>
-        `;
-
-        this.messagesContainer.appendChild(messageDiv);
-    }
-
-    showChatArea() {
-        console.log('[ChatManagerV2] Showing chat area');
-        if (this.noConversationArea) this.noConversationArea.style.display = 'none';
-        if (this.chatMainArea) this.chatMainArea.style.display = 'flex';
-    }
-
-    formatTime(timestamp) {
-        const date = new Date(timestamp);
-        return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-    }
-
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    scrollToBottom() {
-        if (this.messagesContainer) {
-            this.messagesContainer.scrollTop = this.messagesContainer.scrollHeight;
+            if (data.success) {
+                // Add message to UI immediately
+                messageArea.innerHTML += `
+                    <div class="message sent">
+                        <div class="message-content">${messageContent}</div>
+                        <div class="message-time">${new Date().toLocaleTimeString()}</div>
+                    </div>
+                `;
+                messageArea.scrollTop = messageArea.scrollHeight;
+            } else {
+                console.error('Failed to send message:', data.error);
+                alert('Failed to send message: ' + data.error);
+                messageInput.value = messageContent; // Restore message
+            }
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('Failed to send message');
+            messageInput.value = messageContent; // Restore message
         }
     }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('[ChatManagerV2] DOMContentLoaded event fired');
-    if (document.querySelector('.chat-container')) {
-        console.log('[ChatManagerV2] Chat container found, initializing ChatManagerV2');
-        window.chatManager = new ChatManagerV2();
+    
+    // Add friend functionality
+    newChatBtn.addEventListener('click', showAddFriendModal);
+    
+    window.showAddFriendModal = function() {
+        const modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add Friend</h3>
+                    <button onclick="closeModal()" class="close-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="email" id="friendEmail" placeholder="Enter friend's email" class="friend-input">
+                    <button onclick="sendFriendRequest()" class="btn-send-request">Send Friend Request</button>
+                </div>
+                <div class="friend-requests-section">
+                    <h4>Pending Requests</h4>
+                    <div id="friendRequests">Loading...</div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        loadFriendRequests();
+    };
+    
+    window.closeModal = function() {
+        const modal = document.querySelector('.modal-overlay');
+        if (modal) modal.remove();
+    };
+    
+    window.sendFriendRequest = async function() {
+        const email = document.getElementById('friendEmail').value.trim();
+        if (!email) {
+            alert('Please enter an email address');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/chat/send-friend-request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    friendEmail: email,
+                    message: 'Hi! I would like to connect with you.'
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert('Friend request sent successfully!');
+                document.getElementById('friendEmail').value = '';
+            } else {
+                alert('Failed to send friend request: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error sending friend request:', error);
+            alert('Failed to send friend request');
+        }
+    };
+    
+    async function loadFriendRequests() {
+        try {
+            const response = await fetch('/api/chat/friend-requests');
+            const data = await response.json();
+            
+            const requestsDiv = document.getElementById('friendRequests');
+            
+            if (data.success && data.requests.length > 0) {
+                requestsDiv.innerHTML = data.requests.map(request => `
+                    <div class="friend-request-item">
+                        <div class="request-info">
+                            <strong>${request.sender.fullName}</strong>
+                            <p>${request.sender.email}</p>
+                            <small>${request.message}</small>
+                        </div>
+                        <div class="request-actions">
+                            <button onclick="respondToRequest('${request._id}', 'accept')" class="btn-accept">Accept</button>
+                            <button onclick="respondToRequest('${request._id}', 'reject')" class="btn-reject">Reject</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                requestsDiv.innerHTML = '<p>No pending requests</p>';
+            }
+        } catch (error) {
+            console.error('Error loading friend requests:', error);
+            document.getElementById('friendRequests').innerHTML = '<p>Failed to load requests</p>';
+        }
     }
+    
+    window.respondToRequest = async function(requestId, action) {
+        try {
+            const response = await fetch(`/api/chat/friend-requests/${requestId}/${action}`, {
+                method: 'POST'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(`Friend request ${action}ed successfully!`);
+                loadFriendRequests();
+                fetchFriends(); // Refresh friends list
+            } else {
+                alert(`Failed to ${action} friend request: ` + data.error);
+            }
+        } catch (error) {
+            console.error(`Error ${action}ing friend request:`, error);
+            alert(`Failed to ${action} friend request`);
+        }
+    };
+
+    sendMessageBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Initial load
+    fetchFriends();
 });

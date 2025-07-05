@@ -33,62 +33,69 @@ try {
 }
 
 const app = express();
-const http = require('http');
-const server = http.createServer(app);
-const { Server } = require("socket.io");
-const io = new Server(server);
+let server, io;
 
-io.on('connection', (socket) => {
-  console.log('User connected to socket');
+// Only initialize Socket.IO in non-serverless environment
+if (!process.env.VERCEL) {
+  const http = require('http');
+  server = http.createServer(app);
+  const { Server } = require("socket.io");
+  io = new Server(server);
 
-  socket.on('join', (data) => {
-    if (data && data.userId) {
-      socket.userId = data.userId;
-      socket.join(data.userId);
-      console.log(`User ${data.userId} joined their room`);
-    }
-  });
+  io.on('connection', (socket) => {
+    console.log('User connected to socket');
 
-  socket.on('send message', async (data) => {
-    try {
-      console.log('Socket message data (raw): ', data);
-      console.log('Socket userId (before processing): ', socket.userId);
-      // Use socket.userId as sender if not provided
-      const senderId = data.sender || socket.userId;
-      
-      if (!senderId || !data.receiver || !data.content) {
-        console.error('Missing required message data:', {
-          sender: senderId,
-          receiver: data.receiver,
-          content: data.content,
-          socketUserId: socket.userId
-        });
-        socket.emit('message error', 'Missing required message data');
-        return;
+    socket.on('join', (data) => {
+      if (data && data.userId) {
+        socket.userId = data.userId;
+        socket.join(data.userId);
+        console.log(`User ${data.userId} joined their room`);
       }
-      
-      const savedMessage = await chatService.sendMessage(
-        senderId, 
-        data.receiver, 
-        data.content,
-        data.messageType || 'text'
-      );
-      
-      io.to(data.receiver).emit('new message', savedMessage);
-      socket.emit('message sent', savedMessage);
-      
-    } catch (error) {
-      console.error('Send message error:', {
-        message: error.message,
-        stack: error.stack,
-        senderId: data?.sender || socket.userId,
-        receiverId: data?.receiver,
-        content: data?.content
-      });
-      socket.emit('message error', error.message);
-    }
+    });
+
+    socket.on('send message', async (data) => {
+      try {
+        console.log('Socket message data (raw): ', data);
+        console.log('Socket userId (before processing): ', socket.userId);
+        const senderId = data.sender || socket.userId;
+        
+        if (!senderId || !data.receiver || !data.content) {
+          console.error('Missing required message data:', {
+            sender: senderId,
+            receiver: data.receiver,
+            content: data.content,
+            socketUserId: socket.userId
+          });
+          socket.emit('message error', 'Missing required message data');
+          return;
+        }
+        
+        const savedMessage = await chatService.sendMessage(
+          senderId, 
+          data.receiver, 
+          data.content,
+          data.messageType || 'text'
+        );
+        
+        io.to(data.receiver).emit('new message', savedMessage);
+        socket.emit('message sent', savedMessage);
+        
+      } catch (error) {
+        console.error('Send message error:', {
+          message: error.message,
+          stack: error.stack,
+          senderId: data?.sender || socket.userId,
+          receiverId: data?.receiver,
+          content: data?.content
+        });
+        socket.emit('message error', error.message);
+      }
+    });
   });
-});
+} else {
+  server = app;
+  io = null;
+}
 
 
 const ensureDbConnection = async (req, res, next) => {
@@ -4006,18 +4013,16 @@ path: req.path
 });
 });
 
-// Start Server (only in non-serverless environment)
-if (!process.env.VERCEL) {
-
-// Share io instance with chat service
+// Initialize chat service
 chatService.init(io);
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Open http://localhost:${PORT} in your browser`);
-});
-
+// Start Server (only in non-serverless environment)
+if (!process.env.VERCEL) {
+  const PORT = process.env.PORT || 3000;
+  server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Open http://localhost:${PORT} in your browser`);
+  });
 }
 
 console.log('App initialization completed successfully');
