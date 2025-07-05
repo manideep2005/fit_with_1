@@ -980,6 +980,41 @@ app.get('/chat-test', (req, res) => {
   res.render('chat-fixed');
 });
 
+// Profile route
+app.get('/profile/:userId', isAuthenticated, validateSession, checkOnboarding, ensureDbConnection, async (req, res) => {
+  try {
+    const currentUserId = req.session.user._id;
+    const { userId } = req.params;
+    
+    // Get profile user
+    const profileUser = await UserService.getUserById(userId);
+    if (!profileUser) {
+      return res.status(404).render('404', { path: req.path });
+    }
+    
+    // Check if viewing own profile
+    const isOwnProfile = currentUserId.toString() === userId.toString();
+    
+    // Get friendship status if not own profile
+    let friendshipStatus = 'none';
+    if (!isOwnProfile) {
+      friendshipStatus = await chatService.getFriendshipStatus(currentUserId, userId);
+    }
+    
+    res.render('profile', {
+      user: req.session.user,
+      profileUser: profileUser,
+      isOwnProfile: isOwnProfile,
+      friendshipStatus: friendshipStatus,
+      currentPath: '/profile'
+    });
+    
+  } catch (error) {
+    console.error('Profile page error:', error);
+    res.status(500).render('error', { error: 'Failed to load profile' });
+  }
+});
+
 // Special handling for chat route
 app.get('/chat', isAuthenticated, validateSession, checkOnboarding, ensureDbConnection, async (req, res) => {
   try {

@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= profileUser.fullName %> - Profile | Fit-With-AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --secondary: #4D44DB;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --light: #F8F9FA;
+            --dark: #343A40;
+            --gray: #6C757D;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: var(--light); }
+
+        .profile-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .profile-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 20px;
+            padding: 40px;
+            color: white;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateX(-100px) translateY(-100px); }
+            100% { transform: translateX(100px) translateY(100px); }
+        }
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 4px solid rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            font-weight: 600;
+        }
+
+        .profile-details h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .profile-meta {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .meta-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .profile-actions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-outline { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); }
+
+        .profile-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .profile-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: var(--light);
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .achievement-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.3s ease;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .friendship-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .status-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-friends { background: var(--success); color: white; }
+        .status-pending { background: var(--warning); color: white; }
+        .status-none { background: var(--gray); color: white; }
+
+        @media (max-width: 768px) {
+            .profile-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .profile-info {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .profile-actions {
+                position: static;
+                justify-content: center;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-actions">
+                <% if (isOwnProfile) { %>
+                    <a href="/settings" class="btn btn-outline">
+                        <i class="fas fa-cog"></i> Edit Profile
+                    </a>
+                <% } else { %>
+                    <% if (friendshipStatus === 'friends') { %>
+                        <a href="/chat" class="btn btn-success">
+                            <i class="fas fa-comments"></i> Message
+                        </a>
+                        <button class="btn btn-outline" onclick="removeFriend()">
+                            <i class="fas fa-user-times"></i> Remove Friend
+                        </button>
+                    <% } else if (friendshipStatus === 'request_sent') { %>
+                        <button class="btn btn-outline" disabled>
+                            <i class="fas fa-clock"></i> Request Sent
+                        </button>
+                    <% } else if (friendshipStatus === 'request_received') { %>
+                        <button class="btn btn-success" onclick="acceptFriendRequest()">
+                            <i class="fas fa-user-plus"></i> Accept Request
+                        </button>
+                    <% } else { %>
+                        <button class="btn btn-primary" onclick="sendFriendRequest()">
+                            <i class="fas fa-user-plus"></i> Add Friend
+                        </button>
+                    <% } %>
+                <% } %>
+            </div>
+
+            <div class="profile-info">
+                <div class="profile-avatar">
+                    <%= profileUser.personalInfo?.firstName?.charAt(0) || profileUser.fullName?.charAt(0) || 'U' %>
+                </div>
+                <div class="profile-details">
+                    <h1><%= profileUser.fullName %></h1>
+                    <p><%= profileUser.personalInfo?.age ? profileUser.personalInfo.age + ' years old' : '' %></p>
+                    <% if (profileUser.fitnessGoals?.primaryGoal) { %>
+                        <p><i class="fas fa-target"></i> <%= profileUser.fitnessGoals.primaryGoal %></p>
+                    <% } %>
+                    
+                    <div class="profile-meta">
+                        <div class="meta-item">
+                            <div class="meta-value"><%= profileUser.gamification?.currentLevel || 1 %></div>
+                            <div class="meta-label">Level</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-value"><%= profileUser.gamification?.totalXP || 0 %></div>
+                            <div class="meta-label">XP</div>
+                        </div>
+                        <div class="meta-item">
+                            <div class="meta-value"><%= profileUser.friends?.length || 0 %></div>
+                            <div class="meta-label">Friends</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Content -->
+        <div class="profile-content">
+            <!-- Fitness Stats -->
+            <div class="profile-section">
+                <h3 class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    Fitness Stats
+                </h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value"><%= profileUser.workouts?.length || 0 %></div>
+                        <div class="stat-label">Total Workouts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value"><%= profileUser.gamification?.streaks?.workout?.longest || 0 %></div>
+                        <div class="stat-label">Best Streak</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value"><%= profileUser.gamification?.streaks?.workout?.current || 0 %></div>
+                        <div class="stat-label">Current Streak</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value"><%= profileUser.biometrics?.length ? profileUser.biometrics[profileUser.biometrics.length-1].weight + ' kg' : 'N/A' %></div>
+                        <div class="stat-label">Current Weight</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievements -->
+            <div class="profile-section">
+                <h3 class="section-title">
+                    <i class="fas fa-trophy"></i>
+                    Achievements
+                </h3>
+                <% if (profileUser.gamification?.achievements?.length > 0) { %>
+                    <% profileUser.gamification.achievements.slice(0, 5).forEach(achievement => { %>
+                        <div class="achievement-item">
+                            <div class="achievement-icon">
+                                <i class="fas fa-<%= achievement.icon || 'trophy' %>"></i>
+                            </div>
+                            <div>
+                                <h4><%= achievement.name %></h4>
+                                <p><%= achievement.description %></p>
+                                <small><%= new Date(achievement.unlockedAt).toLocaleDateString() %></small>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p>No achievements yet. Keep working out to unlock them!</p>
+                <% } %>
+            </div>
+
+            <!-- Progress -->
+            <div class="profile-section">
+                <h3 class="section-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Progress
+                </h3>
+                <div>
+                    <h4>Level Progress</h4>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: <%= ((profileUser.gamification?.totalXP || 0) % 100) %>%"></div>
+                    </div>
+                    <small><%= profileUser.gamification?.totalXP || 0 %> / <%= profileUser.gamification?.xpToNextLevel || 100 %> XP</small>
+                </div>
+
+                <% if (profileUser.fitnessGoals?.targetWeight && profileUser.biometrics?.length > 0) { %>
+                    <div style="margin-top: 20px;">
+                        <h4>Weight Goal</h4>
+                        <% 
+                            const currentWeight = profileUser.biometrics[profileUser.biometrics.length-1].weight;
+                            const targetWeight = profileUser.fitnessGoals.targetWeight;
+                            const startWeight = profileUser.biometrics[0].weight;
+                            const progress = Math.min(100, Math.abs((startWeight - currentWeight) / (startWeight - targetWeight)) * 100);
+                        %>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: <%= progress %>%"></div>
+                        </div>
+                        <small><%= currentWeight %> kg / <%= targetWeight %> kg target</small>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="profile-section">
+                <h3 class="section-title">
+                    <i class="fas fa-clock"></i>
+                    Recent Activity
+                </h3>
+                <% if (profileUser.workouts?.length > 0) { %>
+                    <% profileUser.workouts.slice(-5).reverse().forEach(workout => { %>
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                            <div>
+                                <h4><%= workout.type %></h4>
+                                <p><%= workout.duration %> minutes • <%= workout.calories %> calories</p>
+                                <small><%= new Date(workout.date).toLocaleDateString() %></small>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <p>No recent workouts to show.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const profileUserId = '<%= profileUser._id %>';
+        const currentUserId = '<%= user._id %>';
+        const friendshipStatus = '<%= friendshipStatus %>';
+
+        async function sendFriendRequest() {
+            try {
+                const response = await fetch('/api/chat/send-friend-request-by-id', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        userId: profileUserId,
+                        message: 'Hi! I would like to connect with you on our fitness journey.'
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    alert('Friend request sent successfully!');
+                    location.reload();
+                } else {
+                    alert('Failed to send friend request: ' + data.error);
+                }
+            } catch (error) {
+                alert('Failed to send friend request');
+            }
+        }
+
+        async function acceptFriendRequest() {
+            // Implementation for accepting friend request
+            alert('Feature coming soon!');
+        }
+
+        async function removeFriend() {
+            if (confirm('Are you sure you want to remove this friend?')) {
+                try {
+                    const response = await fetch('/api/chat/remove-friend', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ friendId: profileUserId })
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('Friend removed successfully');
+                        location.reload();
+                    } else {
+                        alert('Failed to remove friend: ' + data.error);
+                    }
+                } catch (error) {
+                    alert('Failed to remove friend');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
