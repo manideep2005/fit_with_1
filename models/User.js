@@ -16,7 +16,7 @@ const personalInfoSchema = new mongoose.Schema({
 const fitnessGoalsSchema = new mongoose.Schema({
   primaryGoal: { 
     type: String, 
-    enum: ['weight-loss', 'muscle-gain', 'endurance', 'strength', 'general-fitness', 'flexibility'] 
+    enum: ['weight-loss', 'muscle-gain', 'endurance', 'strength', 'general-fitness', 'flexibility', 'improve-fitness'] 
   },
   targetWeight: { type: Number },
   activityLevel: { 
@@ -44,7 +44,7 @@ const healthInfoSchema = new mongoose.Schema({
   },
   alcoholConsumption: { 
     type: String, 
-    enum: ['none', 'occasional', 'moderate', 'frequent'] 
+    enum: ['none', 'occasional', 'moderate', 'frequent', 'never'] 
   }
 }, { _id: false });
 
@@ -220,6 +220,10 @@ const userSchema = new mongoose.Schema({
 
   // Social Features
   friends: [{ 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User' 
+  }],
+  blockedUsers: [{ 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'User' 
   }],

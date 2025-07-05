@@ -310,6 +310,15 @@ class ChatService {
       await user.save();
       await friend.save();
       
+      // Clean up any existing friend requests between these users
+      const FriendRequest = require('../models/FriendRequest');
+      await FriendRequest.deleteMany({
+        $or: [
+          { sender: userId, receiver: friendId },
+          { sender: friendId, receiver: userId }
+        ]
+      });
+      
       return true;
     } catch (error) {
       console.error('Remove friend error:', error);
@@ -449,6 +458,105 @@ class ChatService {
       return true;
     } catch (error) {
       console.error('Delete message error:', error);
+      throw error;
+    }
+  }
+
+  // Block friend
+  static async blockFriend(userId, friendId) {
+    try {
+      const user = await User.findById(userId);
+      const friend = await User.findById(friendId);
+      
+      if (!user || !friend) {
+        throw new Error('User or friend not found');
+      }
+      
+      // Add to blocked list if not already blocked
+      if (!user.blockedUsers) {
+        user.blockedUsers = [];
+      }
+      
+      if (!user.blockedUsers.includes(friendId)) {
+        user.blockedUsers.push(friendId);
+      }
+      
+      // Remove from friends list
+      user.friends = user.friends.filter(id => id.toString() !== friendId);
+      friend.friends = friend.friends.filter(id => id.toString() !== userId);
+      
+      await user.save();
+      await friend.save();
+      
+      // Clean up any existing friend requests between these users
+      const FriendRequest = require('../models/FriendRequest');
+      await FriendRequest.deleteMany({
+        $or: [
+          { sender: userId, receiver: friendId },
+          { sender: friendId, receiver: userId }
+        ]
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Block friend error:', error);
+      throw error;
+    }
+  }
+  
+  // Clear chat messages
+  static async clearChat(userId, friendId) {
+    try {
+      const conversationId = Message.createConversationId(userId, friendId);
+      
+      // Soft delete all messages in the conversation for the current user
+      await Message.updateMany(
+        { 
+          conversationId: conversationId,
+          $or: [{ sender: userId }, { receiver: userId }]
+        },
+        { 
+          $set: { 
+            [`deletedBy.${userId}`]: true,
+            [`deletedAt.${userId}`]: new Date()
+          }
+        }
+      );
+      
+      return true;
+    } catch (error) {
+      console.error('Clear chat error:', error);
+      throw error;
+    }
+  }
+  
+  // Export chat messages
+  static async exportChat(userId, friendId) {
+    try {
+      const friend = await User.findById(friendId).select('fullName');
+      if (!friend) {
+        throw new Error('Friend not found');
+      }
+      
+      const messages = await this.getConversationMessages(userId, friendId, 1000, 0);
+      
+      let chatData = `Chat Export - ${friend.fullName}\n`;
+      chatData += `Exported on: ${new Date().toLocaleString()}\n`;
+      chatData += `Total Messages: ${messages.length}\n\n`;
+      chatData += '='.repeat(50) + '\n\n';
+      
+      messages.forEach(message => {
+        const timestamp = new Date(message.createdAt).toLocaleString();
+        const sender = message.isSender ? 'You' : friend.fullName;
+        chatData += `[${timestamp}] ${sender}: ${message.content}\n`;
+      });
+      
+      return {
+        chatData: chatData,
+        friendName: friend.fullName.replace(/\s+/g, '_')
+      };
+    } catch (error) {
+      console.error('Export chat error:', error);
       throw error;
     }
   }

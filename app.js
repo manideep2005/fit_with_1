@@ -3277,6 +3277,116 @@ app.delete('/api/chat/messages/:messageId', isAuthenticated, ensureDbConnection,
   }
 });
 
+// Remove friend
+app.post('/api/chat/remove-friend', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { friendId } = req.body;
+    
+    if (!friendId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Friend ID is required'
+      });
+    }
+    
+    await chatService.removeFriend(userId, friendId);
+    
+    res.json({
+      success: true,
+      message: 'Friend removed successfully'
+    });
+    
+  } catch (error) {
+    console.error('Remove friend error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to remove friend'
+    });
+  }
+});
+
+// Block friend
+app.post('/api/chat/block-friend', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { friendId } = req.body;
+    
+    if (!friendId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Friend ID is required'
+      });
+    }
+    
+    await chatService.blockFriend(userId, friendId);
+    
+    res.json({
+      success: true,
+      message: 'Friend blocked successfully'
+    });
+    
+  } catch (error) {
+    console.error('Block friend error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to block friend'
+    });
+  }
+});
+
+// Clear chat
+app.post('/api/chat/clear-chat', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { friendId } = req.body;
+    
+    if (!friendId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Friend ID is required'
+      });
+    }
+    
+    await chatService.clearChat(userId, friendId);
+    
+    res.json({
+      success: true,
+      message: 'Chat cleared successfully'
+    });
+    
+  } catch (error) {
+    console.error('Clear chat error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to clear chat'
+    });
+  }
+});
+
+// Export chat
+app.get('/api/chat/export/:friendId', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { friendId } = req.params;
+    
+    const exportData = await chatService.exportChat(userId, friendId);
+    
+    res.json({
+      success: true,
+      chatData: exportData.chatData,
+      friendName: exportData.friendName
+    });
+    
+  } catch (error) {
+    console.error('Export chat error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to export chat'
+    });
+  }
+});
+
 // Search users for friend requests
 app.post('/api/users/search', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {

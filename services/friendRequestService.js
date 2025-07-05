@@ -61,6 +61,21 @@ class FriendRequestService {
       await friendRequest.populate('sender', 'fullName email');
       await friendRequest.populate('receiver', 'fullName email');
       
+      // Send friend request email notification
+      try {
+        const { sendFriendRequestEmail } = require('./emailService');
+        await sendFriendRequestEmail(
+          friendRequest.receiver.email,
+          friendRequest.receiver.fullName,
+          friendRequest.sender.fullName,
+          message
+        );
+        console.log('Friend request email sent successfully');
+      } catch (emailError) {
+        console.error('Failed to send friend request email:', emailError);
+        // Don't fail the request if email fails
+      }
+      
       return friendRequest;
     } catch (error) {
       console.error('Send friend request error:', error);
@@ -146,6 +161,20 @@ class FriendRequestService {
       request.status = 'accepted';
       request.respondedAt = new Date();
       await request.save();
+      
+      // Send friend request accepted email notification
+      try {
+        const { sendFriendRequestAcceptedEmail } = require('./emailService');
+        await sendFriendRequestAcceptedEmail(
+          sender.email,
+          sender.fullName,
+          receiver.fullName
+        );
+        console.log('Friend request accepted email sent successfully');
+      } catch (emailError) {
+        console.error('Failed to send friend request accepted email:', emailError);
+        // Don't fail the request if email fails
+      }
       
       return request;
     } catch (error) {

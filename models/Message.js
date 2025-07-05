@@ -73,6 +73,19 @@ const messageSchema = new mongoose.Schema({
   
   deletedAt: {
     type: Date
+  },
+  
+  // Per-user deletion (for clearing chat)
+  deletedBy: {
+    type: Map,
+    of: Boolean,
+    default: {}
+  },
+  
+  deletedAtByUser: {
+    type: Map,
+    of: Date,
+    default: {}
   }
 }, {
   timestamps: true,
