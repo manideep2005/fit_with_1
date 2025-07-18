@@ -364,7 +364,9 @@
             <ul class="nav-menu">
                 <li class="nav-item"><a href="/dashboard?token=<%= navToken %>" class="nav-link active"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li class="nav-item"><a href="/workouts?token=<%= navToken %>" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
+                <li class="nav-item"><a href="/live-workout?token=<%= navToken %>" class="nav-link"><i class="fas fa-broadcast-tower"></i> Live Workouts</a></li>
                 <li class="nav-item"><a href="/progress?token=<%= navToken %>" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
+                <li class="nav-item"><a href="/analytics?token=<%= navToken %>" class="nav-link"><i class="fas fa-chart-bar"></i> Analytics</a></li>
                 <li class="nav-item"><a href="/nutrition?token=<%= navToken %>" class="nav-link"><i class="fas fa-utensils"></i> Nutrition</a></li>
                 <li class="nav-item"><a href="/nutriscan?token=<%= navToken %>" class="nav-link"><i class="fas fa-qrcode"></i> NutriScan</a></li>
                 <li class="nav-item"><a href="/meal-planner?token=<%= navToken %>" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
@@ -704,6 +706,9 @@
         </div>
     </div>
 
+    <script src="/js/theme.js"></script>
+    <script src="/js/workout-timer.js"></script>
+    <script src="/js/notifications.js"></script>
     <script>
         // Dashboard functionality
         document.addEventListener('DOMContentLoaded', function() {
@@ -715,17 +720,69 @@
         // Load dashboard data from API
         async function loadDashboardData() {
             try {
-                const response = await fetch('/api/dashboard-data');
-                const result = await response.json();
+                // Load meal planner data for nutrition stats
+                const mealResponse = await fetch('/meal-planner/api/goals');
+                const mealData = await mealResponse.json();
                 
-                if (result.success) {
-                    updateDashboardStats(result.data);
-                    updateRecentWorkouts(result.data.recentWorkouts);
+                // Load general dashboard data
+                const dashResponse = await fetch('/api/dashboard-data');
+                const dashResult = await dashResponse.json();
+                
+                if (mealData.success) {
+                    // Use meal planner data for nutrition stats
+                    const nutritionStats = {
+                        todayCalories: mealData.current.calories,
+                        targetCalories: mealData.goals.calories,
+                        todayProtein: mealData.current.protein,
+                        targetProtein: mealData.goals.protein,
+                        todayWater: mealData.current.water * 1000, // Convert L to ml
+                        targetWater: mealData.goals.water * 1000
+                    };
+                    
+                    if (dashResult.success) {
+                        // Merge nutrition data with dashboard data
+                        const combinedData = {
+                            ...dashResult.data,
+                            stats: {
+                                ...dashResult.data.stats,
+                                ...nutritionStats
+                            }
+                        };
+                        updateDashboardStats(combinedData);
+                        updateRecentWorkouts(combinedData.recentWorkouts);
+                    } else {
+                        // Use only nutrition data if dashboard fails
+                        updateDashboardStats({
+                            stats: {
+                                workoutsThisWeek: 0,
+                                targetWorkoutsPerWeek: 5,
+                                ...nutritionStats
+                            }
+                        });
+                    }
                 } else {
-                    console.error('Failed to load dashboard data:', result.error);
+                    console.error('Failed to load meal planner data:', mealData.error);
+                    // Fallback to dashboard data only
+                    if (dashResult.success) {
+                        updateDashboardStats(dashResult.data);
+                        updateRecentWorkouts(dashResult.data.recentWorkouts);
+                    }
                 }
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
+                // Set default values
+                updateDashboardStats({
+                    stats: {
+                        workoutsThisWeek: 0,
+                        targetWorkoutsPerWeek: 5,
+                        todayCalories: 0,
+                        targetCalories: 2000,
+                        todayProtein: 0,
+                        targetProtein: 120,
+                        todayWater: 0,
+                        targetWater: 3000
+                    }
+                });
             }
         }
 
@@ -1247,6 +1304,12 @@
         // Logout confirmation
         function confirmLogout() {
             return confirm('Are you sure you want to logout?');
+        }
+
+        // Initialize notifications for workout reminders
+        if (window.notificationManager) {
+            // Schedule daily workout reminder at 7 AM
+            window.notificationManager.scheduleWorkoutReminder('07:00');
         }
     </script>
 </body>

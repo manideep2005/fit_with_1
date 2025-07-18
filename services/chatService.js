@@ -9,6 +9,143 @@ class ChatService {
   static init(socketIoInstance) {
     io = socketIoInstance;
     console.log('ChatService initialized with Socket.IO');
+    
+    // Set up Socket.IO event handlers for real-time features
+    io.on('connection', (socket) => {
+      console.log('User connected:', socket.id);
+      
+      // Handle user going online
+      socket.on('user_online', async (userId) => {
+        try {
+          await User.findByIdAndUpdate(userId, {
+            isOnline: true,
+            lastSeen: new Date(),
+            socketId: socket.id
+          });
+          
+          // Notify friends that user is online
+          const user = await User.findById(userId).populate('friends', '_id');
+          if (user && user.friends) {
+            user.friends.forEach(friend => {
+              socket.to(friend._id.toString()).emit('friend_online', {
+                userId: userId,
+                isOnline: true
+              });
+            });
+          }
+        } catch (error) {
+          console.error('Error updating user online status:', error);
+        }
+      });
+      
+      // Handle typing indicators
+      socket.on('typing_start', (data) => {
+        socket.to(data.receiverId).emit('user_typing', {
+          senderId: data.senderId,
+          isTyping: true
+        });
+      });
+      
+      socket.on('typing_stop', (data) => {
+        socket.to(data.receiverId).emit('user_typing', {
+          senderId: data.senderId,
+          isTyping: false
+        });
+      });
+      
+      // Handle message read receipts
+      socket.on('message_read', async (data) => {
+        try {
+          await Message.findByIdAndUpdate(data.messageId, {
+            status: 'read',
+            readAt: new Date()
+          });
+          
+          socket.to(data.senderId).emit('message_read_receipt', {
+            messageId: data.messageId,
+            readAt: new Date()
+          });
+        } catch (error) {
+          console.error('Error updating message read status:', error);
+        }
+      });
+      
+      // Handle video call initiation
+      socket.on('video_call_request', (data) => {
+        socket.to(data.receiverId).emit('incoming_video_call', {
+          callerId: data.callerId,
+          callerName: data.callerName,
+          callId: data.callId
+        });
+      });
+      
+      // Handle audio call initiation
+      socket.on('audio_call_request', (data) => {
+        socket.to(data.receiverId).emit('incoming_audio_call', {
+          callerId: data.callerId,
+          callerName: data.callerName,
+          callId: data.callId
+        });
+      });
+      
+      // Handle call responses
+      socket.on('call_response', (data) => {
+        socket.to(data.callerId).emit('call_response', {
+          accepted: data.accepted,
+          receiverId: data.receiverId
+        });
+      });
+      
+      // Handle call end
+      socket.on('call_ended', (data) => {
+        socket.to(data.participantId).emit('call_ended', {
+          endedBy: data.endedBy
+        });
+      });
+      
+      // Handle WebRTC signaling
+      socket.on('webrtc_offer', (data) => {
+        socket.to(data.receiverId).emit('webrtc_offer', data);
+      });
+      
+      socket.on('webrtc_answer', (data) => {
+        socket.to(data.senderId).emit('webrtc_answer', data);
+      });
+      
+      socket.on('webrtc_ice_candidate', (data) => {
+        socket.to(data.receiverId).emit('webrtc_ice_candidate', data);
+      });
+      
+      // Handle user disconnect
+      socket.on('disconnect', async () => {
+        try {
+          // Find user by socket ID and update offline status
+          const user = await User.findOneAndUpdate(
+            { socketId: socket.id },
+            {
+              isOnline: false,
+              lastSeen: new Date(),
+              socketId: null
+            }
+          ).populate('friends', '_id');
+          
+          if (user && user.friends) {
+            // Notify friends that user is offline
+            user.friends.forEach(friend => {
+              socket.to(friend._id.toString()).emit('friend_offline', {
+                userId: user._id,
+                isOnline: false,
+                lastSeen: new Date()
+              });
+            });
+          }
+        } catch (error) {
+          console.error('Error updating user offline status:', error);
+        }
+        
+        console.log('User disconnected:', socket.id);
+      });
+    });
   }
   
   static async sendMessage(senderId, receiverId, content, messageType = 'text', attachmentData = null) {
@@ -55,10 +192,25 @@ class ChatService {
       await message.save();
       console.log('Message saved successfully');
       
-      await message.populate('sender', 'fullName personalInfo.firstName personalInfo.lastName');
+      await message.populate('sender', 'fullName personalInfo.firstName personalInfo.lastName isOnline lastSeen');
 
+      // Send real-time notification to receiver
       if (io) {
-        io.to(receiverId.toString()).emit('new message', message);
+        io.to(receiverId.toString()).emit('new_message', {
+          ...message.toObject(),
+          senderInfo: {
+            _id: sender._id,
+            fullName: sender.fullName,
+            isOnline: sender.isOnline,
+            lastSeen: sender.lastSeen
+          }
+        });
+        
+        // Update message status to delivered if receiver is online
+        if (receiver.isOnline) {
+          message.status = 'delivered';
+          await message.save();
+        }
       }
       
       console.log('Message populated and ready to return');
@@ -94,7 +246,7 @@ class ChatService {
       };
 
       const messages = await Message.find(query)
-        .populate('sender', 'fullName')
+        .populate('sender', 'fullName isOnline lastSeen')
         .sort({ createdAt: -1 })
         .limit(limit)
         .skip(skip);
@@ -102,7 +254,11 @@ class ChatService {
       const processedMessages = messages.map(message => ({
         ...message.toObject(),
         isSender: message.sender._id.toString() === userId.toString(),
-        senderName: message.sender.fullName
+        senderName: message.sender.fullName,
+        senderOnlineStatus: {
+          isOnline: message.sender.isOnline,
+          lastSeen: message.sender.lastSeen
+        }
       }));
 
       console.log('Messages retrieved:', processedMessages.length);
@@ -124,7 +280,7 @@ class ChatService {
         conversationId: conversationId,
         isDeleted: false
       })
-      .populate('sender', 'fullName personalInfo.firstName personalInfo.lastName')
+      .populate('sender', 'fullName personalInfo.firstName personalInfo.lastName isOnline lastSeen')
       .sort({ createdAt: 1 }) // Ascending order for chat display
       .limit(limit)
       .skip(skip);
@@ -136,7 +292,12 @@ class ChatService {
         createdAt: message.createdAt,
         isSender: message.sender._id.toString() === userId.toString(),
         senderName: message.sender.fullName,
-        status: message.status
+        status: message.status,
+        readAt: message.readAt,
+        senderOnlineStatus: {
+          isOnline: message.sender.isOnline,
+          lastSeen: message.sender.lastSeen
+        }
       }));
 
       console.log('Conversation messages retrieved:', processedMessages.length);
@@ -151,6 +312,19 @@ class ChatService {
   static async markMessagesAsRead(userId1, userId2, readerId) {
     try {
       const result = await Message.markAsRead(userId1, userId2, readerId);
+      
+      // Notify sender about read receipts via Socket.IO
+      if (io) {
+        const conversationId = Message.createConversationId(userId1, userId2);
+        const senderId = userId1.toString() === readerId.toString() ? userId2 : userId1;
+        
+        io.to(senderId.toString()).emit('messages_read', {
+          conversationId: conversationId,
+          readBy: readerId,
+          readAt: new Date()
+        });
+      }
+      
       return result;
     } catch (error) {
       console.error('Mark messages as read error:', error);
@@ -158,14 +332,14 @@ class ChatService {
     }
   }
   
-  // Get user's conversations list
+  // Get user's conversations list with online status
   static async getUserConversations(userId) {
     try {
       console.log('ChatService.getUserConversations called for user:', userId);
       const conversations = await Message.getUserConversations(userId);
       console.log('Raw conversations from DB:', conversations.length);
       
-      // Process conversations to get friend info
+      // Process conversations to get friend info with online status
       const processedConversations = conversations.map(conv => {
         const lastMessage = conv.lastMessage;
         const isCurrentUserSender = lastMessage.sender.toString() === userId.toString();
@@ -181,7 +355,9 @@ class ChatService {
             _id: friendInfo._id,
             fullName: friendInfo.fullName,
             firstName: friendInfo.personalInfo?.firstName || friendInfo.fullName.split(' ')[0],
-            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(friendInfo.fullName)}&background=6C63FF&color=fff`
+            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(friendInfo.fullName)}&background=6C63FF&color=fff`,
+            isOnline: friendInfo.isOnline || false,
+            lastSeen: friendInfo.lastSeen
           },
           lastMessage: {
             content: lastMessage.content,
@@ -326,11 +502,11 @@ class ChatService {
     }
   }
   
-  // Get user's friends list
+  // Get user's friends list with online status
   static async getUserFriends(userId) {
     try {
       console.log('ChatService.getUserFriends called for user:', userId);
-      const user = await User.findById(userId).populate('friends', 'fullName email personalInfo');
+      const user = await User.findById(userId).populate('friends', 'fullName email personalInfo isOnline lastSeen');
       
       if (!user) {
         throw new Error('User not found');
@@ -342,7 +518,9 @@ class ChatService {
         firstName: friend.personalInfo?.firstName || friend.fullName.split(' ')[0],
         email: friend.email,
         avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.fullName)}&background=6C63FF&color=fff`,
-        isOnline: false // Can be enhanced with real-time presence
+        isOnline: friend.isOnline || false,
+        lastSeen: friend.lastSeen,
+        status: friend.isOnline ? 'online' : this.getLastSeenText(friend.lastSeen)
       }));
       
       console.log('Friends found:', friends.length);
@@ -351,6 +529,25 @@ class ChatService {
       console.error('Get user friends error:', error);
       throw error;
     }
+  }
+  
+  // Helper method to format last seen text
+  static getLastSeenText(lastSeen) {
+    if (!lastSeen) return 'Last seen a while ago';
+    
+    const now = new Date();
+    const lastSeenDate = new Date(lastSeen);
+    const diffMs = now - lastSeenDate;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Last seen just now';
+    if (diffMins < 60) return `Last seen ${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+    if (diffHours < 24) return `Last seen ${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    if (diffDays < 7) return `Last seen ${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    
+    return `Last seen on ${lastSeenDate.toLocaleDateString()}`;
   }
   
   // Search users to add as friends
@@ -376,7 +573,7 @@ class ChatService {
           { 'personalInfo.lastName': searchRegex }
         ]
       })
-      .select('fullName email personalInfo fitnessId')
+      .select('fullName email personalInfo fitnessId isOnline lastSeen')
       .limit(limit);
       
       // Get friendship status for each user
@@ -392,7 +589,10 @@ class ChatService {
           fitnessId: user.fitnessId,
           avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}&background=6C63FF&color=fff`,
           friendshipStatus: friendshipStatus,
-          isFriend: friendshipStatus === 'friends'
+          isFriend: friendshipStatus === 'friends',
+          isOnline: user.isOnline || false,
+          lastSeen: user.lastSeen,
+          status: user.isOnline ? 'online' : this.getLastSeenText(user.lastSeen)
         };
       }));
       
@@ -400,6 +600,70 @@ class ChatService {
       return results;
     } catch (error) {
       console.error('Search users error:', error);
+      throw error;
+    }
+  }
+  
+  // Initiate video call
+  static async initiateVideoCall(callerId, receiverId) {
+    try {
+      const caller = await User.findById(callerId).select('fullName');
+      const receiver = await User.findById(receiverId).select('fullName isOnline');
+      
+      if (!caller || !receiver) {
+        throw new Error('Caller or receiver not found');
+      }
+      
+      if (!receiver.isOnline) {
+        throw new Error('User is not online');
+      }
+      
+      const callId = `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      if (io) {
+        io.to(receiverId.toString()).emit('incoming_video_call', {
+          callerId: callerId,
+          callerName: caller.fullName,
+          callId: callId,
+          type: 'video'
+        });
+      }
+      
+      return { callId, success: true };
+    } catch (error) {
+      console.error('Initiate video call error:', error);
+      throw error;
+    }
+  }
+  
+  // Initiate audio call
+  static async initiateAudioCall(callerId, receiverId) {
+    try {
+      const caller = await User.findById(callerId).select('fullName');
+      const receiver = await User.findById(receiverId).select('fullName isOnline');
+      
+      if (!caller || !receiver) {
+        throw new Error('Caller or receiver not found');
+      }
+      
+      if (!receiver.isOnline) {
+        throw new Error('User is not online');
+      }
+      
+      const callId = `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      
+      if (io) {
+        io.to(receiverId.toString()).emit('incoming_audio_call', {
+          callerId: callerId,
+          callerName: caller.fullName,
+          callId: callId,
+          type: 'audio'
+        });
+      }
+      
+      return { callId, success: true };
+    } catch (error) {
+      console.error('Initiate audio call error:', error);
       throw error;
     }
   }
@@ -562,7 +826,7 @@ class ChatService {
   }
 
   static async getContacts(userId) {
-    const user = await User.findById(userId).populate('friends', 'fullName').populate('groups', 'name');
+    const user = await User.findById(userId).populate('friends', 'fullName isOnline lastSeen').populate('groups', 'name');
     if (!user) {
         throw new Error('User not found');
     }
@@ -570,7 +834,9 @@ class ChatService {
     const friends = user.friends.map(friend => ({
         id: friend._id,
         name: friend.fullName,
-        type: 'User'
+        type: 'User',
+        isOnline: friend.isOnline || false,
+        lastSeen: friend.lastSeen
     }));
 
     const groups = user.groups.map(group => ({

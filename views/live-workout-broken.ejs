@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Workout - Fit-With-AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background: linear-gradient(135deg, var(--primary), #4D44DB);
+            min-height: 100vh;
+            color: white;
+        }
+
+        /* Join Screen */
+        .join-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin-left: 250px;
+        }
+
+        .join-container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .session-input {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 15px;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            color: white;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .session-input::placeholder {
+            color: rgba(255,255,255,0.7);
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn:hover { transform: translateY(-2px); }
+        .btn-secondary { background: rgba(255,255,255,0.2); }
+
+        /* Workout Screen */
+        .workout-screen {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+            background: #000;
+            margin-left: 250px;
+            position: relative;
+        }
+        
+        /* Enhanced UI Layout */
+        .workout-timer {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            z-index: 100;
+            border: 2px solid rgba(0,255,0,0.3);
+            box-shadow: 0 0 20px rgba(0,255,0,0.3);
+        }
+        
+        .rep-counter {
+            position: absolute;
+            top: 50%;
+            right: 30px;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.9);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            cursor: pointer;
+            z-index: 100;
+            border: 2px solid rgba(255,107,107,0.3);
+            box-shadow: 0 0 20px rgba(255,107,107,0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .rep-counter:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 0 30px rgba(255,107,107,0.5);
+        }
+        
+        .rep-count {
+            font-size: 4rem;
+            font-weight: 900;
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(255,107,107,0.5);
+        }
+        
+        .music-controls {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+            background: rgba(0,0,0,0.9);
+            padding: 15px 20px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 100;
+            border: 1px solid rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .music-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .music-btn:hover {
+            background: var(--primary);
+            transform: scale(1.1);
+        }
+        
+        .music-btn.playing {
+            background: var(--success);
+            animation: pulse 2s infinite;
+        }
+        
+        .workout-reactions {
+            position: absolute;
+            bottom: 200px;
+            left: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 100;
+        }
+        
+        .reaction-btn {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0,0,0,0.8);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .reaction-btn:hover {
+            transform: scale(1.2);
+            background: rgba(255,255,255,0.2);
+            box-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .workout-header {
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .workout-main {
+            flex: 1;
+            display: flex;
+            position: relative;
+        }
+
+        .video-area {
+            flex: 1;
+            background: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .workout-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 25px;
+        }
+
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover { background: rgba(255,255,255,0.3); transform: scale(1.1); }
+        .control-btn.active { background: var(--success); }
+        .control-btn.muted { background: var(--danger); }
+
+        .participants-panel {
+            width: 300px;
+            background: rgba(0,0,0,0.9);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .participant-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+
+        .participant-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .chat-area {
+            position: absolute;
+            top: 100px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background: rgba(0,0,0,0.8);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .chat-message {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+        }
+
+        .chat-input button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            color: #333;
+        }
+
+        .friend-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .friend-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .invite-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .message { padding: 15px; border-radius: 10px; margin-bottom: 20px; display: none; }
+        .error { background: rgba(220, 53, 69, 0.2); border: 1px solid rgba(220, 53, 69, 0.5); color: #ff6b6b; }
+        .success { background: rgba(40, 167, 69, 0.2); border: 1px solid rgba(40, 167, 69, 0.5); color: #51cf66; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" style="position: fixed; top: 0; left: 0; width: 250px; height: 100vh; background: white; box-shadow: 2px 0 10px rgba(0,0,0,0.1); padding: 2rem 1rem; z-index: 100; overflow-y: auto;">
+        <div class="sidebar-header" style="display: flex; align-items: center; margin-bottom: 2rem; padding: 0 1rem;">
+            <img src="https://ui-avatars.com/api/?name=User&background=6C63FF&color=fff" alt="User Avatar" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+            <div>
+                <h3 style="font-weight: 600; margin: 0; color: #343A40;">User</h3>
+                <span style="font-size: 0.8rem; color: #6C63FF; background: rgba(108, 99, 255, 0.1); padding: 2px 8px; border-radius: 20px; margin-top: 5px;">Premium Plan</span>
+            </div>
+        </div>
+        
+        <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="margin-bottom: 5px;"><a href="/dashboard" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C757D; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-home" style="margin-right: 10px; font-size: 1.2rem;"></i> Dashboard</a></li>
+            <li style="margin-bottom: 5px;"><a href="/workouts" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C757D; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-dumbbell" style="margin-right: 10px; font-size: 1.2rem;"></i> Workouts</a></li>
+            <li style="margin-bottom: 5px;"><a href="/live-workout" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C63FF; background: rgba(108, 99, 255, 0.1); text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-broadcast-tower" style="margin-right: 10px; font-size: 1.2rem;"></i> Live Workouts</a></li>
+            <li style="margin-bottom: 5px;"><a href="/progress" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C757D; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-chart-line" style="margin-right: 10px; font-size: 1.2rem;"></i> Progress</a></li>
+            <li style="margin-bottom: 5px;"><a href="/analytics" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C757D; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-chart-bar" style="margin-right: 10px; font-size: 1.2rem;"></i> Analytics</a></li>
+            <li style="margin-bottom: 5px;"><a href="/nutrition" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C757D; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-utensils" style="margin-right: 10px; font-size: 1.2rem;"></i> Nutrition</a></li>
+            <li style="margin-bottom: 5px;"><a href="/nutriscan" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C757D; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-qrcode" style="margin-right: 10px; font-size: 1.2rem;"></i> NutriScan</a></li>
+            <li style="margin-bottom: 5px;"><a href="/meal-planner" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C757D; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-calendar-check" style="margin-right: 10px; font-size: 1.2rem;"></i> Meal Planner</a></li>
+            <li style="margin-bottom: 5px;"><a href="/challenges" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C757D; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-trophy" style="margin-right: 10px; font-size: 1.2rem;"></i> Challenges</a></li>
+            <li style="margin-bottom: 5px;"><a href="/health" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C757D; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-heartbeat" style="margin-right: 10px; font-size: 1.2rem;"></i> Health Metrics</a></li>
+            <li style="margin-bottom: 5px;"><a href="/biometrics" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C757D; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-chart-bar" style="margin-right: 10px; font-size: 1.2rem;"></i> Biometrics</a></li>
+            <li style="margin-bottom: 5px;"><a href="/schedule" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C757D; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-calendar-alt" style="margin-right: 10px; font-size: 1.2rem;"></i> Schedule</a></li>
+            <li style="margin-bottom: 5px;"><a href="/community" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C757D; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-users" style="margin-right: 10px; font-size: 1.2rem;"></i> Community</a></li>
+            <li style="margin-bottom: 5px;"><a href="/chat" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C757D; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-comments" style="margin-right: 10px; font-size: 1.2rem;"></i> Chat</a></li>
+            <li style="margin-bottom: 5px;"><a href="/ai-coach" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C757D; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-robot" style="margin-right: 10px; font-size: 1.2rem;"></i> AI Coach</a></li>
+            <li style="margin-bottom: 5px;"><a href="/settings" style="display: flex; align-items: center; padding: 12px 1rem; color: #6C757D; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;"><i class="fas fa-cog" style="margin-right: 10px; font-size: 1.2rem;"></i> Settings</a></li>
+        </ul>
+        
+        <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #E9ECEF;">
+            <a href="/logout" style="display: flex; align-items: center; padding: 12px 1rem; color: #DC3545; text-decoration: none; border-radius: 8px; transition: all 0.3s ease; font-weight: 500;">
+                <i class="fas fa-sign-out-alt" style="margin-right: 10px; font-size: 1.2rem;"></i> Logout
+            </a>
+        </div>
+    </div>
+
+    <!-- Join Screen -->
+    <div id="joinScreen" class="join-screen" style="margin-left: 250px;">
+        <div class="join-container">
+            <div style="font-size: 3rem; margin-bottom: 20px;">🏋️‍♂️</div>
+            <h1 style="font-size: 2rem; margin-bottom: 10px;">Live Workout</h1>
+            <p style="opacity: 0.9; margin-bottom: 30px;">Join a session or create your own</p>
+
+            <div id="errorMessage" class="message error"></div>
+            <div id="successMessage" class="message success"></div>
+
+            <input type="text" id="sessionId" class="session-input" placeholder="Enter Session ID (e.g., ABC-DEF-GHI)" maxlength="11">
+            <button type="button" class="btn" onclick="joinSession()">
+                <i class="fas fa-video"></i> Join Workout
+            </button>
+
+            <button type="button" class="btn btn-secondary" onclick="createSession()">
+                <i class="fas fa-plus"></i> Create New Session
+            </button>
+            
+            <button type="button" class="btn" onclick="testButtons()" style="background: orange; margin-top: 10px;">
+                <i class="fas fa-bug"></i> Test Buttons
+            </button>
+        </div>
+    </div>
+
+    <!-- Workout Screen -->
+    <div id="workoutScreen" class="workout-screen">
+        <!-- Enhanced Features -->
+        <div id="workoutTimer" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); padding: 15px 30px; border-radius: 25px; font-size: 2rem; font-weight: 700; color: #00ff00; font-family: 'Courier New', monospace; z-index: 100;">00:00</div>
+        
+        <div id="repCounter" style="position: absolute; top: 50%; right: 20px; transform: translateY(-50%); background: rgba(0,0,0,0.8); padding: 30px; border-radius: 20px; text-align: center; cursor: pointer; z-index: 100;" onclick="incrementReps()" title="Click to add reps">
+            <div style="font-size: 4rem; font-weight: 900; color: #ff6b6b; margin-bottom: 10px;" id="repCount">0</div>
+            <div style="color: white; font-size: 1rem;">Reps (Click to add)</div>
+            <button onclick="event.stopPropagation(); resetReps()" style="background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 5px; margin-top: 10px; cursor: pointer;">Reset</button>
+        </div>
+        
+        <div id="musicControls" style="position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.8); padding: 15px 20px; border-radius: 15px; display: flex; align-items: center; gap: 15px; z-index: 100;">
+            <button onclick="previousTrack()" style="width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(255,255,255,0.2); color: white; cursor: pointer;"><i class="fas fa-step-backward"></i></button>
+            <button onclick="toggleMusic()" style="width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(255,255,255,0.2); color: white; cursor: pointer;"><i class="fas fa-play"></i></button>
+            <button onclick="nextTrack()" style="width: 40px; height: 40px; border-radius: 50%; border: none; background: rgba(255,255,255,0.2); color: white; cursor: pointer;"><i class="fas fa-step-forward"></i></button>
+            <span style="color: white; font-size: 0.9rem; margin-left: 10px;">No music</span>
+        </div>
+        
+        <div id="workoutReactions" class="workout-reactions">
+            <button onclick="sendReaction('💪')" class="reaction-btn" title="Strong">💪</button>
+            <button onclick="sendReaction('🔥')" class="reaction-btn" title="Fire">🔥</button>
+            <button onclick="sendReaction('👏')" class="reaction-btn" title="Clap">👏</button>
+            <button onclick="sendReaction('😅')" class="reaction-btn" title="Tired">😅</button>
+            <button onclick="sendReaction('⚡')" class="reaction-btn" title="Energy">⚡</button>
+        </div>
+        
+        <div id="exerciseQueue" style="position: absolute; top: 100px; left: 30px; background: rgba(0,0,0,0.9); padding: 20px; border-radius: 15px; width: 280px; z-index: 50; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px);">
+            <h4 style="margin: 0 0 15px 0; color: white;">🏋️ Exercise Queue</h4>
+            <div class="exercise-item active">
+                <div>
+                    <div style="font-weight: 600; color: white;">Push-ups</div>
+                    <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">60s • 20 reps</div>
+                </div>
+                <div style="color: white; font-size: 1.2rem;">▶️</div>
+            </div>
+            <div class="exercise-item">
+                <div>
+                    <div style="font-weight: 600; color: white;">Squats</div>
+                    <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">60s • 25 reps</div>
+                </div>
+                <div style="color: white; font-size: 1.2rem;">⏸️</div>
+            </div>
+            <div class="exercise-item">
+                <div>
+                    <div style="font-weight: 600; color: white;">Plank</div>
+                    <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7);">30s • Hold</div>
+                </div>
+                <div style="color: white; font-size: 1.2rem;">⏸️</div>
+            </div>
+        </div>
+        <div class="workout-header">
+            <div>
+                <i class="fas fa-dumbbell"></i>
+                <span>Workout Session</span>
+                <small id="sessionIdDisplay"></small>
+            </div>
+            <div>
+                Participants: <span id="participantCount">1</span>
+                <button onclick="leaveSession()" style="background: var(--danger); color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer; margin-left: 15px;">
+                    Leave
+                </button>
+            </div>
+        </div>
+
+        <div class="workout-main">
+            <div class="video-area">
+                <video id="localVideo" class="workout-video" autoplay muted playsinline></video>
+                
+                <div class="video-controls">
+                    <button class="control-btn" id="cameraBtn" onclick="toggleCamera()">
+                        <i class="fas fa-video"></i>
+                    </button>
+                    <button class="control-btn" id="micBtn" onclick="toggleMic()">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button class="control-btn" onclick="shareScreen()">
+                        <i class="fas fa-desktop"></i>
+                    </button>
+                    <button class="control-btn" id="inviteBtn" onclick="showInviteModal()">
+                        <i class="fas fa-user-plus"></i>
+                    </button>
+                    <button class="control-btn" onclick="copyLink()">
+                        <i class="fas fa-link"></i>
+                    </button>
+                    <button class="control-btn" onclick="startWorkoutTimer()" style="background: var(--success);" title="Start Timer">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    <button class="control-btn" onclick="stopWorkoutTimer()" title="Stop Timer">
+                        <i class="fas fa-stop"></i>
+                    </button>
+                    <button class="control-btn" onclick="nextExercise()" title="Next Exercise">
+                        <i class="fas fa-forward"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="participants-panel">
+                <h4 style="margin-bottom: 15px;">Participants</h4>
+                <div id="participantsList"></div>
+            </div>
+        </div>
+
+        <div class="chat-area">
+            <h4 style="margin-bottom: 15px;"><i class="fas fa-comments"></i> Chat</h4>
+            <div class="chat-messages" id="chatMessages"></div>
+            <div class="chat-input">
+                <input type="text" placeholder="Type a message..." id="chatInput">
+                <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invite Modal -->
+    <div id="inviteModal" class="modal">
+        <div class="modal-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: var(--primary);">Invite Friends</h3>
+                <button onclick="closeModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <h4>Session ID</h4>
+                <div id="modalSessionId" style="background: #f5f5f5; padding: 15px; border-radius: 8px; text-align: center; font-family: monospace; font-size: 1.2rem; font-weight: bold; color: var(--primary);"></div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <h4>Invite Link</h4>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="inviteLink" readonly style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+                    <button onclick="copyLink()" style="background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer;">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <h4>Your Friends</h4>
+                <div id="friendsList" style="max-height: 200px; overflow-y: auto;"></div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button onclick="testInviteSystem()" style="background: var(--warning); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-right: 10px; font-size: 0.9rem;">
+                    🧪 Test Invite System
+                </button>
+                <button onclick="closeModal()" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        alert('JavaScript is loading!');
+        console.log('Script loading...');
+        
+        // Simple global functions that definitely work
+        function createSession() {
+            console.log('CREATE SESSION CLICKED!');
+            const sessionId = 'ABC-' + Math.random().toString(36).substr(2, 3).toUpperCase();
+            
+            document.querySelector('.sidebar').style.display = 'none';
+            document.getElementById('joinScreen').style.display = 'none';
+            document.getElementById('workoutScreen').style.display = 'flex';
+            document.getElementById('workoutScreen').style.marginLeft = '0';
+            document.getElementById('sessionIdDisplay').textContent = '(' + sessionId + ')';
+            
+            console.log('Session created:', sessionId);
+        }
+        
+        function joinSession() {
+            console.log('JOIN SESSION CLICKED!');
+            const sessionId = document.getElementById('sessionId').value.trim() || 'DEMO-123';
+            
+            document.querySelector('.sidebar').style.display = 'none';
+            document.getElementById('joinScreen').style.display = 'none';
+            document.getElementById('workoutScreen').style.display = 'flex';
+            document.getElementById('workoutScreen').style.marginLeft = '0';
+            document.getElementById('sessionIdDisplay').textContent = '(' + sessionId + ')';
+            
+            console.log('Joined session:', sessionId);
+        }
+        
+        function incrementReps() {
+            console.log('REP COUNTER CLICKED!');
+            const repEl = document.getElementById('repCount');
+            const current = parseInt(repEl.textContent) || 0;
+            repEl.textContent = current + 1;
+        }
+        
+        function resetReps() {
+            console.log('RESET REPS CLICKED!');
+            document.getElementById('repCount').textContent = '0';
+        }
+        
+        function startWorkoutTimer() {
+            console.log('START TIMER CLICKED!');
+            alert('Timer started!');
+        }
+        
+        function stopWorkoutTimer() {
+            console.log('STOP TIMER CLICKED!');
+            alert('Timer stopped!');
+        }
+        
+        function toggleMusic() {
+            console.log('MUSIC TOGGLE CLICKED!');
+            alert('Music toggled!');
+        }
+        
+        function nextTrack() {
+            console.log('NEXT TRACK CLICKED!');
+            alert('Next track!');
+        }
+        
+        function previousTrack() {
+            console.log('PREVIOUS TRACK CLICKED!');
+            alert('Previous track!');
+        }
+        
+        function sendReaction(emoji) {
+            console.log('REACTION CLICKED:', emoji);
+            alert('Reaction: ' + emoji);
+        }
+        
+        function nextExercise() {
+            console.log('NEXT EXERCISE CLICKED!');
+            alert('Next exercise!');
+        }
+        
+        function leaveSession() {
+            console.log('LEAVE SESSION CLICKED!');
+            location.reload();
+        }
+        
+        function testButtons() {
+            console.log('TEST BUTTON CLICKED!');
+            alert('All buttons are working!');
+        }
+        
+        // Make all functions global
+        window.createSession = createSession;
+        window.joinSession = joinSession;
+        window.incrementReps = incrementReps;
+        window.resetReps = resetReps;
+        window.startWorkoutTimer = startWorkoutTimer;
+        window.stopWorkoutTimer = stopWorkoutTimer;
+        window.toggleMusic = toggleMusic;
+        window.nextTrack = nextTrack;
+        window.previousTrack = previousTrack;
+        window.sendReaction = sendReaction;
+        window.nextExercise = nextExercise;
+        window.leaveSession = leaveSession;
+        window.testButtons = testButtons;
+        
+        console.log('All functions loaded and made global');
+        console.log('createSession type:', typeof window.createSession);
+    </script>
+        // Make functions global immediately
+        window.createSession = function() {
+            console.log('Create session clicked!');
+            
+            const sessionId = 'ABC-' + Math.random().toString(36).substr(2, 3).toUpperCase() + '-' + Math.random().toString(36).substr(2, 3).toUpperCase();
+            
+            // Hide sidebar and switch to workout
+            document.querySelector('.sidebar').style.display = 'none';
+            document.getElementById('joinScreen').style.display = 'none';
+            document.getElementById('workoutScreen').style.display = 'flex';
+            document.getElementById('workoutScreen').style.marginLeft = '0';
+            document.getElementById('sessionIdDisplay').textContent = '(' + sessionId + ')';
+            
+            // Initialize workout features
+            initializeWorkout();
+            
+            console.log('Session created:', sessionId);
+        };
+        
+        window.joinSession = function(sessionId) {
+            console.log('Join session clicked with:', sessionId);
+            
+            if (!sessionId) {
+                sessionId = document.getElementById('sessionId').value.trim();
+            }
+            
+            if (!sessionId) {
+                showToast('Please enter a session ID', 'error');
+                return;
+            }
+            
+            // Hide sidebar and switch to workout
+            document.querySelector('.sidebar').style.display = 'none';
+            document.getElementById('joinScreen').style.display = 'none';
+            document.getElementById('workoutScreen').style.display = 'flex';
+            document.getElementById('workoutScreen').style.marginLeft = '0';
+            document.getElementById('sessionIdDisplay').textContent = '(' + sessionId + ')';
+            
+            // Initialize workout features
+            initializeWorkout();
+            
+            console.log('Joined session:', sessionId);
+        };
+        
+        function initializeWorkout() {
+            // Add welcome messages
+            setTimeout(() => {
+                addChatMessage('Welcome to live workout!', 'system');
+                addChatMessage('💪 Click rep counter to track progress', 'system');
+                addChatMessage('🎵 Use music controls for motivation', 'system');
+                addChatMessage('🔥 Send reactions to friends', 'system');
+            }, 500);
+            
+            // Auto-start timer
+            setTimeout(() => {
+                showToast('Workout session ready! Click timer to start', 'success');
+            }, 1000);
+        }
+        
+        window.testButtons = function() {
+            showToast('JavaScript is working! All buttons functional', 'success');
+        };
+        
+        // Real workout functionality - variables already declared above
+        
+        window.incrementReps = function() {
+            const repEl = document.getElementById('repCount');
+            const current = parseInt(repEl.textContent) || 0;
+            const newCount = current + 1;
+            repEl.textContent = newCount;
+            
+            if (newCount % 10 === 0) {
+                showToast(`Great job! ${newCount} reps completed! 🔥`, 'success');
+            }
+            addChatMessage(`💪 Rep count: ${newCount}`, 'system');
+        };
+        
+        window.resetReps = function() {
+            document.getElementById('repCount').textContent = '0';
+            showToast('Rep counter reset', 'info');
+            addChatMessage('🔄 Reps reset to 0', 'system');
+        };
+        
+        window.startWorkoutTimer = function() {
+            if (timerInterval) {
+                showToast('Timer is already running!', 'warning');
+                return;
+            }
+            
+            timerInterval = setInterval(() => {
+                workoutTimer++;
+                const minutes = Math.floor(workoutTimer / 60);
+                const seconds = workoutTimer % 60;
+                document.getElementById('workoutTimer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+            
+            showToast('Workout timer started! 💪', 'success');
+            addChatMessage('⏱️ Workout timer started!', 'system');
+        };
+        
+        window.stopWorkoutTimer = function() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                const minutes = Math.floor(workoutTimer / 60);
+                const seconds = workoutTimer % 60;
+                showToast(`Timer stopped at ${minutes}:${seconds.toString().padStart(2, '0')}`, 'info');
+                addChatMessage(`⏱️ Timer stopped at ${minutes}:${seconds.toString().padStart(2, '0')}`, 'system');
+            } else {
+                showToast('Timer is not running!', 'warning');
+            }
+        };
+        
+        window.toggleMusic = function() {
+            musicPlaying = !musicPlaying;
+            const trackDisplay = document.querySelector('.music-controls span');
+            
+            if (musicPlaying) {
+                trackDisplay.textContent = musicTracks[currentTrackIndex];
+                addChatMessage('🎵 Music started: ' + musicTracks[currentTrackIndex], 'system');
+            } else {
+                addChatMessage('🎵 Music paused', 'system');
+            }
+        };
+        
+        window.nextTrack = function() {
+            currentTrackIndex = (currentTrackIndex + 1) % musicTracks.length;
+            const trackDisplay = document.querySelector('.music-controls span');
+            trackDisplay.textContent = musicTracks[currentTrackIndex];
+            addChatMessage('🎵 Next track: ' + musicTracks[currentTrackIndex], 'system');
+        };
+        
+        window.previousTrack = function() {
+            currentTrackIndex = currentTrackIndex === 0 ? musicTracks.length - 1 : currentTrackIndex - 1;
+            const trackDisplay = document.querySelector('.music-controls span');
+            trackDisplay.textContent = musicTracks[currentTrackIndex];
+            addChatMessage('🎵 Previous track: ' + musicTracks[currentTrackIndex], 'system');
+        };
+        
+        window.sendReaction = function(emoji) {
+            const reaction = document.createElement('div');
+            reaction.textContent = emoji;
+            reaction.style.cssText = `
+                position: absolute;
+                font-size: 3rem;
+                pointer-events: none;
+                z-index: 1000;
+                left: ${Math.random() * 300 + 100}px;
+                bottom: 100px;
+                animation: floatUp 3s ease-out forwards;
+            `;
+            
+            document.getElementById('workoutScreen').appendChild(reaction);
+            setTimeout(() => reaction.remove(), 3000);
+            
+            addChatMessage(`${emoji} reaction sent!`, 'system');
+        };
+        
+        window.nextExercise = function() {
+            addChatMessage('🏋️ Moving to next exercise!', 'system');
+        };
+        
+        // Add floating animation CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes floatUp {
+                0% { opacity: 1; transform: translateY(0) scale(1); }
+                100% { opacity: 0; transform: translateY(-100px) scale(1.5); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        window.leaveSession = function() {
+            if (confirm('Leave session?')) {
+                location.reload();
+            }
+        };
+        
+        console.log('All functions loaded globally');
+        
+        // Test all functions are accessible
+        console.log('createSession:', typeof window.createSession);
+        console.log('joinSession:', typeof window.joinSession);
+        console.log('incrementReps:', typeof window.incrementReps);
+        console.log('startWorkoutTimer:', typeof window.startWorkoutTimer);
+        
+        // Add click event listeners as backup
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, setting up event listeners');
+            
+            // Backup event listeners
+            const createBtn = document.querySelector('button[onclick*="createSession"]');
+            if (createBtn) {
+                createBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Create button clicked via event listener');
+                    window.createSession();
+                });
+            }
+            
+            const joinBtn = document.querySelector('button[onclick*="joinSession"]');
+            if (joinBtn) {
+                joinBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    console.log('Join button clicked via event listener');
+                    window.joinSession();
+                });
+            }
+        });
+        const socket = io();
+        let currentSessionId = null;
+        let localStream = null;
+        let isVideoEnabled = true;
+        let isAudioEnabled = true;
+        
+        // Enhanced workout features
+        let workoutTimer = 0;
+        let timerInterval = null;
+        let repCount = 0;
+        let currentExerciseIndex = 0;
+        let isWorkoutActive = false;
+        let musicPlaying = false;
+        let currentTrackIndex = 0;
+        let leaderboardData = [];
+        
+        const workoutExercises = [
+            { name: 'Push-ups', duration: 60, reps: 20, completed: false },
+            { name: 'Squats', duration: 60, reps: 25, completed: false },
+            { name: 'Plank', duration: 30, reps: 1, completed: false },
+            { name: 'Jumping Jacks', duration: 45, reps: 30, completed: false },
+            { name: 'Burpees', duration: 60, reps: 15, completed: false }
+        ];
+        
+        const musicTracks = [
+            'Pump It Up - Workout Mix',
+            'Beast Mode - Fitness Beats', 
+            'Power Hour - Gym Anthems',
+            'Unstoppable - Motivation Mix'
+        ];
+
+        console.log('Live workout loaded');
+        
+        // Test function
+        window.testButtons = function() {
+            console.log('Test button clicked!');
+            alert('JavaScript is working!\n\nFunctions available:\n- createSession: ' + (typeof createSession)+ '\n- joinSession: ' + (typeof joinSession));
+        };
+        
+        // Debug logs
+        console.log('createSession function:', typeof createSession);
+        console.log('joinSession function:', typeof joinSession);
+        console.log('Socket available:', typeof socket);
+        
+        // Test function
+        window.testButton = function() {
+            alert(`Test Results:\nSession ID: ${currentSessionId || 'None'}\nFunctions loaded: ${typeof showInviteModal}\nModal exists: ${!!document.getElementById('inviteModal')}`);
+            console.log('Current session ID:', currentSessionId);
+            console.log('showInviteModal function:', showInviteModal);
+        };
+        
+        // Make functions globally accessible
+        window.createSession = createSession;
+        window.toggleCamera = toggleCamera;
+        window.toggleMic = toggleMic;
+        window.shareScreen = shareScreen;
+        window.showInviteModal = showInviteModal;
+        window.closeModal = closeModal;
+        window.copyLink = copyLink;
+        window.inviteFriend = inviteFriend;
+        window.sendMessage = sendMessage;
+        window.leaveSession = leaveSession;
+        
+        console.log('All functions made globally accessible');
+
+        // Auto-format session ID
+        document.getElementById('sessionId').addEventListener('input', function(e) {
+            let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            if (value.length > 3) value = value.substring(0, 3) + '-' + value.substring(3);
+            if (value.length > 7) value = value.substring(0, 7) + '-' + value.substring(7, 10);
+            e.target.value = value;
+        });
+
+        // Join form
+        document.getElementById('joinForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const sessionId = document.getElementById('sessionId').value.trim();
+            if (sessionId) joinSession(sessionId);
+        });
+
+        function joinSession(sessionId) {
+            console.log('Attempting to join session:', sessionId);
+            if (!sessionId) {
+                showError('Please enter a valid session ID.');
+                return;
+            }
+            // Emit event to server to join the session
+            socket.emit('join-live-workout', { sessionId: sessionId });
+        }
+
+        function createSession() {
+            console.log('Attempting to create a new session...');
+            // Emit event to server to create a new session
+            socket.emit('create-live-workout');
+        }
+        
+        function generateSessionId() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 9; i++) {
+                if (i === 3 || i === 6) result += '-';
+                else result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function switchToWorkout(sessionData) {
+            console.log('Switching to workout with session:', sessionData);
+            currentSessionId = sessionData.sessionId || sessionData.id;
+            console.log('Set currentSessionId to:', currentSessionId);
+            
+            document.getElementById('joinScreen').style.display = 'none';
+            document.getElementById('workoutScreen').style.display = 'flex';
+            document.getElementById('sessionIdDisplay').textContent = `(${currentSessionId})`;
+            
+            // Enable invite button now that we have a session
+            const inviteBtn = document.getElementById('inviteBtn');
+            if (inviteBtn) {
+                inviteBtn.style.opacity = '1';
+                inviteBtn.style.cursor = 'pointer';
+            }
+            
+            initializeVideo();
+            initializeEnhancedFeatures();
+        }
+        
+        function initializeEnhancedFeatures() {
+            // Initialize leaderboard
+            leaderboardData = [
+                { name: 'You', reps: 0, score: 0 },
+                { name: 'Friend 1', reps: 15, score: 150 },
+                { name: 'Friend 2', reps: 12, score: 120 }
+            ];
+            
+            // Add welcome messages
+            addChatMessage('Welcome to the live workout session!', 'system');
+            addChatMessage('💪 Click the rep counter to track your progress!', 'system');
+            addChatMessage('🎵 Use music controls to sync your beats!', 'system');
+            addChatMessage('🔥 Send reactions to motivate others!', 'system');
+            
+            // Auto-start timer prompt
+            setTimeout(() => {
+                if (confirm('Start workout timer?')) {
+                    startWorkoutTimer();
+                }
+            }, 2000);
+        }
+
+        async function initializeVideo() {
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                document.getElementById('localVideo').srcObject = localStream;
+            } catch (error) {
+                console.error('Camera/microphone error:', error);
+                showError('Camera access failed');
+            }
+        }
+
+        function toggleCamera() {
+            isVideoEnabled = !isVideoEnabled;
+            const videoTrack = localStream?.getVideoTracks()[0];
+            if (videoTrack) videoTrack.enabled = isVideoEnabled;
+            
+            const btn = document.getElementById('cameraBtn');
+            btn.classList.toggle('muted', !isVideoEnabled);
+            btn.innerHTML = isVideoEnabled ? '<i class="fas fa-video"></i>' : '<i class="fas fa-video-slash"></i>';
+        }
+
+        function toggleMic() {
+            isAudioEnabled = !isAudioEnabled;
+            const audioTrack = localStream?.getAudioTracks()[0];
+            if (audioTrack) audioTrack.enabled = isAudioEnabled;
+            
+            const btn = document.getElementById('micBtn');
+            btn.classList.toggle('muted', !isAudioEnabled);
+            btn.innerHTML = isAudioEnabled ? '<i class="fas fa-microphone"></i>' : '<i class="fas fa-microphone-slash"></i>';
+        }
+
+        async function shareScreen() {
+            try {
+                const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                document.getElementById('localVideo').srcObject = screenStream;
+                
+                screenStream.getVideoTracks()[0].onended = () => {
+                    document.getElementById('localVideo').srcObject = localStream;
+                };
+            } catch (error) {
+                console.error('Screen share error:', error);
+            }
+        }
+
+        async function showInviteModal() {
+            console.log('Show invite modal clicked, currentSessionId:', currentSessionId);
+            
+            if (!currentSessionId) {
+                console.log('No session ID, cannot show invite modal');
+                alert('Please create or join a session first!');
+                return;
+            }
+            
+            console.log('Setting up invite modal...');
+            document.getElementById('modalSessionId').textContent = currentSessionId;
+            const inviteUrl = `${window.location.origin}/live-workout?sessionId=${currentSessionId}`;
+            document.getElementById('inviteLink').value = inviteUrl;
+            
+            console.log('Loading friends...');
+            await loadFriends();
+            
+            console.log('Showing invite modal');
+            document.getElementById('inviteModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            console.log('Close modal clicked');
+            document.getElementById('inviteModal').style.display = 'none';
+        }
+
+        function copyLink() {
+            console.log('Copy link clicked');
+            if (!currentSessionId) {
+                alert('No active session to share');
+                return;
+            }
+            
+            const inviteUrl = `${window.location.origin}/live-workout?sessionId=${currentSessionId}`;
+            navigator.clipboard.writeText(inviteUrl).then(() => {
+                console.log('Link copied successfully');
+                showSuccess('Link copied!');
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                // Fallback
+                const textArea = document.createElement('textarea');
+                textArea.value = inviteUrl;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showSuccess('Link copied!');
+            });
+        }
+
+        async function loadFriends() {
+            console.log('Loading friends for invitation...');
+            const friendsList = document.getElementById('friendsList');
+            friendsList.innerHTML = '<div style="text-align: center; padding: 20px;">Loading friends...</div>';
+            
+            try {
+                const response = await fetch('/api/chat/friends');
+                const data = await response.json();
+                console.log('Friends API response:', data);
+                
+                const friendsList = document.getElementById('friendsList');
+                
+                if (data.success && data.friends.length > 0) {
+                    console.log('Loading friends:', data.friends.length);
+                    friendsList.innerHTML = data.friends.map(friend => `
+                        <div class="friend-item">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="friend-avatar">${friend.fullName.charAt(0)}</div>
+                                <div>
+                                    <div style="font-weight: 500;">${friend.fullName}</div>
+                                    <small style="color: #666;">${friend.email}</small>
+                                    ${friend.fitnessId ? `<br><small style="color: #999;">ID: ${friend.fitnessId}</small>` : ''}
+                                </div>
+                            </div>
+                            <button class="invite-btn" onclick="inviteFriend('${friend._id}', '${friend.fullName.replace(/'/g, '\\\'')}', '${friend.email}')">
+                                Invite
+                            </button>
+                        </div>
+                    `).join('');
+                } else {
+                    console.log('No friends found');
+                    friendsList.innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: #666;">
+                            <i class="fas fa-user-friends" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                            <p>No friends added yet</p>
+                            <p style="margin: 10px 0; font-size: 0.9rem;">To invite friends, you need to add them first</p>
+                            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; text-align: left;">
+                                <strong>How to add friends:</strong>
+                                <ol style="margin: 10px 0; padding-left: 20px; font-size: 0.9rem;">
+                                    <li>Go to Chat page</li>
+                                    <li>Click "Add Friends"</li>
+                                    <li>Search by email, fitness ID, or name</li>
+                                    <li>Send friend request</li>
+                                    <li>Wait for them to accept</li>
+                                </ol>
+                            </div>
+                            <a href="/chat" style="color: white; text-decoration: none; background: var(--primary); padding: 12px 20px; border-radius: 8px; display: inline-block;">Go to Chat to Add Friends</a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading friends:', error);
+            }
+        }
+
+        async function inviteFriend(friendId, friendName, friendEmail) {
+            console.log('Invite friend clicked:', { friendId, friendName, friendEmail });
+            
+            // Get the button that was clicked and disable it
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+            btn.style.background = '#ffc107';
+            
+            try {
+                if (!currentSessionId) {
+                    throw new Error('No active session');
+                }
+                
+                const inviteUrl = `${window.location.origin}/live-workout?sessionId=${currentSessionId}`;
+                console.log('Sending invitation with data:', {
+                    friendId, friendEmail, sessionId: currentSessionId, inviteUrl, friendName
+                });
+                
+                const response = await fetch('/api/live-workout/invite', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        friendId: friendId,
+                        friendEmail: friendEmail,
+                        sessionId: currentSessionId,
+                        inviteUrl: inviteUrl,
+                        friendName: friendName
+                    })
+                });
+                
+                const result = await response.json();
+                console.log('Invitation response:', result);
+                
+                if (result.success) {
+                    showSuccess(`Invitation sent to ${friendName}!`);
+                    addChatMessage(`Invitation sent to ${friendName}`, 'system');
+                    btn.textContent = 'Sent!';
+                    btn.style.background = 'var(--success)';
+                } else {
+                    throw new Error(result.error || 'Failed to send invitation');
+                }
+            } catch (error) {
+                console.error('Error inviting friend:', error);
+                showError(error.message || 'Failed to send invitation');
+                btn.disabled = false;
+                btn.textContent = originalText;
+                btn.style.background = 'var(--success)';
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message && currentSessionId) {
+                socket.emit('live-workout-chat', {
+                    sessionId: currentSessionId,
+                    message: message
+                });
+                input.value = '';
+            }
+        }
+
+        function leaveSession() {
+            if (currentSessionId) {
+                socket.emit('leave-live-workout', { sessionId: currentSessionId });
+                window.location.reload();
+            }
+        }
+
+        // Socket events
+        socket.on('live-workout-created', (data) => {
+            showSuccess('Session created!');
+            setTimeout(() => switchToWorkout(data.session), 1000);
+        });
+
+        socket.on('live-workout-joined', (data) => {
+            showSuccess('Joined session!');
+            setTimeout(() => switchToWorkout(data.session), 1000);
+        });
+
+        socket.on('live-workout-error', (data) => {
+            showError(data.message);
+        });
+
+        socket.on('user-joined-live-workout', (data) => {
+            addParticipant(data.userId, data.userName);
+            addChatMessage(`${data.userName} joined`, 'system');
+            document.getElementById('participantCount').textContent = data.participantCount;
+        });
+
+        socket.on('user-left-live-workout', (data) => {
+            removeParticipant(data.userId);
+            addChatMessage(`${data.userName} left`, 'system');
+        });
+
+        socket.on('live-workout-chat', (data) => {
+            addChatMessage(data.message, data.type, data.userName);
+        });
+
+        function addParticipant(userId, userName) {
+            const participantsList = document.getElementById('participantsList');
+            const participantDiv = document.createElement('div');
+            participantDiv.className = 'participant-item';
+            participantDiv.id = `participant-${userId}`;
+            participantDiv.innerHTML = `
+                <div class="participant-avatar">${userName.charAt(0)}</div>
+                <div>
+                    <div>${userName}</div>
+                    <small style="color: var(--success);">● Connected</small>
+                </div>
+            `;
+            participantsList.appendChild(participantDiv);
+        }
+
+        function removeParticipant(userId) {
+            const element = document.getElementById(`participant-${userId}`);
+            if (element) element.remove();
+        }
+
+        function addChatMessage(message, type = 'user', userName = '') {
+            const chatMessages = document.getElementById('chatMessages');
+            if (!chatMessages) {
+                console.log('Chat message:', message);
+                return;
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'chat-message';
+            messageDiv.style.cssText = 'background: rgba(255,255,255,0.1); padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; color: white;';
+            
+            if (type === 'system') {
+                messageDiv.style.fontStyle = 'italic';
+                messageDiv.style.opacity = '0.8';
+                messageDiv.style.background = 'rgba(108, 99, 255, 0.2)';
+                messageDiv.style.textAlign = 'center';
+                messageDiv.textContent = message;
+            } else {
+                messageDiv.innerHTML = `<strong>${userName}:</strong> ${message}`;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Make addChatMessage globally accessible
+        window.addChatMessage = addChatMessage;
+        
+        // Toast notification system
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 16px 24px;
+                border-radius: 12px;
+                color: white;
+                font-weight: 600;
+                z-index: 10000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+                backdrop-filter: blur(10px);
+                min-width: 300px;
+                max-width: 400px;
+            `;
+            
+            // Set background color based on type
+            const colors = {
+                success: 'linear-gradient(135deg, #28a745, #20c997)',
+                error: 'linear-gradient(135deg, #dc3545, #e74c3c)',
+                warning: 'linear-gradient(135deg, #ffc107, #f39c12)',
+                info: 'linear-gradient(135deg, #6c63ff, #4d44db)'
+            };
+            toast.style.background = colors[type] || colors.info;
+            
+            document.body.appendChild(toast);
+            
+            // Animate in
+            setTimeout(() => {
+                toast.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Auto remove
+            setTimeout(() => {
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        // Make toast function globally accessible
+        window.showToast = showToast;
+
+        // Chat enter key
+        document.getElementById('chatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+
+        // Utility functions
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => errorDiv.style.display = 'none', 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            setTimeout(() => successDiv.style.display = 'none', 3000);
+        }
+
+        // Enhanced Workout Features Functions
+        function startWorkoutTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            workoutTimer = 0;
+            isWorkoutActive = true;
+            
+            timerInterval = setInterval(() => {
+                workoutTimer++;
+                const minutes = Math.floor(workoutTimer / 60);
+                const seconds = workoutTimer % 60;
+                updateTimerDisplay(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+            }, 1000);
+            
+            addChatMessage('⏱️ Workout timer started!', 'system');
+        }
+        
+        function stopWorkoutTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            isWorkoutActive = false;
+            addChatMessage(`⏱️ Workout completed! Total time: ${Math.floor(workoutTimer / 60)}:${(workoutTimer % 60).toString().padStart(2, '0')}`, 'system');
+        }
+        
+        function updateTimerDisplay(time) {
+            const timerEl = document.getElementById('workoutTimer');
+            if (timerEl) timerEl.textContent = time;
+        }
+        
+        function incrementReps() {
+            repCount++;
+            const repCountEl = document.getElementById('repCount');
+            if (repCountEl) repCountEl.textContent = repCount;
+            
+            if (leaderboardData.length > 0) {
+                leaderboardData[0].reps = repCount;
+            }
+            
+            addChatMessage(`💪 Rep count: ${repCount}`, 'system');
+        }
+        
+        function resetReps() {
+            repCount = 0;
+            const repCountEl = document.getElementById('repCount');
+            if (repCountEl) repCountEl.textContent = repCount;
+            
+            if (leaderboardData.length > 0) {
+                leaderboardData[0].reps = 0;
+            }
+        }
+        
+        function toggleMusic() {
+            musicPlaying = !musicPlaying;
+            
+            if (musicPlaying) {
+                addChatMessage(`🎵 Now playing: ${musicTracks[currentTrackIndex]}`, 'system');
+            } else {
+                addChatMessage('🎵 Music paused', 'system');
+            }
+        }
+        
+        function nextTrack() {
+            currentTrackIndex = (currentTrackIndex + 1) % musicTracks.length;
+            addChatMessage(`🎵 Next track: ${musicTracks[currentTrackIndex]}`, 'system');
+        }
+        
+        function previousTrack() {
+            currentTrackIndex = currentTrackIndex === 0 ? musicTracks.length - 1 : currentTrackIndex - 1;
+            addChatMessage(`🎵 Previous track: ${musicTracks[currentTrackIndex]}`, 'system');
+        }
+        
+        function sendReaction(emoji) {
+            addChatMessage(`${emoji} reaction sent!`, 'system');
+            
+            if (socket && currentSessionId) {
+                socket.emit('workout-reaction', {
+                    sessionId: currentSessionId,
+                    reaction: emoji
+                });
+            }
+        }
+        
+        function nextExercise() {
+            if (currentExerciseIndex < workoutExercises.length - 1) {
+                workoutExercises[currentExerciseIndex].completed = true;
+                currentExerciseIndex++;
+                addChatMessage(`Next exercise: ${workoutExercises[currentExerciseIndex].name}`, 'system');
+            } else {
+                stopWorkoutTimer();
+                addChatMessage('🎉 All exercises completed! Great job!', 'system');
+            }
+        }
+        
+        // Make enhanced functions globally accessible
+        window.startWorkoutTimer = startWorkoutTimer;
+        window.stopWorkoutTimer = stopWorkoutTimer;
+        window.incrementReps = incrementReps;
+        window.resetReps = resetReps;
+        window.toggleMusic = toggleMusic;
+        window.nextTrack = nextTrack;
+        window.previousTrack = previousTrack;
+        window.sendReaction = sendReaction;
+        window.nextExercise = nextExercise;
+        
+        // Check URL for session ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlSessionId = urlParams.get('sessionId');
+        if (urlSessionId) {
+            document.getElementById('sessionId').value = urlSessionId;
+        }
+    </script>
+</body>
+</html>

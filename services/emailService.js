@@ -124,7 +124,7 @@ const sendWelcomeEmail = async (userEmail, userName) => {
                     </p>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="https://fit-with-ai-1.vercel.app/CustomOnboarding" 
+                        <a href="https://fit-with-1.vercel.app/CustomOnboarding" 
                            style="background-color: #6C63FF; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
                             Complete Your Profile
                         </a>
@@ -163,7 +163,7 @@ With Fit-With-AI, you'll have access to:
 
 Get started by completing your profile and setting your fitness goals!
 
-Visit: https://fit-with-ai-1.vercel.app/CustomOnboarding
+Visit: https://fit-with-1.vercel.app/CustomOnboarding
 
 If you have any questions, feel free to reach out to our support team.
 
@@ -375,7 +375,7 @@ const sendPasswordResetConfirmation = async (userEmail, userName) => {
                             <p>Your Fit-With-AI account password has been successfully updated. You can now log in with your new password.</p>
                             
                             <div style="text-align: center;">
-                                <a href="https://fit-with-ai-1.vercel.app/" class="cta-button">
+                                <a href="https://fit-with-1.vercel.app/" class="cta-button">
                                     Log In to Your Account
                                 </a>
                             </div>
@@ -413,7 +413,7 @@ Hi ${userName || 'there'},
 
 Your Fit-With-AI account password has been successfully updated. You can now log in with your new password.
 
-Log in to your account: https://fit-with-ai-1.vercel.app/
+Log in to your account: https://fit-with-1.vercel.app/
 
 SECURITY REMINDER: If you didn't make this change, please contact our support team immediately. Your account security is our priority.
 
@@ -497,7 +497,7 @@ const sendOnboardingCompletionEmail = async (userEmail, userName, onboardingData
                     </p>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                        <a href="https://fit-with-ai-1.vercel.app/dashboard" 
+                        <a href="https://fit-with-1.vercel.app/dashboard" 
                            style="background-color: #6C63FF; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
                             Go to Your Dashboard
                         </a>
@@ -583,7 +583,7 @@ const sendFriendRequestEmail = async (recipientEmail, recipientName, senderName,
           <p><strong>${senderName}</strong> wants to connect with you on Fit-With-AI.</p>
           ${message ? `<p><em>"${message}"</em></p>` : ''}
           <p>Log in to your account to accept or decline this request.</p>
-          <a href="${process.env.APP_URL || 'http://localhost:3001'}/chat" 
+          <a href="${process.env.APP_URL || 'fit-with-1.vercel.app'}/chat" 
              style="background: #6C63FF; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;">
             View Request
           </a>
@@ -614,7 +614,7 @@ const sendFriendRequestAcceptedEmail = async (recipientEmail, recipientName, acc
           <p>Hi ${recipientName},</p>
           <p>Great news! <strong>${accepterName}</strong> has accepted your friend request.</p>
           <p>You can now chat and share your fitness journey together!</p>
-          <a href="${process.env.APP_URL || 'http://localhost:3001'}/chat" 
+          <a href="${process.env.APP_URL || 'fit-with-1.vercel.app'}/chat" 
              style="background: #28A745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0;">
             Start Chatting
           </a>
@@ -672,7 +672,7 @@ const sendChallengeInvitation = async (recipientEmail, recipientName, challenger
           </p>
           
           <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.APP_URL || 'https://fit-with-ai-1.vercel.app'}/challenges" 
+            <a href="${process.env.APP_URL || 'fit-with-1.vercel.app'}/challenges" 
                style="background-color: #6C63FF; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
               Accept Challenge
             </a>
@@ -712,7 +712,7 @@ Duration: ${duration.value} ${duration.unit}
 
 Are you ready to take on this challenge? Log in to your Fit-With-AI account to accept and start competing!
 
-Accept Challenge: ${process.env.APP_URL || 'https://fit-with-ai-1.vercel.app'}/challenges
+Accept Challenge: ${process.env.APP_URL || 'fit-with-1.vercel.app'}/challenges
 
 Tip: Challenges are a great way to stay motivated and push your limits. Good luck!
 
@@ -730,15 +730,455 @@ The Fit-With-AI Team
   }
 };
 
+// Send live workout invitation to existing users
+const sendLiveWorkoutInvitation = async (recipientEmail, recipientName, inviterName, workoutTitle, workoutDescription, scheduledTime, workoutUrl) => {
+  try {
+    const transporter = createTransporter();
+    const workoutDate = new Date(scheduledTime).toLocaleString();
+    
+    const mailOptions = {
+      from: { name: 'Fit-With-AI', address: process.env.EMAIL_USER },
+      to: recipientEmail,
+      subject: `🏋️ ${inviterName} invited you to a Live Workout!`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #6C63FF; margin-bottom: 10px;">🏋️ Live Workout Invitation!</h1>
+            <div style="width: 50px; height: 3px; background: #6C63FF; margin: 0 auto;"></div>
+          </div>
+          
+          <p style="font-size: 16px; line-height: 1.6; color: #333;">Hi ${recipientName},</p>
+          
+          <p style="font-size: 16px; line-height: 1.6; color: #333;">
+            <strong>${inviterName}</strong> has invited you to join a live workout session on Fit-With-AI!
+          </p>
+          
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #6C63FF;">
+            <h3 style="color: #6C63FF; margin-top: 0;">${workoutTitle}</h3>
+            <p style="margin: 10px 0; color: #333;">${workoutDescription}</p>
+            <div style="display: flex; gap: 20px; margin-top: 15px;">
+              <div style="background: white; padding: 10px; border-radius: 8px; flex: 1; text-align: center;">
+                <strong style="color: #6C63FF;">${workoutDate}</strong>
+                <div style="font-size: 12px; color: #666;">Scheduled Time</div>
+              </div>
+            </div>
+          </div>
+          
+          <p style="font-size: 16px; line-height: 1.6; color: #333;">
+            Join the live session with video chat, real-time motivation, and synchronized workouts!
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${workoutUrl}" 
+               style="background-color: #6C63FF; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+              Join Live Workout
+            </a>
+          </div>
+          
+          <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; font-size: 14px; color: #856404;">
+              💡 <strong>Tip:</strong> Make sure you have a stable internet connection and allow camera/microphone access for the best experience!
+            </p>
+          </div>
+          
+          <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px;">
+            <p style="font-size: 16px; line-height: 1.6; color: #333;">
+              Let's get fit together!<br>
+              <strong>The Fit-With-AI Team</strong>
+            </p>
+          </div>
+        </div>
+      `,
+      text: `
+Live Workout Invitation!
+
+Hi ${recipientName},
+
+${inviterName} has invited you to join a live workout session on Fit-With-AI!
+
+Workout: ${workoutTitle}
+Description: ${workoutDescription}
+Scheduled Time: ${workoutDate}
+
+Join the live session with video chat, real-time motivation, and synchronized workouts!
+
+Join Live Workout: ${workoutUrl}
+
+Tip: Make sure you have a stable internet connection and allow camera/microphone access for the best experience!
+
+Let's get fit together!
+The Fit-With-AI Team
+      `
+    };
+    
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Live workout invitation sent successfully:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending live workout invitation:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Send live workout invitation to non-users via email
+const sendLiveWorkoutEmailInvitation = async (recipientEmail, inviterName, workoutTitle, workoutDescription, scheduledTime, workoutUrl) => {
+  try {
+    const transporter = createTransporter();
+    const workoutDate = new Date(scheduledTime).toLocaleString();
+    
+    const mailOptions = {
+      from: { name: 'Fit-With-AI', address: process.env.EMAIL_USER },
+      to: recipientEmail,
+      subject: `🏋️ ${inviterName} invited you to join Fit-With-AI for a Live Workout!`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #6C63FF; margin-bottom: 10px;">🏋️ You're Invited to Fit-With-AI!</h1>
+            <div style="width: 50px; height: 3px; background: #6C63FF; margin: 0 auto;"></div>
+          </div>
+          
+          <p style="font-size: 16px; line-height: 1.6; color: #333;">Hi there,</p>
+          
+          <p style="font-size: 16px; line-height: 1.6; color: #333;">
+            <strong>${inviterName}</strong> has invited you to join them for a live workout session on Fit-With-AI!
+          </p>
+          
+          <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #6C63FF;">
+            <h3 style="color: #6C63FF; margin-top: 0;">${workoutTitle}</h3>
+            <p style="margin: 10px 0; color: #333;">${workoutDescription}</p>
+            <div style="background: white; padding: 10px; border-radius: 8px; text-align: center; margin-top: 15px;">
+              <strong style="color: #6C63FF;">${workoutDate}</strong>
+              <div style="font-size: 12px; color: #666;">Scheduled Time</div>
+            </div>
+          </div>
+          
+          <p style="font-size: 16px; line-height: 1.6; color: #333;">
+            Fit-With-AI is a revolutionary fitness platform that offers:
+          </p>
+          
+          <ul style="font-size: 16px; line-height: 1.8; color: #333; padding-left: 20px;">
+            <li>🎥 Live video workout sessions with friends</li>
+            <li>🤖 AI-powered personalized fitness plans</li>
+            <li>📊 Advanced progress tracking and analytics</li>
+            <li>👥 Supportive fitness community</li>
+            <li>🏆 Gamification and achievements</li>
+          </ul>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.APP_URL || 'fit-with-1.vercel.app'}/signup" 
+               style="background-color: #6C63FF; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; margin-bottom: 10px;">
+              Join Fit-With-AI Free
+            </a>
+            <br>
+            <a href="${workoutUrl}" 
+               style="background-color: #28a745; color: white; padding: 12px 25px; text-decoration: none; border-radius: 8px; font-weight: 500; display: inline-block;">
+              Join Live Workout
+            </a>
+          </div>
+          
+          <div style="background: #e7f3ff; border: 1px solid #b3d9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p style="margin: 0; font-size: 14px; color: #0066cc;">
+              🎉 <strong>Special Offer:</strong> Sign up now and get premium features free for 30 days!
+            </p>
+          </div>
+          
+          <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px;">
+            <p style="font-size: 16px; line-height: 1.6; color: #333;">
+              Ready to transform your fitness journey?<br>
+              <strong>The Fit-With-AI Team</strong>
+            </p>
+          </div>
+        </div>
+      `,
+      text: `
+You're Invited to Fit-With-AI!
+
+Hi there,
+
+${inviterName} has invited you to join them for a live workout session on Fit-With-AI!
+
+Workout: ${workoutTitle}
+Description: ${workoutDescription}
+Scheduled Time: ${workoutDate}
+
+Fit-With-AI is a revolutionary fitness platform that offers:
+- Live video workout sessions with friends
+- AI-powered personalized fitness plans
+- Advanced progress tracking and analytics
+- Supportive fitness community
+- Gamification and achievements
+
+Join Fit-With-AI Free: ${process.env.APP_URL || 'fit-with-1.vercel.app'}/signup
+Join Live Workout: ${workoutUrl}
+
+Special Offer: Sign up now and get premium features free for 30 days!
+
+Ready to transform your fitness journey?
+The Fit-With-AI Team
+      `
+    };
+    
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Live workout email invitation sent successfully:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending live workout email invitation:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Send live workout invitation with unique session ID (like Google Meet)
+const sendLiveWorkoutInviteWithId = async (recipientEmail, { inviterName, friendName, sessionId, sessionTitle, joinUrl, participantCount }) => {
+  try {
+    const transporter = createTransporter();
+    
+    const mailOptions = {
+      from: { name: 'Fit-With-AI', address: process.env.EMAIL_USER },
+      to: recipientEmail,
+      subject: `🏋️ ${inviterName} invited you to join Live Workout - Session ID: ${sessionId}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f8f9fa;">
+          <div style="background: white; border-radius: 15px; padding: 30px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #6C63FF; margin-bottom: 10px;">🏋️ Live Workout Invitation!</h1>
+              <div style="width: 50px; height: 3px; background: #6C63FF; margin: 0 auto;"></div>
+            </div>
+            
+            <p style="font-size: 16px; line-height: 1.6; color: #333;">Hi ${friendName || 'there'},</p>
+            
+            <p style="font-size: 16px; line-height: 1.6; color: #333;">
+              <strong>${inviterName}</strong> has invited you to join a live workout session!
+            </p>
+            
+            <div style="background: linear-gradient(135deg, #6C63FF, #4D44DB); color: white; padding: 25px; border-radius: 12px; margin: 25px 0; text-align: center;">
+              <h2 style="margin: 0 0 15px 0; font-size: 1.5rem;">${sessionTitle}</h2>
+              <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                <div style="font-size: 2rem; font-weight: 700; margin-bottom: 5px;">${sessionId}</div>
+                <div style="font-size: 0.9rem; opacity: 0.9;">Session ID</div>
+              </div>
+              <div style="font-size: 0.9rem; opacity: 0.8;">${participantCount} participant${participantCount !== 1 ? 's' : ''} already joined</div>
+            </div>
+            
+            <div style="background: #e8f5e8; border: 1px solid #28a745; border-radius: 10px; padding: 20px; margin: 20px 0;">
+              <h3 style="color: #28a745; margin: 0 0 15px 0; display: flex; align-items: center; gap: 8px;">
+                <span>🎯</span> How to Join:
+              </h3>
+              <ol style="margin: 0; padding-left: 20px; color: #333;">
+                <li style="margin-bottom: 8px;">Click the "Join Workout" button below</li>
+                <li style="margin-bottom: 8px;">Enter Session ID: <strong>${sessionId}</strong></li>
+                <li style="margin-bottom: 8px;">Allow camera and microphone access</li>
+                <li>Start working out together!</li>
+              </ol>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${joinUrl}?sessionId=${sessionId}" 
+                 style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 15px 30px; text-decoration: none; border-radius: 25px; font-weight: 600; display: inline-block; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);">
+                🚀 Join Live Workout
+              </a>
+            </div>
+            
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0; font-size: 14px; color: #856404;">
+                💡 <strong>Tips for best experience:</strong><br>
+                • Use a stable internet connection<br>
+                • Find a quiet space with good lighting<br>
+                • Have water and towel ready<br>
+                • Allow camera/microphone permissions
+              </p>
+            </div>
+            
+            <div style="text-align: center; margin: 25px 0;">
+              <div style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">Can't click the button? Copy this link:</div>
+              <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 0.8rem; word-break: break-all;">
+                ${joinUrl}?sessionId=${sessionId}
+              </div>
+            </div>
+            
+            <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; text-align: center;">
+              <p style="font-size: 16px; line-height: 1.6; color: #333;">
+                Let's get fit together! 💪<br>
+                <strong>The Fit-With-AI Team</strong>
+              </p>
+            </div>
+          </div>
+        </div>
+      `,
+      text: `
+Live Workout Invitation!
+
+Hi ${friendName || 'there'},
+
+${inviterName} has invited you to join a live workout session!
+
+Session: ${sessionTitle}
+Session ID: ${sessionId}
+Participants: ${participantCount} already joined
+
+How to Join:
+1. Go to: ${joinUrl}
+2. Enter Session ID: ${sessionId}
+3. Allow camera and microphone access
+4. Start working out together!
+
+Direct link: ${joinUrl}?sessionId=${sessionId}
+
+Tips for best experience:
+• Use a stable internet connection
+• Find a quiet space with good lighting
+• Have water and towel ready
+• Allow camera/microphone permissions
+
+Let's get fit together!
+The Fit-With-AI Team
+      `
+    };
+    
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Live workout invitation with ID sent successfully:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('Error sending live workout invitation with ID:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Send meal plan completion email
+const sendMealPlanCompletionEmail = async (userEmail, userName, mealPlanData) => {
+    if (!userEmail) {
+        throw new Error('Email address is required');
+    }
+    if (!userName) {
+        userName = 'Valued Member';
+    }
+
+    try {
+        console.log('Sending meal plan completion email to:', userEmail);
+        const transporter = createTransporter();
+        
+        const { meals, totalCalories, totalProtein, region, date } = mealPlanData;
+        
+        // Create meal list
+        const mealList = Object.entries(meals).map(([category, meal]) => 
+            `${category.charAt(0).toUpperCase() + category.slice(1)}: ${meal.name} (${meal.calories} cal, ${meal.protein}g protein)`
+        ).join('\n');
+        
+        const mailOptions = {
+            from: {
+                name: 'Fit-With-AI',
+                address: process.env.EMAIL_USER
+            },
+            to: userEmail,
+            subject: `Your AI Meal Plan - ${date} 🍽️`,
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="color: #6C63FF; margin-bottom: 10px;">Your AI Meal Plan is Ready! 🍽️</h1>
+                        <div style="width: 50px; height: 3px; background: #6C63FF; margin: 0 auto;"></div>
+                    </div>
+                    
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">Dear ${userName},</p>
+                    
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+                        Your AI-generated meal plan for ${date} is ready!
+                    </p>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                        <h3 style="color: #6C63FF; margin-top: 0;">🍽️ TODAY'S MEAL PLAN (${region.toUpperCase()} INDIAN CUISINE):</h3>
+                        <div style="font-family: monospace; font-size: 14px; line-height: 1.8; color: #333; white-space: pre-line;">${mealList}</div>
+                    </div>
+                    
+                    <div style="background: #e8f5e8; padding: 20px; border-radius: 12px; margin: 20px 0;">
+                        <h3 style="color: #28a745; margin-top: 0;">📊 NUTRITION SUMMARY:</h3>
+                        <div style="display: flex; gap: 20px; justify-content: space-around;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: bold; color: #28a745;">${totalCalories}</div>
+                                <div style="font-size: 12px; color: #666;">Total Calories</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 24px; font-weight: bold; color: #28a745;">${totalProtein}g</div>
+                                <div style="font-size: 12px; color: #666;">Total Protein</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p style="font-size: 16px; line-height: 1.6; color: #333;">
+                        Enjoy your healthy meals and stay on track with your fitness goals!
+                    </p>
+                    
+                    <div style="text-align: center; margin: 30px 0;">
+                        <a href="https://fit-with-1.vercel.app/dashboard" 
+                           style="background-color: #6C63FF; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
+                            View Your Dashboard
+                        </a>
+                    </div>
+                    
+                    <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px;">
+                        <p style="font-size: 16px; line-height: 1.6; color: #333;">
+                            Best regards,<br>
+                            <strong>Fit-With-AI Team</strong>
+                        </p>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                        <p style="font-size: 12px; color: #999;">
+                            This email was sent to ${userEmail}
+                        </p>
+                    </div>
+                </div>
+            `,
+            text: `
+Your AI Meal Plan - ${date}
+
+Dear ${userName},
+
+Your AI-generated meal plan for ${date} is ready!
+
+🍽️ TODAY'S MEAL PLAN (${region.toUpperCase()} INDIAN CUISINE):
+${mealList}
+
+📊 NUTRITION SUMMARY:
+Total Calories: ${totalCalories}
+Total Protein: ${totalProtein}g
+
+Enjoy your healthy meals and stay on track with your fitness goals!
+
+View Your Dashboard: https://fit-with-1.vercel.app/dashboard
+
+Best regards,
+Fit-With-AI Team
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Meal plan completion email sent successfully:', info.messageId);
+        return {
+            success: true,
+            messageId: info.messageId
+        };
+    } catch (error) {
+        console.error('Error sending meal plan completion email:', error);
+        if (process.env.NODE_ENV === 'production') {
+            return { success: false, error: error.message };
+        } else {
+            throw error;
+        }
+    }
+};
+
 module.exports = {
     sendWelcomeEmail,
     sendTestEmail,
     testEmailConnection,
     sendOnboardingCompletionEmail,
+    sendMealPlanCompletionEmail,
     generateOTP,
     sendPasswordResetOTP,
     sendPasswordResetConfirmation,
     sendFriendRequestEmail,
     sendFriendRequestAcceptedEmail,
-    sendChallengeInvitation
+    sendChallengeInvitation,
+    sendLiveWorkoutInvitation,
+    sendLiveWorkoutEmailInvitation,
+    sendLiveWorkoutInviteWithId
 };

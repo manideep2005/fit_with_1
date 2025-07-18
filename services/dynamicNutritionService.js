@@ -15,7 +15,7 @@ class DynamicNutritionService {
       
       const totalCaloriesBurned = todayWorkouts.reduce((sum, w) => sum + (w.calories || 0), 0);
       
-      // Base goals from user profile
+    
       const baseCalories = user.fitnessGoals?.dailyCalories || 2000;
       const baseProtein = user.fitnessGoals?.protein || 150;
       

@@ -9,7 +9,6 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
 const jwt = require('jsonwebtoken'); 
-const mongoose = require('mongoose');
 
 console.log('Loading services...');
 const { sendWelcomeEmail, generateOTP, sendPasswordResetOTP, sendPasswordResetConfirmation, sendFriendRequestEmail, sendFriendRequestAcceptedEmail } = require('./services/emailService');
@@ -17,11 +16,7 @@ const { sendWelcomeEmail, generateOTP, sendPasswordResetOTP, sendPasswordResetCo
 
 const database = require('./config/database');
 const UserService = require('./services/userService');
-
-// Import routes
-const chatRoutes = require('./routes/chat');
-
-console.log('Services and routes loaded successfully');
+console.log('Services loaded successfully');
 
 let redisClient = null;
 try {
@@ -46,119 +41,55 @@ if (!process.env.VERCEL) {
   server = http.createServer(app);
   const { Server } = require("socket.io");
   io = new Server(server);
-  
-  // Make io available to routes
-  app.set('io', io);
-  
-  console.log('Socket.IO server initialized');
 
   io.on('connection', (socket) => {
-    console.log('User connected to socket:', socket.id);
+    console.log('User connected to socket');
 
     socket.on('join', (data) => {
       if (data && data.userId) {
         socket.userId = data.userId;
-        socket.join(data.userId.toString());
+        socket.join(data.userId);
         console.log(`User ${data.userId} joined their room`);
-      } else {
-        console.log('Join event received without userId:', data);
       }
     });
 
-    // Handle user authentication for socket
-    socket.on('authenticate', (data) => {
-      if (data && data.userId) {
-        socket.userId = data.userId;
-        socket.join(data.userId.toString());
-        console.log(`User ${data.userId} authenticated and joined room`);
-        socket.emit('authenticated', { success: true, userId: data.userId });
-      } else {
-        console.log('Authentication failed - no userId provided');
-        socket.emit('authenticated', { success: false, error: 'No user ID provided' });
-      }
-    });
-
-    socket.on('send_message', async (data) => {
+    socket.on('send message', async (data) => {
       try {
         console.log('Socket message data (raw): ', data);
         console.log('Socket userId (before processing): ', socket.userId);
+        const senderId = data.sender || socket.userId;
         
-        // Get sender ID from socket user or data
-        const senderId = socket.userId || data.senderId || data.sender;
-        const receiverId = data.receiverId || data.receiver;
-        const content = data.content;
-        
-        // Validate required fields
-        if (!senderId) {
-          console.error('Missing sender ID:', { socketUserId: socket.userId, dataSender: data.sender });
-          socket.emit('message_error', 'Missing sender information. Please refresh and try again.');
+        if (!senderId || !data.receiver || !data.content) {
+          console.error('Missing required message data:', {
+            sender: senderId,
+            receiver: data.receiver,
+            content: data.content,
+            socketUserId: socket.userId
+          });
+          socket.emit('message error', 'Missing required message data');
           return;
-        }
-        
-        if (!receiverId) {
-          console.error('Missing receiver ID:', { dataReceiver: data.receiver, dataReceiverId: data.receiverId });
-          socket.emit('message_error', 'Missing receiver information. Please select a friend first.');
-          return;
-        }
-        
-        if (!content || content.trim().length === 0) {
-          console.error('Missing or empty message content');
-          socket.emit('message_error', 'Message content cannot be empty.');
-          return;
-        }
-        
-        console.log('Sending message via chatService:', { 
-          senderId, 
-          receiverId, 
-          content: content.substring(0, 30) + (content.length > 30 ? '...' : '') 
-        });
-        
-        // Ensure IDs are valid ObjectIds
-        let validSenderId = senderId;
-        let validReceiverId = receiverId;
-        
-        if (typeof senderId === 'string' && mongoose.Types.ObjectId.isValid(senderId)) {
-          validSenderId = new mongoose.Types.ObjectId(senderId);
-        }
-        
-        if (typeof receiverId === 'string' && mongoose.Types.ObjectId.isValid(receiverId)) {
-          validReceiverId = new mongoose.Types.ObjectId(receiverId);
-        }
-        
-        if (!mongoose.Types.ObjectId.isValid(validSenderId) || !mongoose.Types.ObjectId.isValid(validReceiverId)) {
-          throw new Error('Invalid user ID format');
         }
         
         const savedMessage = await chatService.sendMessage(
-          validSenderId, 
-          validReceiverId, 
-          content.trim(),
+          senderId, 
+          data.receiver, 
+          data.content,
           data.messageType || 'text'
         );
         
-        console.log('Message saved successfully with ID:', savedMessage._id);
-        
-        // Send to receiver's room
-        io.to(receiverId.toString()).emit('new_message', savedMessage);
-        
-        // Confirm to sender
-        socket.emit('message_sent', savedMessage);
+        io.to(data.receiver).emit('new message', savedMessage);
+        socket.emit('message sent', savedMessage);
         
       } catch (error) {
         console.error('Send message error:', {
           message: error.message,
           stack: error.stack,
-          senderId: socket.userId || data?.sender,
-          receiverId: data?.receiverId || data?.receiver,
-          content: data?.content ? (data.content.substring(0, 30) + '...') : undefined
+          senderId: data?.sender || socket.userId,
+          receiverId: data?.receiver,
+          content: data?.content
         });
-        socket.emit('message_error', error.message || 'Failed to send message');
+        socket.emit('message error', error.message);
       }
-    });
-    
-    // Legacy event name support
-    socket.on('send message', async (data) => {
-      socket.emit('message_error', 'Please update your client to use send_message event instead');
     });
   });
 } else {
@@ -1033,7 +964,6 @@ const protectedRoutes = [
   '/workouts',
   '/progress',
   '/meal-planner',
-  '/meal-tracking',
   '/nutrition',
   '/nutriscan',
   '/health',
@@ -1044,7 +974,6 @@ const protectedRoutes = [
   '/ai-coach',
   '/chat',
   '/settings',
-  '/live-workout-fixed',
   '/live-workout',
   '/analytics'
 ];
@@ -1127,90 +1056,8 @@ app.get('/chat', isAuthenticated, validateSession, checkOnboarding, ensureDbConn
   }
 });
 
-
-// Special handling for meal tracking route
-app.get('/meal-tracking', isAuthenticated, checkOnboarding, (req, res) => {
-  console.log(`Accessing meal tracking for user:`, req.session.user?.email);
-  
-  try {
-    // Ensure user session exists
-    if (!req.session.user) {
-      console.error(`No user session found for meal tracking`);
-      return res.redirect('/');
-    }
-
-    // Generate navigation token
-    const navToken = Buffer.from(JSON.stringify({
-      email: req.session.user.email || 'unknown',
-      fullName: req.session.user.fullName || 'User',
-      firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-      timestamp: Date.now(),
-      sessionId: req.sessionID || 'no-session',
-      route: '/meal-tracking',
-      onboardingData: req.session.user.onboardingData || null
-    })).toString('base64');
-    
-    console.log('✅ Meal tracking page loaded successfully');
-    
-    res.render('meal-tracking', {
-      user: req.session.user,
-      currentPath: '/meal-tracking',
-      navToken: navToken
-    });
-    
-  } catch (error) {
-    console.error('❌ Error rendering meal tracking:', error);
-    res.status(500).json({
-      error: 'Failed to render meal tracking page',
-      details: error.message
-    });
-  }
-});
-
-// Special handling for live-workout route
-app.get('/live-workout', isAuthenticated, checkOnboarding, (req, res) => {
-  console.log(`Accessing live-workout for user:`, req.session.user?.email);
-  
-  try {
-    if (!req.session.user) {
-      console.error(`No user session found for live-workout`);
-      return res.redirect('/');
-    }
-
-    const navToken = Buffer.from(JSON.stringify({
-      email: req.session.user.email || 'unknown',
-      fullName: req.session.user.fullName || 'User',
-      firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-      timestamp: Date.now(),
-      sessionId: req.sessionID || 'no-session',
-      route: '/live-workout',
-      onboardingData: req.session.user.onboardingData || null
-    })).toString('base64');
-    
-    console.log('✅ Live workout page loaded successfully');
-    
-    // Prevent caching during development
-    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.set('Pragma', 'no-cache');
-    res.set('Expires', '0');
-    
-    res.render('live-workout', {
-      user: req.session.user,
-      currentPath: '/live-workout',
-      navToken: navToken
-    });
-    
-  } catch (error) {
-    console.error('❌ Error rendering live workout:', error);
-    res.status(500).json({
-      error: 'Failed to render live workout page',
-      details: error.message
-    });
-  }
-});
-
-// Handle other protected routes (excluding chat and live-workout)
-const otherProtectedRoutes = protectedRoutes.filter(route => route !== '/chat' && route !== '/live-workout');
+// Handle other protected routes (excluding chat)
+const otherProtectedRoutes = protectedRoutes.filter(route => route !== '/chat');
 otherProtectedRoutes.forEach(route => {
   app.get(route, isAuthenticated, checkOnboarding, (req, res) => {
     const viewName = route.substring(1); // Remove leading slash
@@ -1943,8 +1790,10 @@ try {
 // Import API routes
 const settingsRoutes = require('./routes/settings');
 
+// Use API routes
+app.use('/api/settings', settingsRoutes);
 
-// Live Workout API Routes
+
 app.post('/api/live-workout/invite', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const { friendId, friendEmail, sessionId, inviteUrl, friendName } = req.body;
@@ -1966,156 +1815,6 @@ app.post('/api/live-workout/invite', isAuthenticated, ensureDbConnection, async 
     res.json({ success: false, error: error.message });
   }
 });
-
-// Create live workout session
-app.post('/api/live-workout/create', isAuthenticated, async (req, res) => {
-  try {
-    const { workoutType, duration, isPublic } = req.body;
-    const userId = req.session.user._id;
-    const userName = req.session.user.fullName;
-    
-    // Generate session ID
-    const sessionId = generateSessionId();
-    
-    // Create session data (in a real app, this would be stored in database)
-    const sessionData = {
-      id: sessionId,
-      hostId: userId,
-      hostName: userName,
-      workoutType: workoutType || 'General Workout',
-      duration: duration || 30,
-      isPublic: isPublic || false,
-      participants: [{ id: userId, name: userName }],
-      createdAt: new Date(),
-      status: 'active'
-    };
-    
-    console.log('Created live workout session:', sessionData);
-    
-    res.json({
-      success: true,
-      session: sessionData,
-      joinUrl: `/live-workout?session=${sessionId}`
-    });
-    
-  } catch (error) {
-    console.error('Create live workout session error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to create workout session'
-    });
-  }
-});
-
-// Join live workout session
-app.post('/api/live-workout/join', isAuthenticated, async (req, res) => {
-  try {
-    const { sessionId } = req.body;
-    const userId = req.session.user._id;
-    const userName = req.session.user.fullName;
-    
-    if (!sessionId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Session ID is required'
-      });
-    }
-    
-    // In a real app, you would validate the session exists in database
-    // For now, we'll simulate a successful join
-    const sessionData = {
-      id: sessionId,
-      workoutType: 'Live Workout Session',
-      participants: [
-        { id: userId, name: userName },
-        { id: 'demo1', name: 'WorkoutBuddy' },
-        { id: 'demo2', name: 'FitnessFan' }
-      ],
-      status: 'active'
-    };
-    
-    console.log('User joined live workout session:', sessionId);
-    
-    res.json({
-      success: true,
-      session: sessionData,
-      message: 'Successfully joined workout session'
-    });
-    
-  } catch (error) {
-    console.error('Join live workout session error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to join workout session'
-    });
-  }
-});
-
-// Get active live workout sessions
-app.get('/api/live-workout/sessions', isAuthenticated, async (req, res) => {
-  try {
-    // In a real app, this would query the database for active sessions
-    const activeSessions = [
-      {
-        id: 'HIIT-LIVE',
-        hostName: 'FitnessCoach',
-        workoutType: 'HIIT Training',
-        duration: 45,
-        participantCount: 12,
-        isPublic: true,
-        status: 'active'
-      },
-      {
-        id: 'YOGA-FLOW',
-        hostName: 'YogaMaster',
-        workoutType: 'Yoga Flow',
-        duration: 60,
-        participantCount: 8,
-        isPublic: true,
-        status: 'active'
-      },
-      {
-        id: 'CARDIO-BURN',
-        hostName: 'CardioKing',
-        workoutType: 'Cardio Burn',
-        duration: 30,
-        participantCount: 15,
-        isPublic: true,
-        status: 'active'
-      }
-    ];
-    
-    res.json({
-      success: true,
-      sessions: activeSessions
-    });
-    
-  } catch (error) {
-    console.error('Get live workout sessions error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get active sessions'
-    });
-  }
-});
-
-// Helper function to generate session ID
-function generateSessionId() {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = '';
-  for (let i = 0; i < 3; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  result += '-';
-  for (let i = 0; i < 3; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  result += '-';
-  for (let i = 0; i < 3; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
 
 // AI Chat endpoint
 app.post('/api/ai-chat', isAuthenticated, async (req, res) => {
@@ -3735,293 +3434,25 @@ app.post('/api/chat/clear-chat', isAuthenticated, ensureDbConnection, async (req
 
 // Export chat
 app.get('/api/chat/export/:friendId', isAuthenticated, ensureDbConnection, async (req, res) => {
-try {
-const userId = req.session.user._id;
-const { friendId } = req.params;
-
-const exportData = await chatService.exportChat(userId, friendId);
-
-res.json({
-success: true,
-chatData: exportData.chatData,
-friendName: exportData.friendName
-});
-
-} catch (error) {
-console.error('Export chat error:', error);
-res.status(500).json({
-success: false,
-error: error.message || 'Failed to export chat'
-});
-}
-});
-
-// Initiate audio call
-app.post('/api/chat/initiate-audio-call', isAuthenticated, ensureDbConnection, async (req, res) => {
-try {
-const userId = req.session.user._id;
-const { receiverId } = req.body;
-
-if (!receiverId) {
-return res.status(400).json({
-success: false,
-error: 'Receiver ID is required'
-});
-}
-
-console.log('Initiating audio call from', userId, 'to', receiverId);
-
-// Validate that both users exist and are friends
-const User = require('./models/User');
-const receiver = await User.findById(receiverId);
-
-if (!receiver) {
-return res.status(404).json({
-success: false,
-error: 'Receiver not found'
-});
-}
-
-// Check if they are friends
-const friendshipStatus = await chatService.getFriendshipStatus(userId, receiverId);
-if (friendshipStatus !== 'friends') {
-return res.status(403).json({
-success: false,
-error: 'You can only call friends'
-});
-}
-
-// Generate a call ID
-const callId = 'call_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-
-// In a real implementation, you would:
-// 1. Create a call record in the database
-// 2. Send a real-time notification to the receiver via socket
-// 3. Set up WebRTC signaling
-
-// For now, we'll just return success with a call ID
-console.log('Audio call initiated with ID:', callId);
-
-// Emit call notification to receiver if socket is available
-if (req.app.get('io')) {
-req.app.get('io').to(receiverId.toString()).emit('incoming_call', {
-callId: callId,
-callType: 'audio',
-caller: {
-id: userId,
-name: req.session.user.fullName,
-avatar: req.session.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(req.session.user.fullName)}&background=6C63FF&color=fff`
-}
-});
-}
-
-res.json({
-success: true,
-callId: callId,
-message: 'Audio call initiated successfully'
-});
-
-} catch (error) {
-console.error('Initiate audio call error:', error);
-res.status(500).json({
-success: false,
-error: error.message || 'Failed to initiate audio call'
-});
-}
-});
-
-// Initiate video call
-app.post('/api/chat/initiate-video-call', isAuthenticated, ensureDbConnection, async (req, res) => {
-try {
-const userId = req.session.user._id;
-const { receiverId } = req.body;
-
-if (!receiverId) {
-return res.status(400).json({
-success: false,
-error: 'Receiver ID is required'
-});
-}
-
-console.log('Initiating video call from', userId, 'to', receiverId);
-
-// Validate that both users exist and are friends
-const User = require('./models/User');
-const receiver = await User.findById(receiverId);
-
-if (!receiver) {
-return res.status(404).json({
-success: false,
-error: 'Receiver not found'
-});
-}
-
-// Check if they are friends
-const friendshipStatus = await chatService.getFriendshipStatus(userId, receiverId);
-if (friendshipStatus !== 'friends') {
-return res.status(403).json({
-success: false,
-error: 'You can only call friends'
-});
-}
-
-// Generate a call ID
-const callId = 'call_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-
-// In a real implementation, you would:
-// 1. Create a call record in the database
-// 2. Send a real-time notification to the receiver via socket
-// 3. Set up WebRTC signaling
-
-// For now, we'll just return success with a call ID
-console.log('Video call initiated with ID:', callId);
-
-// Emit call notification to receiver if socket is available
-if (req.app.get('io')) {
-req.app.get('io').to(receiverId.toString()).emit('incoming_call', {
-callId: callId,
-callType: 'video',
-caller: {
-id: userId,
-name: req.session.user.fullName,
-avatar: req.session.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(req.session.user.fullName)}&background=6C63FF&color=fff`
-}
-});
-}
-
-res.json({
-success: true,
-callId: callId,
-message: 'Video call initiated successfully'
-});
-
-} catch (error) {
-console.error('Initiate video call error:', error);
-res.status(500).json({
-success: false,
-error: error.message || 'Failed to initiate video call'
-});
-}
-});
-
-// Accept call
-app.post('/api/chat/accept-call', isAuthenticated, ensureDbConnection, async (req, res) => {
-try {
-const userId = req.session.user._id;
-const { callId, callerId } = req.body;
-
-if (!callId || !callerId) {
-return res.status(400).json({
-success: false,
-error: 'Call ID and caller ID are required'
-});
-}
-
-console.log('Call accepted:', callId, 'by', userId);
-
-// Emit call accepted notification to caller if socket is available
-if (req.app.get('io')) {
-req.app.get('io').to(callerId.toString()).emit('call_accepted', {
-callId: callId,
-acceptedBy: {
-id: userId,
-name: req.session.user.fullName
-}
-});
-}
-
-res.json({
-success: true,
-message: 'Call accepted successfully'
-});
-
-} catch (error) {
-console.error('Accept call error:', error);
-res.status(500).json({
-success: false,
-error: error.message || 'Failed to accept call'
-});
-}
-});
-
-// Reject call
-app.post('/api/chat/reject-call', isAuthenticated, ensureDbConnection, async (req, res) => {
-try {
-const userId = req.session.user._id;
-const { callId, callerId } = req.body;
-
-if (!callId || !callerId) {
-return res.status(400).json({
-success: false,
-error: 'Call ID and caller ID are required'
-});
-}
-
-console.log('Call rejected:', callId, 'by', userId);
-
-// Emit call rejected notification to caller if socket is available
-if (req.app.get('io')) {
-req.app.get('io').to(callerId.toString()).emit('call_rejected', {
-callId: callId,
-rejectedBy: {
-id: userId,
-name: req.session.user.fullName
-}
-});
-}
-
-res.json({
-success: true,
-message: 'Call rejected successfully'
-});
-
-} catch (error) {
-console.error('Reject call error:', error);
-res.status(500).json({
-success: false,
-error: error.message || 'Failed to reject call'
-});
-}
-});
-
-// End call
-app.post('/api/chat/end-call', isAuthenticated, ensureDbConnection, async (req, res) => {
-try {
-const userId = req.session.user._id;
-const { callId, participantId } = req.body;
-
-if (!callId) {
-return res.status(400).json({
-success: false,
-error: 'Call ID is required'
-});
-}
-
-console.log('Call ended:', callId, 'by', userId);
-
-// Emit call ended notification to other participant if socket is available
-if (req.app.get('io') && participantId) {
-req.app.get('io').to(participantId.toString()).emit('call_ended', {
-callId: callId,
-endedBy: {
-id: userId,
-name: req.session.user.fullName
-}
-});
-}
-
-res.json({
-success: true,
-message: 'Call ended successfully'
-});
-
-} catch (error) {
-console.error('End call error:', error);
-res.status(500).json({
-success: false,
-error: error.message || 'Failed to end call'
-});
-}
+  try {
+    const userId = req.session.user._id;
+    const { friendId } = req.params;
+    
+    const exportData = await chatService.exportChat(userId, friendId);
+    
+    res.json({
+      success: true,
+      chatData: exportData.chatData,
+      friendName: exportData.friendName
+    });
+    
+  } catch (error) {
+    console.error('Export chat error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to export chat'
+    });
+  }
 });
 
 // Search users for friend requests
@@ -4136,7 +3567,7 @@ app.post('/api/friends/respond', isAuthenticated, ensureDbConnection, async (req
 // Logout Route - Updated for custom session system
 app.get('/logout', async (req, res) => {
   try {
-
+    // Clean up database session
     if (req.sessionID) {
       const UserSession = require('./models/UserSession');
       await UserSession.deleteSession(req.sessionID);
@@ -4157,268 +3588,15 @@ app.get('/logout', async (req, res) => {
   res.redirect('/');
 });
 
-
+// Settings API Routes
 app.use('/api/settings', isAuthenticated, ensureDbConnection, require('./routes/settings'));
+
+// Meal Planner API Routes
 app.use('/api/meal-planner', isAuthenticated, ensureDbConnection, require('./routes/mealPlanner'));
-app.use('/meal-planner', isAuthenticated, ensureDbConnection, require('./routes/mealPlanner'));
-app.use("/api/chat", isAuthenticated, ensureDbConnection, chatRoutes);
 
-app.get("/meal-planner/api/goals", isAuthenticated, ensureDbConnection, async (req, res) => {
-  try {
-    const userId = req.session.user._id;
-    const UserService = require('./services/userService');
-    const user = await UserService.getUserById(userId);
-    
-    res.json({
-      success: true,
-      current: { calories: 650, water: 1.2, protein: 45 },
-      goals: { calories: 2000, water: 3.0, protein: 120 },
-      meals: []
-    });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to load goals' });
-  }
-});
+// Community API Routes
 
-app.post('/meal-planner/api/suggestions', isAuthenticated, ensureDbConnection, async (req, res) => {
-  try {
-    const { region, category, remainingCalories } = req.body;
-    const foodData = require('./data/foodData');
-    
-    const suggestions = foodData[region]?.[category] || [];
-    const shuffled = suggestions.sort(() => 0.5 - Math.random()).slice(0, 3);
-    
-    res.json({ success: true, suggestions: shuffled });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to get suggestions' });
-  }
-});
-
-app.post('/meal-planner/meals', isAuthenticated, ensureDbConnection, async (req, res) => {
-  try {
-    const { mealType, name, calories, protein } = req.body;
-    res.json({ success: true, message: 'Meal saved successfully' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to save meal' });
-  }
-});
-
-app.post('/meal-planner/send-email', isAuthenticated, ensureDbConnection, async (req, res) => {
-  try {
-    const { meals, totalCalories, totalProtein, region, date } = req.body;
-    const userEmail = req.session.user.email;
-    const userName = req.session.user.fullName;
-    
-    const { sendMealPlanCompletionEmail } = require('./services/emailService');
-    const result = await sendMealPlanCompletionEmail(userEmail, userName, {
-      meals, totalCalories, totalProtein, region, date
-    });
-    
-    res.json(result);
-  } catch (error) {
-    console.error('Send meal plan email error:', error);
-    res.status(500).json({ success: false, error: 'Failed to send email' });
-  }
-});
-
-// Live Workout Fixed API Routes
-app.post('/api/live-workout/invite', isAuthenticated, ensureDbConnection, async (req, res) => {
-  try {
-    const { friendId, friendEmail, sessionId, inviteUrl, friendName } = req.body;
-    const inviterName = req.session.user.fullName;
-    
-    const { sendLiveWorkoutInviteWithId } = require('./services/emailService');
-    const result = await sendLiveWorkoutInviteWithId(friendEmail, {
-      inviterName: inviterName,
-      friendName: friendName,
-      sessionId: sessionId,
-      sessionTitle: 'Live Workout Session',
-      joinUrl: inviteUrl,
-      participantCount: 1
-    });
-    
-    res.json(result);
-  } catch (error) {
-    console.error('Live workout invite error:', error);
-    res.status(500).json({ success: false, error: 'Failed to send invitation' });
-  }
-});
-
-app.post('/api/workout/timer/start', isAuthenticated, async (req, res) => {
-  try {
-    const userId = req.session.user._id;
-    res.json({ success: true, message: 'Timer started', timestamp: Date.now() });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to start timer' });
-  }
-});
-
-app.post('/api/workout/reps', isAuthenticated, async (req, res) => {
-  try {
-    const userId = req.session.user._id;
-    const { sessionId, exercise, reps } = req.body;
-    res.json({ success: true, message: 'Reps updated', reps: reps });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to update reps' });
-  }
-});
-
-app.get('/api/workout/leaderboard/:sessionId', isAuthenticated, async (req, res) => {
-  try {
-    const leaderboard = [
-      { name: req.session.user.fullName, reps: 0, score: 0 },
-      { name: 'Friend 1', reps: 15, score: 150 },
-      { name: 'Friend 2', reps: 12, score: 120 }
-    ];
-    res.json({ success: true, leaderboard: leaderboard });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to get leaderboard' });
-  }
-});
-
-// Live Workout Fixed API Routes
-app.post('/api/live-workout/invite', isAuthenticated, ensureDbConnection, async (req, res) => {
-  try {
-    const { friendId, friendEmail, sessionId, inviteUrl, friendName } = req.body;
-    const inviterName = req.session.user.fullName;
-    
-    const { sendLiveWorkoutInviteWithId } = require('./services/emailService');
-    const result = await sendLiveWorkoutInviteWithId(friendEmail, {
-      inviterName: inviterName,
-      friendName: friendName,
-      sessionId: sessionId,
-      sessionTitle: 'Live Workout Session',
-      joinUrl: inviteUrl,
-      participantCount: 1
-    });
-    
-    res.json(result);
-  } catch (error) {
-    console.error('Live workout invite error:', error);
-    res.status(500).json({ success: false, error: 'Failed to send invitation' });
-  }
-});
-
-app.post('/api/workout/timer/start', isAuthenticated, async (req, res) => {
-  try {
-    const userId = req.session.user._id;
-    res.json({ success: true, message: 'Timer started', timestamp: Date.now() });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to start timer' });
-  }
-});
-
-app.post('/api/workout/reps', isAuthenticated, async (req, res) => {
-  try {
-    const userId = req.session.user._id;
-    const { exercise, reps } = req.body;
-    res.json({ success: true, message: 'Reps updated', reps: reps });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to update reps' });
-  }
-});
-
-app.get('/api/workout/leaderboard', isAuthenticated, async (req, res) => {
-  try {
-    const leaderboard = [
-      { name: req.session.user.fullName, reps: 0, score: 0 },
-      { name: 'Friend 1', reps: 15, score: 150 },
-      { name: 'Friend 2', reps: 12, score: 120 }
-    ];
-    res.json({ success: true, leaderboard: leaderboard });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to get leaderboard' });
-  }
-});
-
-// Live Workout API Routes
-app.post('/api/live-workout/invite', isAuthenticated, ensureDbConnection, async (req, res) => {
-  try {
-    const { friendId, friendEmail, sessionId, inviteUrl, friendName } = req.body;
-    const inviterName = req.session.user.fullName;
-    
-    const { sendLiveWorkoutInviteWithId } = require('./services/emailService');
-    const result = await sendLiveWorkoutInviteWithId(friendEmail, {
-      inviterName: inviterName,
-      friendName: friendName,
-      sessionId: sessionId,
-      sessionTitle: 'Live Workout Session',
-      joinUrl: inviteUrl,
-      participantCount: 1
-    });
-    
-    res.json(result);
-  } catch (error) {
-    console.error('Live workout invite error:', error);
-    res.status(500).json({ success: false, error: 'Failed to send invitation' });
-  }
-});
-
-app.post('/api/workout/timer/start', isAuthenticated, async (req, res) => {
-  try {
-    const userId = req.session.user._id;
-    const { sessionId } = req.body;
-    
-    // Here you could save timer start to database if needed
-    res.json({ success: true, message: 'Timer started', timestamp: Date.now() });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to start timer' });
-  }
-});
-
-app.post('/api/workout/timer/stop', isAuthenticated, async (req, res) => {
-  try {
-    const userId = req.session.user._id;
-    const { sessionId, duration } = req.body;
-    
-    // Here you could save workout session to database
-    res.json({ success: true, message: 'Timer stopped', duration: duration });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to stop timer' });
-  }
-});
-
-app.post('/api/workout/reps', isAuthenticated, async (req, res) => {
-  try {
-    const userId = req.session.user._id;
-    const { sessionId, exercise, reps } = req.body;
-    
-    // Here you could save rep count to database
-    res.json({ success: true, message: 'Reps updated', reps: reps });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to update reps' });
-  }
-});
-
-app.get('/api/workout/leaderboard/:sessionId', isAuthenticated, async (req, res) => {
-  try {
-    const { sessionId } = req.params;
-    
-    // Mock leaderboard data - replace with real database query
-    const leaderboard = [
-      { name: req.session.user.fullName, reps: 0, score: 0, userId: req.session.user._id },
-      { name: 'Friend 1', reps: 15, score: 150, userId: 'friend1' },
-      { name: 'Friend 2', reps: 12, score: 120, userId: 'friend2' }
-    ];
-    
-    res.json({ success: true, leaderboard: leaderboard });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to get leaderboard' });
-  }
-});
-
-app.post('/api/workout/exercise/complete', isAuthenticated, async (req, res) => {
-  try {
-    const userId = req.session.user._id;
-    const { sessionId, exercise, completedAt } = req.body;
-    
-    // Here you could save completed exercise to database
-    res.json({ success: true, message: 'Exercise completed' });
-  } catch (error) {
-    res.status(500).json({ success: false, error: 'Failed to complete exercise' });
-  }
-});
-
+// Get user's groups
 app.get('/api/community/groups', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const userId = req.session.user._id;
@@ -5018,7 +4196,7 @@ chatService.init(io);
 
 // Start Server (only in non-serverless environment)
 if (!process.env.VERCEL) {
-  const PORT = process.env.PORT || 3001;
+  const PORT = process.env.PORT || 3000;
   server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Open http://localhost:${PORT} in your browser`);

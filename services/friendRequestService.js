@@ -117,7 +117,7 @@ class FriendRequestService {
     }
   }
   
-  // Accept friend request
+  // Accept friend request with data sanitization
   static async acceptFriendRequest(requestId, userId) {
     try {
       const request = await FriendRequest.findById(requestId);
@@ -134,7 +134,7 @@ class FriendRequestService {
         throw new Error('Request is no longer pending');
       }
       
-      // Add to friends lists
+      // Add to friends lists with data sanitization
       const sender = await User.findById(request.sender);
       const receiver = await User.findById(request.receiver);
       
@@ -142,19 +142,54 @@ class FriendRequestService {
         throw new Error('User not found');
       }
       
+      // Sanitize user data before saving
+      const sanitizeUserData = (user) => {
+        // Fix workouts data if it's a string
+        if (user.workouts && typeof user.workouts === 'string') {
+          try {
+            user.workouts = JSON.parse(user.workouts);
+          } catch (e) {
+            console.warn('Failed to parse workouts data, setting to empty array');
+            user.workouts = [];
+          }
+        }
+        
+        // Ensure workouts is an array
+        if (!Array.isArray(user.workouts)) {
+          user.workouts = [];
+        }
+        
+        // Fix mealPlans data and validate mealType
+        if (user.mealPlans && Array.isArray(user.mealPlans)) {
+          user.mealPlans = user.mealPlans.map(meal => {
+            // Fix mealType enum issue
+            if (meal.mealType === 'snacks') {
+              meal.mealType = 'snack';
+            }
+            return meal;
+          });
+        }
+        
+        return user;
+      };
+      
+      // Sanitize both users
+      const sanitizedSender = sanitizeUserData(sender);
+      const sanitizedReceiver = sanitizeUserData(receiver);
+      
       // Convert friends arrays to string IDs for comparison
-      const senderFriendsIds = sender.friends.map(friendId => friendId.toString());
-      const receiverFriendsIds = receiver.friends.map(friendId => friendId.toString());
+      const senderFriendsIds = sanitizedSender.friends.map(friendId => friendId.toString());
+      const receiverFriendsIds = sanitizedReceiver.friends.map(friendId => friendId.toString());
       
       // Add to friends list if not already there
       if (!senderFriendsIds.includes(request.receiver.toString())) {
-        sender.friends.push(request.receiver);
-        await sender.save();
+        sanitizedSender.friends.push(request.receiver);
+        await sanitizedSender.save();
       }
       
       if (!receiverFriendsIds.includes(request.sender.toString())) {
-        receiver.friends.push(request.sender);
-        await receiver.save();
+        sanitizedReceiver.friends.push(request.sender);
+        await sanitizedReceiver.save();
       }
       
       // Update request status
@@ -166,9 +201,9 @@ class FriendRequestService {
       try {
         const { sendFriendRequestAcceptedEmail } = require('./emailService');
         await sendFriendRequestAcceptedEmail(
-          sender.email,
-          sender.fullName,
-          receiver.fullName
+          sanitizedSender.email,
+          sanitizedSender.fullName,
+          sanitizedReceiver.fullName
         );
         console.log('Friend request accepted email sent successfully');
       } catch (emailError) {

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Fit-With-AI</title>
+    <style>
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(135deg, #6C63FF, #4D44DB);
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .offline-container {
+            max-width: 500px;
+            padding: 40px;
+        }
+
+        .offline-icon {
+            font-size: 5rem;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .retry-btn {
+            background: white;
+            color: #6C63FF;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .offline-features {
+            margin-top: 40px;
+            text-align: left;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
+        .feature-icon {
+            margin-right: 15px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">📱</div>
+        <h1>You're Offline</h1>
+        <p>Don't worry! You can still use some features of Fit-With-AI while offline.</p>
+        
+        <button class="retry-btn" onclick="window.location.reload()">
+            Try Again
+        </button>
+
+        <div class="offline-features">
+            <div class="feature-item">
+                <span class="feature-icon">⏱️</span>
+                <span>Use the workout timer</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">📝</span>
+                <span>Log workouts (will sync when online)</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">📊</span>
+                <span>View cached progress data</span>
+            </div>
+            <div class="feature-item">
+                <span class="feature-icon">🎯</span>
+                <span>Access saved workout plans</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check for connection and reload when back online
+        window.addEventListener('online', () => {
+            window.location.reload();
+        });
+
+        // Show connection status
+        if (navigator.onLine) {
+            document.querySelector('p').textContent = 'Connection restored! Refreshing...';
+            setTimeout(() => window.location.reload(), 1000);
+        }
+    </script>
+</body>
+</html>

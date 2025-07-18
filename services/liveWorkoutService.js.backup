@@ -1,0 +1,212 @@
+const crypto = require('crypto');
+
+class LiveWorkoutService {
+    constructor(io) {
+        this.io = io;
+        this.sessions = new Map();
+        this.userSessions = new Map();
+    }
+    
+    generateSessionId() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = '';
+        for (let i = 0; i < 9; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result.substring(0, 3) + '-' + result.substring(3, 6) + '-' + result.substring(6, 9);
+    }
+
+    init(socket) {
+        socket.on('create-live-workout', (data) => this.createSession(socket, data));
+        socket.on('join-live-workout', (data) => this.joinSession(socket, data));
+        socket.on('leave-live-workout', (data) => this.leaveSession(socket, data));
+        socket.on('live-workout-chat', (data) => this.handleChat(socket, data));
+    }
+
+    createSession(socket, { userId, userName, workoutTitle = 'Live Workout Session' }) {
+        const sessionId = this.generateSessionId();
+        const session = {
+            id: sessionId,
+            title: workoutTitle,
+            hostId: userId,
+            hostName: userName,
+            participants: new Map(),
+            chatHistory: [],
+            createdAt: new Date(),
+            isActive: true
+        };
+        
+        this.sessions.set(sessionId, session);
+        this.userSessions.set(userId, sessionId);
+
+        session.participants.set(socket.id, { 
+            userId, 
+            userName, 
+            isHost: true,
+            joinedAt: new Date(),
+            isConnected: true
+        });
+
+        socket.join(sessionId);
+        socket.sessionId = sessionId;
+        socket.userId = userId;
+        
+        socket.emit('live-workout-created', { 
+            sessionId,
+            session: {
+                id: sessionId,
+                title: workoutTitle,
+                hostName: userName,
+                participantCount: 1
+            }
+        });
+        
+        console.log(`Live workout created: ${sessionId} by ${userName}`);
+        return sessionId;
+    }
+
+    joinSession(socket, { sessionId, userId, userName }) {
+        const session = this.sessions.get(sessionId);
+        if (!session || !session.isActive) {
+            return socket.emit('live-workout-error', { message: 'Session not found or ended' });
+        }
+
+        const existingParticipant = Array.from(session.participants.values())
+            .find(p => p.userId === userId);
+        
+        if (existingParticipant) {
+            return socket.emit('live-workout-error', { message: 'You are already in this session' });
+        }
+
+        session.participants.set(socket.id, { 
+            userId, 
+            userName,
+            isHost: false,
+            joinedAt: new Date(),
+            isConnected: true
+        });
+        
+        socket.join(sessionId);
+        socket.sessionId = sessionId;
+        socket.userId = userId;
+        this.userSessions.set(userId, sessionId);
+
+        socket.to(sessionId).emit('user-joined-live-workout', { 
+            userId, 
+            userName, 
+            socketId: socket.id,
+            participantCount: session.participants.size
+        });
+
+        const participants = Array.from(session.participants.values());
+        socket.emit('live-workout-joined', {
+            sessionId,
+            session: {
+                id: sessionId,
+                title: session.title,
+                hostName: session.hostName,
+                participantCount: session.participants.size
+            },
+            participants: participants.map(p => ({
+                userId: p.userId,
+                userName: p.userName,
+                isHost: p.isHost,
+                isConnected: p.isConnected
+            })),
+            chatHistory: session.chatHistory.slice(-50)
+        });
+        
+        const welcomeMessage = {
+            type: 'system',
+            message: `${userName} joined the workout`,
+            timestamp: new Date()
+        };
+        session.chatHistory.push(welcomeMessage);
+        this.io.to(sessionId).emit('live-workout-chat', welcomeMessage);
+        
+        console.log(`${userName} joined live workout: ${sessionId} (${session.participants.size} participants)`);
+    }
+
+    leaveSession(socket, { sessionId }) {
+        const session = this.sessions.get(sessionId);
+        if (!session) return;
+
+        const participant = session.participants.get(socket.id);
+        if (participant) {
+            session.participants.delete(socket.id);
+            socket.to(sessionId).emit('user-left-live-workout', { 
+                userId: participant.userId, 
+                userName: participant.userName, 
+                socketId: socket.id 
+            });
+            console.log(`${participant.userName} left live workout: ${sessionId}`);
+        }
+
+        if (session.hostId === participant?.userId && session.participants.size > 0) {
+            const newHost = session.participants.values().next().value;
+            session.hostId = newHost.userId;
+            this.io.to(sessionId).emit('live-workout-host-changed', { newHostId: newHost.userId });
+        } else if (session.participants.size === 0) {
+            this.sessions.delete(sessionId);
+            console.log(`Live workout session ended: ${sessionId}`);
+        }
+    }
+
+    handleChat(socket, { sessionId, message, type = 'user' }) {
+        const session = this.sessions.get(sessionId);
+        if (!session) return;
+
+        const participant = session.participants.get(socket.id);
+        if (participant && message.trim()) {
+            const chatMessage = {
+                id: crypto.randomUUID(),
+                type: type,
+                userId: participant.userId,
+                userName: participant.userName,
+                message: message.trim(),
+                timestamp: new Date(),
+                isHost: participant.isHost
+            };
+            
+            session.chatHistory.push(chatMessage);
+            if (session.chatHistory.length > 100) {
+                session.chatHistory = session.chatHistory.slice(-100);
+            }
+            
+            this.io.to(sessionId).emit('live-workout-chat', chatMessage);
+            console.log(`Chat message in ${sessionId}: ${participant.userName}: ${message}`);
+        }
+    }
+
+    getSessionInfo(sessionId) {
+        const session = this.sessions.get(sessionId);
+        if (!session) return null;
+        
+        return {
+            id: session.id,
+            title: session.title,
+            hostName: session.hostName,
+            participantCount: session.participants.size,
+            isActive: session.isActive,
+            createdAt: session.createdAt,
+            participants: Array.from(session.participants.values()).map(p => ({
+                userId: p.userId,
+                userName: p.userName,
+                isHost: p.isHost,
+                isConnected: p.isConnected,
+                joinedAt: p.joinedAt
+            }))
+        };
+    }
+
+    handleDisconnect(socket) {
+        const sessionId = socket.sessionId;
+        const userId = socket.userId;
+        
+        if (sessionId && userId) {
+            this.leaveSession(socket, { sessionId });
+        }
+    }
+}
+
+module.exports = LiveWorkoutService;

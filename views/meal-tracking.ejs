@@ -1,0 +1,2468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Meal Planning & Tracking - Fit-With-AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --secondary: #4D44DB;
+            --accent: #FF6584;
+            --light: #F8F9FA;
+            --dark: #343A40;
+            --success: #28A745;
+            --warning: #FFC107;
+            --danger: #DC3545;
+            --gray: #6C757D;
+            --light-gray: #E9ECEF;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F5F7FA;
+            color: var(--dark);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 2rem 1rem;
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .user-plan {
+            font-size: 0.8rem;
+            color: var(--primary);
+            background: rgba(108, 99, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-top: 5px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 1rem;
+            color: var(--gray);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .logout-section {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--light-gray);
+        }
+        
+        .logout-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 1rem;
+            color: var(--danger);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+        
+        .logout-link:hover {
+            background: rgba(220, 53, 69, 0.1);
+        }
+        
+        .logout-link i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .ai-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .ai-badge i {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .tracking-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .tracking-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .icon-camera {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .icon-search {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .icon-barcode {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .icon-voice {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--light-gray);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: rgba(108, 99, 255, 0.05);
+        }
+        
+        .upload-area.dragover {
+            border-color: var(--primary);
+            background: rgba(108, 99, 255, 0.1);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+        
+        .upload-text {
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+        
+        .upload-hint {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .search-container {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 48px;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+        
+        .barcode-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .barcode-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--secondary);
+            transform: translateY(-1px);
+        }
+        
+        .btn-outline {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .btn-full {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .voice-btn {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .voice-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(67, 233, 123, 0.3);
+        }
+        
+        .voice-btn.listening {
+            animation: pulse 1s infinite;
+        }
+        
+        .results-section {
+            grid-column: 1 / -1;
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-top: 2rem;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .results-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .food-item {
+            border: 2px solid var(--light-gray);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .food-item:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(108, 99, 255, 0.1);
+        }
+        
+        .food-item.selected {
+            border-color: var(--success);
+            background: rgba(40, 167, 69, 0.05);
+        }
+        
+        .food-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .food-name {
+            font-weight: 600;
+            color: var(--dark);
+            margin: 0;
+        }
+        
+        .food-brand {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin: 0.25rem 0 0 0;
+        }
+        
+        .food-image {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: var(--light-gray);
+        }
+        
+        .nutrition-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .nutrition-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+        }
+        
+        .nutrition-label {
+            color: var(--gray);
+        }
+        
+        .nutrition-value {
+            font-weight: 500;
+            color: var(--dark);
+        }
+        
+        .serving-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .serving-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .quantity-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--light-gray);
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .quantity-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .quantity-input {
+            width: 60px;
+            padding: 6px 8px;
+            border: 1px solid var(--light-gray);
+            border-radius: 6px;
+            text-align: center;
+        }
+        
+        .add-to-log-btn {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .add-to-log-btn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+        
+        .daily-summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .summary-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .summary-item {
+            text-align: center;
+        }
+        
+        .summary-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .summary-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .summary-progress {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+        
+        .summary-progress-fill {
+            height: 100%;
+            background: white;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+        
+        .meal-log {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .log-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .meal-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .meal-category {
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .category-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 0.75rem;
+        }
+        
+        .category-name {
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .category-calories {
+            margin-left: auto;
+            font-size: 0.9rem;
+            color: var(--gray);
+        }
+        
+        .meal-items {
+            min-height: 100px;
+        }
+        
+        .meal-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .meal-item:last-child {
+            border-bottom: none;
+        }
+        
+        .item-info {
+            flex: 1;
+        }
+        
+        .item-name {
+            font-weight: 500;
+            color: var(--dark);
+            margin: 0;
+        }
+        
+        .item-details {
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin: 0.25rem 0 0 0;
+        }
+        
+        .item-calories {
+            font-weight: 500;
+            color: var(--primary);
+        }
+        
+        .remove-item {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background 0.3s ease;
+        }
+        
+        .remove-item:hover {
+            background: rgba(220, 53, 69, 0.1);
+        }
+        
+        .empty-category {
+            text-align: center;
+            color: var(--gray);
+            font-style: italic;
+            padding: 2rem 0;
+        }
+        
+        .ai-suggestions {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            margin-top: 2rem;
+        }
+        
+        .suggestions-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .suggestions-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .ai-icon {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .suggestions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        
+        .suggestion-card {
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .suggestion-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(108, 99, 255, 0.1);
+        }
+        
+        .suggestion-name {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .suggestion-reason {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 0.75rem;
+        }
+        
+        .suggestion-nutrition {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            z-index: 2000;
+            font-weight: 500;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast-success { background: var(--success); }
+        .toast-error { background: var(--danger); }
+        .toast-info { background: var(--primary); }
+        
+        /* Welcome Section Styles */
+        .welcome-card {
+            background: white;
+            border-radius: 12px;
+            padding: 3rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .welcome-header {
+            margin-bottom: 3rem;
+        }
+        
+        .ai-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+        
+        .welcome-header h2 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+        
+        .welcome-header p {
+            font-size: 1.1rem;
+            color: var(--gray);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .feature-item {
+            text-align: center;
+            padding: 1.5rem;
+        }
+        
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .feature-item h4 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .feature-item p {
+            color: var(--gray);
+            line-height: 1.5;
+        }
+        
+        .cta-section {
+            text-align: center;
+        }
+        
+        .btn-large {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .cta-note {
+            margin-top: 1rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 2rem 1rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            color: var(--dark);
+        }
+        
+        .close {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--gray);
+            background: none;
+            border: none;
+            padding: 0.5rem;
+        }
+        
+        .close:hover {
+            color: var(--dark);
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        .assessment-progress {
+            margin-bottom: 2rem;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--light-gray);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-text {
+            text-align: center;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .question-container {
+            margin-bottom: 2rem;
+        }
+        
+        .question {
+            margin-bottom: 2rem;
+        }
+        
+        .question-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+        
+        .question-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .question-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .question-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .question-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .option-card {
+            border: 2px solid var(--light-gray);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .option-card:hover {
+            border-color: var(--primary);
+            background: rgba(108, 99, 255, 0.05);
+        }
+        
+        .option-card.selected {
+            border-color: var(--primary);
+            background: rgba(108, 99, 255, 0.1);
+        }
+        
+        .multiselect-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.5rem;
+        }
+        
+        .multiselect-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border: 1px solid var(--light-gray);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .multiselect-option:hover {
+            background: var(--light);
+        }
+        
+        .multiselect-option.selected {
+            background: rgba(108, 99, 255, 0.1);
+            border-color: var(--primary);
+        }
+        
+        .assessment-navigation {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        
+        .assessment-navigation .btn {
+            flex: 1;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                padding: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .tracking-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .meal-categories {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div>
+                    <h3 class="user-name"><%= user.fullName %></h3>
+                    <span class="user-plan">Premium Plan</span>
+                </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="nav-item"><a href="/workouts" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
+                <li class="nav-item"><a href="/progress" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
+                <li class="nav-item"><a href="/nutrition" class="nav-link"><i class="fas fa-utensils"></i> Nutrition</a></li>
+                <li class="nav-item"><a href="/meal-planner" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
+                <li class="nav-item"><a href="/meal-tracking" class="nav-link active"><i class="fas fa-camera"></i> Meal Tracking</a></li>
+                <li class="nav-item"><a href="/challenges" class="nav-link"><i class="fas fa-trophy"></i> Challenges</a></li>
+                <li class="nav-item"><a href="/health" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
+                <li class="nav-item"><a href="/biometrics" class="nav-link"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
+                <li class="nav-item"><a href="/schedule" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
+                <li class="nav-item"><a href="/community" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
+                <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
+                <li class="nav-item"><a href="/chat" class="nav-link"><i class="fas fa-comments"></i> Chat</a></li>
+                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+            
+            <div class="logout-section">
+                <a href="/logout" class="logout-link">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">AI Meal Planning & Tracking</h1>
+                <div class="ai-badge">
+                    <i class="fas fa-robot"></i>
+                    AI-Powered Nutrition
+                </div>
+            </div>
+            
+            <!-- Health Assessment Modal -->
+            <div id="healthAssessmentModal" class="modal" style="display: none;">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>AI Health Assessment</h2>
+                        <span class="close" onclick="closeHealthAssessment()">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="assessment-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="assessmentProgress" style="width: 0%"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span id="currentQuestion">1</span> of <span id="totalQuestions">15</span> questions
+                            </div>
+                        </div>
+                        
+                        <div class="question-container" id="questionContainer">
+                            <!-- Questions will be populated here -->
+                        </div>
+                        
+                        <div class="assessment-navigation">
+                            <button class="btn btn-outline" id="prevBtn" onclick="previousQuestion()" disabled>
+                                <i class="fas fa-arrow-left"></i> Previous
+                            </button>
+                            <button class="btn btn-primary" id="nextBtn" onclick="nextQuestion()">
+                                Next <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meal Plan Display -->
+            <div id="mealPlanSection" style="display: none;">
+                <!-- Daily Summary -->
+                <div class="daily-summary">
+                    <h2 class="summary-title">Your Personalized Nutrition Plan</h2>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-value" id="targetCalories">0</div>
+                            <div class="summary-label">Target Calories</div>
+                            <div class="summary-progress">
+                                <div class="summary-progress-fill" id="caloriesProgress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-value" id="targetProtein">0g</div>
+                            <div class="summary-label">Target Protein</div>
+                            <div class="summary-progress">
+                                <div class="summary-progress-fill" id="proteinProgress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-value" id="targetCarbs">0g</div>
+                            <div class="summary-label">Target Carbs</div>
+                            <div class="summary-progress">
+                                <div class="summary-progress-fill" id="carbsProgress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-value" id="targetFat">0g</div>
+                            <div class="summary-label">Target Fat</div>
+                            <div class="summary-progress">
+                                <div class="summary-progress-fill" id="fatProgress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Welcome Section -->
+            <div id="welcomeSection">
+                <div class="welcome-card">
+                    <div class="welcome-header">
+                        <div class="ai-avatar">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h2>Welcome to AI Meal Planning!</h2>
+                        <p>I'm your personal nutrition AI assistant. Let me create a customized meal plan based on your health profile, goals, and preferences.</p>
+                    </div>
+                    
+                    <div class="features-grid">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <h4>Smart Analysis</h4>
+                            <p>AI analyzes your health data, medical conditions, and lifestyle</p>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <h4>Personalized Meals</h4>
+                            <p>Custom meal plans tailored to your dietary needs and preferences</p>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <h4>Progress Tracking</h4>
+                            <p>Real-time nutrition tracking and goal monitoring</p>
+                        </div>
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-shopping-cart"></i>
+                            </div>
+                            <h4>Shopping Lists</h4>
+                            <p>Automated grocery lists based on your meal plan</p>
+                        </div>
+                    </div>
+                    
+                    <div class="cta-section">
+                        <button class="btn btn-primary btn-large" onclick="startHealthAssessment()">
+                            <i class="fas fa-play"></i> Start Health Assessment
+                        </button>
+                        <p class="cta-note">Takes 3-5 minutes • Completely personalized • Science-backed</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tracking Methods -->
+            <div class="tracking-grid">
+                <!-- Photo Recognition -->
+                <div class="tracking-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon icon-camera">
+                                <i class="fas fa-camera"></i>
+                            </div>
+                            Photo Recognition
+                        </div>
+                    </div>
+                    <div class="upload-area" id="photoUpload">
+                        <div class="upload-icon">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <div class="upload-text">Take or upload a photo of your meal</div>
+                        <div class="upload-hint">AI will identify the food and estimate nutrition</div>
+                    </div>
+                    <input type="file" id="photoInput" accept="image/*" style="display: none;">
+                    <button class="btn btn-primary btn-full" onclick="document.getElementById('photoInput').click()">
+                        <i class="fas fa-camera"></i> Take Photo
+                    </button>
+                </div>
+                
+                <!-- Food Search -->
+                <div class="tracking-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon icon-search">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            Food Search
+                        </div>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" class="search-input" id="foodSearch" placeholder="Search for food items...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                    <button class="btn btn-primary btn-full" onclick="searchFood()">
+                        <i class="fas fa-search"></i> Search Foods
+                    </button>
+                </div>
+                
+                <!-- Barcode Scanner -->
+                <div class="tracking-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon icon-barcode">
+                                <i class="fas fa-barcode"></i>
+                            </div>
+                            Barcode Scanner
+                        </div>
+                    </div>
+                    <input type="text" class="barcode-input" id="barcodeInput" placeholder="Enter barcode or scan...">
+                    <button class="btn btn-primary btn-full" onclick="scanBarcode()">
+                        <i class="fas fa-barcode"></i> Scan Barcode
+                    </button>
+                </div>
+                
+                <!-- Voice Input -->
+                <div class="tracking-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <div class="card-icon icon-voice">
+                                <i class="fas fa-microphone"></i>
+                            </div>
+                            Voice Input
+                        </div>
+                    </div>
+                    <p style="color: var(--gray); margin-bottom: 1rem;">Say what you ate, e.g., "I had a chicken salad for lunch"</p>
+                    <button class="voice-btn" id="voiceBtn" onclick="startVoiceInput()">
+                        <i class="fas fa-microphone"></i> Start Voice Input
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Search Results -->
+            <div class="results-section" id="searchResults" style="display: none;">
+                <div class="results-header">
+                    <h3 class="results-title">Search Results</h3>
+                    <button class="btn btn-outline" onclick="clearResults()">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+                <div class="results-grid" id="resultsGrid">
+                    <!-- Results will be populated here -->
+                </div>
+            </div>
+            
+            <!-- Meal Log -->
+            <div class="meal-log">
+                <div class="log-header">
+                    <h3 class="log-title">Today's Meal Log</h3>
+                    <button class="btn btn-outline" onclick="clearMealLog()">
+                        <i class="fas fa-trash"></i> Clear Log
+                    </button>
+                </div>
+                <div class="meal-categories">
+                    <div class="meal-category">
+                        <div class="category-header">
+                            <div class="category-icon" style="background: #FF6B6B;">
+                                <i class="fas fa-sun"></i>
+                            </div>
+                            <div class="category-name">Breakfast</div>
+                            <div class="category-calories" id="breakfastCalories">0 cal</div>
+                        </div>
+                        <div class="meal-items" id="breakfastItems">
+                            <div class="empty-category">No items added yet</div>
+                        </div>
+                    </div>
+                    
+                    <div class="meal-category">
+                        <div class="category-header">
+                            <div class="category-icon" style="background: #4ECDC4;">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <div class="category-name">Lunch</div>
+                            <div class="category-calories" id="lunchCalories">0 cal</div>
+                        </div>
+                        <div class="meal-items" id="lunchItems">
+                            <div class="empty-category">No items added yet</div>
+                        </div>
+                    </div>
+                    
+                    <div class="meal-category">
+                        <div class="category-header">
+                            <div class="category-icon" style="background: #45B7D1;">
+                                <i class="fas fa-cookie-bite"></i>
+                            </div>
+                            <div class="category-name">Snacks</div>
+                            <div class="category-calories" id="snacksCalories">0 cal</div>
+                        </div>
+                        <div class="meal-items" id="snacksItems">
+                            <div class="empty-category">No items added yet</div>
+                        </div>
+                    </div>
+                    
+                    <div class="meal-category">
+                        <div class="category-header">
+                            <div class="category-icon" style="background: #96CEB4;">
+                                <i class="fas fa-moon"></i>
+                            </div>
+                            <div class="category-name">Dinner</div>
+                            <div class="category-calories" id="dinnerCalories">0 cal</div>
+                        </div>
+                        <div class="meal-items" id="dinnerItems">
+                            <div class="empty-category">No items added yet</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AI Suggestions -->
+            <div class="ai-suggestions">
+                <div class="suggestions-header">
+                    <h3 class="suggestions-title">
+                        <div class="ai-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        AI Nutrition Suggestions
+                    </h3>
+                </div>
+                <div class="suggestions-grid" id="aiSuggestions">
+                    <!-- AI suggestions will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global variables
+        let mealLog = {
+            breakfast: [],
+            lunch: [],
+            snacks: [],
+            dinner: []
+        };
+        
+        let nutritionGoals = {
+            calories: 2000,
+            protein: 150,
+            carbs: 250,
+            fat: 67
+        };
+        
+        let currentNutrition = {
+            calories: 0,
+            protein: 0,
+            carbs: 0,
+            fat: 0
+        };
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMealLog();
+            updateNutritionSummary();
+            generateAISuggestions();
+            
+            // Setup photo upload
+            setupPhotoUpload();
+            
+            // Setup search
+            setupSearch();
+            
+            // Load today's data from server
+            loadTodaysData();
+        });
+        
+        // Load today's meal data from server
+        async function loadTodaysData() {
+            try {
+                const response = await fetch('/api/nutrition/today');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.nutrition) {
+                        // Update current nutrition from server data
+                        currentNutrition = {
+                            calories: data.nutrition.totalCalories || 0,
+                            protein: data.nutrition.totalProtein || 0,
+                            carbs: data.nutrition.totalCarbs || 0,
+                            fat: data.nutrition.totalFat || 0
+                        };
+                        
+                        // Update meal log if available
+                        if (data.nutrition.meals) {
+                            data.nutrition.meals.forEach(meal => {
+                                if (mealLog[meal.category]) {
+                                    mealLog[meal.category].push(meal);
+                                }
+                            });
+                        }
+                        
+                        updateNutritionSummary();
+                        updateMealLogDisplay();
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading today\'s data:', error);
+            }
+        }
+        
+        // Setup photo upload functionality
+        function setupPhotoUpload() {
+            const photoUpload = document.getElementById('photoUpload');
+            const photoInput = document.getElementById('photoInput');
+            
+            // Drag and drop
+            photoUpload.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                photoUpload.classList.add('dragover');
+            });
+            
+            photoUpload.addEventListener('dragleave', () => {
+                photoUpload.classList.remove('dragover');
+            });
+            
+            photoUpload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                photoUpload.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handlePhotoUpload(files[0]);
+                }
+            });
+            
+            // File input change
+            photoInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handlePhotoUpload(e.target.files[0]);
+                }
+            });
+        }
+        
+        // Handle photo upload and recognition
+        async function handlePhotoUpload(file) {
+            if (!file.type.startsWith('image/')) {
+                showToast('Please select a valid image file', 'error');
+                return;
+            }
+            
+            showToast('Analyzing photo...', 'info');
+            
+            try {
+                // Create FormData for file upload
+                const formData = new FormData();
+                formData.append('photo', file);
+                
+                // Mock API call - replace with actual food recognition API
+                const response = await mockPhotoRecognition(file);
+                
+                if (response.success) {
+                    displaySearchResults(response.foods);
+                    showToast('Food recognized successfully!', 'success');
+                } else {
+                    showToast('Could not recognize food in photo', 'error');
+                }
+            } catch (error) {
+                console.error('Photo recognition error:', error);
+                showToast('Error analyzing photo', 'error');
+            }
+        }
+        
+        // Mock photo recognition (replace with actual API)
+        async function mockPhotoRecognition(file) {
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Mock response
+            return {
+                success: true,
+                foods: [
+                    {
+                        name: 'Grilled Chicken Breast',
+                        brand: 'Estimated',
+                        calories: 165,
+                        protein: 31,
+                        carbs: 0,
+                        fat: 3.6,
+                        serving: '100g',
+                        confidence: 0.85
+                    },
+                    {
+                        name: 'Mixed Green Salad',
+                        brand: 'Estimated',
+                        calories: 20,
+                        protein: 2,
+                        carbs: 4,
+                        fat: 0.2,
+                        serving: '1 cup',
+                        confidence: 0.75
+                    }
+                ]
+            };
+        }
+        
+        // Setup search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('foodSearch');
+            
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    searchFood();
+                }
+            });
+        }
+        
+        // Search for food items
+        async function searchFood() {
+            const query = document.getElementById('foodSearch').value.trim();
+            
+            if (!query) {
+                showToast('Please enter a food item to search', 'error');
+                return;
+            }
+            
+            showToast('Searching for foods...', 'info');
+            
+            try {
+                const response = await fetch(`/api/nutriscan/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data.success && data.products.length > 0) {
+                    displaySearchResults(data.products);
+                    showToast(`Found ${data.products.length} results`, 'success');
+                } else {
+                    showToast('No foods found for your search', 'error');
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                showToast('Error searching for foods', 'error');
+            }
+        }
+        
+        // Scan barcode
+        async function scanBarcode() {
+            const barcode = document.getElementById('barcodeInput').value.trim();
+            
+            if (!barcode) {
+                showToast('Please enter a barcode', 'error');
+                return;
+            }
+            
+            showToast('Looking up barcode...', 'info');
+            
+            try {
+                const response = await fetch(`/api/nutriscan/barcode/${barcode}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displaySearchResults([data.nutrition]);
+                    showToast('Product found!', 'success');
+                } else {
+                    showToast('Product not found in database', 'error');
+                }
+            } catch (error) {
+                console.error('Barcode scan error:', error);
+                showToast('Error scanning barcode', 'error');
+            }
+        }
+        
+        // Voice input functionality
+        function startVoiceInput() {
+            if (!('webkitSpeechRecognition' in window)) {
+                showToast('Voice recognition not supported in this browser', 'error');
+                return;
+            }
+            
+            const recognition = new webkitSpeechRecognition();
+            const voiceBtn = document.getElementById('voiceBtn');
+            
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+            
+            voiceBtn.classList.add('listening');
+            voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Listening...';
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                processVoiceInput(transcript);
+            };
+            
+            recognition.onerror = function(event) {
+                console.error('Voice recognition error:', event.error);
+                showToast('Voice recognition error', 'error');
+                resetVoiceButton();
+            };
+            
+            recognition.onend = function() {
+                resetVoiceButton();
+            };
+            
+            recognition.start();
+        }
+        
+        function resetVoiceButton() {
+            const voiceBtn = document.getElementById('voiceBtn');
+            voiceBtn.classList.remove('listening');
+            voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Start Voice Input';
+        }
+        
+        // Process voice input
+        async function processVoiceInput(transcript) {
+            showToast(`Processing: "${transcript}"`, 'info');
+            
+            try {
+                // Mock AI processing of voice input
+                const foods = await mockVoiceProcessing(transcript);
+                
+                if (foods.length > 0) {
+                    displaySearchResults(foods);
+                    showToast('Voice input processed successfully!', 'success');
+                } else {
+                    showToast('Could not identify foods from voice input', 'error');
+                }
+            } catch (error) {
+                console.error('Voice processing error:', error);
+                showToast('Error processing voice input', 'error');
+            }
+        }
+        
+        // Mock voice processing (replace with actual AI)
+        async function mockVoiceProcessing(transcript) {
+            // Simulate AI processing
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Simple keyword matching for demo
+            const foods = [];
+            
+            if (transcript.toLowerCase().includes('chicken')) {
+                foods.push({
+                    name: 'Chicken Breast',
+                    brand: 'Generic',
+                    calories: 165,
+                    protein: 31,
+                    carbs: 0,
+                    fat: 3.6,
+                    serving: '100g'
+                });
+            }
+            
+            if (transcript.toLowerCase().includes('salad')) {
+                foods.push({
+                    name: 'Garden Salad',
+                    brand: 'Generic',
+                    calories: 20,
+                    protein: 2,
+                    carbs: 4,
+                    fat: 0.2,
+                    serving: '1 cup'
+                });
+            }
+            
+            if (transcript.toLowerCase().includes('rice')) {
+                foods.push({
+                    name: 'White Rice',
+                    brand: 'Generic',
+                    calories: 130,
+                    protein: 2.7,
+                    carbs: 28,
+                    fat: 0.3,
+                    serving: '1/2 cup'
+                });
+            }
+            
+            return foods;
+        }
+        
+        // Display search results
+        function displaySearchResults(foods) {
+            const resultsSection = document.getElementById('searchResults');
+            const resultsGrid = document.getElementById('resultsGrid');
+            
+            resultsGrid.innerHTML = '';
+            
+            foods.forEach((food, index) => {
+                const foodItem = createFoodItemElement(food, index);
+                resultsGrid.appendChild(foodItem);
+            });
+            
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Create food item element
+        function createFoodItemElement(food, index) {
+            const div = document.createElement('div');
+            div.className = 'food-item';
+            div.innerHTML = `
+                <div class="food-header">
+                    <div>
+                        <h4 class="food-name">${food.name}</h4>
+                        <p class="food-brand">${food.brand || 'Generic'}</p>
+                    </div>
+                    <div class="food-image"></div>
+                </div>
+                <div class="nutrition-info">
+                    <div class="nutrition-item">
+                        <span class="nutrition-label">Calories:</span>
+                        <span class="nutrition-value">${food.calories}</span>
+                    </div>
+                    <div class="nutrition-item">
+                        <span class="nutrition-label">Protein:</span>
+                        <span class="nutrition-value">${food.protein}g</span>
+                    </div>
+                    <div class="nutrition-item">
+                        <span class="nutrition-label">Carbs:</span>
+                        <span class="nutrition-value">${food.carbs}g</span>
+                    </div>
+                    <div class="nutrition-item">
+                        <span class="nutrition-label">Fat:</span>
+                        <span class="nutrition-value">${food.fat}g</span>
+                    </div>
+                </div>
+                <div class="serving-controls">
+                    <span class="serving-label">Serving: ${food.serving}</span>
+                    <div class="quantity-controls">
+                        <button class="quantity-btn" onclick="changeQuantity(${index}, -1)">-</button>
+                        <input type="number" class="quantity-input" id="quantity-${index}" value="1" min="0.1" step="0.1">
+                        <button class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</button>
+                    </div>
+                    <button class="add-to-log-btn" onclick="showMealCategoryModal(${index})">
+                        <i class="fas fa-plus"></i> Add to Log
+                    </button>
+                </div>
+            `;
+            
+            // Store food data on element
+            div.foodData = food;
+            
+            return div;
+        }
+        
+        // Change quantity
+        function changeQuantity(index, delta) {
+            const quantityInput = document.getElementById(`quantity-${index}`);
+            const currentValue = parseFloat(quantityInput.value);
+            const newValue = Math.max(0.1, currentValue + delta);
+            quantityInput.value = newValue.toFixed(1);
+        }
+        
+        // Show meal category selection modal
+        function showMealCategoryModal(index) {
+            const categories = ['breakfast', 'lunch', 'snacks', 'dinner'];
+            const categoryNames = ['Breakfast', 'Lunch', 'Snacks', 'Dinner'];
+            
+            // Simple prompt for demo - replace with proper modal
+            const categoryIndex = prompt(`Select meal category:\n${categoryNames.map((name, i) => `${i + 1}. ${name}`).join('\n')}\n\nEnter number (1-4):`);
+            
+            if (categoryIndex && categoryIndex >= 1 && categoryIndex <= 4) {
+                const category = categories[categoryIndex - 1];
+                addToMealLog(index, category);
+            }
+        }
+        
+        // Add food to meal log
+        function addToMealLog(index, category) {
+            const foodItem = document.querySelectorAll('.food-item')[index];
+            const food = foodItem.foodData;
+            const quantity = parseFloat(document.getElementById(`quantity-${index}`).value);
+            
+            const logEntry = {
+                name: food.name,
+                brand: food.brand || 'Generic',
+                calories: Math.round(food.calories * quantity),
+                protein: Math.round(food.protein * quantity * 10) / 10,
+                carbs: Math.round(food.carbs * quantity * 10) / 10,
+                fat: Math.round(food.fat * quantity * 10) / 10,
+                serving: food.serving,
+                quantity: quantity,
+                timestamp: new Date().toISOString()
+            };
+            
+            mealLog[category].push(logEntry);
+            
+            // Update nutrition totals
+            currentNutrition.calories += logEntry.calories;
+            currentNutrition.protein += logEntry.protein;
+            currentNutrition.carbs += logEntry.carbs;
+            currentNutrition.fat += logEntry.fat;
+            
+            // Save to server
+            saveMealToServer(logEntry, category);
+            
+            // Update displays
+            updateMealLogDisplay();
+            updateNutritionSummary();
+            saveMealLog();
+            
+            showToast(`Added ${food.name} to ${category}!`, 'success');
+        }
+        
+        // Save meal to server
+        async function saveMealToServer(meal, category) {
+            try {
+                const response = await fetch('/api/nutrition', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        meals: [{
+                            name: meal.name,
+                            category: category,
+                            calories: meal.calories,
+                            protein: meal.protein,
+                            carbs: meal.carbs,
+                            fat: meal.fat,
+                            quantity: meal.quantity,
+                            serving: meal.serving
+                        }],
+                        totalCalories: meal.calories,
+                        totalProtein: meal.protein,
+                        totalCarbs: meal.carbs,
+                        totalFat: meal.fat
+                    })
+                });
+                
+                if (!response.ok) {
+                    console.error('Failed to save meal to server');
+                }
+            } catch (error) {
+                console.error('Error saving meal to server:', error);
+            }
+        }
+        
+        // Update meal log display
+        function updateMealLogDisplay() {
+            const categories = ['breakfast', 'lunch', 'snacks', 'dinner'];
+            
+            categories.forEach(category => {
+                const itemsContainer = document.getElementById(`${category}Items`);
+                const caloriesElement = document.getElementById(`${category}Calories`);
+                
+                if (mealLog[category].length === 0) {
+                    itemsContainer.innerHTML = '<div class="empty-category">No items added yet</div>';
+                    caloriesElement.textContent = '0 cal';
+                } else {
+                    const totalCalories = mealLog[category].reduce((sum, item) => sum + item.calories, 0);
+                    caloriesElement.textContent = `${totalCalories} cal`;
+                    
+                    itemsContainer.innerHTML = mealLog[category].map((item, index) => `
+                        <div class="meal-item">
+                            <div class="item-info">
+                                <h5 class="item-name">${item.name}</h5>
+                                <p class="item-details">${item.quantity} × ${item.serving} | ${item.protein}g protein</p>
+                            </div>
+                            <div class="item-calories">${item.calories} cal</div>
+                            <button class="remove-item" onclick="removeFromMealLog('${category}', ${index})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `).join('');
+                }
+            });
+        }
+        
+        // Remove item from meal log
+        function removeFromMealLog(category, index) {
+            const item = mealLog[category][index];
+            
+            // Update nutrition totals
+            currentNutrition.calories -= item.calories;
+            currentNutrition.protein -= item.protein;
+            currentNutrition.carbs -= item.carbs;
+            currentNutrition.fat -= item.fat;
+            
+            // Remove from log
+            mealLog[category].splice(index, 1);
+            
+            // Update displays
+            updateMealLogDisplay();
+            updateNutritionSummary();
+            saveMealLog();
+            
+            showToast(`Removed ${item.name} from ${category}`, 'info');
+        }
+        
+        // Update nutrition summary
+        function updateNutritionSummary() {
+            document.getElementById('totalCalories').textContent = Math.round(currentNutrition.calories);
+            document.getElementById('totalProtein').textContent = Math.round(currentNutrition.protein) + 'g';
+            document.getElementById('totalCarbs').textContent = Math.round(currentNutrition.carbs) + 'g';
+            document.getElementById('totalFat').textContent = Math.round(currentNutrition.fat) + 'g';
+            
+            // Update progress bars
+            const caloriesPercent = Math.min((currentNutrition.calories / nutritionGoals.calories) * 100, 100);
+            const proteinPercent = Math.min((currentNutrition.protein / nutritionGoals.protein) * 100, 100);
+            const carbsPercent = Math.min((currentNutrition.carbs / nutritionGoals.carbs) * 100, 100);
+            const fatPercent = Math.min((currentNutrition.fat / nutritionGoals.fat) * 100, 100);
+            
+            document.getElementById('caloriesProgress').style.width = caloriesPercent + '%';
+            document.getElementById('proteinProgress').style.width = proteinPercent + '%';
+            document.getElementById('carbsProgress').style.width = carbsPercent + '%';
+            document.getElementById('fatProgress').style.width = fatPercent + '%';
+        }
+        
+        // Generate AI suggestions
+        function generateAISuggestions() {
+            const suggestions = [
+                {
+                    name: 'Greek Yogurt with Berries',
+                    reason: 'High protein, low calories - perfect for your goals',
+                    calories: 150,
+                    protein: 15,
+                    carbs: 20
+                },
+                {
+                    name: 'Grilled Salmon',
+                    reason: 'Excellent source of omega-3 and protein',
+                    calories: 200,
+                    protein: 25,
+                    carbs: 0
+                },
+                {
+                    name: 'Quinoa Bowl',
+                    reason: 'Complete protein and fiber to keep you full',
+                    calories: 180,
+                    protein: 8,
+                    carbs: 32
+                },
+                {
+                    name: 'Almonds (1 oz)',
+                    reason: 'Healthy fats and protein for sustained energy',
+                    calories: 160,
+                    protein: 6,
+                    carbs: 6
+                }
+            ];
+            
+            const suggestionsGrid = document.getElementById('aiSuggestions');
+            suggestionsGrid.innerHTML = suggestions.map(suggestion => `
+                <div class="suggestion-card">
+                    <div class="suggestion-name">${suggestion.name}</div>
+                    <div class="suggestion-reason">${suggestion.reason}</div>
+                    <div class="suggestion-nutrition">
+                        <span>${suggestion.calories} cal</span>
+                        <span>${suggestion.protein}g protein</span>
+                        <span>${suggestion.carbs}g carbs</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Clear search results
+        function clearResults() {
+            document.getElementById('searchResults').style.display = 'none';
+            document.getElementById('foodSearch').value = '';
+            document.getElementById('barcodeInput').value = '';
+        }
+        
+        // Clear meal log
+        function clearMealLog() {
+            if (confirm('Are you sure you want to clear today\'s meal log?')) {
+                mealLog = {
+                    breakfast: [],
+                    lunch: [],
+                    snacks: [],
+                    dinner: []
+                };
+                
+                currentNutrition = {
+                    calories: 0,
+                    protein: 0,
+                    carbs: 0,
+                    fat: 0
+                };
+                
+                updateMealLogDisplay();
+                updateNutritionSummary();
+                saveMealLog();
+                
+                showToast('Meal log cleared', 'info');
+            }
+        }
+        
+        // Save meal log to localStorage
+        function saveMealLog() {
+            const today = new Date().toDateString();
+            localStorage.setItem(`mealLog_${today}`, JSON.stringify(mealLog));
+            localStorage.setItem(`nutrition_${today}`, JSON.stringify(currentNutrition));
+        }
+        
+        // Load meal log from localStorage
+        function loadMealLog() {
+            const today = new Date().toDateString();
+            const savedLog = localStorage.getItem(`mealLog_${today}`);
+            const savedNutrition = localStorage.getItem(`nutrition_${today}`);
+            
+            if (savedLog) {
+                mealLog = JSON.parse(savedLog);
+            }
+            
+            if (savedNutrition) {
+                currentNutrition = JSON.parse(savedNutrition);
+            }
+        }
+        
+        // Show toast notification
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // Health Assessment Variables
+        let healthQuestions = [];
+        let currentQuestionIndex = 0;
+        let healthAnswers = {};
+        
+        // Start health assessment
+        async function startHealthAssessment() {
+            try {
+                console.log('Starting health assessment...');
+                // Load health questions from server
+                const response = await fetch('/api/meal-planner/health-questions');
+                const data = await response.json();
+                
+                console.log('Health questions response:', data);
+                
+                if (data.success) {
+                    healthQuestions = data.questions;
+                    currentQuestionIndex = 0;
+                    healthAnswers = {};
+                    
+                    console.log('Loaded', healthQuestions.length, 'health questions');
+                    
+                    // Show modal and first question
+                    document.getElementById('healthAssessmentModal').style.display = 'flex';
+                    document.getElementById('totalQuestions').textContent = healthQuestions.length;
+                    
+                    showQuestion(0);
+                } else {
+                    console.error('Failed to load health questions:', data.error);
+                    showToast('Failed to load health assessment', 'error');
+                }
+            } catch (error) {
+                console.error('Error starting health assessment:', error);
+                showToast('Error starting health assessment', 'error');
+            }
+        }
+        
+        // Show specific question
+        function showQuestion(index) {
+            if (index >= healthQuestions.length) {
+                completeAssessment();
+                return;
+            }
+            
+            const question = healthQuestions[index];
+            const container = document.getElementById('questionContainer');
+            
+            // Update progress
+            const progress = ((index + 1) / healthQuestions.length) * 100;
+            document.getElementById('assessmentProgress').style.width = progress + '%';
+            document.getElementById('currentQuestion').textContent = index + 1;
+            
+            // Generate question HTML
+            let questionHTML = `
+                <div class="question">
+                    <h3 class="question-title">${question.question}</h3>
+            `;
+            
+            switch (question.type) {
+                case 'number':
+                    questionHTML += `
+                        <input type="number" 
+                               class="question-input" 
+                               id="answer-${question.id}" 
+                               min="${question.min || 0}" 
+                               max="${question.max || 1000}"
+                               value="${healthAnswers[question.id] || ''}"
+                               placeholder="Enter ${question.question.toLowerCase()}">
+                    `;
+                    break;
+                    
+                case 'select':
+                    if (Array.isArray(question.options) && question.options.length > 0 && typeof question.options[0] === 'object') {
+                        // Options with labels
+                        questionHTML += '<div class="question-options">';
+                        question.options.forEach(option => {
+                            const isSelected = healthAnswers[question.id] === option.value;
+                            questionHTML += `
+                                <div class="option-card ${isSelected ? 'selected' : ''}" 
+                                     onclick="selectOption('${question.id}', '${option.value}')">
+                                    <strong>${option.label}</strong>
+                                </div>
+                            `;
+                        });
+                        questionHTML += '</div>';
+                    } else {
+                        // Simple options
+                        questionHTML += '<div class="question-options">';
+                        question.options.forEach(option => {
+                            const isSelected = healthAnswers[question.id] === option;
+                            questionHTML += `
+                                <div class="option-card ${isSelected ? 'selected' : ''}" 
+                                     onclick="selectOption('${question.id}', '${option}')">
+                                    ${option.charAt(0).toUpperCase() + option.slice(1).replace('_', ' ')}
+                                </div>
+                            `;
+                        });
+                        questionHTML += '</div>';
+                    }
+                    break;
+                    
+                case 'multiselect':
+                    questionHTML += '<div class="multiselect-options">';
+                    question.options.forEach(option => {
+                        const isSelected = healthAnswers[question.id] && healthAnswers[question.id].includes(option);
+                        questionHTML += `
+                            <div class="multiselect-option ${isSelected ? 'selected' : ''}" 
+                                 onclick="toggleMultiOption('${question.id}', '${option}')">
+                                <input type="checkbox" ${isSelected ? 'checked' : ''} readonly>
+                                <span>${option.charAt(0).toUpperCase() + option.slice(1).replace('_', ' ')}</span>
+                            </div>
+                        `;
+                    });
+                    questionHTML += '</div>';
+                    break;
+            }
+            
+            questionHTML += '</div>';
+            container.innerHTML = questionHTML;
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = index === 0;
+            const nextBtn = document.getElementById('nextBtn');
+            if (index === healthQuestions.length - 1) {
+                nextBtn.innerHTML = 'Generate Plan <i class="fas fa-check"></i>';
+                nextBtn.classList.add('btn-success');
+                nextBtn.classList.remove('btn-primary');
+            } else {
+                nextBtn.innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
+                nextBtn.classList.add('btn-primary');
+                nextBtn.classList.remove('btn-success');
+            }
+        }
+        
+        // Select single option
+        function selectOption(questionId, value) {
+            healthAnswers[questionId] = value;
+            
+            // Update UI
+            const options = document.querySelectorAll(`[onclick*="${questionId}"]`);
+            options.forEach(option => option.classList.remove('selected'));
+            event.target.classList.add('selected');
+        }
+        
+        // Toggle multi-select option
+        function toggleMultiOption(questionId, value) {
+            if (!healthAnswers[questionId]) {
+                healthAnswers[questionId] = [];
+            }
+            
+            const index = healthAnswers[questionId].indexOf(value);
+            if (index > -1) {
+                healthAnswers[questionId].splice(index, 1);
+                event.target.classList.remove('selected');
+                event.target.querySelector('input').checked = false;
+            } else {
+                healthAnswers[questionId].push(value);
+                event.target.classList.add('selected');
+                event.target.querySelector('input').checked = true;
+            }
+        }
+        
+        // Navigate to next question
+        function nextQuestion() {
+            console.log('Next question clicked. Current index:', currentQuestionIndex, 'Total questions:', healthQuestions.length);
+            
+            const currentQuestion = healthQuestions[currentQuestionIndex];
+            console.log('Current question:', currentQuestion);
+            
+            // Save number input value first
+            if (currentQuestion.type === 'number') {
+                const input = document.getElementById(`answer-${currentQuestion.id}`);
+                if (input && input.value) {
+                    healthAnswers[currentQuestion.id] = parseFloat(input.value);
+                    console.log('Saved number answer:', currentQuestion.id, '=', input.value);
+                }
+            }
+            
+            // Validate current answer
+            if (currentQuestion.required) {
+                const answer = healthAnswers[currentQuestion.id];
+                console.log('Validating answer for', currentQuestion.id, ':', answer);
+                if (!answer || (Array.isArray(answer) && answer.length === 0)) {
+                    showToast('Please answer this question before continuing', 'error');
+                    return;
+                }
+            }
+            
+            console.log('Current answers so far:', healthAnswers);
+            
+            // Check if this is the last question
+            if (currentQuestionIndex >= healthQuestions.length - 1) {
+                console.log('Last question reached, completing assessment...');
+                completeAssessment();
+                return;
+            }
+            
+            currentQuestionIndex++;
+            console.log('Moving to question index:', currentQuestionIndex);
+            showQuestion(currentQuestionIndex);
+        }
+        
+        // Navigate to previous question
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                showQuestion(currentQuestionIndex);
+            }
+        }
+        
+        // Complete assessment and generate meal plan
+        async function completeAssessment() {
+            try {
+                showToast('Generating your personalized meal plan...', 'info');
+                
+                // Send health data to server for meal plan generation
+                const response = await fetch('/api/meal-planner/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        healthData: healthAnswers
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Close modal
+                    closeHealthAssessment();
+                    
+                    // Hide welcome section
+                    document.getElementById('welcomeSection').style.display = 'none';
+                    
+                    // Show meal plan section
+                    document.getElementById('mealPlanSection').style.display = 'block';
+                    
+                    // Update nutrition targets
+                    const targets = data.mealPlan.nutritionTargets;
+                    nutritionGoals = {
+                        calories: targets.targetCalories,
+                        protein: targets.macros.protein,
+                        carbs: targets.macros.carbs,
+                        fat: targets.macros.fat
+                    };
+                    
+                    // Update display
+                    document.getElementById('targetCalories').textContent = targets.targetCalories;
+                    document.getElementById('targetProtein').textContent = targets.macros.protein + 'g';
+                    document.getElementById('targetCarbs').textContent = targets.macros.carbs + 'g';
+                    document.getElementById('targetFat').textContent = targets.macros.fat + 'g';
+                    
+                    // Update progress bars
+                    updateNutritionSummary();
+                    
+                    // Generate personalized suggestions
+                    generatePersonalizedSuggestions(data.mealPlan);
+                    
+                    showToast('Your personalized meal plan is ready!', 'success');
+                } else {
+                    showToast('Failed to generate meal plan: ' + data.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error completing assessment:', error);
+                showToast('Error generating meal plan', 'error');
+            }
+        }
+        
+        // Close health assessment modal
+        function closeHealthAssessment() {
+            document.getElementById('healthAssessmentModal').style.display = 'none';
+        }
+        
+        // Generate personalized suggestions based on meal plan
+        function generatePersonalizedSuggestions(mealPlan) {
+            const suggestions = [];
+            
+            // Add suggestions based on health profile
+            const healthProfile = mealPlan.healthProfile;
+            
+            if (healthProfile.fitnessGoal === 'lose_weight') {
+                suggestions.push({
+                    name: 'Grilled Chicken Salad',
+                    reason: 'High protein, low calories - perfect for weight loss',
+                    calories: 250,
+                    protein: 30,
+                    carbs: 10
+                });
+            }
+            
+            if (healthProfile.fitnessGoal === 'build_muscle') {
+                suggestions.push({
+                    name: 'Protein Smoothie Bowl',
+                    reason: 'High protein content supports muscle building',
+                    calories: 350,
+                    protein: 35,
+                    carbs: 25
+                });
+            }
+            
+            if (healthProfile.dietaryPreferences === 'vegetarian') {
+                suggestions.push({
+                    name: 'Quinoa Buddha Bowl',
+                    reason: 'Complete plant-based protein and nutrients',
+                    calories: 320,
+                    protein: 18,
+                    carbs: 45
+                });
+            }
+            
+            if (healthProfile.medicalConditions && healthProfile.medicalConditions.includes('diabetes_type2')) {
+                suggestions.push({
+                    name: 'Cauliflower Rice Bowl',
+                    reason: 'Low carb option to help manage blood sugar',
+                    calories: 200,
+                    protein: 15,
+                    carbs: 8
+                });
+            }
+            
+            // Add general healthy suggestions
+            suggestions.push(
+                {
+                    name: 'Avocado Toast',
+                    reason: 'Healthy fats and fiber for sustained energy',
+                    calories: 280,
+                    protein: 8,
+                    carbs: 30
+                },
+                {
+                    name: 'Greek Yogurt Parfait',
+                    reason: 'Probiotics and protein for digestive health',
+                    calories: 180,
+                    protein: 20,
+                    carbs: 15
+                }
+            );
+            
+            // Update suggestions display
+            const suggestionsGrid = document.getElementById('aiSuggestions');
+            suggestionsGrid.innerHTML = suggestions.map(suggestion => `
+                <div class="suggestion-card">
+                    <div class="suggestion-name">${suggestion.name}</div>
+                    <div class="suggestion-reason">${suggestion.reason}</div>
+                    <div class="suggestion-nutrition">
+                        <span>${suggestion.calories} cal</span>
+                        <span>${suggestion.protein}g protein</span>
+                        <span>${suggestion.carbs}g carbs</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>

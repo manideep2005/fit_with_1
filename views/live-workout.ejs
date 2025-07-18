@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Workout - Fit-With-AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --primary-dark: #5A54E8;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #17a2b8;
+            --dark: #343a40;
+            --light: #f8f9fa;
+            --sidebar-width: 280px;
+            --header-height: 70px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+            padding: 2rem 1.5rem;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background: white;
+            transform: scale(1.1);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(108, 99, 255, 0.1);
+            border-radius: 15px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+            border: 3px solid var(--primary);
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: #6c757d;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: var(--primary);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-link i {
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            transition: margin-left 0.3s ease;
+            position: relative;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        /* Join Screen */
+        .join-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .join-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 3rem;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            animation: slideUp 0.6s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .join-header {
+            margin-bottom: 2rem;
+        }
+
+        .join-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .join-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .join-subtitle {
+            color: #6c757d;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .session-input {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 18px 24px;
+            font-size: 1.2rem;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .session-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .session-input::placeholder {
+            color: #adb5bd;
+            text-transform: none;
+            letter-spacing: normal;
+            font-weight: 400;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--success), #20c997);
+            color: white;
+            border: none;
+            padding: 18px 36px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            text-decoration: none;
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            box-shadow: 0 8px 25px rgba(108, 99, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 12px 35px rgba(108, 99, 255, 0.4);
+        }
+
+        .quick-join {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .quick-join-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .quick-sessions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .quick-session {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .quick-session:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .quick-session-type {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .quick-session-info {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Workout Screen */
+        .workout-screen {
+            display: none;
+            min-height: 100vh;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .workout-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .session-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .session-id {
+            background: rgba(108, 99, 255, 0.8);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .participant-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: white;
+        }
+
+        .participant-count {
+            background: rgba(40, 167, 69, 0.8);
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .leave-btn {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .leave-btn:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        /* Video Area */
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            background: #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .workout-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .video-placeholder i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .video-placeholder h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .video-placeholder p {
+            opacity: 0.7;
+        }
+
+        /* Floating Controls */
+        .floating-controls {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 1rem;
+            z-index: 200;
+        }
+
+        .control-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .control-btn.active {
+            background: var(--success);
+        }
+
+        .control-btn.danger {
+            background: var(--danger);
+        }
+
+        /* Workout Stats */
+        .workout-stats {
+            position: absolute;
+            top: 100px;
+            left: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 150;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            min-width: 120px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--success);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .timer-card .stat-value {
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+        }
+
+        .reps-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .reps-card:hover {
+            transform: scale(1.05);
+            background: rgba(255, 107, 107, 0.2);
+        }
+
+        .reps-card .stat-value {
+            color: #ff6b6b;
+        }
+
+        /* Chat Panel */
+        .chat-panel {
+            position: absolute;
+            top: 100px;
+            right: 2rem;
+            width: 350px;
+            height: 500px;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            z-index: 150;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .chat-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chat-toggle {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+            padding-right: 0.5rem;
+        }
+
+        .chat-message {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            margin-bottom: 0.75rem;
+            color: white;
+            font-size: 0.9rem;
+            animation: messageSlide 0.3s ease;
+        }
+
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-message.system {
+            background: rgba(108, 99, 255, 0.3);
+            text-align: center;
+            font-style: italic;
+        }
+
+        .chat-input-container {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+        .chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .chat-send {
+            background: var(--primary);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .chat-send:hover {
+            background: var(--primary-dark);
+            transform: scale(1.1);
+        }
+
+        /* Reactions */
+        .reaction-panel {
+            position: absolute;
+            bottom: 120px;
+            left: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            z-index: 150;
+        }
+
+        .reaction-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .reaction-btn:hover {
+            transform: scale(1.2);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Music Controls */
+        .music-controls {
+            position: absolute;
+            top: 100px;
+            right: 400px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 1rem 1.5rem;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 150;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .music-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .music-btn:hover {
+            background: var(--primary);
+            transform: scale(1.1);
+        }
+
+        .music-info {
+            color: white;
+            font-size: 0.9rem;
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .chat-panel {
+                width: 300px;
+                height: 400px;
+            }
+            
+            .music-controls {
+                right: 320px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --sidebar-width: 250px;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .join-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .join-title {
+                font-size: 2rem;
+            }
+
+            .quick-sessions {
+                grid-template-columns: 1fr;
+            }
+
+            .workout-stats {
+                position: relative;
+                top: auto;
+                left: auto;
+                flex-direction: row;
+                justify-content: center;
+                margin: 1rem;
+            }
+
+            .chat-panel {
+                position: relative;
+                top: auto;
+                right: auto;
+                width: 100%;
+                height: 300px;
+                margin: 1rem;
+            }
+
+            .music-controls {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 1rem;
+                justify-content: center;
+            }
+
+            .reaction-panel {
+                position: relative;
+                bottom: auto;
+                left: auto;
+                flex-direction: row;
+                justify-content: center;
+                margin: 1rem;
+            }
+
+            .floating-controls {
+                bottom: 1rem;
+                gap: 0.5rem;
+            }
+
+            .control-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Success Animation */
+        .success-animation {
+            animation: pulse 0.6s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        /* Notification Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            z-index: 9999;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            background: var(--success);
+        }
+
+        .toast.error {
+            background: var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Toggle -->
+    <button class="sidebar-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="user-profile">
+            <img src="https://ui-avatars.com/api/?name=<%= user?.fullName || 'User' %>&background=6C63FF&color=fff" alt="User Avatar" class="user-avatar">
+            <div>
+                <h3><%= user?.fullName || 'User' %></h3>
+                <span style="font-size: 0.8rem; color: var(--primary); background: rgba(108, 99, 255, 0.1); padding: 2px 8px; border-radius: 20px;"></span>
+            </div>
+        </div>
+        
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/dashboard" class="nav-link">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/live-workout" class="nav-link active">
+                    <i class="fas fa-broadcast-tower"></i> Live Workouts
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/workouts" class="nav-link">
+                    <i class="fas fa-dumbbell"></i> Workouts
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/nutrition" class="nav-link">
+                    <i class="fas fa-apple-alt"></i> Nutrition
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/progress" class="nav-link">
+                    <i class="fas fa-chart-line"></i> Progress
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/community" class="nav-link">
+                    <i class="fas fa-users"></i> Community
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/settings" class="nav-link">
+                    <i class="fas fa-cog"></i> Settings
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Join Screen -->
+        <div id="joinScreen" class="join-screen">
+            <div class="join-container">
+                <div class="join-header">
+                    <div class="join-icon">🏋️‍♂️</div>
+                    <h1 class="join-title">Live Workout</h1>
+                    <p class="join-subtitle">Connect with friends and workout together in real-time</p>
+                </div>
+
+                <div class="join-options">
+                    <input type="text" id="sessionId" class="session-input" placeholder="Enter Session ID (e.g., ABC-DEF-GHI)" maxlength="11">
+                    
+                    <button type="button" class="btn" onclick="joinSession()">
+                        <i class="fas fa-video"></i> Join Workout Session
+                    </button>
+
+                    <button type="button" class="btn btn-secondary" onclick="createSession()">
+                        <i class="fas fa-plus"></i> Create New Session
+                    </button>
+                </div>
+
+                <div class="quick-join">
+                    <h3 class="quick-join-title">Quick Join Popular Sessions</h3>
+                    <div class="quick-sessions">
+                        <div class="quick-session" onclick="joinQuickSession('HIIT-LIVE')">
+                            <div class="quick-session-type">HIIT Training</div>
+                            <div class="quick-session-info">45 min • 12 participants</div>
+                        </div>
+                        <div class="quick-session" onclick="joinQuickSession('YOGA-FLOW')">
+                            <div class="quick-session-type">Yoga Flow</div>
+                            <div class="quick-session-info">60 min • 8 participants</div>
+                        </div>
+                        <div class="quick-session" onclick="joinQuickSession('CARDIO-BURN')">
+                            <div class="quick-session-type">Cardio Burn</div>
+                            <div class="quick-session-info">30 min • 15 participants</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Workout Screen -->
+        <div id="workoutScreen" class="workout-screen">
+            <!-- Header -->
+            <div class="workout-header">
+                <div class="session-info">
+                    <i class="fas fa-dumbbell"></i>
+                    <span>Live Workout Session</span>
+                    <div class="session-id" id="sessionIdDisplay">ABC-123</div>
+                </div>
+                <div class="participant-info">
+                    <div class="participant-count">
+                        <i class="fas fa-users"></i>
+                        <span id="participantCount">1</span> participants
+                    </div>
+                    <button class="leave-btn" onclick="leaveSession()">
+                        <i class="fas fa-sign-out-alt"></i> Leave
+                    </button>
+                </div>
+            </div>
+
+            <!-- Video Container -->
+            <div class="video-container">
+                <video id="localVideo" class="workout-video" autoplay muted playsinline style="display: none;"></video>
+                <div class="video-placeholder" id="videoPlaceholder">
+                    <i class="fas fa-video"></i>
+                    <h3>Camera Starting...</h3>
+                    <p>Get ready to start your live workout session</p>
+                </div>
+            </div>
+
+            <!-- Workout Stats -->
+            <div class="workout-stats">
+                <div class="stat-card timer-card">
+                    <div class="stat-value" id="workoutTimer">00:00</div>
+                    <div class="stat-label">Workout Time</div>
+                </div>
+                <div class="stat-card reps-card" onclick="incrementReps()" title="Click to add reps">
+                    <div class="stat-value" id="repCount">0</div>
+                    <div class="stat-label">Reps</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="calorieCount">0</div>
+                    <div class="stat-label">Calories</div>
+                </div>
+            </div>
+
+            <!-- Music Controls -->
+            <div class="music-controls">
+                <button class="music-btn" onclick="previousTrack()" title="Previous">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button class="music-btn" onclick="toggleMusic()" title="Play/Pause" id="musicPlayBtn">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button class="music-btn" onclick="nextTrack()" title="Next">
+                    <i class="fas fa-step-forward"></i>
+                </button>
+                <div class="music-info" id="musicInfo">No music playing</div>
+            </div>
+
+            <!-- Chat Panel -->
+            <div class="chat-panel" id="chatPanel">
+                <div class="chat-header">
+                    <div class="chat-title">
+                        <i class="fas fa-comments"></i>
+                        Live Chat
+                    </div>
+                    <button class="chat-toggle" onclick="toggleChat()" title="Minimize">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                </div>
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" id="chatInput" placeholder="Type a message...">
+                    <button class="chat-send" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Reaction Panel -->
+            <div class="reaction-panel">
+                <button class="reaction-btn" onclick="sendReaction('💪')" title="Strong">💪</button>
+                <button class="reaction-btn" onclick="sendReaction('🔥')" title="Fire">🔥</button>
+                <button class="reaction-btn" onclick="sendReaction('👏')" title="Clap">👏</button>
+                <button class="reaction-btn" onclick="sendReaction('😅')" title="Tired">😅</button>
+                <button class="reaction-btn" onclick="sendReaction('⚡')" title="Energy">⚡</button>
+            </div>
+
+            <!-- Floating Controls -->
+            <div class="floating-controls">
+                <button class="control-btn" onclick="startWorkoutTimer()" title="Start Timer" id="startBtn">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button class="control-btn danger" onclick="stopWorkoutTimer()" title="Stop Timer" id="stopBtn">
+                    <i class="fas fa-stop"></i>
+                </button>
+                <button class="control-btn" onclick="toggleCamera()" title="Toggle Camera" id="cameraBtn">
+                    <i class="fas fa-video"></i>
+                </button>
+                <button class="control-btn" onclick="toggleMicrophone()" title="Toggle Microphone" id="micBtn">
+                    <i class="fas fa-microphone"></i>
+                </button>
+                <button class="control-btn" onclick="shareScreen()" title="Share Screen">
+                    <i class="fas fa-desktop"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('🏋️ Live Workout App Initializing...');
+        
+        // Global variables
+        let workoutTimer = 0;
+        let timerInterval = null;
+        let repCount = 0;
+        let calorieCount = 0;
+        let musicPlaying = false;
+        let currentTrackIndex = 0;
+        let cameraEnabled = false;
+        let microphoneEnabled = false;
+        let localStream = null;
+        let currentSessionId = null;
+        
+        const musicTracks = [
+            'Pump It Up - Workout Mix',
+            'Beast Mode - Fitness Beats',
+            'Power Hour - Gym Anthems',
+            'Unstoppable - Motivation Mix',
+            'High Energy - Cardio Blast',
+            'Strength & Power - Heavy Lifting'
+        ];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('✅ DOM loaded, initializing live workout features...');
+            
+            // Setup chat input enter key
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) {
+                chatInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        sendMessage();
+                    }
+                });
+            }
+
+            // Setup session ID input formatting
+            const sessionIdInput = document.getElementById('sessionId');
+            if (sessionIdInput) {
+                sessionIdInput.addEventListener('input', function(e) {
+                    let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    if (value.length > 3 && value.length <= 6) {
+                        value = value.slice(0, 3) + '-' + value.slice(3);
+                    } else if (value.length > 6) {
+                        value = value.slice(0, 3) + '-' + value.slice(3, 6) + '-' + value.slice(6, 9);
+                    }
+                    e.target.value = value;
+                });
+
+                sessionIdInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        joinSession();
+                    }
+                });
+            }
+
+            // Auto-hide sidebar on mobile
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.add('hidden');
+                document.getElementById('mainContent').classList.add('expanded');
+            }
+
+            console.log('✅ Live workout app initialized successfully');
+        });
+
+        // Sidebar functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('hidden');
+            mainContent.classList.toggle('expanded');
+        }
+
+        // Session management functions
+        function createSession() {
+            console.log('🆕 Creating new workout session...');
+            showToast('Creating session...', 'info');
+            
+            // Generate unique session ID
+            const sessionId = generateSessionId();
+            currentSessionId = sessionId;
+            
+            // Simulate session creation delay
+            setTimeout(() => {
+                startWorkoutSession(sessionId, true);
+                showToast('Session created successfully!', 'success');
+                addChatMessage('🎉 Welcome to your live workout session!', 'system');
+                addChatMessage('💪 Share your session ID with friends to invite them', 'system');
+            }, 1500);
+        }
+
+        function joinSession() {
+            const sessionIdInput = document.getElementById('sessionId');
+            const sessionId = sessionIdInput.value.trim() || 'DEMO-123';
+            
+            console.log('🔗 Joining workout session:', sessionId);
+            showToast('Joining session...', 'info');
+            
+            // Validate session ID format
+            if (!validateSessionId(sessionId)) {
+                showToast('Invalid session ID format', 'error');
+                return;
+            }
+            
+            currentSessionId = sessionId;
+            
+            // Simulate joining delay
+            setTimeout(() => {
+                startWorkoutSession(sessionId, false);
+                showToast('Joined session successfully!', 'success');
+                addChatMessage('👋 Welcome to the live workout session!', 'system');
+                addChatMessage('💪 Get ready to sweat together!', 'system');
+            }, 1500);
+        }
+
+        function joinQuickSession(sessionId) {
+            console.log('⚡ Quick joining session:', sessionId);
+            currentSessionId = sessionId;
+            
+            showToast('Joining session...', 'info');
+            
+            setTimeout(() => {
+                startWorkoutSession(sessionId, false);
+                showToast('Joined session successfully!', 'success');
+                addChatMessage('🚀 Welcome to the quick session!', 'system');
+                addChatMessage('🔥 Let\'s get this workout started!', 'system');
+            }, 1000);
+        }
+
+        function startWorkoutSession(sessionId, isHost) {
+            console.log('🏁 Starting workout session:', sessionId, 'Host:', isHost);
+            
+            // Hide join screen and show workout screen
+            document.getElementById('joinScreen').style.display = 'none';
+            document.getElementById('workoutScreen').style.display = 'block';
+            
+            // Update session display
+            document.getElementById('sessionIdDisplay').textContent = sessionId;
+            
+            // Initialize camera if possible
+            initializeCamera();
+            
+            // Update participant count
+            updateParticipantCount(isHost ? 1 : Math.floor(Math.random() * 8) + 2);
+            
+            // Start background calorie calculation
+            startCalorieTracking();
+        }
+
+        function leaveSession() {
+            if (confirm('Are you sure you want to leave this workout session?')) {
+                console.log('👋 Leaving workout session...');
+                
+                // Stop all timers and streams
+                stopWorkoutTimer();
+                stopCalorieTracking();
+                stopCamera();
+                
+                // Reset counters
+                resetWorkoutData();
+                
+                // Show join screen
+                document.getElementById('workoutScreen').style.display = 'none';
+                document.getElementById('joinScreen').style.display = 'flex';
+                
+                showToast('Left session successfully', 'success');
+                currentSessionId = null;
+            }
+        }
+
+        // Camera and media functions
+        async function initializeCamera() {
+            try {
+                console.log('📹 Initializing camera...');
+                
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: true, 
+                    audio: true 
+                });
+                
+                localStream = stream;
+                const videoElement = document.getElementById('localVideo');
+                const placeholder = document.getElementById('videoPlaceholder');
+                
+                videoElement.srcObject = stream;
+                videoElement.style.display = 'block';
+                placeholder.style.display = 'none';
+                
+                cameraEnabled = true;
+                microphoneEnabled = true;
+                
+                updateControlButtons();
+                
+                console.log('✅ Camera initialized successfully');
+                addChatMessage('📹 Camera connected', 'system');
+                
+            } catch (error) {
+                console.log('❌ Camera access denied or not available:', error);
+                addChatMessage('📹 Camera not available - using audio only mode', 'system');
+                
+                // Try audio only
+                try {
+                    const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    localStream = audioStream;
+                    microphoneEnabled = true;
+                    updateControlButtons();
+                } catch (audioError) {
+                    console.log('❌ Audio access also denied:', audioError);
+                    addChatMessage('🎤 Audio not available - text chat only', 'system');
+                }
+            }
+        }
+
+        function toggleCamera() {
+            if (!localStream) {
+                initializeCamera();
+                return;
+            }
+            
+            const videoTrack = localStream.getVideoTracks()[0];
+            if (videoTrack) {
+                cameraEnabled = !cameraEnabled;
+                videoTrack.enabled = cameraEnabled;
+                
+                const videoElement = document.getElementById('localVideo');
+                const placeholder = document.getElementById('videoPlaceholder');
+                
+                if (cameraEnabled) {
+                    videoElement.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    addChatMessage('📹 Camera enabled', 'system');
+                } else {
+                    videoElement.style.display = 'none';
+                    placeholder.style.display = 'flex';
+                    placeholder.innerHTML = '<i class="fas fa-video-slash"></i><h3>Camera Off</h3><p>Click camera button to turn on</p>';
+                    addChatMessage('📹 Camera disabled', 'system');
+                }
+                
+                updateControlButtons();
+            }
+        }
+
+        function toggleMicrophone() {
+            if (!localStream) {
+                initializeCamera();
+                return;
+            }
+            
+            const audioTrack = localStream.getAudioTracks()[0];
+            if (audioTrack) {
+                microphoneEnabled = !microphoneEnabled;
+                audioTrack.enabled = microphoneEnabled;
+                
+                addChatMessage(microphoneEnabled ? '🎤 Microphone enabled' : '🎤 Microphone muted', 'system');
+                updateControlButtons();
+            }
+        }
+
+        function shareScreen() {
+            console.log('🖥️ Screen sharing requested');
+            addChatMessage('🖥️ Screen sharing feature coming soon!', 'system');
+            showToast('Screen sharing feature coming soon!', 'info');
+        }
+
+        function stopCamera() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+                cameraEnabled = false;
+                microphoneEnabled = false;
+                updateControlButtons();
+            }
+        }
+
+        function updateControlButtons() {
+            const cameraBtn = document.getElementById('cameraBtn');
+            const micBtn = document.getElementById('micBtn');
+            
+            if (cameraBtn) {
+                cameraBtn.innerHTML = cameraEnabled ? '<i class="fas fa-video"></i>' : '<i class="fas fa-video-slash"></i>';
+                cameraBtn.classList.toggle('active', cameraEnabled);
+            }
+            
+            if (micBtn) {
+                micBtn.innerHTML = microphoneEnabled ? '<i class="fas fa-microphone"></i>' : '<i class="fas fa-microphone-slash"></i>';
+                micBtn.classList.toggle('active', microphoneEnabled);
+            }
+        }
+
+        // Workout timer functions
+        function startWorkoutTimer() {
+            if (timerInterval) return;
+            
+            console.log('⏱️ Starting workout timer');
+            
+            timerInterval = setInterval(() => {
+                workoutTimer++;
+                updateTimerDisplay();
+            }, 1000);
+            
+            document.getElementById('startBtn').classList.add('active');
+            addChatMessage('⏱️ Workout timer started!', 'system');
+        }
+
+        function stopWorkoutTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+                
+                document.getElementById('startBtn').classList.remove('active');
+                addChatMessage('⏱️ Workout timer stopped!', 'system');
+                
+                console.log('⏹️ Workout timer stopped at:', formatTime(workoutTimer));
+            }
+        }
+
+        function updateTimerDisplay() {
+            const timerElement = document.getElementById('workoutTimer');
+            if (timerElement) {
+                timerElement.textContent = formatTime(workoutTimer);
+            }
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        // Rep counter functions
+        function incrementReps() {
+            repCount++;
+            document.getElementById('repCount').textContent = repCount;
+            
+            // Add visual feedback
+            const repsCard = document.querySelector('.reps-card');
+            repsCard.classList.add('success-animation');
+            setTimeout(() => repsCard.classList.remove('success-animation'), 600);
+            
+            addChatMessage(`💪 Rep count: ${repCount}`, 'system');
+            
+            // Increase calories slightly with each rep
+            calorieCount += Math.floor(Math.random() * 3) + 1;
+            updateCalorieDisplay();
+        }
+
+        function resetReps() {
+            repCount = 0;
+            document.getElementById('repCount').textContent = '0';
+            addChatMessage('🔄 Reps reset', 'system');
+        }
+
+        // Calorie tracking
+        function startCalorieTracking() {
+            // Simulate calorie burn during workout
+            setInterval(() => {
+                if (timerInterval) { // Only if workout is active
+                    calorieCount += Math.floor(Math.random() * 2) + 1;
+                    updateCalorieDisplay();
+                }
+            }, 10000); // Every 10 seconds
+        }
+
+        function stopCalorieTracking() {
+            // Calories will stop increasing when timer stops
+        }
+
+        function updateCalorieDisplay() {
+            const calorieElement = document.getElementById('calorieCount');
+            if (calorieElement) {
+                calorieElement.textContent = calorieCount;
+            }
+        }
+
+        // Music functions
+        function toggleMusic() {
+            musicPlaying = !musicPlaying;
+            const playBtn = document.getElementById('musicPlayBtn');
+            const musicInfo = document.getElementById('musicInfo');
+            
+            if (musicPlaying) {
+                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                musicInfo.textContent = musicTracks[currentTrackIndex];
+                addChatMessage('🎵 Music started: ' + musicTracks[currentTrackIndex], 'system');
+            } else {
+                playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                addChatMessage('🎵 Music paused', 'system');
+            }
+        }
+
+        function nextTrack() {
+            currentTrackIndex = (currentTrackIndex + 1) % musicTracks.length;
+            const musicInfo = document.getElementById('musicInfo');
+            musicInfo.textContent = musicTracks[currentTrackIndex];
+            addChatMessage('🎵 Next: ' + musicTracks[currentTrackIndex], 'system');
+        }
+
+        function previousTrack() {
+            currentTrackIndex = currentTrackIndex === 0 ? musicTracks.length - 1 : currentTrackIndex - 1;
+            const musicInfo = document.getElementById('musicInfo');
+            musicInfo.textContent = musicTracks[currentTrackIndex];
+            addChatMessage('🎵 Previous: ' + musicTracks[currentTrackIndex], 'system');
+        }
+
+        // Chat functions
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addChatMessage(message, 'user', '<%= user?.fullName || "You" %>');
+                input.value = '';
+                
+                // Simulate responses from other participants occasionally
+                if (Math.random() > 0.7) {
+                    setTimeout(() => {
+                        const responses = [
+                            'Great workout! 💪',
+                            'Keep it up everyone! 🔥',
+                            'Feeling the burn! 😅',
+                            'This is intense! ⚡',
+                            'Love this session! ❤️'
+                        ];
+                        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+                        addChatMessage(randomResponse, 'user', 'WorkoutBuddy');
+                    }, 1000 + Math.random() * 3000);
+                }
+            }
+        }
+
+        function addChatMessage(message, type = 'user', userName = '') {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${type}`;
+            
+            if (type === 'system') {
+                messageDiv.textContent = message;
+            } else {
+                messageDiv.innerHTML = `<strong>${userName}:</strong> ${message}`;
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function toggleChat() {
+            const chatPanel = document.getElementById('chatPanel');
+            const isMinimized = chatPanel.style.height === '60px';
+            
+            if (isMinimized) {
+                chatPanel.style.height = '500px';
+                chatPanel.querySelector('.chat-toggle i').className = 'fas fa-minus';
+            } else {
+                chatPanel.style.height = '60px';
+                chatPanel.querySelector('.chat-toggle i').className = 'fas fa-plus';
+            }
+        }
+
+        // Reaction functions
+        function sendReaction(emoji) {
+            addChatMessage(`${emoji} reaction sent!`, 'system');
+            
+            // Visual feedback
+            const reactionBtns = document.querySelectorAll('.reaction-btn');
+            reactionBtns.forEach(btn => {
+                if (btn.textContent.includes(emoji)) {
+                    btn.classList.add('success-animation');
+                    setTimeout(() => btn.classList.remove('success-animation'), 600);
+                }
+            });
+        }
+
+        // Utility functions
+        function generateSessionId() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 3; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            result += '-';
+            for (let i = 0; i < 3; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            result += '-';
+            for (let i = 0; i < 3; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function validateSessionId(sessionId) {
+            const pattern = /^[A-Z0-9]{3}-[A-Z0-9]{3}-[A-Z0-9]{3}$/;
+            return pattern.test(sessionId) || sessionId === 'DEMO-123' || sessionId.length >= 4;
+        }
+
+        function updateParticipantCount(count) {
+            document.getElementById('participantCount').textContent = count;
+        }
+
+        function resetWorkoutData() {
+            workoutTimer = 0;
+            repCount = 0;
+            calorieCount = 0;
+            musicPlaying = false;
+            currentTrackIndex = 0;
+            
+            document.getElementById('workoutTimer').textContent = '00:00';
+            document.getElementById('repCount').textContent = '0';
+            document.getElementById('calorieCount').textContent = '0';
+            document.getElementById('musicInfo').textContent = 'No music playing';
+            document.getElementById('musicPlayBtn').innerHTML = '<i class="fas fa-play"></i>';
+        }
+
+        function showToast(message, type = 'info') {
+            // Remove existing toast
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            // Create new toast
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            // Show toast
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Hide toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Responsive handling
+        window.addEventListener('resize', function() {
+            if (window.innerWidth <= 768) {
+                document.getElementById('sidebar').classList.add('hidden');
+                document.getElementById('mainContent').classList.add('expanded');
+            } else {
+                document.getElementById('sidebar').classList.remove('hidden');
+                document.getElementById('mainContent').classList.remove('expanded');
+            }
+        });
+
+        console.log('✅ All live workout functions loaded successfully!');
+    </script>
+</body>
+</html>

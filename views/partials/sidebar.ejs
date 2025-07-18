@@ -1,0 +1,754 @@
+<!-- Enhanced Responsive Sidebar -->
+<div class="sidebar" id="sidebar">
+    <!-- Mobile Menu Toggle -->
+    <div class="mobile-menu-toggle" id="mobileMenuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+    
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+        <div class="user-avatar">
+            <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
+        </div>
+        <div class="user-info">
+            <h3 class="user-name"><%= user.fullName %></h3>
+            <span class="user-plan">
+                <% 
+                const planNames = {
+                    'free': 'Free Plan',
+                    'basic': 'Basic Plan', 
+                    'premium': 'Premium Plan',
+                    'pro': 'Pro Plan'
+                };
+                const currentPlan = user.subscription?.plan || 'free';
+                %>
+                <%= planNames[currentPlan] || 'Free Plan' %>
+            </span>
+        </div>
+        <div class="sidebar-collapse" id="sidebarCollapse">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+    </div>
+    
+    <!-- Navigation Menu -->
+    <nav class="nav-menu">
+        <ul class="nav-list">
+            <li class="nav-item">
+                <a href="/dashboard" class="nav-link <%= currentPath === '/dashboard' ? 'active' : '' %>">
+                    <i class="fas fa-home"></i>
+                    <span class="nav-text">Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/workouts" class="nav-link <%= currentPath === '/workouts' ? 'active' : '' %>">
+                    <i class="fas fa-dumbbell"></i>
+                    <span class="nav-text">Workouts</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/live-workout" class="nav-link <%= currentPath === '/live-workout' ? 'active' : '' %>">
+                    <i class="fas fa-broadcast-tower"></i>
+                    <span class="nav-text">Live Workouts</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/progress" class="nav-link <%= currentPath === '/progress' ? 'active' : '' %>">
+                    <i class="fas fa-chart-line"></i>
+                    <span class="nav-text">Progress</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/analytics" class="nav-link <%= currentPath === '/analytics' ? 'active' : '' %>">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="nav-text">Analytics</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/nutrition" class="nav-link <%= currentPath === '/nutrition' ? 'active' : '' %>">
+                    <i class="fas fa-utensils"></i>
+                    <span class="nav-text">Nutrition</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/nutriscan" class="nav-link <%= currentPath === '/nutriscan' ? 'active' : '' %>">
+                    <i class="fas fa-qrcode"></i>
+                    <span class="nav-text">NutriScan</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/meal-planner" class="nav-link <%= currentPath === '/meal-planner' ? 'active' : '' %>">
+                    <i class="fas fa-calendar-check"></i>
+                    <span class="nav-text">Meal Planner</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/meal-tracking" class="nav-link <%= currentPath === '/meal-tracking' ? 'active' : '' %>">
+                    <i class="fas fa-camera"></i>
+                    <span class="nav-text">Meal Tracking</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/challenges" class="nav-link <%= currentPath === '/challenges' ? 'active' : '' %>">
+                    <i class="fas fa-trophy"></i>
+                    <span class="nav-text">Challenges</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/health" class="nav-link <%= currentPath === '/health' ? 'active' : '' %>">
+                    <i class="fas fa-heartbeat"></i>
+                    <span class="nav-text">Health Metrics</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/biometrics" class="nav-link <%= currentPath === '/biometrics' ? 'active' : '' %>">
+                    <i class="fas fa-chart-bar"></i>
+                    <span class="nav-text">Biometrics</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/schedule" class="nav-link <%= currentPath === '/schedule' ? 'active' : '' %>">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span class="nav-text">Schedule</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/community" class="nav-link <%= currentPath === '/community' ? 'active' : '' %>">
+                    <i class="fas fa-users"></i>
+                    <span class="nav-text">Community</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/chat" class="nav-link <%= currentPath === '/chat' ? 'active' : '' %>">
+                    <i class="fas fa-comments"></i>
+                    <span class="nav-text">Chat</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/ai-coach" class="nav-link <%= currentPath === '/ai-coach' ? 'active' : '' %>">
+                    <i class="fas fa-robot"></i>
+                    <span class="nav-text">AI Coach</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/settings" class="nav-link <%= currentPath === '/settings' ? 'active' : '' %>">
+                    <i class="fas fa-cog"></i>
+                    <span class="nav-text">Settings</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+        <div class="user-stats">
+            <div class="stat-item">
+                <i class="fas fa-trophy"></i>
+                <span class="stat-text">Level 5</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-fire"></i>
+                <span class="stat-text">7 day streak</span>
+            </div>
+        </div>
+        
+        <div class="logout-section">
+            <a href="/logout" class="logout-link" onclick="return confirmLogout()">
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="nav-text">Logout</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Sidebar Overlay for Mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<style>
+/* Enhanced Responsive Sidebar Styles */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    width: 280px;
+    background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+    box-shadow: 2px 0 20px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-right: 1px solid #e9ecef;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: rgba(108, 99, 255, 0.3);
+    border-radius: 2px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(108, 99, 255, 0.5);
+}
+
+/* Collapsed State */
+.sidebar.collapsed {
+    width: 70px;
+}
+
+.sidebar.collapsed .nav-text,
+.sidebar.collapsed .user-info,
+.sidebar.collapsed .stat-text {
+    opacity: 0;
+    transform: translateX(-10px);
+    pointer-events: none;
+}
+
+.sidebar.collapsed .sidebar-collapse i {
+    transform: rotate(180deg);
+}
+
+.sidebar.collapsed .user-avatar {
+    margin: 0 auto;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1001;
+    background: var(--primary);
+    color: white;
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.mobile-menu-toggle:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4);
+}
+
+/* Sidebar Header */
+.sidebar-header {
+    padding: 24px 20px;
+    border-bottom: 1px solid #e9ecef;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    position: relative;
+}
+
+.user-avatar img {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    border: 2px solid var(--primary);
+    transition: all 0.3s ease;
+}
+
+.user-avatar::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background: #28a745;
+    border: 2px solid white;
+    border-radius: 50%;
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+    transition: all 0.3s ease;
+}
+
+.user-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dark);
+    margin: 0 0 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.user-plan {
+    font-size: 12px;
+    color: var(--primary);
+    background: rgba(108, 99, 255, 0.1);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.sidebar-collapse {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(108, 99, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--primary);
+}
+
+.sidebar-collapse:hover {
+    background: rgba(108, 99, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.sidebar-collapse i {
+    transition: transform 0.3s ease;
+}
+
+/* Navigation Menu */
+.nav-menu {
+    padding: 12px 0;
+    flex: 1;
+}
+
+.nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.nav-item {
+    margin: 0 12px 4px 12px;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    color: #6c757d;
+    text-decoration: none;
+    border-radius: 12px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-link::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: var(--primary);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+}
+
+.nav-link:hover {
+    background: rgba(108, 99, 255, 0.08);
+    color: var(--primary);
+    transform: translateX(4px);
+}
+
+.nav-link:hover::before {
+    transform: scaleY(1);
+}
+
+.nav-link.active {
+    background: linear-gradient(135deg, rgba(108, 99, 255, 0.15), rgba(108, 99, 255, 0.05));
+    color: var(--primary);
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(108, 99, 255, 0.2);
+}
+
+.nav-link.active::before {
+    transform: scaleY(1);
+}
+
+.nav-link i {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+    margin-right: 12px;
+    transition: all 0.3s ease;
+}
+
+.nav-text {
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+/* Sidebar Footer */
+.sidebar-footer {
+    padding: 20px;
+    border-top: 1px solid #e9ecef;
+    margin-top: auto;
+}
+
+.user-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(108, 99, 255, 0.05);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--gray);
+}
+
+.stat-item i {
+    color: var(--primary);
+    font-size: 14px;
+}
+
+.logout-section {
+    margin-top: 16px;
+}
+
+.logout-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    color: #dc3545;
+    text-decoration: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    border: 1px solid transparent;
+}
+
+.logout-link:hover {
+    background: rgba(220, 53, 69, 0.1);
+    border-color: rgba(220, 53, 69, 0.2);
+    transform: translateX(4px);
+}
+
+.logout-link i {
+    font-size: 16px;
+    margin-right: 12px;
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Main Content Adjustment */
+.main-content {
+    margin-left: 280px;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-height: 100vh;
+    background: #f5f7fa;
+}
+
+.sidebar.collapsed + .main-content {
+    margin-left: 70px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 1024px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    
+    .sidebar.mobile-open {
+        transform: translateX(0);
+    }
+    
+    .mobile-menu-toggle {
+        display: flex;
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .sidebar.collapsed + .main-content {
+        margin-left: 0;
+    }
+    
+    .sidebar-collapse {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        max-width: 320px;
+    }
+    
+    .sidebar-header {
+        padding: 20px;
+    }
+    
+    .user-avatar img {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .nav-item {
+        margin: 0 8px 2px 8px;
+    }
+    
+    .nav-link {
+        padding: 14px 16px;
+    }
+    
+    .nav-link i {
+        font-size: 20px;
+    }
+    
+    .nav-text {
+        font-size: 16px;
+    }
+}
+
+/* Animation for nav items */
+.nav-item {
+    animation: slideInLeft 0.3s ease forwards;
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+.nav-item:nth-child(1) { animation-delay: 0.1s; }
+.nav-item:nth-child(2) { animation-delay: 0.15s; }
+.nav-item:nth-child(3) { animation-delay: 0.2s; }
+.nav-item:nth-child(4) { animation-delay: 0.25s; }
+.nav-item:nth-child(5) { animation-delay: 0.3s; }
+.nav-item:nth-child(6) { animation-delay: 0.35s; }
+.nav-item:nth-child(7) { animation-delay: 0.4s; }
+.nav-item:nth-child(8) { animation-delay: 0.45s; }
+.nav-item:nth-child(9) { animation-delay: 0.5s; }
+.nav-item:nth-child(10) { animation-delay: 0.55s; }
+.nav-item:nth-child(11) { animation-delay: 0.6s; }
+.nav-item:nth-child(12) { animation-delay: 0.65s; }
+.nav-item:nth-child(13) { animation-delay: 0.7s; }
+.nav-item:nth-child(14) { animation-delay: 0.75s; }
+.nav-item:nth-child(15) { animation-delay: 0.8s; }
+.nav-item:nth-child(16) { animation-delay: 0.85s; }
+
+@keyframes slideInLeft {
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Hover effects for better UX */
+.nav-link:hover i {
+    transform: scale(1.1);
+}
+
+.nav-link.active i {
+    color: var(--primary);
+}
+
+/* Badge for notifications */
+.nav-link .badge {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: #dc3545;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 16px;
+    text-align: center;
+}
+
+/* Tooltip for collapsed sidebar */
+.sidebar.collapsed .nav-link {
+    position: relative;
+}
+
+.sidebar.collapsed .nav-link::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 70px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--dark);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1001;
+}
+
+.sidebar.collapsed .nav-link:hover::after {
+    opacity: 1;
+    visibility: visible;
+    left: 75px;
+}
+</style>
+
+<script>
+// Enhanced Sidebar Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebar = document.getElementById('sidebar');
+    const sidebarCollapse = document.getElementById('sidebarCollapse');
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    // Load sidebar state from localStorage
+    const sidebarState = localStorage.getItem('sidebarCollapsed');
+    if (sidebarState === 'true' && window.innerWidth > 1024) {
+        sidebar.classList.add('collapsed');
+    }
+    
+    // Desktop sidebar collapse/expand
+    if (sidebarCollapse) {
+        sidebarCollapse.addEventListener('click', function() {
+            sidebar.classList.toggle('collapsed');
+            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
+        });
+    }
+    
+    // Mobile menu toggle
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('mobile-open');
+            sidebarOverlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('mobile-open') ? 'hidden' : '';
+        });
+    }
+    
+    // Close mobile menu when clicking overlay
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function() {
+            sidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    }
+    
+    // Close mobile menu when clicking nav link
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 1024) {
+                sidebar.classList.remove('mobile-open');
+                sidebarOverlay.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 1024) {
+            sidebar.classList.remove('mobile-open');
+            sidebarOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+    
+    // Add tooltips for collapsed sidebar
+    navLinks.forEach(link => {
+        const text = link.querySelector('.nav-text');
+        if (text) {
+            link.setAttribute('data-tooltip', text.textContent);
+        }
+    });
+    
+    // Smooth scroll for navigation
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Add loading state
+            this.style.opacity = '0.7';
+            setTimeout(() => {
+                this.style.opacity = '1';
+            }, 300);
+        });
+    });
+});
+
+// Logout confirmation
+function confirmLogout() {
+    return confirm('Are you sure you want to logout?');
+}
+
+// Update user stats (can be called from other scripts)
+function updateSidebarStats(level, streak) {
+    const levelStat = document.querySelector('.stat-item:first-child .stat-text');
+    const streakStat = document.querySelector('.stat-item:last-child .stat-text');
+    
+    if (levelStat) levelStat.textContent = `Level ${level}`;
+    if (streakStat) streakStat.textContent = `${streak} day streak`;
+}
+
+// Add notification badge to nav item
+function addNotificationBadge(navItemSelector, count) {
+    const navLink = document.querySelector(navItemSelector);
+    if (navLink) {
+        let badge = navLink.querySelector('.badge');
+        if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'badge';
+            navLink.appendChild(badge);
+        }
+        badge.textContent = count > 99 ? '99+' : count;
+        badge.style.display = count > 0 ? 'block' : 'none';
+    }
+}
+
+// Remove notification badge
+function removeNotificationBadge(navItemSelector) {
+    const navLink = document.querySelector(navItemSelector);
+    if (navLink) {
+        const badge = navLink.querySelector('.badge');
+        if (badge) {
+            badge.remove();
+        }
+    }
+}
+</script>

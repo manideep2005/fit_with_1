@@ -76,11 +76,6 @@ const preferencesSchema = new mongoose.Schema({
 
 // Main User Schema
 const userSchema = new mongoose.Schema({
-  fitnessId: {
-    type: String,
-    unique: true,
-    index: true
-  },
   // Basic Authentication
   email: { 
     type: String, 
@@ -93,7 +88,7 @@ const userSchema = new mongoose.Schema({
   password: { 
     type: String, 
     required: true,
-    minlength: 6
+    minlength: 9,
   },
   fullName: { 
     type: String, 
@@ -107,7 +102,8 @@ const userSchema = new mongoose.Schema({
   fitnessId: {
     type: String,
     unique: true,
-    sparse: true
+    sparse: true,
+    index: true
   },
 
   // Account Status
@@ -207,7 +203,7 @@ const userSchema = new mongoose.Schema({
   mealPlans: [{
     id: { type: String, required: true },
     date: { type: Date, required: true },
-    mealType: { type: String, enum: ['breakfast', 'lunch', 'dinner', 'snack'], required: true },
+    mealType: { type: String, enum: ['breakfast', 'lunch', 'dinner', 'snack', 'snacks'], required: true },
     name: { type: String, required: true },
     calories: { type: Number, default: 0 },
     protein: { type: Number, default: 0 },

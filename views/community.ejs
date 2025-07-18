@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Community - Fit-With-AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
             --primary: #6C63FF;
@@ -44,13 +45,6 @@
             align-items: center;
             margin-bottom: 2rem;
             padding: 0 1rem;
-        }
-        
-        .sidebar-header img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 10px;
         }
         
         .user-name {
@@ -95,7 +89,8 @@
         .nav-link i {
             margin-right: 10px;
             font-size: 1.2rem;
-        }        
+        }
+        
         .logout-section {
             margin-top: 2rem;
             padding-top: 1rem;
@@ -183,23 +178,6 @@
             position: relative;
         }
         
-        .community-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            border: 4px solid white;
-            background: white;
-            position: absolute;
-            bottom: -40px;
-            left: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: var(--primary);
-            font-weight: bold;
-        }
-        
         .community-content {
             padding: 50px 20px 20px;
         }
@@ -272,13 +250,6 @@
             margin-bottom: 10px;
         }
         
-        .discussion-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-        
         .discussion-author {
             font-weight: 600;
             margin-right: 10px;
@@ -310,10 +281,227 @@
             margin-right: 15px;
             display: flex;
             align-items: center;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        
+        .discussion-stats span:hover {
+            background: rgba(108, 99, 255, 0.1);
         }
         
         .discussion-stats i {
             margin-right: 5px;
+        }
+        
+        .tab-navigation {
+            display: flex;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid var(--light-gray);
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            color: var(--gray);
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+        }
+        
+        .close {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--gray);
+        }
+        
+        .close:hover {
+            color: var(--dark);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 20px;
+            border-top: 1px solid var(--light-gray);
+        }
+        
+        .filter-bar {
+            margin-bottom: 20px;
+        }
+        
+        .filter-bar select {
+            padding: 8px 12px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--gray);
+        }
+        
+        .discussion-group {
+            color: var(--primary);
+            font-size: 0.9rem;
+            margin: 0 10px;
+        }
+        
+        .like-btn {
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        
+        .like-btn:hover {
+            color: var(--accent);
+        }
+        
+        .post-tags {
+            color: var(--primary);
+            font-size: 0.8rem;
+        }
+        
+        .community-card {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .community-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .dropdown-item:hover {
+            background-color: var(--light) !important;
+        }
+        
+        .advanced-search {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .search-filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: var(--gray);
+        }
+        
+        .trending-topics {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .topic-tag {
+            display: inline-block;
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .topic-tag:hover {
+            background: var(--primary);
+            color: white;
         }
         
         @media (max-width: 768px) {
@@ -335,21 +523,19 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
                 <div>
                     <h3 class="user-name"><%= user.fullName %></h3>
                     <span class="user-plan">Premium Plan</span>
                 </div>
             </div>
             
-              <ul class="nav-menu">
+            <ul class="nav-menu">
                 <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li class="nav-item"><a href="/workouts" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
                 <li class="nav-item"><a href="/progress" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
@@ -383,9 +569,52 @@
                 </div>
             </div>
             
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="Search discussions, groups, or members...">
-                <button onclick="performSearch()"><i class="fas fa-search"></i></button>
+            <div class="advanced-search">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Search discussions, groups, or members...">
+                    <button onclick="performSearch()"><i class="fas fa-search"></i></button>
+                    <button class="btn btn-outline" onclick="toggleAdvancedSearch()" style="margin-left: 10px;"><i class="fas fa-filter"></i> Filters</button>
+                </div>
+                <div id="advancedFilters" class="search-filters" style="display: none;">
+                    <div class="filter-group">
+                        <label>Content Type</label>
+                        <select id="contentTypeFilter">
+                            <option value="">All Content</option>
+                            <option value="posts">Posts Only</option>
+                            <option value="groups">Groups Only</option>
+                            <option value="members">Members Only</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Date Range</label>
+                        <select id="dateRangeFilter">
+                            <option value="">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Sort By</label>
+                        <select id="sortByFilter">
+                            <option value="recent">Most Recent</option>
+                            <option value="popular">Most Popular</option>
+                            <option value="relevant">Most Relevant</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="trending-topics">
+                <h4 style="margin: 0 0 15px 0; color: var(--dark);">Trending Topics</h4>
+                <div id="trendingTags">
+                    <span class="topic-tag" onclick="searchByTag('fitness')">#fitness</span>
+                    <span class="topic-tag" onclick="searchByTag('nutrition')">#nutrition</span>
+                    <span class="topic-tag" onclick="searchByTag('weightloss')">#weightloss</span>
+                    <span class="topic-tag" onclick="searchByTag('motivation')">#motivation</span>
+                    <span class="topic-tag" onclick="searchByTag('workout')">#workout</span>
+                    <span class="topic-tag" onclick="searchByTag('healthy')">#healthy</span>
+                </div>
             </div>
             
             <!-- Tab Navigation -->
@@ -584,7 +813,6 @@
             container.innerHTML = groups.map(group => `
                 <div class="community-card">
                     <div class="community-banner" style="background: ${getGroupColor(group.category)};"></div>
-                    <div class="community-avatar">${group.name.substring(0, 2).toUpperCase()}</div>
                     <div class="community-content">
                         <h3 class="community-title">${group.name}</h3>
                         <div class="community-meta">${group.stats.totalMembers} members • ${group.privacy} group</div>
@@ -593,16 +821,18 @@
                             <span>${group.stats.totalPosts} posts</span>
                             <span>${group.category}</span>
                         </div>
-                        <div class="dropdown" style="margin-top: 15px;">
+                        <div class="dropdown" style="margin-top: 15px; position: relative;">
                           <button class="btn btn-primary dropdown-toggle" type="button" onclick="toggleDropdown(event)">
-                            Actions
+                            <i class="fas fa-cog"></i> Actions <i class="fas fa-chevron-down"></i>
                           </button>
-                          <ul class="dropdown-menu" style="display: none; position: absolute; background-color: white; border: 1px solid #ccc; list-style: none; padding: 0; margin: 0; z-index: 100;">
-                            <li style="padding: 8px 12px; cursor: pointer;" onmouseover="this.style.backgroundColor='#f0f0f0'" onmouseout="this.style.backgroundColor='white'"><a class="dropdown-item" href="/community/groups/${group._id}" style="text-decoration: none; color: black; display: block;">View Members</a></li>
-                            <li style="padding: 8px 12px; cursor: pointer;" onmouseover="this.style.backgroundColor='#f0f0f0'" onmouseout="this.style.backgroundColor='white'"><a class="dropdown-item" href="/chat?groupId=${group._id}" style="text-decoration: none; color: black; display: block;">Chat</a></li>
-                            <li style="padding: 8px 12px; cursor: pointer;" onmouseover="this.style.backgroundColor='#f0f0f0'" onmouseout="this.style.backgroundColor='white'"><a class="dropdown-item" href="#" onclick="showCreatePostModal('${group._id}')" style="text-decoration: none; color: black; display: block;">Create Post</a></li>
-                            <li style="padding: 0;"><hr class="dropdown-divider" style="margin: 4px 0;"></li>
-                            <li style="padding: 8px 12px; cursor: pointer;" onmouseover="this.style.backgroundColor='#f0f0f0'" onmouseout="this.style.backgroundColor='white'"><a class="dropdown-item" href="#" onclick="leaveGroup('${group._id}')" style="text-decoration: none; color: black; display: block;">Leave Group</a></li>
+                          <ul class="dropdown-menu" style="display: none; position: absolute; top: 100%; left: 0; background-color: white; border: 1px solid var(--light-gray); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); list-style: none; padding: 8px 0; margin: 0; z-index: 1000; min-width: 180px;">
+                            <li><a class="dropdown-item" href="/community/groups/${group._id}" style="display: block; padding: 8px 16px; text-decoration: none; color: var(--dark); transition: background 0.2s;"><i class="fas fa-users" style="margin-right: 8px;"></i>View Members</a></li>
+                            <li><a class="dropdown-item" href="/chat?groupId=${group._id}" style="display: block; padding: 8px 16px; text-decoration: none; color: var(--dark); transition: background 0.2s;"><i class="fas fa-comments" style="margin-right: 8px;"></i>Group Chat</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showCreatePostModal('${group._id}')" style="display: block; padding: 8px 16px; text-decoration: none; color: var(--dark); transition: background 0.2s;"><i class="fas fa-plus" style="margin-right: 8px;"></i>Create Post</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="inviteMembers('${group._id}')" style="display: block; padding: 8px 16px; text-decoration: none; color: var(--dark); transition: background 0.2s;"><i class="fas fa-user-plus" style="margin-right: 8px;"></i>Invite Members</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="groupSettings('${group._id}')" style="display: block; padding: 8px 16px; text-decoration: none; color: var(--dark); transition: background 0.2s;"><i class="fas fa-cog" style="margin-right: 8px;"></i>Group Settings</a></li>
+                            <li><hr class="dropdown-divider" style="margin: 4px 0; border: none; border-top: 1px solid var(--light-gray);"></li>
+                            <li><a class="dropdown-item" href="#" onclick="leaveGroup('${group._id}')" style="display: block; padding: 8px 16px; text-decoration: none; color: var(--danger); transition: background 0.2s;"><i class="fas fa-sign-out-alt" style="margin-right: 8px;"></i>Leave Group</a></li>
                           </ul>
                         </div>
                     </div>
@@ -635,7 +865,6 @@
                 return `
                     <div class="community-card">
                         <div class="community-banner" style="background: ${getGroupColor(group.category)};"></div>
-                        <div class="community-avatar">${group.name.substring(0, 2).toUpperCase()}</div>
                         <div class="community-content">
                             <h3 class="community-title">${group.name}</h3>
                             <div class="community-meta">${group.stats.totalMembers} members • ${group.privacy} group</div>
@@ -689,7 +918,6 @@
             const postsHtml = posts.map(post => `
                 <div class="discussion-item" data-post-id="${post._id}">
                     <div class="discussion-header">
-                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(post.author.fullName)}&background=6C63FF&color=fff" class="discussion-avatar">
                         <span class="discussion-author">${post.author.fullName}</span>
                         <span class="discussion-group">in ${post.group.name}</span>
                         <span class="discussion-time">${formatTimeAgo(post.createdAt)}</span>
@@ -894,12 +1122,10 @@
                 showNotification('Search query must be at least 2 characters', 'warning');
                 return;
             }
-            // Implement search functionality
             console.log('Searching for:', query);
         }
         
         function showNotification(message, type = 'info') {
-            // Simple notification system
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.textContent = message;
@@ -932,6 +1158,33 @@
         
         function confirmLogout() {
             return confirm('Are you sure you want to logout?');
+        }
+        
+        function toggleAdvancedSearch() {
+            const filters = document.getElementById('advancedFilters');
+            filters.style.display = filters.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function searchByTag(tag) {
+            document.getElementById('searchInput').value = '#' + tag;
+            performSearch();
+        }
+        
+        function inviteMembers(groupId) {
+            showNotification('Invite feature coming soon!', 'info');
+        }
+        
+        function groupSettings(groupId) {
+            showNotification('Group settings feature coming soon!', 'info');
+        }
+        
+        function filterGroups() {
+            const category = document.getElementById('categoryFilter').value;
+            loadPublicGroups(category);
+        }
+        
+        function togglePostFields() {
+            // Add logic for different post types if needed
         }
 
         function toggleDropdown(event) {
@@ -968,6 +1221,15 @@
             }
         }
         
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            }
+        });
+        
         // Close modals when clicking outside
         window.onclick = function(event) {
             const modals = document.querySelectorAll('.modal');
@@ -978,159 +1240,5 @@
             });
         }
     </script>
-    
-    <style>
-        .tab-navigation {
-            display: flex;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid var(--light-gray);
-        }
-        
-        .tab-btn {
-            padding: 12px 24px;
-            background: none;
-            border: none;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            color: var(--gray);
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-        
-        .tab-btn.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
-            border-bottom: 1px solid var(--light-gray);
-        }
-        
-        .modal-header h3 {
-            margin: 0;
-        }
-        
-        .close {
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            color: var(--gray);
-        }
-        
-        .close:hover {
-            color: var(--dark);
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-            padding: 0 20px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-        }
-        
-        .form-group input,
-        .form-group select,
-        .form-group textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--light-gray);
-            border-radius: 8px;
-            font-family: 'Poppins', sans-serif;
-            box-sizing: border-box;
-        }
-        
-        .form-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            padding: 20px;
-            border-top: 1px solid var(--light-gray);
-        }
-        
-        .filter-bar {
-            margin-bottom: 20px;
-        }
-        
-        .filter-bar select {
-            padding: 8px 12px;
-            border: 1px solid var(--light-gray);
-            border-radius: 8px;
-            font-family: 'Poppins', sans-serif;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: var(--gray);
-        }
-        
-        .discussion-group {
-            color: var(--primary);
-            font-size: 0.9rem;
-            margin: 0 10px;
-        }
-        
-        .like-btn {
-            cursor: pointer;
-            transition: color 0.3s ease;
-        }
-        
-        .like-btn:hover {
-            color: var(--accent);
-        }
-        
-        .post-tags {
-            color: var(--primary);
-            font-size: 0.8rem;
-        }
-        
-        .community-card {
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        
-        .community-card:hover {
-            transform: translateY(-2px);
-        }
-    </style>
 </body>
 </html>

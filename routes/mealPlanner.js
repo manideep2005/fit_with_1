@@ -1,246 +1,305 @@
 const express = require('express');
 const router = express.Router();
-const UserService = require('../services/userService');
-const aiService = require('../services/aiService');
+const smartMealPlannerService = require('../services/smartMealPlannerService');
 
-// Get user's meal plans
-router.get('/plans', async (req, res) => {
-  try {
-    const userEmail = req.session.user.email;
-    const { startDate, endDate } = req.query;
-    
-    const user = await UserService.getUserByEmail(userEmail);
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' });
+// Get health assessment questions
+router.get('/health-questions', (req, res) => {
+    try {
+        const questions = smartMealPlannerService.getHealthQuestions();
+        res.json({
+            success: true,
+            questions: questions
+        });
+    } catch (error) {
+        console.error('Error getting health questions:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to get health questions'
+        });
     }
-
-    const mealPlans = user.mealPlans || [];
-    let filteredPlans = mealPlans;
-
-    if (startDate && endDate) {
-      filteredPlans = mealPlans.filter(plan => {
-        const planDate = new Date(plan.date);
-        return planDate >= new Date(startDate) && planDate <= new Date(endDate);
-      });
-    }
-
-    res.json({ success: true, mealPlans: filteredPlans });
-  } catch (error) {
-    console.error('Get meal plans error:', error);
-    res.status(500).json({ success: false, error: 'Failed to get meal plans' });
-  }
 });
 
-// Add meal to plan
-router.post('/meals', async (req, res) => {
-  try {
-    const userEmail = req.session.user.email;
-    const { date, mealType, name, calories, protein, carbs, fat, notes } = req.body;
+// Generate personalized meal plan
+router.post('/generate', async (req, res) => {
+    try {
+        const { healthData } = req.body;
+        const userId = req.session.user._id;
 
-    if (!date || !mealType || !name) {
-      return res.status(400).json({
-        success: false,
-        error: 'Date, meal type, and name are required'
-      });
+        if (!healthData) {
+            return res.status(400).json({
+                success: false,
+                error: 'Health data is required'
+            });
+        }
+
+        console.log('Generating meal plan for user:', userId);
+        console.log('Health data received:', healthData);
+
+        // Generate meal plan using the smart service
+        const result = await smartMealPlannerService.generateMealPlan(userId, healthData);
+
+        if (result.success) {
+            res.json({
+                success: true,
+                mealPlan: result.mealPlan
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                error: result.error
+            });
+        }
+
+    } catch (error) {
+        console.error('Error generating meal plan:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to generate meal plan'
+        });
     }
+});
 
-    const mealData = {
-      id: Date.now().toString(),
-      date: new Date(date),
-      mealType,
-      name,
-      calories: parseInt(calories) || 0,
-      protein: parseFloat(protein) || 0,
-      carbs: parseFloat(carbs) || 0,
-      fat: parseFloat(fat) || 0,
-      notes: notes || '',
-      createdAt: new Date()
+// Get user's current meal plan
+router.get('/current', async (req, res) => {
+    try {
+        const userId = req.session.user._id;
+        const UserService = require('../services/userService');
+        
+        const user = await UserService.getUserById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+
+        // Get the most recent active meal plan
+        const activeMealPlan = user.mealPlans?.find(plan => plan.isActive);
+
+        if (activeMealPlan) {
+            res.json({
+                success: true,
+                mealPlan: activeMealPlan
+            });
+        } else {
+            res.json({
+                success: false,
+                error: 'No active meal plan found'
+            });
+        }
+
+    } catch (error) {
+        console.error('Error getting current meal plan:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to get current meal plan'
+        });
+    }
+});
+
+// Update meal plan preferences
+router.put('/preferences', async (req, res) => {
+    try {
+        const userId = req.session.user._id;
+        const { preferences } = req.body;
+        const UserService = require('../services/userService');
+
+        if (!preferences) {
+            return res.status(400).json({
+                success: false,
+                error: 'Preferences are required'
+            });
+        }
+
+        const user = await UserService.getUserById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+
+        // Update user preferences
+        user.preferences = { ...user.preferences, ...preferences };
+        await user.save();
+
+        res.json({
+            success: true,
+            message: 'Preferences updated successfully',
+            preferences: user.preferences
+        });
+
+    } catch (error) {
+        console.error('Error updating meal plan preferences:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to update preferences'
+        });
+    }
+});
+
+// Get meal suggestions based on current nutrition
+router.get('/suggestions', async (req, res) => {
+    try {
+        const userId = req.session.user._id;
+        const { mealType, currentNutrition } = req.query;
+        const UserService = require('../services/userService');
+
+        const user = await UserService.getUserById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: 'User not found'
+            });
+        }
+
+        // Get user's active meal plan
+        const activeMealPlan = user.mealPlans?.find(plan => plan.isActive);
+        
+        if (!activeMealPlan) {
+            return res.status(404).json({
+                success: false,
+                error: 'No active meal plan found'
+            });
+        }
+
+        // Generate suggestions based on current nutrition and goals
+        const suggestions = generateMealSuggestions(
+            activeMealPlan.healthProfile,
+            activeMealPlan.nutritionTargets,
+            mealType,
+            currentNutrition ? JSON.parse(currentNutrition) : null
+        );
+
+        res.json({
+            success: true,
+            suggestions: suggestions
+        });
+
+    } catch (error) {
+        console.error('Error getting meal suggestions:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to get meal suggestions'
+        });
+    }
+});
+
+// Helper function to generate meal suggestions
+function generateMealSuggestions(healthProfile, nutritionTargets, mealType, currentNutrition) {
+    const suggestions = [];
+    
+    // Calculate remaining nutrition needs
+    const remaining = {
+        calories: nutritionTargets.targetCalories - (currentNutrition?.calories || 0),
+        protein: nutritionTargets.macros.protein - (currentNutrition?.protein || 0),
+        carbs: nutritionTargets.macros.carbs - (currentNutrition?.carbs || 0),
+        fat: nutritionTargets.macros.fat - (currentNutrition?.fat || 0)
     };
 
-    await UserService.addMealPlan(userEmail, mealData);
-
-    res.json({
-      success: true,
-      message: 'Meal added to plan successfully',
-      meal: mealData
-    });
-  } catch (error) {
-    console.error('Add meal error:', error);
-    res.status(500).json({ success: false, error: 'Failed to add meal' });
-  }
-});
-
-// Update meal in plan
-router.put('/meals/:mealId', async (req, res) => {
-  try {
-    const userEmail = req.session.user.email;
-    const { mealId } = req.params;
-    const { mealType, name, calories, protein, carbs, fat, notes } = req.body;
-
-    const updateData = {
-      mealType,
-      name,
-      calories: parseInt(calories) || 0,
-      protein: parseFloat(protein) || 0,
-      carbs: parseFloat(carbs) || 0,
-      fat: parseFloat(fat) || 0,
-      notes: notes || '',
-      updatedAt: new Date()
+    // Base suggestions by meal type
+    const baseSuggestions = {
+        breakfast: [
+            {
+                name: 'Protein Oatmeal',
+                calories: 300,
+                protein: 20,
+                carbs: 40,
+                fat: 8,
+                reason: 'High protein start to your day'
+            },
+            {
+                name: 'Greek Yogurt Parfait',
+                calories: 250,
+                protein: 18,
+                carbs: 25,
+                fat: 6,
+                reason: 'Probiotics and protein for digestive health'
+            }
+        ],
+        lunch: [
+            {
+                name: 'Grilled Chicken Salad',
+                calories: 350,
+                protein: 30,
+                carbs: 15,
+                fat: 18,
+                reason: 'Lean protein with healthy fats'
+            },
+            {
+                name: 'Quinoa Buddha Bowl',
+                calories: 400,
+                protein: 16,
+                carbs: 55,
+                fat: 12,
+                reason: 'Complete plant-based nutrition'
+            }
+        ],
+        dinner: [
+            {
+                name: 'Baked Salmon with Vegetables',
+                calories: 450,
+                protein: 35,
+                carbs: 20,
+                fat: 25,
+                reason: 'Omega-3 rich for recovery'
+            },
+            {
+                name: 'Lean Beef Stir-fry',
+                calories: 380,
+                protein: 28,
+                carbs: 30,
+                fat: 15,
+                reason: 'Iron and protein for muscle building'
+            }
+        ],
+        snack: [
+            {
+                name: 'Mixed Nuts',
+                calories: 180,
+                protein: 6,
+                carbs: 8,
+                fat: 15,
+                reason: 'Healthy fats for sustained energy'
+            },
+            {
+                name: 'Apple with Almond Butter',
+                calories: 200,
+                protein: 8,
+                carbs: 20,
+                fat: 12,
+                reason: 'Natural sugars with protein'
+            }
+        ]
     };
 
-    await UserService.updateMealPlan(userEmail, mealId, updateData);
+    // Get base suggestions for meal type
+    const mealSuggestions = baseSuggestions[mealType] || baseSuggestions.snack;
 
-    res.json({
-      success: true,
-      message: 'Meal updated successfully'
+    // Filter and customize based on health profile and remaining nutrition
+    mealSuggestions.forEach(suggestion => {
+        // Adjust for dietary preferences
+        if (healthProfile.dietaryPreferences === 'vegetarian' && 
+            (suggestion.name.includes('Chicken') || suggestion.name.includes('Beef') || suggestion.name.includes('Salmon'))) {
+            return; // Skip non-vegetarian options
+        }
+
+        // Adjust for medical conditions
+        if (healthProfile.medicalConditions?.includes('diabetes_type2') && suggestion.carbs > 30) {
+            suggestion.carbs = Math.round(suggestion.carbs * 0.7);
+            suggestion.calories = Math.round(suggestion.calories * 0.9);
+            suggestion.reason += ' (adjusted for diabetes management)';
+        }
+
+        // Adjust for remaining nutrition needs
+        if (remaining.protein > 20 && suggestion.protein < 15) {
+            suggestion.reason = 'Boost protein intake to meet daily goals';
+        }
+
+        suggestions.push(suggestion);
     });
-  } catch (error) {
-    console.error('Update meal error:', error);
-    res.status(500).json({ success: false, error: 'Failed to update meal' });
-  }
-});
 
-// Delete meal from plan
-router.delete('/meals/:mealId', async (req, res) => {
-  try {
-    const userEmail = req.session.user.email;
-    const { mealId } = req.params;
-
-    await UserService.deleteMealPlan(userEmail, mealId);
-
-    res.json({
-      success: true,
-      message: 'Meal deleted successfully'
-    });
-  } catch (error) {
-    console.error('Delete meal error:', error);
-    res.status(500).json({ success: false, error: 'Failed to delete meal' });
-  }
-});
-
-// Generate AI meal plan
-router.post('/ai-generate', async (req, res) => {
-  try {
-    const userEmail = req.session.user.email;
-    const { preferences, calorieTarget, days } = req.body;
-
-    const user = await UserService.getUserByEmail(userEmail);
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' });
-    }
-
-    const userContext = {
-      fitnessGoals: user.fitnessGoals,
-      healthInfo: user.healthInfo,
-      preferences: user.preferences,
-      personalInfo: user.personalInfo
-    };
-
-    const prompt = `Generate a ${days || 7}-day meal plan for a user with the following preferences:
-    - Dietary preferences: ${preferences.join(', ')}
-    - Daily calorie target: ${calorieTarget}
-    - User context: ${JSON.stringify(userContext)}
-    
-    Please provide meals for breakfast, lunch, dinner, and snacks with nutritional information.`;
-
-    const aiResponse = await aiService.getAIResponse(prompt, userContext);
-    
-    // Parse AI response and create meal plan structure
-    const mealPlan = parseAIMealPlan(aiResponse, calorieTarget, preferences);
-
-    res.json({
-      success: true,
-      message: 'AI meal plan generated successfully',
-      mealPlan: mealPlan,
-      aiResponse: aiResponse
-    });
-  } catch (error) {
-    console.error('AI meal plan generation error:', error);
-    res.status(500).json({ success: false, error: 'Failed to generate AI meal plan' });
-  }
-});
-
-// Get recipe suggestions
-router.get('/recipe-suggestions', async (req, res) => {
-  try {
-    const userEmail = req.session.user.email;
-    const user = await UserService.getUserByEmail(userEmail);
-    
-    const userContext = {
-      fitnessGoals: user.fitnessGoals,
-      healthInfo: user.healthInfo,
-      preferences: user.preferences
-    };
-
-    const prompt = `Suggest 6 healthy recipes based on user's fitness goals and dietary preferences: ${JSON.stringify(userContext)}. Include recipe name, cooking time, calories, and brief description.`;
-
-    const aiResponse = await aiService.getAIResponse(prompt, userContext);
-    const recipes = parseRecipeSuggestions(aiResponse);
-
-    res.json({
-      success: true,
-      recipes: recipes
-    });
-  } catch (error) {
-    console.error('Recipe suggestions error:', error);
-    res.status(500).json({ success: false, error: 'Failed to get recipe suggestions' });
-  }
-});
-
-// Helper function to parse AI meal plan response
-function parseAIMealPlan(aiResponse, calorieTarget, preferences) {
-  // This is a simplified parser - in production, you'd want more robust parsing
-  const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
-  const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
-  
-  const mealPlan = {};
-  
-  days.forEach(day => {
-    mealPlan[day] = {};
-    mealTypes.forEach(mealType => {
-      mealPlan[day][mealType] = {
-        name: `AI Generated ${mealType}`,
-        calories: Math.round(calorieTarget / 4),
-        protein: Math.round(calorieTarget * 0.15 / 4),
-        carbs: Math.round(calorieTarget * 0.5 / 4),
-        fat: Math.round(calorieTarget * 0.3 / 4),
-        description: `Healthy ${mealType} tailored to your preferences`
-      };
-    });
-  });
-  
-  return mealPlan;
-}
-
-// Helper function to parse recipe suggestions
-function parseRecipeSuggestions(aiResponse) {
-  // Simplified recipe suggestions - in production, parse AI response
-  return [
-    {
-      id: 'recipe1',
-      name: 'Protein Power Bowl',
-      time: 25,
-      calories: 450,
-      image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c',
-      description: 'High-protein quinoa bowl with grilled chicken'
-    },
-    {
-      id: 'recipe2',
-      name: 'Green Smoothie Bowl',
-      time: 10,
-      calories: 320,
-      image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061',
-      description: 'Nutrient-packed smoothie bowl with fresh toppings'
-    },
-    {
-      id: 'recipe3',
-      name: 'Baked Cod with Vegetables',
-      time: 30,
-      calories: 380,
-      image: 'https://images.unsplash.com/photo-1559847844-5315695dadae',
-      description: 'Lean fish with roasted seasonal vegetables'
-    }
-  ];
+    return suggestions.slice(0, 4); // Return top 4 suggestions
 }
 
 module.exports = router;

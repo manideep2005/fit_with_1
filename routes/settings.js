@@ -4,6 +4,43 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const UserService = require('../services/userService');
+const User = require('../models/User');
+
+// GET settings page
+router.get('/', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+    const user = await User.findById(req.session.user._id);
+    res.render('settings', { user });
+});
+
+// POST to update settings
+router.post('/', async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect('/login');
+    }
+
+    try {
+        const user = await User.findById(req.session.user._id);
+
+        // Update user fields
+        user.personalInfo = req.body.personalInfo;
+        user.fitnessGoals = req.body.fitnessGoals;
+        user.healthInfo = req.body.healthInfo;
+        user.preferences = req.body.preferences;
+        user.dailyCalorieGoal = req.body.dailyCalorieGoal;
+        user.dailyWaterGoal = req.body.dailyWaterGoal;
+        user.regionalPreference = req.body.regionalPreference;
+
+        await user.save();
+
+        res.redirect('/settings');
+    } catch (error) {
+        console.error('Error updating settings:', error);
+        res.status(500).send('Error updating settings');
+    }
+});
 
 // Configure multer for profile photo uploads
 const storage = multer.diskStorage({

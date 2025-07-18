@@ -6,6 +6,7 @@
     <title>Chat - Fit-With-AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/chat.css">
     <style>
         :root {
             --primary: #6C63FF;
@@ -26,6 +27,7 @@
         .chat-container {
             display: flex;
             height: 100vh;
+            width: 100%;
         }
 
         .sidebar {
@@ -186,7 +188,7 @@
         }
 
         .message {
-            max-width: 70%;
+            max-width: 25%;
             padding: 12px 16px;
             border-radius: 18px;
             margin-bottom: 10px;
@@ -406,9 +408,348 @@
             color: var(--gray);
             font-style: italic;
         }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -280px;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            transition: left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--gray);
+            cursor: pointer;
+            display: none;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+            max-height: calc(100vh - 200px);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 20px;
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: rgba(108, 99, 255, 0.1);
+            color: var(--primary);
+            border-left-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--dark);
+        }
+
+        .user-level {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        .logout-btn {
+            color: var(--gray);
+            font-size: 1.2rem;
+            text-decoration: none;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        .mobile-menu-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .main-content {
+            transition: margin-left 0.3s ease;
+            width: 100%;
+        }
+
+        @media (min-width: 1024px) {
+            .sidebar {
+                left: 0;
+            }
+            
+            .main-content {
+                margin-left: 280px;
+                width: calc(100% - 280px);
+            }
+            
+            .mobile-menu-btn {
+                display: none;
+            }
+        }
+
+        @media (max-width: 1023px) {
+            .sidebar-toggle {
+                display: block;
+            }
+        }
+
+       
+        /* Message status styles */
+        .message-meta {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+        
+        .read-status {
+            margin-left: 5px;
+        }
+        
+        .read-status.sent {
+            color: #9E9E9E;
+        }
+        
+        .read-status.delivered {
+            color: #2196F3;
+        }
+        
+        .read-status.read {
+            color: #4CAF50;
+        }
+        
+        .read-status.error {
+            color: #f44336;
+            font-weight: bold;
+        }
+        
+        .error-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #f44336;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 5px;
+            z-index: 9999;
+            display: none;
+            animation: fadeIn 0.3s, fadeOut 0.3s 4.7s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
     </style>
 </head>
 <body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-dumbbell"></i>
+                <span>Fit-With-AI</span>
+            </div>
+            <button class="sidebar-toggle" onclick="toggleSidebar()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="/dashboard" class="nav-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="/workouts" class="nav-item">
+                <i class="fas fa-dumbbell"></i>
+                <span>Workouts</span>
+            </a>
+            <a href="/live-workout" class="nav-item">
+                <i class="fas fa-broadcast-tower"></i>
+                <span>Live Workouts</span>
+            </a>
+            <a href="/nutrition" class="nav-item">
+                <i class="fas fa-apple-alt"></i>
+                <span>Nutrition</span>
+            </a>
+            <a href="/analytics" class="nav-item">
+                <i class="fas fa-chart-line"></i>
+                <span>Analytics</span>
+            </a>
+            <a href="/progress" class="nav-item">
+                <i class="fas fa-chart-bar"></i>
+                <span>Progress</span>
+            </a>
+            <a href="/challenges" class="nav-item">
+                <i class="fas fa-trophy"></i>
+                <span>Challenges</span>
+            </a>
+            <a href="/community" class="nav-item">
+                <i class="fas fa-users"></i>
+                <span>Community</span>
+            </a>
+            <a href="/chat" class="nav-item active">
+                <i class="fas fa-comments"></i>
+                <span>Messages</span>
+            </a>
+            <a href="/health" class="nav-item">
+                <i class="fas fa-heartbeat"></i>
+                <span>Health</span>
+            </a>
+            <a href="/ai-coach" class="nav-item">
+                <i class="fas fa-robot"></i>
+                <span>AI Coach</span>
+            </a>
+            <a href="/settings" class="nav-item">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">
+                    U
+                </div>
+                <div class="user-details">
+                    <div class="user-name">User</div>
+                    <div class="user-level">Level 1</div>
+                </div>
+            </div>
+            <a href="/logout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+    <div class="main-content">
     <div class="chat-container">
         <!-- Sidebar -->
         <div class="sidebar">
@@ -436,6 +777,14 @@
                         <i class="fas fa-ellipsis-v"></i>
                     </button>
                     <div class="options-menu" id="optionsMenu">
+                        <div class="option-item" onclick="initiateAudioCall()">
+                            <i class="fas fa-phone"></i>
+                            <span>Audio Call</span>
+                        </div>
+                        <div class="option-item" onclick="initiateVideoCall()">
+                            <i class="fas fa-video"></i>
+                            <span>Video Call</span>
+                        </div>
                         <div class="option-item" onclick="viewFriendProfile()">
                             <i class="fas fa-user"></i>
                             <span>View Profile</span>
@@ -463,6 +812,7 @@
                 <div class="empty-chat">
                     <p>Select a friend to start a conversation</p>
                 </div>
+                <div id="chatMessages" style="display: none;"></div>
             </div>
             <div class="message-input-area">
                 <input type="text" class="message-input" id="messageInput" placeholder="Type a message..." disabled>
@@ -471,6 +821,7 @@
                 </button>
             </div>
         </div>
+    </div>
     </div>
 
     <!-- Add Friend Modal -->
@@ -497,6 +848,20 @@
         </div>
     </div>
 
+    <link rel="stylesheet" href="/css/chat.css">
+    <script src="/js/workout-timer.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        // Make user data available to socket
+        try {
+            window.user = <%- JSON.stringify(user || {}) %>;
+            console.log('User data loaded:', window.user);
+        } catch (e) {
+            console.error('Failed to load user data:', e);
+            window.user = { _id: null, email: null, fullName: 'Unknown User' };
+        }
+    </script>
+    <script src="/js/chat-socket.js"></script>
     <script>
         let currentFriend = null;
         let friends = [];
@@ -514,47 +879,138 @@
             });
         });
 
-        // Load friends list
+        // Load friends and conversations
         async function loadFriends() {
             try {
-                const response = await fetch('/api/chat/friends');
-                const data = await response.json();
+                console.log('Loading conversations and friends...');
+                // First try to load conversations
+                const convResponse = await fetch('/api/chat/conversations');
+                const convData = await convResponse.json();
+                console.log('Conversations data:', convData);
                 
-                if (data.success && data.friends.length > 0) {
-                    friends = data.friends;
-                    displayFriends(data.friends);
+                if (convData.success && convData.conversations && convData.conversations.length > 0) {
+                    // We have conversations, display them
+                    console.log('Displaying conversations:', convData.conversations.length);
+                    window.displayConversations(convData.conversations);
                 } else {
-                    document.getElementById('friendsList').innerHTML = `
-                        <div class="no-friends">
-                            <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 15px;"></i>
-                            <p>No friends yet</p>
-                            <button class="add-friend-btn" onclick="openAddFriendModal()">Add Friends</button>
-                        </div>
-                    `;
+                    console.log('No conversations found, loading friends list');
+                    // No conversations, fall back to friends list
+                    const friendsResponse = await fetch('/api/chat/friends');
+                    const friendsData = await friendsResponse.json();
+                    console.log('Friends data:', friendsData);
+                    
+                    if (friendsData.success && friendsData.friends && friendsData.friends.length > 0) {
+                        friends = friendsData.friends;
+                        displayFriends(friendsData.friends);
+                    } else {
+                        document.getElementById('friendsList').innerHTML = `
+                            <div class="no-friends">
+                                <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                                <p>No friends yet</p>
+                                <button class="add-friend-btn" onclick="openAddFriendModal()">Add Friends</button>
+                            </div>
+                        `;
+                    }
                 }
             } catch (error) {
-                console.error('Error loading friends:', error);
+                console.error('Error loading friends/conversations:', error);
+                document.getElementById('friendsList').innerHTML = `
+                    <div class="no-friends">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px; color: #f44336;"></i>
+                        <p>Error loading conversations</p>
+                        <button class="add-friend-btn" onclick="loadFriends()">Try Again</button>
+                    </div>
+                `;
             }
         }
 
         // Display friends in sidebar
         function displayFriends(friendsList) {
             const friendsHtml = friendsList.map(friend => `
-                <div class="friend-item" onclick="selectFriend('${friend._id}', '${friend.fullName}')">
+                <div class="friend-item" data-friend-id="${friend._id}" onclick="selectFriend('${friend._id}', '${friend.fullName}')">
                     <img src="${friend.avatar}" alt="${friend.fullName}" class="friend-avatar">
                     <div class="friend-info">
                         <h4>${friend.fullName}</h4>
-                        <p>Click to chat</p>
+                        <p>${friend.isOnline ? '<span class="online-status online"></span> Online' : 'Click to chat'}</p>
                     </div>
                 </div>
             `).join('');
             
             document.getElementById('friendsList').innerHTML = friendsHtml;
         }
+        
+        // Function to display conversations (exposed to window for chat-socket.js)
+        window.displayConversations = function(conversations) {
+            console.log('Displaying conversations:', conversations);
+            
+            // Check if conversations is an array and has items
+            if (!Array.isArray(conversations) || conversations.length === 0) {
+                document.getElementById('friendsList').innerHTML = `
+                    <div class="no-friends">
+                        <i class="fas fa-comments" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                        <p>No conversations yet</p>
+                        <button class="add-friend-btn" onclick="openAddFriendModal()">Find Friends</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            const conversationsHtml = conversations.map(conv => {
+                // Ensure we have valid data
+                if (!conv || !conv.friend || !conv.lastMessage) {
+                    console.error('Invalid conversation data:', conv);
+                    return '';
+                }
+                
+                // Safely access properties with fallbacks
+                const friendId = conv.friend._id || '';
+                const friendName = conv.friend.fullName || 'Unknown';
+                const friendAvatar = conv.friend.avatar || 'https://ui-avatars.com/api/?name=User&background=6C63FF&color=fff';
+                const isOnline = conv.friend.isOnline || false;
+                
+                // Truncate long messages
+                const messageContent = conv.lastMessage.content || '';
+                const truncatedContent = messageContent.length > 30 ? 
+                    messageContent.substring(0, 30) + '...' : messageContent;
+                
+                // Escape any special characters in the friend name for the onclick attribute
+                const escapedFriendName = friendName.replace(/'/g, "\\'");
+                
+                return `
+                    <div class="friend-item" data-friend-id="${friendId}" onclick="selectFriend('${friendId}', '${escapedFriendName}')">
+                        <div class="friend-avatar">
+                            <img src="${friendAvatar}" alt="${friendName}">
+                            <div class="online-status ${isOnline ? 'online' : 'offline'}"></div>
+                        </div>
+                        <div class="friend-info">
+                            <h4>${friendName}</h4>
+                            <p class="last-message">${truncatedContent}</p>
+                        </div>
+                        ${(conv.unreadCount > 0) ? `<div class="unread-badge">${conv.unreadCount}</div>` : ''}
+                    </div>
+                `;
+            }).filter(html => html).join('');
+            
+            if (conversationsHtml) {
+                document.getElementById('friendsList').innerHTML = conversationsHtml;
+            } else {
+                document.getElementById('friendsList').innerHTML = `
+                    <div class="no-friends">
+                        <i class="fas fa-comments" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                        <p>No conversations yet</p>
+                        <button class="add-friend-btn" onclick="openAddFriendModal()">Find Friends</button>
+                    </div>
+                `;
+            }
+        }
 
         // Select friend to chat with
         function selectFriend(friendId, friendName) {
+            console.log('Selecting friend:', friendId, friendName);
             currentFriend = friendId;
+            // Expose currentFriend to window for chat-socket.js
+            window.currentFriend = friendId;
+            
             document.getElementById('chatTitle').textContent = friendName;
             document.getElementById('messageInput').disabled = false;
             document.getElementById('sendBtn').disabled = false;
@@ -566,7 +1022,22 @@
             });
             
             // Add active class to selected friend
-            event.target.closest('.friend-item').classList.add('active');
+            const friendItem = event.target.closest('.friend-item');
+            if (friendItem) {
+                friendItem.classList.add('active');
+                
+                // Remove unread badge if exists
+                const unreadBadge = friendItem.querySelector('.unread-badge');
+                if (unreadBadge) {
+                    unreadBadge.remove();
+                }
+            }
+            
+            // Clear any existing empty chat message
+            const emptyChat = document.querySelector('.empty-chat');
+            if (emptyChat) {
+                emptyChat.style.display = 'none';
+            }
             
             // Load messages
             loadMessages(friendId);
@@ -575,30 +1046,103 @@
         // Load messages for selected friend
         async function loadMessages(friendId) {
             try {
+                console.log('Loading messages for friend:', friendId);
                 const response = await fetch(`/api/chat/messages/${friendId}`);
                 const data = await response.json();
                 
-                if (data.success) {
+                if (data.success && Array.isArray(data.messages)) {
+                    console.log('Messages loaded successfully:', data.messages.length);
+                    // Show chat messages container
+                    document.getElementById('chatMessages').style.display = 'block';
+                    // Hide empty chat message
+                    const emptyChat = document.querySelector('.empty-chat');
+                    if (emptyChat) emptyChat.style.display = 'none';
+                    // Display messages
                     displayMessages(data.messages);
                 } else {
-                    document.getElementById('messagesArea').innerHTML = '<div class="empty-chat"><p>Start your conversation!</p></div>';
+                    console.log('No messages found or error in response');
+                    document.getElementById('messagesArea').innerHTML = `
+                        <div class="empty-chat">
+                            <p>Start your conversation!</p>
+                        </div>
+                        <div id="chatMessages" style="display: none;"></div>
+                    `;
                 }
             } catch (error) {
                 console.error('Error loading messages:', error);
-                document.getElementById('messagesArea').innerHTML = '<div class="empty-chat"><p>Failed to load messages</p></div>';
+                document.getElementById('messagesArea').innerHTML = `
+                    <div class="empty-chat">
+                        <p>Failed to load messages</p>
+                        <button class="add-friend-btn" onclick="loadMessages('${friendId}')">Try Again</button>
+                    </div>
+                    <div id="chatMessages" style="display: none;"></div>
+                `;
             }
         }
 
+        // Get status icon based on message status
+        function getStatusIcon(status) {
+            switch (status) {
+                case 'sent': return '✓';
+                case 'delivered': return '✓✓';
+                case 'read': return '✓✓';
+                case 'error': return '!';
+                default: return '✓';
+            }
+        }
+        
         // Display messages
         function displayMessages(messages) {
-            const messagesHtml = messages.map(message => `
-                <div class="message ${message.isSender ? 'sent' : 'received'}">
-                    ${message.content}
-                </div>
-            `).join('');
+            if (!Array.isArray(messages) || messages.length === 0) {
+                document.getElementById('chatMessages').innerHTML = `
+                    <div class="empty-chat">
+                        <p>No messages yet. Start a conversation!</p>
+                    </div>
+                `;
+                return;
+            }
             
-            document.getElementById('messagesArea').innerHTML = messagesHtml;
+            const messagesHtml = messages.map(message => {
+                if (!message) return '';
+                
+                // Safely get message properties with fallbacks
+                const messageId = message._id || '';
+                const content = message.content || '';
+                const isSender = !!message.isSender;
+                const status = message.status || 'sent';
+                const createdAt = message.createdAt || new Date();
+                
+                const timestamp = new Date(createdAt).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+                const statusIcon = isSender ? getStatusIcon(status) : '';
+                const statusClass = isSender ? `read-status ${status}` : '';
+                
+                return `
+                    <div class="message ${isSender ? 'sent' : 'received'}" id="${messageId}">
+                        <div class="message-content">
+                            <p>${escapeHtml(content)}</p>
+                            <div class="message-meta">
+                                <span class="timestamp">${timestamp}</span>
+                                ${isSender ? `<span class="${statusClass}">${statusIcon}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).filter(html => html).join('');
+            
+            document.getElementById('chatMessages').innerHTML = messagesHtml;
+            document.getElementById('chatMessages').innerHTML += '<div class="typing-indicator" id="typingIndicator" style="display: none;"><span>Friend is typing...</span></div>';
             document.getElementById('messagesArea').scrollTop = document.getElementById('messagesArea').scrollHeight;
+        }
+        
+        // Get status icon based on message status
+        function getStatusIcon(status) {
+            switch (status) {
+                case 'sent': return '✓';
+                case 'delivered': return '✓✓';
+                case 'read': return '✓✓';
+                case 'error': return '!';
+                default: return '✓';
+            }
         }
 
         // Send message
@@ -609,6 +1153,46 @@
             if (!content || !currentFriend) return;
             
             try {
+                console.log('Sending message to friend:', currentFriend);
+                // Show sending indicator immediately for better UX
+                const messagesArea = document.getElementById('messagesArea');
+                const tempId = 'msg-' + Date.now();
+                const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
+                
+                // Add message to UI immediately with pending status
+                const chatMessages = document.getElementById('chatMessages');
+                if (!chatMessages) {
+                    // Create chat messages container if it doesn't exist
+                    messagesArea.innerHTML = '<div id="chatMessages"></div>';
+                    document.getElementById('chatMessages').style.display = 'block';
+                }
+                
+                document.getElementById('chatMessages').innerHTML += `
+                    <div id="${tempId}" class="message sent">
+                        <div class="message-content">
+                            <p>${escapeHtml(content)}</p>
+                            <div class="message-meta">
+                                <span class="timestamp">${timestamp}</span>
+                                <span class="read-status sent">✓</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+                
+                // Clear input immediately
+                messageInput.value = '';
+                
+                // Try socket first for real-time delivery
+                if (window.chatSocket) {
+                    window.chatSocket.emit('send_message', {
+                        receiverId: currentFriend,
+                        content: content,
+                        messageType: 'text'
+                    });
+                }
+                
+                // Also send via API as backup
                 const response = await fetch('/api/chat/send', {
                     method: 'POST',
                     headers: {
@@ -616,25 +1200,70 @@
                     },
                     body: JSON.stringify({
                         receiverId: currentFriend,
-                        content: content
+                        content: content,
+                        messageType: 'text'
                     })
                 });
                 
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Add message to UI immediately
-                    const messagesArea = document.getElementById('messagesArea');
-                    messagesArea.innerHTML += `<div class="message sent">${content}</div>`;
-                    messagesArea.scrollTop = messagesArea.scrollHeight;
-                    messageInput.value = '';
+                    // Update status to delivered
+                    const msgElement = document.getElementById(tempId);
+                    if (msgElement) {
+                        const statusElement = msgElement.querySelector('.read-status');
+                        if (statusElement) {
+                            statusElement.className = 'read-status delivered';
+                            statusElement.textContent = '✓✓';
+                        }
+                    }
                 } else {
-                    alert('Failed to send message: ' + data.error);
+                    // Show error status
+                    const msgElement = document.getElementById(tempId);
+                    if (msgElement) {
+                        const statusElement = msgElement.querySelector('.read-status');
+                        if (statusElement) {
+                            statusElement.className = 'read-status error';
+                            statusElement.textContent = '!';
+                        }
+                        
+                        const metaElement = msgElement.querySelector('.message-meta');
+                        if (metaElement) {
+                            metaElement.innerHTML += '<span style="color: #f44336; font-size: 0.8rem; margin-left: 5px;">Failed</span>';
+                        }
+                    }
+                    console.error('Failed to send message:', data.error);
+                    showErrorToast('Failed to send message: ' + (data.error || 'Unknown error'));
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
-                alert('Failed to send message');
+                showErrorToast('Failed to send message. Please try again.');
             }
+        }
+        
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Show error toast
+        function showErrorToast(message) {
+            let errorToast = document.getElementById('errorToast');
+            if (!errorToast) {
+                errorToast = document.createElement('div');
+                errorToast.id = 'errorToast';
+                errorToast.className = 'error-toast';
+                document.body.appendChild(errorToast);
+            }
+            
+            errorToast.textContent = message;
+            errorToast.style.display = 'block';
+            
+            setTimeout(() => {
+                errorToast.style.display = 'none';
+            }, 5000);
         }
 
         // Open add friend modal
@@ -667,13 +1296,18 @@
                 return;
             }
             
+            resultsDiv.innerHTML = '<p style="text-align: center; color: var(--gray);">Searching...</p>';
+            
             try {
+                console.log('Searching for users with query:', query);
                 const response = await fetch(`/api/chat/search-users?q=${encodeURIComponent(query)}`);
                 const data = await response.json();
                 
+                console.log('Search response:', data);
+                
                 if (data.success && data.users.length > 0) {
                     const usersHtml = data.users.map(user => `
-                        <div class="user-result" onclick="selectUser('${user._id}', '${user.fullName}', '${user.email}', '${user.fitnessId || 'N/A'}')">
+                        <div class="user-result" onclick="selectUser('${user._id}', '${user.fullName.replace(/'/g, '\\\'')}', '${user.email}', '${user.fitnessId || 'N/A'}')">
                             <div class="user-preview">
                                 <img src="${user.avatar}" alt="${user.fullName}" class="user-avatar">
                                 <div class="user-info">
@@ -686,12 +1320,25 @@
                     `).join('');
                     
                     resultsDiv.innerHTML = usersHtml;
+                } else if (data.success) {
+                    resultsDiv.innerHTML = `
+                        <div style="text-align: center; color: var(--gray); padding: 20px;">
+                            <i class="fas fa-search" style="font-size: 2rem; margin-bottom: 10px; display: block;"></i>
+                            <p>No users found for "${query}"</p>
+                            <small>Try searching by:</small>
+                            <ul style="text-align: left; display: inline-block; margin-top: 10px;">
+                                <li>Full name</li>
+                                <li>Email address</li>
+                                <li>Fitness ID</li>
+                            </ul>
+                        </div>
+                    `;
                 } else {
-                    resultsDiv.innerHTML = '<p style="text-align: center; color: var(--gray);">No users found</p>';
+                    resultsDiv.innerHTML = `<p style="text-align: center; color: var(--danger);">Search failed: ${data.error || 'Unknown error'}</p>`;
                 }
             } catch (error) {
                 console.error('Error searching users:', error);
-                resultsDiv.innerHTML = '<p style="text-align: center; color: var(--gray);">Search failed</p>';
+                resultsDiv.innerHTML = '<p style="text-align: center; color: var(--danger);">Search failed. Please try again.</p>';
             }
         }
 
@@ -718,7 +1365,14 @@
                 return;
             }
             
+            const sendBtn = document.getElementById('sendRequestBtn');
+            const originalText = sendBtn.textContent;
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+            
             try {
+                console.log('Sending friend request to:', selectedUser);
+                
                 const response = await fetch('/api/chat/send-friend-request', {
                     method: 'POST',
                     headers: {
@@ -726,24 +1380,33 @@
                     },
                     body: JSON.stringify({
                         friendEmail: selectedUser.email,
-                        message: 'Hi! I would like to connect with you.'
+                        message: 'Hi! I would like to connect with you on Fit-With-AI.'
                     })
                 });
                 
                 const data = await response.json();
+                console.log('Friend request response:', data);
                 
                 if (data.success) {
-                    alert('Friend request sent successfully!');
+                    alert(`Friend request sent to ${selectedUser.fullName} successfully!`);
                     document.getElementById('friendSearch').value = '';
                     document.getElementById('userResults').innerHTML = '';
-                    document.getElementById('sendRequestBtn').disabled = true;
+                    sendBtn.textContent = 'Sent!';
+                    sendBtn.style.background = 'var(--success)';
                     selectedUser = null;
+                    
+                    // Refresh friend requests
+                    loadFriendRequests();
                 } else {
-                    alert('Failed to send friend request: ' + data.error);
+                    alert('Failed to send friend request: ' + (data.error || 'Unknown error'));
+                    sendBtn.disabled = false;
+                    sendBtn.textContent = originalText;
                 }
             } catch (error) {
                 console.error('Error sending friend request:', error);
-                alert('Failed to send friend request');
+                alert('Failed to send friend request. Please try again.');
+                sendBtn.disabled = false;
+                sendBtn.textContent = originalText;
             }
         }
 
@@ -793,7 +1456,7 @@
         async function respondToRequest(requestId, action) {
             try {
                 const response = await fetch(`/api/chat/friend-requests/${requestId}/${action}`, {
-                    method: 'POST'
+                    method: 'POST',
                 });
                 
                 const data = await response.json();
@@ -964,6 +1627,23 @@
             toggleOptionsMenu();
         }
 
+        // Sidebar functions
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('show');
+        }
+
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.remove('open');
+            overlay.classList.remove('show');
+        }
+
         // Close modal when clicking outside
         window.onclick = function(event) {
             const modal = document.getElementById('addFriendModal');
@@ -981,3 +1661,358 @@
     </script>
 </body>
 </html>
+<!-- Call Modal -->
+<div id="callModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 600px; text-align: center;">
+        <div id="callHeader">
+            <h3 id="callTitle">Calling...</h3>
+            <p id="callStatus">Connecting...</p>
+        </div>
+        
+        <div id="videoContainer" style="position: relative; margin: 20px 0;">
+            <video id="localVideo" autoplay muted style="width: 150px; height: 100px; border-radius: 8px; position: absolute; top: 10px; right: 10px; z-index: 10; border: 2px solid white;"></video>
+            <video id="remoteVideo" autoplay style="width: 100%; max-width: 500px; height: 300px; border-radius: 8px; background: #000;"></video>
+        </div>
+        
+        <div id="callControls" style="margin: 20px 0;">
+            <button id="muteBtn" class="btn-control" onclick="toggleMute()">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <button id="videoBtn" class="btn-control" onclick="toggleVideo()">
+                <i class="fas fa-video"></i>
+            </button>
+            <button id="endCallBtn" class="btn-control danger" onclick="endCall()">
+                <i class="fas fa-phone-slash"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Incoming Call Modal -->
+<div id="incomingCallModal" class="modal" style="display: none;">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+        <h3>Incoming Call</h3>
+        <p id="callerName">Unknown</p>
+        <p id="callType">Audio Call</p>
+        
+        <div style="margin: 30px 0;">
+            <button class="btn-accept" onclick="acceptCall()" style="margin: 0 10px; padding: 15px 30px; border-radius: 50px;">
+                <i class="fas fa-phone"></i> Accept
+            </button>
+            <button class="btn-reject" onclick="rejectCall()" style="margin: 0 10px; padding: 15px 30px; border-radius: 50px;">
+                <i class="fas fa-phone-slash"></i> Decline
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-control {
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        margin: 0 10px;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-control:hover {
+        transform: scale(1.1);
+    }
+    
+    .btn-control.danger {
+        background: #dc3545;
+    }
+    
+    .btn-control.muted {
+        background: #6c757d;
+    }
+    
+    #videoContainer {
+        background: #000;
+        border-radius: 8px;
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>
+
+<script>
+// Audio/Video Call Functions
+let localStream = null;
+let remoteStream = null;
+let peerConnection = null;
+let currentCall = null;
+let isMuted = false;
+let isVideoOff = false;
+
+// WebRTC configuration
+const rtcConfig = {
+    iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+    ]
+};
+
+// Initiate audio call
+async function initiateAudioCall() {
+    if (!currentFriend) {
+        alert('Please select a friend to call');
+        return;
+    }
+    
+    try {
+        console.log('Initiating audio call to:', currentFriend);
+        
+        // Get user media (audio only)
+        localStream = await navigator.mediaDevices.getUserMedia({ 
+            audio: true, 
+            video: false 
+        });
+        
+        // Show call modal
+        document.getElementById('callModal').style.display = 'block';
+        document.getElementById('callTitle').textContent = 'Audio Call';
+        document.getElementById('videoContainer').style.display = 'none';
+        
+        // Send call request via API
+        const response = await fetch('/api/chat/initiate-audio-call', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ receiverId: currentFriend })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            currentCall = { type: 'audio', friendId: currentFriend, callId: data.callId };
+            document.getElementById('callStatus').textContent = 'Calling...';
+        } else {
+            throw new Error(data.error);
+        }
+        
+    } catch (error) {
+        console.error('Error initiating audio call:', error);
+        alert('Failed to start audio call: ' + error.message);
+        closeCallModal();
+    }
+    
+    toggleOptionsMenu();
+}
+
+// Initiate video call
+async function initiateVideoCall() {
+    if (!currentFriend) {
+        alert('Please select a friend to call');
+        return;
+    }
+    
+    try {
+        console.log('Initiating video call to:', currentFriend);
+        
+        // Get user media (audio and video)
+        localStream = await navigator.mediaDevices.getUserMedia({ 
+            audio: true, 
+            video: true 
+        });
+        
+        // Show call modal
+        document.getElementById('callModal').style.display = 'block';
+        document.getElementById('callTitle').textContent = 'Video Call';
+        document.getElementById('videoContainer').style.display = 'block';
+        
+        // Set local video
+        const localVideo = document.getElementById('localVideo');
+        localVideo.srcObject = localStream;
+        
+        // Send call request via API
+        const response = await fetch('/api/chat/initiate-video-call', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ receiverId: currentFriend })
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+            currentCall = { type: 'video', friendId: currentFriend, callId: data.callId };
+            document.getElementById('callStatus').textContent = 'Calling...';
+        } else {
+            throw new Error(data.error);
+        }
+        
+    } catch (error) {
+        console.error('Error initiating video call:', error);
+        alert('Failed to start video call: ' + error.message);
+        closeCallModal();
+    }
+    
+    toggleOptionsMenu();
+}
+
+// Accept incoming call
+async function acceptCall() {
+    try {
+        // Get user media based on call type
+        const constraints = currentCall.type === 'video' ? 
+            { audio: true, video: true } : 
+            { audio: true, video: false };
+            
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        
+        // Hide incoming call modal, show call modal
+        document.getElementById('incomingCallModal').style.display = 'none';
+        document.getElementById('callModal').style.display = 'block';
+        
+        if (currentCall.type === 'video') {
+            document.getElementById('videoContainer').style.display = 'block';
+            const localVideo = document.getElementById('localVideo');
+            localVideo.srcObject = localStream;
+        } else {
+            document.getElementById('videoContainer').style.display = 'none';
+        }
+        
+        document.getElementById('callStatus').textContent = 'Connected';
+        
+    } catch (error) {
+        console.error('Error accepting call:', error);
+        alert('Failed to accept call. Please check your permissions.');
+        rejectCall();
+    }
+}
+
+// Reject incoming call
+function rejectCall() {
+    document.getElementById('incomingCallModal').style.display = 'none';
+    currentCall = null;
+}
+
+// Toggle mute
+function toggleMute() {
+    if (localStream) {
+        const audioTrack = localStream.getAudioTracks()[0];
+        if (audioTrack) {
+            audioTrack.enabled = !audioTrack.enabled;
+            isMuted = !audioTrack.enabled;
+            
+            const muteBtn = document.getElementById('muteBtn');
+            if (isMuted) {
+                muteBtn.classList.add('muted');
+                muteBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+            } else {
+                muteBtn.classList.remove('muted');
+                muteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+            }
+        }
+    }
+}
+
+// Toggle video
+function toggleVideo() {
+    if (localStream) {
+        const videoTrack = localStream.getVideoTracks()[0];
+        if (videoTrack) {
+            videoTrack.enabled = !videoTrack.enabled;
+            isVideoOff = !videoTrack.enabled;
+            
+            const videoBtn = document.getElementById('videoBtn');
+            if (isVideoOff) {
+                videoBtn.classList.add('muted');
+                videoBtn.innerHTML = '<i class="fas fa-video-slash"></i>';
+            } else {
+                videoBtn.classList.remove('muted');
+                videoBtn.innerHTML = '<i class="fas fa-video"></i>';
+            }
+        }
+    }
+}
+
+// End call
+function endCall() {
+    // Stop local stream
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+    
+    closeCallModal();
+    currentCall = null;
+    isMuted = false;
+    isVideoOff = false;
+}
+
+// Close call modal
+function closeCallModal() {
+    document.getElementById('callModal').style.display = 'none';
+    document.getElementById('incomingCallModal').style.display = 'none';
+    
+    // Reset video elements
+    const localVideo = document.getElementById('localVideo');
+    const remoteVideo = document.getElementById('remoteVideo');
+    if (localVideo) localVideo.srcObject = null;
+    if (remoteVideo) remoteVideo.srcObject = null;
+    
+    // Reset button states
+    const muteBtn = document.getElementById('muteBtn');
+    const videoBtn = document.getElementById('videoBtn');
+    if (muteBtn) {
+        muteBtn.classList.remove('muted');
+        muteBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+    }
+    if (videoBtn) {
+        videoBtn.classList.remove('muted');
+        videoBtn.innerHTML = '<i class="fas fa-video"></i>';
+    }
+}
+</script>
+
+<style>
+/* Enhanced Call Notification Styles */
+.call-status-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    animation: slideInRight 0.3s ease;
+}
+
+.call-status-toast.success { background: #4CAF50; }
+.call-status-toast.error { background: #f44336; }
+.call-status-toast.info { background: #2196F3; }
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+#incomingCallModal .modal-content {
+    animation: callPulse 1s infinite;
+    border: 3px solid var(--primary);
+    box-shadow: 0 0 30px rgba(108, 99, 255, 0.3);
+}
+
+@keyframes callPulse {
+    0% { box-shadow: 0 0 30px rgba(108, 99, 255, 0.3); }
+    50% { box-shadow: 0 0 50px rgba(108, 99, 255, 0.6); }
+    100% { box-shadow: 0 0 30px rgba(108, 99, 255, 0.3); }
+}
+
+.btn-accept {
+    background: #4CAF50 !important;
+    animation: acceptPulse 2s infinite;
+}
+
+@keyframes acceptPulse {
+    0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+}
+</style>
