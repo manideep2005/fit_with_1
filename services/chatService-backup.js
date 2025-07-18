@@ -10,131 +10,142 @@ class ChatService {
     io = socketIoInstance;
     console.log('ChatService initialized with Socket.IO');
     
-    // Only set up Socket.IO event handlers if io is available (not in serverless environment)
-    if (io && typeof io.on === 'function') {
-      console.log('Setting up Socket.IO event handlers');
-      io.on('connection', (socket) => {
-        console.log('User connected:', socket.id);
-        
-        // Handle user going online
-        socket.on('user_online', async (userId) => {
-          try {
-            await User.findByIdAndUpdate(userId, {
-              isOnline: true,
-              lastSeen: new Date(),
-              socketId: socket.id
-            });
-            
-            // Notify friends that user is online
-            const user = await User.findById(userId).populate('friends', '_id');
-            if (user && user.friends) {
-              user.friends.forEach(friend => {
-                socket.to(friend._id.toString()).emit('friend_online', {
-                  userId: userId,
-                  isOnline: true
-                });
-              });
-            }
-          } catch (error) {
-            console.error('Error updating user online status:', error);
-          }
-        });
-        
-        // Handle typing indicators
-        socket.on('typing_start', (data) => {
-          socket.to(data.receiverId).emit('user_typing', {
-            senderId: data.senderId,
-            isTyping: true
+    // Set up Socket.IO event handlers for real-time features
+    io.on('connection', (socket) => {
+      console.log('User connected:', socket.id);
+      
+      // Handle user going online
+      socket.on('user_online', async (userId) => {
+        try {
+          await User.findByIdAndUpdate(userId, {
+            isOnline: true,
+            lastSeen: new Date(),
+            socketId: socket.id
           });
-        });
-        
-        socket.on('typing_stop', (data) => {
-          socket.to(data.receiverId).emit('user_typing', {
-            senderId: data.senderId,
-            isTyping: false
-          });
-        });
-        
-        // Handle message read receipts
-        socket.on('message_read', async (data) => {
-          try {
-            await Message.findByIdAndUpdate(data.messageId, {
-              status: 'read',
-              readAt: new Date()
-            });
-            
-            socket.to(data.senderId).emit('message_read_receipt', {
-              messageId: data.messageId,
-              readAt: new Date()
-            });
-          } catch (error) {
-            console.error('Error updating message read status:', error);
-          }
-        });
-        
-        // Handle call events
-        socket.on('incoming_call', (data) => {
-          socket.to(data.receiverId).emit('incoming_call', data);
-        });
-        
-        socket.on('call_accepted', (data) => {
-          socket.to(data.callerId).emit('call_accepted', data);
-        });
-        
-        socket.on('call_rejected', (data) => {
-          socket.to(data.callerId).emit('call_rejected', data);
-        });
-        
-        socket.on('call_ended', (data) => {
-          socket.to(data.participantId).emit('call_ended', data);
-        });
-        
-        // Handle WebRTC signaling
-        socket.on('webrtc_offer', (data) => {
-          socket.to(data.receiverId).emit('webrtc_offer', data);
-        });
-        
-        socket.on('webrtc_answer', (data) => {
-          socket.to(data.senderId).emit('webrtc_answer', data);
-        });
-        
-        socket.on('webrtc_ice_candidate', (data) => {
-          socket.to(data.receiverId).emit('webrtc_ice_candidate', data);
-        });
-        
-        // Handle user disconnect
-        socket.on('disconnect', async () => {
-          try {
-            // Find user by socket ID and update offline status
-            const user = await User.findOneAndUpdate(
-              { socketId: socket.id },
-              {
-                isOnline: false,
-                lastSeen: new Date(),
-                socketId: null
-              }
-            ).populate('friends', '_id');
-            
-            if (user && user.friends) {
-              // Notify friends that user is offline
-              user.friends.forEach(friend => {
-                socket.to(friend._id.toString()).emit('friend_offline', {
-                  userId: user._id,
-                  isOnline: false,
-                  lastSeen: new Date()
-                });
-              });
-            }
-          } catch (error) {
-            console.error('Error updating user offline status:', error);
-          }
           
-          console.log('User disconnected:', socket.id);
+          // Notify friends that user is online
+          const user = await User.findById(userId).populate('friends', '_id');
+          if (user && user.friends) {
+            user.friends.forEach(friend => {
+              socket.to(friend._id.toString()).emit('friend_online', {
+                userId: userId,
+                isOnline: true
+              });
+            });
+          }
+        } catch (error) {
+          console.error('Error updating user online status:', error);
+        }
+      });
+      
+      // Handle typing indicators
+      socket.on('typing_start', (data) => {
+        socket.to(data.receiverId).emit('user_typing', {
+          senderId: data.senderId,
+          isTyping: true
         });
       });
-    } else {
-      console.log('Socket.IO not available - running in serverless mode (Vercel)');
-    }
+      
+      socket.on('typing_stop', (data) => {
+        socket.to(data.receiverId).emit('user_typing', {
+          senderId: data.senderId,
+          isTyping: false
+        });
+      });
+      
+      // Handle message read receipts
+      socket.on('message_read', async (data) => {
+        try {
+          await Message.findByIdAndUpdate(data.messageId, {
+            status: 'read',
+            readAt: new Date()
+          });
+          
+          socket.to(data.senderId).emit('message_read_receipt', {
+            messageId: data.messageId,
+            readAt: new Date()
+          });
+        } catch (error) {
+          console.error('Error updating message read status:', error);
+        }
+      });
+      
+      // Handle video call initiation
+      socket.on('video_call_request', (data) => {
+        socket.to(data.receiverId).emit('incoming_video_call', {
+          callerId: data.callerId,
+          callerName: data.callerName,
+          callId: data.callId
+        });
+      });
+      
+      // Handle audio call initiation
+      socket.on('audio_call_request', (data) => {
+        socket.to(data.receiverId).emit('incoming_audio_call', {
+          callerId: data.callerId,
+          callerName: data.callerName,
+          callId: data.callId
+        });
+      });
+      
+      // Handle call responses
+      socket.on('call_response', (data) => {
+        socket.to(data.callerId).emit('call_response', {
+          accepted: data.accepted,
+          receiverId: data.receiverId
+        });
+      });
+      
+      // Handle call end
+      socket.on('call_ended', (data) => {
+        socket.to(data.participantId).emit('call_ended', {
+          endedBy: data.endedBy
+        });
+      });
+      
+      // Handle WebRTC signaling
+      socket.on('webrtc_offer', (data) => {
+        socket.to(data.receiverId).emit('webrtc_offer', data);
+      });
+      
+      socket.on('webrtc_answer', (data) => {
+        socket.to(data.senderId).emit('webrtc_answer', data);
+      });
+      
+      socket.on('webrtc_ice_candidate', (data) => {
+        socket.to(data.receiverId).emit('webrtc_ice_candidate', data);
+      });
+      
+      // Handle user disconnect
+      socket.on('disconnect', async () => {
+        try {
+          // Find user by socket ID and update offline status
+          const user = await User.findOneAndUpdate(
+            { socketId: socket.id },
+            {
+              isOnline: false,
+              lastSeen: new Date(),
+              socketId: null
+            }
+          ).populate('friends', '_id');
+          
+          if (user && user.friends) {
+            // Notify friends that user is offline
+            user.friends.forEach(friend => {
+              socket.to(friend._id.toString()).emit('friend_offline', {
+                userId: user._id,
+                isOnline: false,
+                lastSeen: new Date()
+              });
+            });
+          }
+        } catch (error) {
+          console.error('Error updating user offline status:', error);
+        }
+        
+        console.log('User disconnected:', socket.id);
+      });
+    });
   }
   
   static async sendMessage(senderId, receiverId, content, messageType = 'text', attachmentData = null) {
@@ -183,8 +194,8 @@ class ChatService {
       
       await message.populate('sender', 'fullName personalInfo.firstName personalInfo.lastName isOnline lastSeen');
 
-      // Send real-time notification to receiver (only if Socket.IO is available)
-      if (io && typeof io.to === 'function') {
+      // Send real-time notification to receiver
+      if (io) {
         io.to(receiverId.toString()).emit('new_message', {
           ...message.toObject(),
           senderInfo: {
@@ -302,8 +313,8 @@ class ChatService {
     try {
       const result = await Message.markAsRead(userId1, userId2, readerId);
       
-      // Notify sender about read receipts via Socket.IO (only if available)
-      if (io && typeof io.to === 'function') {
+      // Notify sender about read receipts via Socket.IO
+      if (io) {
         const conversationId = Message.createConversationId(userId1, userId2);
         const senderId = userId1.toString() === readerId.toString() ? userId2 : userId1;
         
@@ -603,18 +614,18 @@ class ChatService {
         throw new Error('Caller or receiver not found');
       }
       
+      if (!receiver.isOnline) {
+        throw new Error('User is not online');
+      }
+      
       const callId = `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
-      // Send real-time notification if Socket.IO is available
-      if (io && typeof io.to === 'function') {
-        io.to(receiverId.toString()).emit('incoming_call', {
+      if (io) {
+        io.to(receiverId.toString()).emit('incoming_video_call', {
           callerId: callerId,
-          caller: {
-            id: callerId,
-            name: caller.fullName
-          },
+          callerName: caller.fullName,
           callId: callId,
-          callType: 'video'
+          type: 'video'
         });
       }
       
@@ -635,18 +646,18 @@ class ChatService {
         throw new Error('Caller or receiver not found');
       }
       
+      if (!receiver.isOnline) {
+        throw new Error('User is not online');
+      }
+      
       const callId = `call_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       
-      // Send real-time notification if Socket.IO is available
-      if (io && typeof io.to === 'function') {
-        io.to(receiverId.toString()).emit('incoming_call', {
+      if (io) {
+        io.to(receiverId.toString()).emit('incoming_audio_call', {
           callerId: callerId,
-          caller: {
-            id: callerId,
-            name: caller.fullName
-          },
+          callerName: caller.fullName,
           callId: callId,
-          callType: 'audio'
+          type: 'audio'
         });
       }
       

@@ -347,7 +347,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // Indexes for better performance
-userSchema.index({ fitnessId: 1 });
+// userSchema.index({ fitnessId: 1 }); // Removed: duplicate index (fitnessId already has index: true)
 // userSchema.index({ email: 1 }); // Removed: duplicate index (email already has unique: true)
 userSchema.index({ createdAt: -1 });
 userSchema.index({ lastLogin: -1 });
