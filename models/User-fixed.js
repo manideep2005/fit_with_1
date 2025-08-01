@@ -104,11 +104,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
   },
-  fitnessId: {
-    type: String,
-    unique: true,
-    sparse: true
-  },
 
   // Account Status
   isActive: { type: Boolean, default: true },
@@ -185,7 +180,7 @@ const userSchema = new mongoose.Schema({
   nutritionLogs: [{
     date: { type: Date, default: Date.now },
     meals: [{
-      type: { type: String, enum: ['breakfast', 'lunch', 'dinner', 'snack', 'snacks'] },
+      type: { type: String, enum: ['breakfast', 'lunch', 'dinner', 'snacks'] },
       foods: [{
         name: String,
         quantity: Number,
@@ -207,7 +202,7 @@ const userSchema = new mongoose.Schema({
   mealPlans: [{
     id: { type: String, required: true },
     date: { type: Date, required: true },
-    mealType: { type: String, enum: ['breakfast', 'lunch', 'dinner', 'snack', 'snacks'], required: true },
+    mealType: { type: String, enum: ['breakfast', 'lunch', 'dinner', 'snack'], required: true },
     name: { type: String, required: true },
     calories: { type: Number, default: 0 },
     protein: { type: Number, default: 0 },
@@ -352,7 +347,6 @@ const userSchema = new mongoose.Schema({
 
 // Indexes for better performance
 userSchema.index({ fitnessId: 1 });
-// userSchema.index({ email: 1 }); // Removed: duplicate index (email already has unique: true)
 userSchema.index({ createdAt: -1 });
 userSchema.index({ lastLogin: -1 });
 userSchema.index({ 'workouts.date': -1 });

@@ -469,7 +469,6 @@
             font-size: 1rem;
             transition: all 0.3s ease;
             background: white;
-            box-sizing: border-box;
         }
         
         .question-input:focus {
@@ -480,7 +479,7 @@
         
         .number-input-container {
             position: relative;
-            display: block;
+            display: inline-block;
             width: 100%;
         }
         
@@ -1050,8 +1049,7 @@
                                    min="${question.min || 0}" 
                                    max="${question.max || 1000}"
                                    value="${healthAnswers[question.id] || ''}"
-                                   placeholder="Enter ${question.question.toLowerCase()}"
-                                   onchange="saveNumberInput('${question.id}')">
+                                   placeholder="Enter ${question.question.toLowerCase()}">
                             ${question.unit ? `<span class="input-unit">${question.unit}</span>` : ''}
                         </div>
                     `;
@@ -1138,38 +1136,25 @@
                          .replace(/([a-z])([A-Z])/g, '$1 $2');
         }
         
-        // Save number input value
-        function saveNumberInput(questionId) {
-            const input = document.getElementById(`answer-${questionId}`);
-            if (input && input.value) {
-                healthAnswers[questionId] = input.value;
-                console.log('Saved number input:', questionId, input.value);
-            }
-        }
-        
-        // Select single option - FIXED
+        // Select single option
         function selectOption(questionId, value) {
-            console.log('Selecting option:', questionId, value);
             healthAnswers[questionId] = value;
             
-            // Update UI - remove selected class from all options in this question
-            const questionContainer = document.getElementById('questionContainer');
-            const allOptions = questionContainer.querySelectorAll('.option-card');
-            allOptions.forEach(card => card.classList.remove('selected'));
+            // Update UI
+            const options = document.querySelectorAll(`[onclick*="${questionId}"]`);
+            options.forEach(option => option.classList.remove('selected'));
+            event.target.closest('.option-card').classList.add('selected');
             
-            // Add selected class to clicked option
-            const clickedElement = event.target.closest('.option-card');
-            if (clickedElement) {
-                clickedElement.classList.add('selected');
-            }
-            
-            console.log('Updated answers:', healthAnswers);
+            // Auto-advance for single select questions (optional)
+            setTimeout(() => {
+                if (currentQuestionIndex < healthQuestions.length - 1) {
+                    nextQuestion();
+                }
+            }, 500);
         }
         
-        // Toggle multi-select option - FIXED
+        // Toggle multi-select option
         function toggleMultiOption(questionId, value) {
-            console.log('Toggling multi-option:', questionId, value);
-            
             if (!healthAnswers[questionId]) {
                 healthAnswers[questionId] = [];
             }
@@ -1182,60 +1167,27 @@
             }
             
             // Update UI
-            const clickedElement = event.target.closest('.multiselect-option');
-            if (clickedElement) {
-                clickedElement.classList.toggle('selected');
-                const checkbox = clickedElement.querySelector('input[type="checkbox"]');
-                if (checkbox) {
-                    checkbox.checked = !checkbox.checked;
-                }
-            }
-            
-            console.log('Updated multiselect answers:', healthAnswers);
+            const option = event.target.closest('.multiselect-option');
+            option.classList.toggle('selected');
+            const checkbox = option.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
         }
         
-        // Validate current answer
-        function validateCurrentAnswer() {
-            const currentQuestion = healthQuestions[currentQuestionIndex];
-            if (!currentQuestion) return true;
-            
-            // Save any pending number input
-            const numberInput = document.getElementById(`answer-${currentQuestion.id}`);
-            if (numberInput && numberInput.value) {
-                healthAnswers[currentQuestion.id] = numberInput.value;
-            }
-            
-            // Check if answer exists for required questions
-            if (currentQuestion.required) {
-                const answer = healthAnswers[currentQuestion.id];
-                
-                if (answer === undefined || answer === null || answer === '') {
-                    return false;
-                }
-                
-                // For multiselect, check if array has items
-                if (currentQuestion.type === 'multiselect') {
-                    return Array.isArray(answer) && answer.length > 0;
-                }
-                
-                return true;
-            }
-            
-            return true;
-        }
-        
-        // Navigation functions - FIXED
+        // Navigation functions
         function nextQuestion() {
-            console.log('Next question clicked, current index:', currentQuestionIndex);
-            console.log('Current answers before validation:', healthAnswers);
+            const currentQuestion = healthQuestions[currentQuestionIndex];
             
             // Validate current answer
-            if (!validateCurrentAnswer()) {
+            if (currentQuestion.required && !healthAnswers[currentQuestion.id]) {
                 showToast('Please answer this question before continuing', 'error');
                 return;
             }
             
-            console.log('Moving to next question. Current answers:', healthAnswers);
+            // Save number input value
+            const numberInput = document.getElementById(`answer-${currentQuestion.id}`);
+            if (numberInput) {
+                healthAnswers[currentQuestion.id] = numberInput.value;
+            }
             
             currentQuestionIndex++;
             showQuestion(currentQuestionIndex);
@@ -1243,9 +1195,6 @@
         
         function previousQuestion() {
             if (currentQuestionIndex > 0) {
-                // Save current answer before going back
-                validateCurrentAnswer();
-                
                 currentQuestionIndex--;
                 showQuestion(currentQuestionIndex);
             }
@@ -1254,12 +1203,6 @@
         // Complete assessment and generate meal plan
         async function completeAssessment() {
             try {
-                // Final validation
-                if (!validateCurrentAnswer()) {
-                    showToast('Please answer the current question before completing', 'error');
-                    return;
-                }
-                
                 showToast('Processing your health assessment...', 'info');
                 
                 console.log('Submitting health assessment:', healthAnswers);

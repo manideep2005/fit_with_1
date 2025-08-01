@@ -973,7 +973,8 @@ const protectedRoutes = [
   '/community',
   '/ai-coach',
   '/chat',
-  '/settings'
+  '/settings',
+  '/subscription'
 ];
 // Test chat route
 app.get('/chat-test', (req, res) => {
@@ -1049,7 +1050,8 @@ otherProtectedRoutes.forEach(route => {
       res.render(viewName, { 
         user: req.session.user,
         currentPath: route,
-        navToken: navToken // Fresh token for navigation links
+        navToken: navToken, // Fresh token for navigation links
+        currentPage: viewName // Add currentPage for sidebar
       });
     } catch (error) {
       console.error(`Error rendering ${route}:`, error);
@@ -1303,14 +1305,42 @@ app.post('/api/workouts', isAuthenticated, ensureDbConnection, async (req, res) 
     const { type, duration, calories, exercises, notes } = req.body;
     const userEmail = req.session.user.email;
 
+    // Validate and structure exercise data
+    let validatedExercises = [];
+    if (exercises && Array.isArray(exercises)) {
+      validatedExercises = exercises.map(exercise => {
+        // Handle both object and string exercise data
+        if (typeof exercise === 'string') {
+          return {
+            name: exercise,
+            sets: null,
+            reps: null,
+            weight: null,
+            duration: null
+          };
+        } else if (typeof exercise === 'object' && exercise !== null) {
+          return {
+            name: exercise.name || 'Unknown Exercise',
+            sets: exercise.sets ? parseInt(exercise.sets) : null,
+            reps: exercise.reps ? parseInt(exercise.reps) : null,
+            weight: exercise.weight ? parseFloat(exercise.weight) : null,
+            duration: exercise.duration ? parseInt(exercise.duration) : null
+          };
+        }
+        return null;
+      }).filter(exercise => exercise !== null); // Remove invalid exercises
+    }
+
     const workoutData = {
       date: new Date(),
       type: type || 'General',
       duration: duration ? parseInt(duration) : 0,
       calories: calories ? parseInt(calories) : 0,
-      exercises: exercises || [],
+      exercises: validatedExercises,
       notes: notes || ''
     };
+
+    console.log('Validated workout data:', JSON.stringify(workoutData, null, 2));
 
     const updatedUser = await UserService.addWorkout(userEmail, workoutData);
     
@@ -1333,9 +1363,14 @@ app.post('/api/workouts', isAuthenticated, ensureDbConnection, async (req, res) 
 
   } catch (error) {
     console.error('Add workout error:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      requestBody: req.body
+    });
     res.status(500).json({
       success: false,
-      error: 'Failed to log workout'
+      error: 'Failed to log workout: ' + error.message
     });
   }
 });
@@ -1560,6 +1595,107 @@ app.get('/api/dashboard-data', isAuthenticated, ensureDbConnection, async (req, 
   }
 });
 
+// Voice Assistant API Routes
+
+// Get recent workouts for voice assistant
+app.get('/api/workouts/recent', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const user = await UserService.getUserByEmail(userEmail);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    const workouts = user.workouts || [];
+    const recentWorkouts = workouts.slice(-5); // Get last 5 workouts
+
+    res.json({
+      success: true,
+      workouts: recentWorkouts
+    });
+
+  } catch (error) {
+    console.error('Get recent workouts error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch recent workouts'
+    });
+  }
+});
+
+// Get active challenges for voice assistant
+app.get('/api/challenges/active', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    // Mock active challenges for now
+    const activeChallenges = [
+      {
+        id: '1',
+        name: '30-Day Fitness Challenge',
+        description: 'Complete 30 workouts in 30 days',
+        progress: 15,
+        target: 30,
+        daysLeft: 15
+      }
+    ];
+
+    res.json({
+      success: true,
+      challenges: activeChallenges
+    });
+
+  } catch (error) {
+    console.error('Get active challenges error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch active challenges'
+    });
+  }
+});
+
+// Add water intake endpoint for voice assistant
+app.post('/api/nutrition/water', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { amount } = req.body;
+    const userEmail = req.session.user.email;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Valid water amount is required'
+      });
+    }
+
+    const nutritionData = {
+      date: new Date(),
+      meals: [],
+      totalCalories: 0,
+      totalProtein: 0,
+      totalCarbs: 0,
+      totalFat: 0,
+      waterIntake: parseInt(amount)
+    };
+
+    const updatedUser = await UserService.addNutritionLog(userEmail, nutritionData);
+    
+    res.json({
+      success: true,
+      message: 'Water intake logged successfully',
+      waterIntake: amount
+    });
+
+  } catch (error) {
+    console.error('Add water intake error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to log water intake'
+    });
+  }
+});
+
 // Update User Preferences Route
 app.put('/api/user/preferences', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
@@ -1744,9 +1880,11 @@ try {
 
 // Import API routes
 const settingsRoutes = require('./routes/settings');
+const paymentRoutes = require('./routes/payment');
 
 // Use API routes
 app.use('/api/settings', settingsRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // AI Chat endpoint
 app.post('/api/ai-chat', isAuthenticated, async (req, res) => {
@@ -4105,6 +4243,217 @@ app.post('/api/challenges/create', isAuthenticated, ensureDbConnection, async (r
   }
 });
 
+// Voice Assistant API Routes
+app.get('/api/workouts/recent', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const workouts = await workoutService.getRecentWorkouts(userId, 3);
+    res.json({ success: true, workouts });
+  } catch (error) {
+    res.json({ success: false, workouts: [] });
+  }
+});
+
+app.post('/api/nutrition/water', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { amount } = req.body;
+    
+    await nutritionService.logWater(userId, amount || 250);
+    res.json({ success: true, message: 'Water logged' });
+  } catch (error) {
+    res.json({ success: false, error: 'Failed to log water' });
+  }
+});
+
+// Subscription API Routes
+app.get('/api/payment/plans', isAuthenticated, (req, res) => {
+  const plans = [
+    {
+      id: 'basic',
+      name: 'Basic Pro',
+      price: 2,
+      duration: 'month',
+      trialDays: 7,
+      features: ['100 AI Coach Queries', 'Detailed Nutrition Tracking', 'Progress Analytics', 'Email Support']
+    },
+    {
+      id: 'premium',
+      name: 'Premium Pro',
+      price: 5,
+      duration: 'month',
+      trialDays: 14,
+      features: ['Unlimited AI Coach', 'Advanced Nutrition', 'Personal Trainer AI', 'Health Rewards', 'Priority Support']
+    },
+    {
+      id: 'yearly',
+      name: 'Yearly Premium',
+      price: 10,
+      duration: 'year',
+      trialDays: 30,
+      features: ['All Premium Features', '2 Months Free', 'Exclusive Content', 'Personal Consultation']
+    }
+  ];
+  
+  res.json({ success: true, availablePlans: plans, currentPlan: req.session.user.subscription?.plan || 'free' });
+});
+
+app.get('/api/payment/subscription/status', isAuthenticated, (req, res) => {
+  const user = req.session.user;
+  const subscription = user.subscription || { plan: { id: 'free', name: 'Free Plan', price: 0 } };
+  
+  let isActive = false;
+  let daysRemaining = 0;
+  
+  if (subscription.expiresAt) {
+    const expiryDate = new Date(subscription.expiresAt);
+    const now = new Date();
+    isActive = expiryDate > now;
+    daysRemaining = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+  }
+  
+  res.json({
+    success: true,
+    subscription: {
+      plan: subscription.plan || { id: 'free', name: 'Free Plan', price: 0 },
+      isActive,
+      daysRemaining,
+      isTrial: subscription.isTrial || false,
+      nextBillingDate: subscription.nextBillingDate
+    }
+  });
+});
+
+app.post('/api/payment/qr/generate', isAuthenticated, (req, res) => {
+  const { planId } = req.body;
+  const plans = {
+    basic: { name: 'Basic Pro', price: 2 },
+    premium: { name: 'Premium Pro', price: 5 },
+    yearly: { name: 'Yearly Premium', price: 10 }
+  };
+  
+  const plan = plans[planId];
+  if (!plan) {
+    return res.status(400).json({ success: false, error: 'Invalid plan' });
+  }
+  
+  const paymentId = 'pay_' + Date.now();
+  const upiUrl = `upi://pay?pa=8885800887@ptaxis&pn=Fit With AI&am=${plan.price}&cu=INR&tn=Subscription ${plan.name}`;
+  
+  res.json({
+    success: true,
+    paymentId,
+    plan,
+    amount: plan.price,
+    qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`,
+    upiUrl,
+    expiresIn: 900,
+    instructions: [
+      'Scan the QR code with any UPI app',
+      'Enter the amount ₹' + plan.price,
+      'Complete the payment',
+      'Click "I\'ve Paid" button below'
+    ]
+  });
+});
+
+app.post('/api/payment/simulate/success', isAuthenticated, (req, res) => {
+  res.json({ success: true, message: 'Payment simulated successfully' });
+});
+
+app.post('/api/payment/verify', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { paymentId } = req.body;
+    const userId = req.session.user._id;
+    
+    // Update user subscription
+    const User = require('./models/User');
+    const expiresAt = new Date();
+    expiresAt.setMonth(expiresAt.getMonth() + 1);
+    
+    await User.findByIdAndUpdate(userId, {
+      'subscription.plan': 'premium',
+      'subscription.isActive': true,
+      'subscription.expiresAt': expiresAt,
+      'subscription.paymentId': paymentId
+    });
+    
+    // Update session
+    req.session.user.subscription = {
+      plan: 'premium',
+      isActive: true,
+      expiresAt: expiresAt,
+      paymentId: paymentId
+    };
+    
+    res.json({ success: true, message: 'Subscription activated successfully' });
+  } catch (error) {
+    console.error('Payment verification error:', error);
+    res.status(500).json({ success: false, error: 'Payment verification failed' });
+  }
+});
+
+app.get('/api/payment/status/:paymentId', isAuthenticated, (req, res) => {
+  res.json({ success: true, status: 'pending' });
+});
+
+// Premium feature check middleware
+function requiresPremium(req, res, next) {
+  const user = req.session.user;
+  if (!user.subscription || user.subscription.plan === 'free' || 
+      (user.subscription.expiresAt && new Date(user.subscription.expiresAt) < new Date())) {
+    return res.status(403).json({ success: false, error: 'Premium subscription required' });
+  }
+  next();
+}
+
+// Lock premium features
+app.get('/api/ai-coach/premium', isAuthenticated, requiresPremium, (req, res) => {
+  res.json({ success: true, message: 'Premium AI coach feature' });
+});
+
+app.get('/api/analytics/advanced', isAuthenticated, requiresPremium, (req, res) => {
+  res.json({ success: true, message: 'Advanced analytics feature' });
+});
+
+// Lock AI Coach queries for free users
+app.post('/api/ai-coach/query', isAuthenticated, ensureDbConnection, async (req, res) => {
+  const user = req.session.user;
+  const isPremium = user.subscription && user.subscription.plan !== 'free' && 
+                   user.subscription.isActive && new Date(user.subscription.expiresAt) > new Date();
+  
+  if (!isPremium) {
+    // Free users get 10 queries per month
+    const currentMonth = new Date().getMonth();
+    const queryCount = user.aiQueries?.[currentMonth] || 0;
+    
+    if (queryCount >= 10) {
+      return res.status(403).json({ 
+        success: false, 
+        error: 'Monthly AI query limit reached. Upgrade to premium for unlimited queries.',
+        requiresPremium: true
+      });
+    }
+  }
+  
+  res.json({ success: true, message: 'AI query processed' });
+});
+
+// Lock advanced nutrition features
+app.get('/api/nutrition/advanced', isAuthenticated, requiresPremium, (req, res) => {
+  res.json({ success: true, message: 'Advanced nutrition tracking' });
+});
+
+// Lock personal trainer AI
+app.get('/api/personal-trainer', isAuthenticated, requiresPremium, (req, res) => {
+  res.json({ success: true, message: 'Personal trainer AI feature' });
+});
+
+// Lock health rewards
+app.get('/api/health-rewards', isAuthenticated, requiresPremium, (req, res) => {
+  res.json({ success: true, message: 'Health rewards feature' });
+});
+
 // Add error handling middleware
 app.use((err, req, res, next) => {
 console.error('Server error:', err);
@@ -4128,7 +4477,7 @@ chatService.init(io);
 
 // Start Server (only in non-serverless environment)
 if (!process.env.VERCEL) {
-  const PORT = process.env.PORT || 3000;
+  const PORT = process.env.PORT || 3005;
   server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Open http://localhost:${PORT} in your browser`);

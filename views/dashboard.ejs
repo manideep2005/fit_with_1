@@ -337,11 +337,14 @@
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/voice-assistant.css">
+    <script src="/js/premium-check.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
-        <div class="sidebar">
+        <%- include('partials/sidebar', { currentPage: 'dashboard' }) %>
+        <div class="sidebar" style="display: none;">
             <div class="sidebar-header">
                 <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
                 <div>
@@ -370,12 +373,13 @@
                 <li class="nav-item"><a href="/meal-planner?token=<%= navToken %>" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
                 <li class="nav-item"><a href="/challenges?token=<%= navToken %>" class="nav-link"><i class="fas fa-trophy"></i> Challenges</a></li>
                 <li class="nav-item"><a href="/health?token=<%= navToken %>" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
-                <li class="nav-item"><a href="/biometrics?token=<%= navToken %>" class="nav-link"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
+                <li class="nav-item"><a href="/biometrics?token=<%= navToken %>" class="nav-link" data-premium="analytics"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
                 <li class="nav-item"><a href="/schedule?token=<%= navToken %>" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
                 <li class="nav-item"><a href="/community?token=<%= navToken %>" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
                 <li class="nav-item"><a href="/chat?token=<%= navToken %>" class="nav-link"><i class="fas fa-users"></i> Chat</a></li>
-                <li class="nav-item"><a href="/ai-coach?token=<%= navToken %>" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
+                <li class="nav-item"><a href="/ai-coach?token=<%= navToken %>" class="nav-link" data-premium="ai-coach"><i class="fas fa-robot"></i> AI Coach</a></li>
                 <li class="nav-item"><a href="/settings?token=<%= navToken %>" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+                 <li class="nav-item"><a href="/subscription?token=<%= navToken %>" class="nav-link"><i class="fas fa-cog"></i> Subscription</a></li>
             </ul>
             
             <!-- Logout Section -->
@@ -1249,6 +1253,10 @@
             return confirm('Are you sure you want to logout?');
         }
     </script>
+
+    <!-- Voice Assistant will be auto-injected by the script -->
+
+    <script src="/js/voice-assistant-siri.js"></script>
 </body>
 </html>
 

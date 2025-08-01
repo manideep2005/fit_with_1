@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscription Plans - Fit With AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --dark-color: #1f2937;
+            --light-color: #f8fafc;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--light-color) 0%, #e2e8f0 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 4rem 0;
+            margin-bottom: 3rem;
+        }
+
+        .plan-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .plan-card.popular {
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .plan-card.popular::before {
+            content: 'Most Popular';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .plan-card.popular .card-body {
+            padding-top: 3rem;
+        }
+
+        .price-display {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .price-period {
+            font-size: 1rem;
+            color: #6b7280;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-list li i {
+            color: var(--success-color);
+            margin-right: 0.75rem;
+            width: 20px;
+        }
+
+        .btn-upgrade {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-upgrade:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-trial {
+            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .current-plan {
+            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-weight: 600;
+        }
+
+        .qr-modal .modal-content {
+            border-radius: 20px;
+            border: none;
+        }
+
+        .qr-code-container {
+            text-align: center;
+            padding: 2rem;
+            background: #f8fafc;
+            border-radius: 15px;
+            margin: 1rem 0;
+        }
+
+        .payment-instructions {
+            background: #eff6ff;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .payment-timer {
+            background: var(--warning-color);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-trial {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-expired {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .usage-progress {
+            background: #f1f5f9;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .usage-bar {
+            height: 8px;
+            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            transition: width 0.3s ease;
+        }
+
+        .feature-comparison {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .payment-gateway-option {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-gateway-option:hover {
+            border-color: var(--primary-color);
+            background: #f8fafc;
+        }
+
+        .payment-gateway-option.selected {
+            border-color: var(--primary-color);
+            background: #eff6ff;
+        }
+
+        @media (max-width: 768px) {
+            .plan-card.popular {
+                transform: none;
+            }
+            
+            .price-display {
+                font-size: 2rem;
+            }
+            
+            .hero-section {
+                padding: 2rem 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/dashboard">
+                <i class="fas fa-dumbbell text-primary me-2"></i>
+                Fit With AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/settings">Settings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section" style="margin-top: 76px;">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold mb-3">Upgrade Your Fitness Journey</h1>
+            <p class="lead mb-4">Choose the perfect plan to unlock premium features and accelerate your results</p>
+            <div id="currentPlanStatus" class="d-inline-block"></div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Current Subscription Status -->
+        <div id="subscriptionStatus" class="row mb-5" style="display: none;">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="card-title mb-3">
+                            <i class="fas fa-crown text-warning me-2"></i>
+                            Current Subscription
+                        </h5>
+                        <div id="statusContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subscription Plans -->
+        <div class="row" id="subscriptionPlans">
+            <!-- Plans will be loaded here -->
+        </div>
+
+        <!-- Feature Comparison -->
+        <div class="feature-comparison">
+            <h3 class="text-center mb-4">Feature Comparison</h3>
+            <div class="table-responsive">
+                <table class="table table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Features</th>
+                            <th class="text-center">Free</th>
+                            <th class="text-center">Basic Pro</th>
+                            <th class="text-center">Premium Pro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><i class="fas fa-dumbbell me-2"></i>Basic Workouts</td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-robot me-2"></i>AI Coach Queries</td>
+                            <td class="text-center">10/month</td>
+                            <td class="text-center">100/month</td>
+                            <td class="text-center">Unlimited</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-utensils me-2"></i>Nutrition Tracking</td>
+                            <td class="text-center">Basic</td>
+                            <td class="text-center">Detailed</td>
+                            <td class="text-center">Advanced</td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-chart-line me-2"></i>Progress Analytics</td>
+                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-user-md me-2"></i>Personal Trainer AI</td>
+                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-gift me-2"></i>Health Rewards</td>
+                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                        <tr>
+                            <td><i class="fas fa-headset me-2"></i>Priority Support</td>
+                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Code Payment Modal -->
+    <div class="modal fade qr-modal" id="paymentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">
+                        <i class="fas fa-qrcode me-2"></i>
+                        Complete Your Payment
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="paymentContent">
+                        <!-- Payment content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trial Confirmation Modal -->
+    <div class="modal fade" id="trialModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-gift me-2"></i>
+                        Start Free Trial
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="trialContent">
+                        <!-- Trial content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" id="confirmTrialBtn">
+                        <i class="fas fa-play me-2"></i>
+                        Start Trial
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div class="modal fade" id="successModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                    </div>
+                    <h4 class="mb-3">Payment Successful!</h4>
+                    <p class="text-muted mb-4">Your subscription has been activated successfully.</p>
+                    <button type="button" class="btn btn-primary" onclick="window.location.reload()">
+                        Continue to Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentPaymentId = null;
+        let paymentTimer = null;
+        let selectedPlan = null;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSubscriptionData();
+        });
+
+        // Load subscription data
+        async function loadSubscriptionData() {
+            try {
+                // Load plans directly (fallback if API fails)
+                const plans = [
+                    {
+                        id: 'basic',
+                        name: 'Basic Pro',
+                        price: 2,
+                        duration: 'month',
+                        trialDays: 7,
+                        features: ['100 AI Coach Queries', 'Detailed Nutrition Tracking', 'Progress Analytics', 'Email Support']
+                    },
+                    {
+                        id: 'premium',
+                        name: 'Premium Pro',
+                        price: 5,
+                        duration: 'month',
+                        trialDays: 14,
+                        features: ['Unlimited AI Coach', 'Advanced Nutrition', 'Personal Trainer AI', 'Health Rewards', 'Priority Support']
+                    },
+                    {
+                        id: 'yearly',
+                        name: 'Yearly Premium',
+                        price: 10,
+                        duration: 'year',
+                        trialDays: 30,
+                        features: ['All Premium Features', '2 Months Free', 'Exclusive Content', 'Personal Consultation']
+                    }
+                ];
+                
+                // Try to load from API, fallback to static data
+                try {
+                    const statusResponse = await fetch('/api/payment/subscription/status');
+                    if (statusResponse.ok) {
+                        const statusData = await statusResponse.json();
+                        displayCurrentSubscription(statusData.subscription);
+                    }
+                } catch (e) {
+                    console.log('Using fallback subscription status');
+                    displayCurrentSubscription({ plan: { id: 'free', name: 'Free Plan' }, isActive: false });
+                }
+                
+                displaySubscriptionPlans(plans, 'free');
+                
+            } catch (error) {
+                console.error('Error loading subscription data:', error);
+                // Show plans anyway
+                const fallbackPlans = [
+                    { id: 'basic', name: 'Basic Pro', price: 2, duration: 'month', trialDays: 7, features: ['100 AI Coach Queries', 'Progress Analytics'] },
+                    { id: 'premium', name: 'Premium Pro', price: 5, duration: 'month', trialDays: 14, features: ['Unlimited AI Coach', 'Personal Trainer AI'] },
+                    { id: 'yearly', name: 'Yearly Premium', price: 10, duration: 'year', trialDays: 30, features: ['All Premium Features', '2 Months Free'] }
+                ];
+                displaySubscriptionPlans(fallbackPlans, 'free');
+            }
+        }
+
+        // Display current subscription status
+        function displayCurrentSubscription(subscription) {
+            const statusElement = document.getElementById('subscriptionStatus');
+            const statusContent = document.getElementById('statusContent');
+            const currentPlanStatus = document.getElementById('currentPlanStatus');
+
+            if (subscription.plan.id !== 'free') {
+                statusElement.style.display = 'block';
+                
+                let statusBadge = '';
+                if (subscription.isActive) {
+                    if (subscription.isTrial) {
+                        statusBadge = `<span class="status-badge status-trial">Trial - ${subscription.daysRemaining} days left</span>`;
+                    } else {
+                        statusBadge = `<span class="status-badge status-active">Active</span>`;
+                    }
+                } else {
+                    statusBadge = `<span class="status-badge status-expired">Expired</span>`;
+                }
+
+                statusContent.innerHTML = `
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h6 class="mb-1">${subscription.plan.name}</h6>
+                            <p class="text-muted mb-2">₹${subscription.plan.price}/${subscription.plan.duration}</p>
+                            ${statusBadge}
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            ${subscription.daysRemaining ? `<p class="mb-1">Expires in ${subscription.daysRemaining} days</p>` : ''}
+                            ${subscription.nextBillingDate ? `<small class="text-muted">Next billing: ${new Date(subscription.nextBillingDate).toLocaleDateString()}</small>` : ''}
+                        </div>
+                    </div>
+                `;
+
+                currentPlanStatus.innerHTML = statusBadge;
+            } else {
+                currentPlanStatus.innerHTML = `<span class="status-badge" style="background: #f3f4f6; color: #374151;">Free Plan</span>`;
+            }
+        }
+
+        // Display subscription plans
+        function displaySubscriptionPlans(plans, currentPlan) {
+            const plansContainer = document.getElementById('subscriptionPlans');
+            
+            plansContainer.innerHTML = plans.map((plan, index) => {
+                const isPopular = plan.id === 'premium';
+                const hasTrialDays = plan.trialDays > 0;
+                
+                return `
+                    <div class="col-lg-4 col-md-6 mb-4">
+                        <div class="plan-card h-100 ${isPopular ? 'popular' : ''}">
+                            <div class="card-body p-4 text-center">
+                                <h4 class="card-title mb-3">${plan.name}</h4>
+                                <div class="price-display mb-2">₹${plan.price}</div>
+                                <div class="price-period mb-4">per ${plan.duration}</div>
+                                
+                                ${hasTrialDays ? `
+                                    <div class="alert alert-success mb-3">
+                                        <i class="fas fa-gift me-2"></i>
+                                        ${plan.trialDays} days free trial
+                                    </div>
+                                ` : ''}
+                                
+                                <ul class="feature-list mb-4">
+                                    ${plan.features.map(feature => `
+                                        <li>
+                                            <i class="fas fa-check"></i>
+                                            ${feature}
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                                
+                                <div class="d-grid gap-2">
+                                    ${hasTrialDays ? `
+                                        <button class="btn btn-trial" onclick="startTrial('${plan.id}')">
+                                            <i class="fas fa-play me-2"></i>
+                                            Start Free Trial
+                                        </button>
+                                    ` : ''}
+                                    <button class="btn btn-upgrade text-white" onclick="selectPlan('${plan.id}')">
+                                        <i class="fas fa-crown me-2"></i>
+                                        Upgrade Now
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Start trial
+        async function startTrial(planId) {
+            try {
+                const response = await fetch('/api/payment/trial/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ planId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showSuccess('Trial started successfully!');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showError(data.error);
+                }
+
+            } catch (error) {
+                console.error('Error starting trial:', error);
+                showError('Failed to start trial');
+            }
+        }
+
+        // Select plan for payment
+        async function selectPlan(planId) {
+            selectedPlan = planId;
+            
+            const plans = {
+                basic: { name: 'Basic Pro', price: 2 },
+                premium: { name: 'Premium Pro', price: 5 },
+                yearly: { name: 'Yearly Premium', price: 10 }
+            };
+            
+            const plan = plans[planId];
+            if (!plan) {
+                showError('Invalid plan selected');
+                return;
+            }
+            
+            try {
+                // Try API first, fallback to direct payment
+                const response = await fetch('/api/payment/qr/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ planId: planId })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        currentPaymentId = data.paymentId;
+                        showPaymentModal(data);
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.log('API failed, using fallback payment');
+            }
+            
+            // Fallback payment data
+            const paymentId = 'pay_' + Date.now();
+            const upiUrl = `upi://pay?pa=8885800887@ptaxis&pn=Fit With AI&am=${plan.price}&cu=INR&tn=Subscription ${plan.name}`;
+            
+            const paymentData = {
+                paymentId,
+                plan,
+                amount: plan.price,
+                qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`,
+                upiUrl,
+                expiresIn: 900,
+                instructions: [
+                    'Scan the QR code with any UPI app',
+                    'Enter the amount ₹' + plan.price,
+                    'Complete the payment',
+                    'Click "I\'ve Paid" button below'
+                ]
+            };
+            
+            currentPaymentId = paymentId;
+            showPaymentModal(paymentData);
+        }
+
+        // Show payment modal with QR code
+        function showPaymentModal(paymentData) {
+            const paymentContent = document.getElementById('paymentContent');
+            
+            paymentContent.innerHTML = `
+                <div class="text-center">
+                    <h5 class="mb-3">${paymentData.plan.name}</h5>
+                    <h3 class="text-primary mb-4">₹${paymentData.amount}</h3>
+                </div>
+                
+                <div class="qr-code-container">
+                    <img src="${paymentData.qrCode}" alt="Payment QR Code" class="img-fluid mb-3" style="max-width: 250px;">
+                    <p class="text-muted">Scan this QR code with any UPI app</p>
+                    
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <h6 class="mb-2">Or pay manually using UPI ID:</h6<div class="input-group">
+                            <input type="text" class="form-control" value="8885800887@ptaxis" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyUpiId('8885800887@ptaxis')">
+                                <i class="fas fa-copy"></i> Copy
+                            </button>
+                        </div>
+                        <small class="text-muted">Amount: ₹${paymentData.amount}</small>
+                        <br>
+                        <small class="text-success">
+                            <i class="fas fa-check-circle me-1"></i>
+                            Real UPI ID - Payments will work!
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="payment-timer" id="paymentTimer">
+                    Time remaining: <span id="timerDisplay">15:00</span>
+                </div>
+                
+                <div class="payment-instructions">
+                    <h6><i class="fas fa-info-circle me-2"></i>Payment Instructions:</h6>
+                    <ol class="mb-0">
+                        ${paymentData.instructions.map(instruction => `<li>${instruction}</li>`).join('')}
+                    </ol>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <button class="btn btn-outline-primary me-2" onclick="openUPIApp('${paymentData.upiUrl}')">
+                        <i class="fas fa-mobile-alt me-2"></i>
+                        Open UPI App
+                    </button>
+                    <button class="btn btn-success" onclick="simulatePayment()">
+                        <i class="fas fa-check me-2"></i>
+                        I've Paid (Demo)
+                    </button>
+                </div>
+                
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-shield-alt me-1"></i>
+                        Your payment is secured with 256-bit SSL encryption
+                    </small>
+                </div>
+            `;
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
+            modal.show();
+            
+            // Start payment timer
+            startPaymentTimer(paymentData.expiresIn);
+            
+            // Start payment status polling
+            startPaymentStatusPolling();
+        }
+
+        // Start payment timer
+        function startPaymentTimer(seconds) {
+            let timeLeft = seconds;
+            const timerDisplay = document.getElementById('timerDisplay');
+            
+            paymentTimer = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const secs = timeLeft % 60;
+                
+                timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(paymentTimer);
+                    showError('Payment session expired. Please try again.');
+                    bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+                }
+                
+                timeLeft--;
+            }, 1000);
+        }
+
+        // Start payment status polling
+        function startPaymentStatusPolling() {
+            const pollInterval = setInterval(async () => {
+                if (!currentPaymentId) {
+                    clearInterval(pollInterval);
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(`/api/payment/status/${currentPaymentId}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.status === 'completed') {
+                        clearInterval(pollInterval);
+                        clearInterval(paymentTimer);
+                        
+                        // Verify payment
+                        await verifyPayment();
+                    }
+                    
+                } catch (error) {
+                    console.error('Error polling payment status:', error);
+                }
+            }, 3000); // Poll every 3 seconds
+        }
+
+        // Open UPI app
+        function openUPIApp(upiUrl) {
+            window.open(upiUrl, '_blank');
+        }
+
+        // Simulate payment (for demo)
+        async function simulatePayment() {
+            try {
+                const response = await fetch('/api/payment/simulate/success', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ paymentId: currentPaymentId })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    await verifyPayment();
+                } else {
+                    showError('Payment simulation failed');
+                }
+
+            } catch (error) {
+                console.error('Error simulating payment:', error);
+                showError('Failed to simulate payment');
+            }
+        }
+
+        // Verify payment
+        async function verifyPayment() {
+            try {
+                const response = await fetch('/api/payment/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        paymentId: currentPaymentId,
+                        verificationCode: '123456' // Demo code
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Hide payment modal
+                    bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+                    
+                    // Show success modal
+                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    successModal.show();
+                    
+                    // Clear payment data
+                    currentPaymentId = null;
+                    clearInterval(paymentTimer);
+                    
+                } else {
+                    showError(data.error);
+                }
+
+            } catch (error) {
+                console.error('Error verifying payment:', error);
+                showError('Payment verification failed');
+            }
+        }
+
+        // Utility functions
+        function showLoading() {
+            // Add loading spinner to body
+            if (!document.getElementById('loadingOverlay')) {
+                const overlay = document.createElement('div');
+                overlay.id = 'loadingOverlay';
+                overlay.innerHTML = `
+                    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+                        <div class="text-center text-white">
+                            <div class="loading-spinner mb-3"></div>
+                            <p>Loading...</p>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+            }
+        }
+
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.remove();
+            }
+        }
+
+        function showError(message) {
+            // Create toast notification
+            const toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-white bg-danger border-0';
+            toast.style.position = 'fixed';
+            toast.style.top = '20px';
+            toast.style.right = '20px';
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            // Remove after hiding
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+
+        function showSuccess(message) {
+            // Create success toast
+            const toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-white bg-success border-0';
+            toast.style.position = 'fixed';
+            toast.style.top = '20px';
+            toast.style.right = '20px';
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-check-circle me-2"></i>
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+            
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                window.location.href = '/';
+            }
+        }
+
+        // Copy UPI ID to clipboard
+        function copyUpiId(upiId) {
+            navigator.clipboard.writeText(upiId).then(() => {
+                showSuccess('UPI ID copied to clipboard!');
+            }).catch(() => {
+                // Fallback for older browsers
+                const textArea = document.createElement('textarea');
+                textArea.value = upiId;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                showSuccess('UPI ID copied to clipboard!');
+            });
+        }
+
+        // Clean up on page unload
+        window.addEventListener('beforeunload', () => {
+            if (paymentTimer) {
+                clearInterval(paymentTimer);
+            }
+        });
+    </script>
+</body>
+</html>

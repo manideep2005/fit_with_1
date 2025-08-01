@@ -734,11 +734,13 @@
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/voice-assistant.css">
 </head>
 <body>
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
-        <div class="sidebar">
+        <%- include('partials/sidebar', { currentPage: 'workouts' }) %>
+        <div class="sidebar" style="display: none;">
             <div class="sidebar-header">
                 <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
                 <div>
@@ -760,11 +762,6 @@
                 <li class="nav-item"><a href="/community?token=<%= navToken %>" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
                 <li class="nav-item"><a href="/ai-coach?token=<%= navToken %>" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
                 <li class="nav-item"><a href="/settings?token=<%= navToken %>" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>            
-            <!-- Logout Section -->
-            <div class="logout-section">
-                <a href="/logout" class="logout-link" onclick="return confirmLogout()">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
             </div>
         </div>
         
@@ -929,27 +926,55 @@
                     updateGamificationDisplay(result.data);
                 } else {
                     console.error('Failed to load gamification data:', result.error);
+                    // Show default values if loading fails
+                    updateGamificationDisplay({
+                        level: 1,
+                        totalXP: 0,
+                        progressToNextLevel: 0,
+                        xpToNextLevel: 100,
+                        streaks: { workout: { current: 0 } }
+                    });
                 }
             } catch (error) {
                 console.error('Error loading gamification data:', error);
+                // Show default values if error occurs
+                updateGamificationDisplay({
+                    level: 1,
+                    totalXP: 0,
+                    progressToNextLevel: 0,
+                    xpToNextLevel: 100,
+                    streaks: { workout: { current: 0 } }
+                });
             }
         }
 
         // Update gamification display
-        function updateGamificationDisplay(data) { console.log("Updating gamification display with:", data);
-            document.getElementById('userLevel').textContent = data.level || 1;
-            document.getElementById('userXP').textContent = (data.totalXP || 0).toLocaleString();
-            document.getElementById('workoutStreak').textContent = data.streaks?.workout?.current || 0;
+        function updateGamificationDisplay(data) {
+            console.log("Updating gamification display with:", data);
+            
+            // Safely update each element
+            const userLevel = document.getElementById('userLevel');
+            if (userLevel) userLevel.textContent = data.level || 1;
+            
+            const userXP = document.getElementById('userXP');
+            if (userXP) userXP.textContent = (data.totalXP || 0).toLocaleString();
+            
+            const workoutStreak = document.getElementById('workoutStreak');
+            if (workoutStreak) workoutStreak.textContent = data.streaks?.workout?.current || 0;
             
             // Calculate today's workout goal progress
             const todayWorkouts = 0; // This would come from today's data
             const goalWorkouts = 1;
-            document.getElementById('todayGoal').textContent = `${todayWorkouts}/${goalWorkouts}`;
+            const todayGoal = document.getElementById('todayGoal');
+            if (todayGoal) todayGoal.textContent = `${todayWorkouts}/${goalWorkouts}`;
             
             // Update XP progress bar
             const progressPercent = data.progressToNextLevel || 0;
-            document.getElementById('xpProgressBar').style.width = `${progressPercent}%`;
-            document.getElementById('xpProgressText').textContent = `${data.xpToNextLevel || 0} XP to next level`;
+            const xpProgressBar = document.getElementById('xpProgressBar');
+            if (xpProgressBar) xpProgressBar.style.width = `${progressPercent}%`;
+            
+            const xpProgressText = document.getElementById('xpProgressText');
+            if (xpProgressText) xpProgressText.textContent = `${data.xpToNextLevel || 0} XP to next level`;
         }
 
         // Complete workout function
@@ -1632,5 +1657,7 @@
             return confirm('Are you sure you want to logout?');
         }
     </script>
+    
+    <script src="/js/voice-assistant-siri.js"></script>
 </body>
 </html>

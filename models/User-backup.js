@@ -185,7 +185,7 @@ const userSchema = new mongoose.Schema({
   nutritionLogs: [{
     date: { type: Date, default: Date.now },
     meals: [{
-      type: { type: String, enum: ['breakfast', 'lunch', 'dinner', 'snack', 'snacks'] },
+      type: { type: String, enum: ['breakfast', 'lunch', 'dinner', 'snacks'] },
       foods: [{
         name: String,
         quantity: Number,
@@ -207,7 +207,7 @@ const userSchema = new mongoose.Schema({
   mealPlans: [{
     id: { type: String, required: true },
     date: { type: Date, required: true },
-    mealType: { type: String, enum: ['breakfast', 'lunch', 'dinner', 'snack', 'snacks'], required: true },
+    mealType: { type: String, enum: ['breakfast', 'lunch', 'dinner', 'snack'], required: true },
     name: { type: String, required: true },
     calories: { type: Number, default: 0 },
     protein: { type: Number, default: 0 },

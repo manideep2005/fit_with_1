@@ -2,8 +2,6 @@ const express = require('express');
 const router = express.Router();
 const UserService = require('../services/userService');
 const aiService = require('../services/aiService');
-const enhancedMealPlannerService = require('../services/enhancedMealPlannerService');
-const foodDatabaseService = require('../services/foodDatabaseService');
 
 // Get user's meal plans
 router.get('/plans', async (req, res) => {
@@ -382,7 +380,7 @@ router.get('/health-questions', async (req, res) => {
   }
 });
 
-// Submit health assessment and generate comprehensive meal plan using enhanced service
+// Submit health assessment and generate comprehensive meal plan
 router.post('/health-assessment', async (req, res) => {
   try {
     const userEmail = req.session.user.email;
@@ -400,38 +398,32 @@ router.post('/health-assessment', async (req, res) => {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
 
-    console.log('🍽️ Generating comprehensive meal plan with enhanced service...');
+    // Calculate nutritional targets based on assessment
+    const nutritionTargets = calculateAdvancedNutritionTargets(answers);
     
-    // Use enhanced meal planner service
-    const mealPlanResult = await enhancedMealPlannerService.generateComprehensiveMealPlan(answers);
+    // Generate comprehensive personalized meal plan
+    const mealPlan = await generateComprehensiveMealPlan(answers, nutritionTargets);
 
     // Save assessment results to user profile
     const assessmentData = {
       answers: answers,
-      nutritionTargets: mealPlanResult.nutritionTargets,
+      nutritionTargets: nutritionTargets,
       completedAt: new Date(),
-      version: '3.0',
-      enhancedFeatures: true
+      version: '2.0'
     };
 
     await UserService.updateHealthAssessment(userEmail, assessmentData);
 
-    console.log('✅ Enhanced meal plan generated successfully');
-
     res.json({
       success: true,
-      message: 'Comprehensive meal plan generated successfully',
-      nutritionTargets: mealPlanResult.nutritionTargets,
-      mealPlan: mealPlanResult.mealPlan,
-      shoppingList: mealPlanResult.shoppingList,
-      weeklyNutrition: mealPlanResult.weeklyNutrition,
-      mealPrepSuggestions: mealPlanResult.mealPrepSuggestions,
-      metadata: mealPlanResult.metadata,
+      message: 'Health assessment completed successfully',
+      nutritionTargets: nutritionTargets,
+      mealPlan: mealPlan,
       assessment: assessmentData
     });
   } catch (error) {
-    console.error('Enhanced health assessment submission error:', error);
-    res.status(500).json({ success: false, error: 'Failed to process health assessment: ' + error.message });
+    console.error('Health assessment submission error:', error);
+    res.status(500).json({ success: false, error: 'Failed to process health assessment' });
   }
 });
 
@@ -1207,348 +1199,5 @@ function parseRecipeSuggestions(aiResponse) {
     }
   ];
 }
-
-// NEW ENHANCED ROUTES USING COMPREHENSIVE FOOD DATABASE
-
-// Get food database statistics
-router.get('/food-database/stats', async (req, res) => {
-  try {
-    const stats = foodDatabaseService.getDatabaseStats();
-    
-    res.json({
-      success: true,
-      stats: stats,
-      message: 'Food database statistics retrieved successfully'
-    });
-  } catch (error) {
-    console.error('Get food database stats error:', error);
-    res.status(500).json({ success: false, error: 'Failed to get food database statistics' });
-  }
-});
-
-// Search foods in the comprehensive database
-router.get('/foods/search', async (req, res) => {
-  try {
-    const { q: query, limit = 20, region, category, dietary_restrictions } = req.query;
-    
-    if (!query || query.trim().length < 2) {
-      return res.status(400).json({
-        success: false,
-        error: 'Search query must be at least 2 characters long'
-      });
-    }
-    
-    let foods = foodDatabaseService.searchFoods(query.trim(), parseInt(limit));
-    
-    // Apply additional filters
-    if (region && region !== 'all') {
-      foods = foods.filter(food => 
-        food.regions.includes(region) || food.regions.includes('all_indian')
-      );
-    }
-    
-    if (category && category !== 'all') {
-      foods = foods.filter(food => food.category === category);
-    }
-    
-    if (dietary_restrictions) {
-      const restrictions = Array.isArray(dietary_restrictions) 
-        ? dietary_restrictions 
-        : [dietary_restrictions];
-      foods = foodDatabaseService.getFoodsByDietaryRestrictions(restrictions)
-        .filter(food => foods.some(f => f.name === food.name));
-    }
-    
-    res.json({
-      success: true,
-      foods: foods,
-      query: query.trim(),
-      count: foods.length,
-      filters: { region, category, dietary_restrictions }
-    });
-  } catch (error) {
-    console.error('Search foods error:', error);
-    res.status(500).json({ success: false, error: 'Failed to search foods' });
-  }
-});
-
-// Get foods by region
-router.get('/foods/region/:region', async (req, res) => {
-  try {
-    const { region } = req.params;
-    const { limit = 50 } = req.query;
-    
-    const foods = foodDatabaseService.getFoodsByRegion(region).slice(0, parseInt(limit));
-    
-    res.json({
-      success: true,
-      foods: foods,
-      region: region,
-      count: foods.length
-    });
-  } catch (error) {
-    console.error('Get foods by region error:', error);
-    res.status(500).json({ success: false, error: 'Failed to get foods by region' });
-  }
-});
-
-// Get foods by category
-router.get('/foods/category/:category', async (req, res) => {
-  try {
-    const { category } = req.params;
-    const { limit = 50 } = req.query;
-    
-    const foods = foodDatabaseService.getFoodsByCategory(category).slice(0, parseInt(limit));
-    
-    res.json({
-      success: true,
-      foods: foods,
-      category: category,
-      count: foods.length
-    });
-  } catch (error) {
-    console.error('Get foods by category error:', error);
-    res.status(500).json({ success: false, error: 'Failed to get foods by category' });
-  }
-});
-
-// Get seasonal foods
-router.get('/foods/seasonal/:season', async (req, res) => {
-  try {
-    const { season } = req.params;
-    const { limit = 50 } = req.query;
-    
-    const foods = foodDatabaseService.getSeasonalFoods(season).slice(0, parseInt(limit));
-    
-    res.json({
-      success: true,
-      foods: foods,
-      season: season,
-      count: foods.length
-    });
-  } catch (error) {
-    console.error('Get seasonal foods error:', error);
-    res.status(500).json({ success: false, error: 'Failed to get seasonal foods' });
-  }
-});
-
-// Get foods for health conditions
-router.get('/foods/health/:condition', async (req, res) => {
-  try {
-    const { condition } = req.params;
-    const { limit = 50 } = req.query;
-    
-    const foods = foodDatabaseService.getFoodsByHealthCondition(condition).slice(0, parseInt(limit));
-    
-    res.json({
-      success: true,
-      foods: foods,
-      condition: condition,
-      count: foods.length
-    });
-  } catch (error) {
-    console.error('Get foods by health condition error:', error);
-    res.status(500).json({ success: false, error: 'Failed to get foods for health condition' });
-  }
-});
-
-// Generate meal suggestions based on criteria
-router.post('/meal-suggestions', async (req, res) => {
-  try {
-    const {
-      region = 'mixed',
-      mealType = 'lunch',
-      dietaryRestrictions = [],
-      healthConditions = [],
-      calorieTarget = 500,
-      preparationTime = 60,
-      budget = 'moderate'
-    } = req.body;
-    
-    const suggestions = foodDatabaseService.generateMealSuggestions({
-      region,
-      mealType,
-      dietaryRestrictions,
-      healthConditions,
-      calorieTarget,
-      preparationTime,
-      budget
-    });
-    
-    res.json({
-      success: true,
-      suggestions: suggestions,
-      criteria: {
-        region,
-        mealType,
-        dietaryRestrictions,
-        healthConditions,
-        calorieTarget,
-        preparationTime,
-        budget
-      },
-      count: suggestions.length
-    });
-  } catch (error) {
-    console.error('Generate meal suggestions error:', error);
-    res.status(500).json({ success: false, error: 'Failed to generate meal suggestions' });
-  }
-});
-
-// Get meal plan analytics
-router.post('/meal-plan/analytics', async (req, res) => {
-  try {
-    const { mealPlan, nutritionTargets } = req.body;
-    
-    if (!mealPlan || !nutritionTargets) {
-      return res.status(400).json({
-        success: false,
-        error: 'Meal plan and nutrition targets are required'
-      });
-    }
-    
-    const analytics = enhancedMealPlannerService.getMealPlanAnalytics(mealPlan, nutritionTargets);
-    
-    res.json({
-      success: true,
-      analytics: analytics
-    });
-  } catch (error) {
-    console.error('Get meal plan analytics error:', error);
-    res.status(500).json({ success: false, error: 'Failed to get meal plan analytics' });
-  }
-});
-
-// Generate shopping list from meal plan
-router.post('/shopping-list', async (req, res) => {
-  try {
-    const { mealPlan } = req.body;
-    
-    if (!mealPlan) {
-      return res.status(400).json({
-        success: false,
-        error: 'Meal plan is required'
-      });
-    }
-    
-    const shoppingList = enhancedMealPlannerService.generateShoppingList(mealPlan);
-    
-    res.json({
-      success: true,
-      shoppingList: shoppingList
-    });
-  } catch (error) {
-    console.error('Generate shopping list error:', error);
-    res.status(500).json({ success: false, error: 'Failed to generate shopping list' });
-  }
-});
-
-// Get nutrition information for specific food
-router.get('/foods/:foodId/nutrition', async (req, res) => {
-  try {
-    const { foodId } = req.params;
-    
-    const nutrition = foodDatabaseService.getFoodNutrition(foodId);
-    
-    if (!nutrition) {
-      return res.status(404).json({
-        success: false,
-        error: 'Food not found in database'
-      });
-    }
-    
-    res.json({
-      success: true,
-      nutrition: nutrition
-    });
-  } catch (error) {
-    console.error('Get food nutrition error:', error);
-    res.status(500).json({ success: false, error: 'Failed to get food nutrition information' });
-  }
-});
-
-// Get comprehensive meal plan with enhanced features
-router.post('/enhanced-meal-plan', async (req, res) => {
-  try {
-    const userEmail = req.session.user.email;
-    const { preferences = {}, days = 7 } = req.body;
-    
-    const user = await UserService.getUserByEmail(userEmail);
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' });
-    }
-    
-    // Use user's health assessment if available, otherwise use preferences
-    const healthAssessment = user.healthAssessment?.answers || preferences;
-    
-    console.log('🍽️ Generating enhanced meal plan...');
-    
-    const mealPlanResult = await enhancedMealPlannerService.generateComprehensiveMealPlan(
-      healthAssessment, 
-      preferences
-    );
-    
-    res.json({
-      success: true,
-      message: 'Enhanced meal plan generated successfully',
-      ...mealPlanResult
-    });
-  } catch (error) {
-    console.error('Enhanced meal plan generation error:', error);
-    res.status(500).json({ success: false, error: 'Failed to generate enhanced meal plan: ' + error.message });
-  }
-});
-
-// Get meal prep suggestions
-router.post('/meal-prep-suggestions', async (req, res) => {
-  try {
-    const { mealPlan, cookingTimePreference = 'moderate' } = req.body;
-    
-    if (!mealPlan) {
-      return res.status(400).json({
-        success: false,
-        error: 'Meal plan is required'
-      });
-    }
-    
-    const suggestions = enhancedMealPlannerService.generateMealPrepSuggestions(
-      mealPlan, 
-      cookingTimePreference
-    );
-    
-    res.json({
-      success: true,
-      suggestions: suggestions,
-      count: suggestions.length
-    });
-  } catch (error) {
-    console.error('Generate meal prep suggestions error:', error);
-    res.status(500).json({ success: false, error: 'Failed to generate meal prep suggestions' });
-  }
-});
-
-// Calculate weekly nutrition summary
-router.post('/weekly-nutrition', async (req, res) => {
-  try {
-    const { mealPlan } = req.body;
-    
-    if (!mealPlan) {
-      return res.status(400).json({
-        success: false,
-        error: 'Meal plan is required'
-      });
-    }
-    
-    const weeklyNutrition = enhancedMealPlannerService.calculateWeeklyNutrition(mealPlan);
-    
-    res.json({
-      success: true,
-      weeklyNutrition: weeklyNutrition
-    });
-  } catch (error) {
-    console.error('Calculate weekly nutrition error:', error);
-    res.status(500).json({ success: false, error: 'Failed to calculate weekly nutrition' });
-  }
-});
 
 module.exports = router;
