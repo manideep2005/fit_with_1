@@ -22,10 +22,39 @@
     { "src": "/ai-coach", "dest": "/app.js" },
     { "src": "/chat", "dest": "/app.js" },
     { "src": "/settings", "dest": "/app.js" },
+    { "src": "/subscription", "dest": "/app.js" },
     { "src": "/CustomOnboarding", "dest": "/app.js" },
     { "src": "/(.*)", "dest": "/app.js" }
   ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Permissions-Policy",
+          "value": "microphone=(self), camera=(self), geolocation=(self)"
+        },
+        {
+          "key": "Feature-Policy",
+          "value": "microphone 'self'; camera 'self'; geolocation 'self'"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ],
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "VERCEL_ENV": "production"
   }
 }
