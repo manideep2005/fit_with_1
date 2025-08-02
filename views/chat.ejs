@@ -406,6 +406,46 @@
             color: var(--gray);
             font-style: italic;
         }
+
+        /* Toast Notifications */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            min-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .toast-notification.show {
+            transform: translateX(0);
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #dc3545, #fd7e14);
+        }
+
+        .toast-info {
+            background: linear-gradient(135deg, #17a2b8, #6f42c1);
+        }
+
+        .toast-warning {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+        }
+
+        .toast-notification i {
+            margin-right: 10px;
+        }
     </style>
 </head>
 <body>
@@ -629,11 +669,11 @@
                     messagesArea.scrollTop = messagesArea.scrollHeight;
                     messageInput.value = '';
                 } else {
-                    alert('Failed to send message: ' + data.error);
+                    showToast('Failed to send message: ' + data.error, 'error');
                 }
             } catch (error) {
                 console.error('Error sending message:', error);
-                alert('Failed to send message');
+                showToast('Failed to send message', 'error');
             }
         }
 
@@ -714,7 +754,15 @@
         // Send friend request by search
         async function sendFriendRequestBySearch() {
             if (!selectedUser) {
-                alert('Please select a user first');
+                showToast('Please select a user first', 'warning');
+                return;
+            }
+            
+            // Check if already sent
+            const userResult = document.querySelector('.user-result.selected');
+            const statusText = userResult?.querySelector('.user-info p:last-child')?.textContent;
+            if (statusText && statusText.includes('Request Sent')) {
+                showToast('Friend request already sent to this user', 'info');
                 return;
             }
             
@@ -733,17 +781,17 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    alert('Friend request sent successfully!');
+                    showToast('Friend request sent successfully!', 'success');
                     document.getElementById('friendSearch').value = '';
                     document.getElementById('userResults').innerHTML = '';
                     document.getElementById('sendRequestBtn').disabled = true;
                     selectedUser = null;
                 } else {
-                    alert('Failed to send friend request: ' + data.error);
+                    showToast('Failed to send friend request: ' + data.error, 'error');
                 }
             } catch (error) {
                 console.error('Error sending friend request:', error);
-                alert('Failed to send friend request');
+                showToast('Failed to send friend request', 'error');
             }
         }
 
@@ -799,15 +847,15 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    alert(`Friend request ${action}ed successfully!`);
+                    showToast(`Friend request ${action}ed successfully!`, 'success');
                     loadFriendRequests();
                     loadFriends(); // Refresh friends list
                 } else {
-                    alert(`Failed to ${action} friend request: ` + data.error);
+                    showToast(`Failed to ${action} friend request: ` + data.error, 'error');
                 }
             } catch (error) {
                 console.error(`Error ${action}ing friend request:`, error);
-                alert(`Failed to ${action} friend request`);
+                showToast(`Failed to ${action} friend request`, 'error');
             }
         }
 
@@ -845,7 +893,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    alert('Friend blocked successfully');
+                    showToast('Friend blocked successfully', 'success');
                     loadFriends();
                     // Clear chat area
                     document.getElementById('messagesArea').innerHTML = '<div class="empty-chat"><p>Select a friend to start a conversation</p></div>';
@@ -853,11 +901,11 @@
                     document.getElementById('chatOptions').style.display = 'none';
                     currentFriend = null;
                 } else {
-                    alert('Failed to block friend: ' + data.error);
+                    showToast('Failed to block friend: ' + data.error, 'error');
                 }
             } catch (error) {
                 console.error('Error blocking friend:', error);
-                alert('Failed to block friend');
+                showToast('Failed to block friend', 'error');
             }
             
             toggleOptionsMenu();
@@ -883,14 +931,14 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    alert('Chat cleared successfully');
+                    showToast('Chat cleared successfully', 'success');
                     document.getElementById('messagesArea').innerHTML = '<div class="empty-chat"><p>Start your conversation!</p></div>';
                 } else {
-                    alert('Failed to clear chat: ' + data.error);
+                    showToast('Failed to clear chat: ' + data.error, 'error');
                 }
             } catch (error) {
                 console.error('Error clearing chat:', error);
-                alert('Failed to clear chat');
+                showToast('Failed to clear chat', 'error');
             }
             
             toggleOptionsMenu();
@@ -916,11 +964,11 @@
                     document.body.removeChild(a);
                     window.URL.revokeObjectURL(url);
                 } else {
-                    alert('Failed to export chat: ' + data.error);
+                    showToast('Failed to export chat: ' + data.error, 'error');
                 }
             } catch (error) {
                 console.error('Error exporting chat:', error);
-                alert('Failed to export chat');
+                showToast('Failed to export chat', 'error');
             }
             
             toggleOptionsMenu();
@@ -946,7 +994,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    alert('Friend removed successfully');
+                    showToast('Friend removed successfully', 'success');
                     loadFriends();
                     // Clear chat area
                     document.getElementById('messagesArea').innerHTML = '<div class="empty-chat"><p>Select a friend to start a conversation</p></div>';
@@ -954,11 +1002,11 @@
                     document.getElementById('chatOptions').style.display = 'none';
                     currentFriend = null;
                 } else {
-                    alert('Failed to remove friend: ' + data.error);
+                    showToast('Failed to remove friend: ' + data.error, 'error');
                 }
             } catch (error) {
                 console.error('Error removing friend:', error);
-                alert('Failed to remove friend');
+                showToast('Failed to remove friend', 'error');
             }
             
             toggleOptionsMenu();
@@ -977,6 +1025,33 @@
             if (optionsMenu && !event.target.closest('.chat-options')) {
                 optionsMenu.classList.remove('show');
             }
+        }
+
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast-notification toast-${type}`;
+            
+            const icon = type === 'success' ? 'check' : 
+                        type === 'error' ? 'exclamation-triangle' : 
+                        type === 'warning' ? 'exclamation-circle' : 'info-circle';
+            
+            toast.innerHTML = `<i class="fas fa-${icon}"></i>${message}`;
+            
+            document.body.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Remove toast after 4 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 4000);
         }
     </script>
 </body>
