@@ -138,38 +138,21 @@ router.post('/qr/generate', validateSession, async (req, res) => {
       });
     }
 
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        error: 'User ID is required'
-      });
-    }
-
     // Get plan details
     const plan = paymentService.subscriptionPlans[planId.toUpperCase()];
     if (!plan) {
-      console.error('Invalid plan ID:', planId);
-      console.log('Available plans:', Object.keys(paymentService.subscriptionPlans));
       return res.status(400).json({
         success: false,
         error: 'Invalid subscription plan'
       });
     }
 
-    console.log('Plan found:', plan);
-
-    // Validate gateway
-    if (!paymentService.paymentGateways[gateway]) {
-      console.error('Invalid gateway:', gateway);
-      console.log('Available gateways:', Object.keys(paymentService.paymentGateways));
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid payment gateway'
-      });
-    }
-
     // Generate QR code
     const qrResult = await paymentService.generatePaymentQR(userId, planId, plan.price, gateway);
+
+    // Store payment for detection
+    const paymentDetectionService = require('../services/paymentDetectionService');
+    paymentDetectionService.storePaymentForDetection(qrResult.paymentId, plan.price);
 
     console.log('QR generation successful:', { paymentId: qrResult.paymentId, amount: qrResult.amount });
 
@@ -187,7 +170,6 @@ router.post('/qr/generate', validateSession, async (req, res) => {
 
   } catch (error) {
     console.error('Generate QR error:', error);
-    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
       error: 'Failed to generate payment QR: ' + error.message
@@ -258,12 +240,39 @@ router.get('/status/:paymentId', validateSession, async (req, res) => {
   try {
     const { paymentId } = req.params;
     
+    // Check with payment detection service first
+    const paymentDetectionService = require('../services/paymentDetectionService');
+    const detectionResult = await paymentDetectionService.detectPayment(paymentId);
+    
+    if (detectionResult.detected) {
+      return res.json({
+        success: true,
+        paymentId: paymentId,
+        status: 'completed',
+        detected: true,
+        payment: detectionResult.payment
+      });
+    }
+    
+    // Fallback to session check
     const session = paymentService.getPaymentSession(paymentId);
     
     if (!session) {
-      return res.status(404).json({
-        success: false,
-        error: 'Payment session not found or expired'
+      // Check detection service status
+      const statusResult = paymentDetectionService.getPaymentStatus(paymentId);
+      
+      if (statusResult.status === 'not_found') {
+        return res.status(404).json({
+          success: false,
+          error: 'Payment session not found or expired'
+        });
+      }
+      
+      return res.json({
+        success: true,
+        paymentId: paymentId,
+        status: statusResult.status,
+        payment: statusResult.payment
       });
     }
 
@@ -563,6 +572,179 @@ router.post('/webhook/refund', async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to process refund webhook'
+    });
+  }
+});
+
+module.exports = router;
+// Enhanced subscription status check
+router.get("/subscription/check", validateSession, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    
+    console.log(`🔍 Checking subscription status for: ${userEmail}`);
+    
+    // Use subscription manager for accurate status
+    const subscriptionManager = require("../services/subscriptionManager");
+    const subscriptionStatus = await subscriptionManager.getSubscriptionStatus(userEmail);
+    
+    // Get usage statistics
+    const usage = await UserService.getUserUsage(userEmail);
+    
+    console.log(`📊 Current subscription status:`, {
+      plan: subscriptionStatus.plan,
+      status: subscriptionStatus.status,
+      isPremium: subscriptionStatus.isPremium,
+      isActive: subscriptionStatus.isActive,
+      daysRemaining: subscriptionStatus.daysRemaining
+    });
+
+    // Update session with latest subscription data
+    req.session.user.subscription = {
+      plan: subscriptionStatus.plan,
+      status: subscriptionStatus.status,
+      isActive: subscriptionStatus.isActive,
+      isPremium: subscriptionStatus.isPremium,
+      endDate: subscriptionStatus.endDate,
+      startDate: subscriptionStatus.startDate,
+      daysRemaining: subscriptionStatus.daysRemaining
+    };
+
+    res.json({
+      success: true,
+      subscription: {
+        plan: {
+          id: subscriptionStatus.plan,
+          name: subscriptionStatus.plan === "free" ? "Free Plan" : 
+                subscriptionStatus.plan === "basic" ? "Basic Pro" :
+                subscriptionStatus.plan === "premium" ? "Premium Pro" : "Premium Plan"
+        },
+        status: subscriptionStatus.status,
+        isActive: subscriptionStatus.isActive,
+        isPremium: subscriptionStatus.isPremium,
+        daysRemaining: subscriptionStatus.daysRemaining,
+        endDate: subscriptionStatus.endDate,
+        features: subscriptionStatus.features
+      },
+      usage: usage,
+      paymentHistory: subscriptionStatus.paymentHistory || []
+    });
+
+  } catch (error) {
+    console.error("❌ Subscription check error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to check subscription status"
+    });
+  }
+});
+
+
+// Payment success page
+router.get("/success", async (req, res) => {
+  try {
+    const { confirmation } = req.query;
+    
+    // Render payment success page
+    res.render("payment-success", {
+      confirmationNumber: confirmation || null,
+      user: req.session.user || null
+    });
+    
+  } catch (error) {
+    console.error("Payment success page error:", error);
+    res.redirect("/subscription");
+  }
+});
+
+// Test payment confirmation service
+router.post("/test-confirmation", validateSession, ensureDbConnection, async (req, res) => {
+  try {
+    const paymentConfirmationService = require("../services/paymentConfirmationService");
+    
+    // Test the payment confirmation service
+    const result = await paymentConfirmationService.testPaymentSimulation();
+    
+    res.json({
+      success: true,
+      message: "Payment confirmation test completed",
+      result: result
+    });
+    
+  } catch (error) {
+    console.error("Test payment confirmation error:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to test payment confirmation"
+    });
+  }
+});
+
+
+// Force payment verification (for completed payments)
+router.post('/verify/force', validateSession, ensureDbConnection, async (req, res) => {
+  try {
+    const { paymentId } = req.body;
+    const userEmail = req.session.user.email;
+
+    if (!paymentId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Payment ID is required'
+      });
+    }
+
+    console.log(`🔧 Force verifying payment: ${paymentId} for user: ${userEmail}`);
+
+    // Use payment detection service for verification
+    const paymentDetectionService = require('../services/paymentDetectionService');
+    const verificationResult = await paymentDetectionService.verifyPaymentManually(paymentId, true);
+
+    if (!verificationResult.verified) {
+      return res.status(400).json({
+        success: false,
+        error: verificationResult.reason
+      });
+    }
+
+    const payment = verificationResult.payment;
+
+    // Activate subscription
+    const activationResult = await paymentService.activateSubscription(
+      req.session.user._id,
+      'premium', // Default to premium for now
+      {
+        transactionId: payment.transactionId,
+        paymentId: payment.paymentId,
+        gateway: 'RAZORPAY'
+      }
+    );
+
+    // Update user subscription in database
+    await UserService.updateSubscription(userEmail, activationResult.subscription);
+    
+    // Add payment to history
+    await UserService.addPayment(userEmail, activationResult.payment);
+
+    // Update session
+    req.session.user.subscription = activationResult.subscription;
+
+    console.log(`✅ Payment verified and subscription activated for user: ${userEmail}`);
+
+    res.json({
+      success: true,
+      message: 'Payment verified and subscription activated successfully!',
+      subscription: activationResult.subscription,
+      payment: activationResult.payment,
+      activatedAt: activationResult.activatedAt,
+      validUntil: activationResult.validUntil
+    });
+
+  } catch (error) {
+    console.error('Force payment verification error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Payment verification failed: ' + error.message
     });
   }
 });

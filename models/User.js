@@ -76,11 +76,6 @@ const preferencesSchema = new mongoose.Schema({
 
 // Main User Schema
 const userSchema = new mongoose.Schema({
-  fitnessId: {
-    type: String,
-    unique: true,
-    index: true
-  },
   // Basic Authentication
   email: { 
     type: String, 
@@ -107,13 +102,19 @@ const userSchema = new mongoose.Schema({
   fitnessId: {
     type: String,
     unique: true,
-    sparse: true
+    sparse: true,
+    index: true
   },
 
   // Account Status
   isActive: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
   onboardingCompleted: { type: Boolean, default: false },
+  selectedService: { 
+    type: String, 
+    enum: ['fitness', 'health'], 
+    default: 'fitness' 
+  },
   
   // Onboarding Data
   personalInfo: personalInfoSchema,
@@ -394,17 +395,9 @@ userSchema.virtual('subscriptionDisplayName').get(function() {
   return planNames[this.subscription?.plan || 'free'] || 'Free Plan';
 });
 
-// Pre-save middleware to generate fitnessId
-userSchema.pre('save', function(next) {
-  if (this.isNew && !this.fitnessId) {
-    this.fitnessId = crypto.randomBytes(5).toString('hex').toUpperCase();
-  }
-  next();
-});
-
 // Pre-save middleware to hash password and generate fitness ID
 userSchema.pre('save', async function(next) {
-  // Generate fitness ID if not exists
+  // Generate fitness ID if not exists (for new users or existing users without fitnessId)
   if (!this.fitnessId) {
     this.fitnessId = 'FIT' + Date.now().toString().slice(-6) + Math.random().toString(36).substr(2, 3).toUpperCase();
   }

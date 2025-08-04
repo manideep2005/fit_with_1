@@ -740,5 +740,42 @@ module.exports = {
     sendPasswordResetConfirmation,
     sendFriendRequestEmail,
     sendFriendRequestAcceptedEmail,
-    sendChallengeInvitation
+    sendChallengeInvitation,
 };
+// Function to send email with attachments
+
+// Function to send email with attachments
+const sendEmailWithAttachment = async (userEmail, userName, subject, htmlContent, attachments = []) => {
+    if (!userEmail) {
+        throw new Error("Email address is required");
+    }
+
+    try {
+        console.log("Sending email with attachments to:", userEmail);
+        const transporter = createTransporter();
+        
+        const mailOptions = {
+            from: {
+                name: "Fit-With-AI",
+                address: process.env.EMAIL_USER
+            },
+            to: userEmail,
+            subject: subject,
+            html: htmlContent,
+            attachments: attachments
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Email with attachments sent successfully:", info.messageId);
+        return {
+            success: true,
+            messageId: info.messageId
+        };
+    } catch (error) {
+        console.error("Error sending email with attachments:", error);
+        throw error;
+    }
+};
+
+module.exports.sendEmailWithAttachment = sendEmailWithAttachment;
+

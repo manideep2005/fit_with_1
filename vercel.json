@@ -6,25 +6,25 @@
       "use": "@vercel/node"
     }
   ],
-  "routes": [
-    { "src": "/public/(.*)", "dest": "/public/$1" },
-    { "src": "/dashboard", "dest": "/app.js" },
-    { "src": "/workouts", "dest": "/app.js" },
-    { "src": "/progress", "dest": "/app.js" },
-    { "src": "/meal-planner", "dest": "/app.js" },
-    { "src": "/nutrition", "dest": "/app.js" },
-    { "src": "/nutriscan", "dest": "/app.js" },
-    { "src": "/health", "dest": "/app.js" },
-    { "src": "/challenges", "dest": "/app.js" },
-    { "src": "/biometrics", "dest": "/app.js" },
-    { "src": "/schedule", "dest": "/app.js" },
-    { "src": "/community", "dest": "/app.js" },
-    { "src": "/ai-coach", "dest": "/app.js" },
-    { "src": "/chat", "dest": "/app.js" },
-    { "src": "/settings", "dest": "/app.js" },
-    { "src": "/subscription", "dest": "/app.js" },
-    { "src": "/CustomOnboarding", "dest": "/app.js" },
-    { "src": "/(.*)", "dest": "/app.js" }
+  "rewrites": [
+    { "source": "/dashboard", "destination": "/app.js" },
+    { "source": "/workouts", "destination": "/app.js" },
+    { "source": "/progress", "destination": "/app.js" },
+    { "source": "/meal-planner", "destination": "/app.js" },
+    { "source": "/nutrition", "destination": "/app.js" },
+    { "source": "/nutriscan", "destination": "/app.js" },
+    { "source": "/health", "destination": "/app.js" },
+    { "source": "/challenges", "destination": "/app.js" },
+    { "source": "/biometrics", "destination": "/app.js" },
+    { "source": "/schedule", "destination": "/app.js" },
+    { "source": "/community", "destination": "/app.js" },
+    { "source": "/ai-coach", "destination": "/app.js" },
+    { "source": "/chat", "destination": "/app.js" },
+    { "source": "/settings", "destination": "/app.js" },
+    { "source": "/subscription", "destination": "/app.js" },
+    { "source": "/CustomOnboarding", "destination": "/app.js" },
+    { "source": "/api/(.*)", "destination": "/app.js" },
+    { "source": "/(.*)", "destination": "/app.js" }
   ],
   "headers": [
     {
@@ -53,6 +53,11 @@
       ]
     }
   ],
+  "functions": {
+    "app.js": {
+      "maxDuration": 30
+    }
+  },
   "env": {
     "NODE_ENV": "production",
     "VERCEL_ENV": "production"

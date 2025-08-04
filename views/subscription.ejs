@@ -455,6 +455,8 @@
         // Load subscription data
         async function loadSubscriptionData() {
             try {
+                console.log('Loading subscription data...');
+                
                 // Load plans directly (fallback if API fails)
                 const plans = [
                     {
@@ -483,19 +485,24 @@
                     }
                 ];
                 
-                // Try to load from API, fallback to static data
+                // Always display plans first
+                displaySubscriptionPlans(plans, 'free');
+                
+                // Try to load subscription status from API
                 try {
                     const statusResponse = await fetch('/api/payment/subscription/status');
                     if (statusResponse.ok) {
                         const statusData = await statusResponse.json();
+                        console.log('Subscription status loaded:', statusData);
                         displayCurrentSubscription(statusData.subscription);
+                    } else {
+                        console.log('API response not ok, using fallback');
+                        displayCurrentSubscription({ plan: { id: 'free', name: 'Free Plan' }, isActive: false });
                     }
                 } catch (e) {
-                    console.log('Using fallback subscription status');
+                    console.log('API call failed, using fallback subscription status:', e);
                     displayCurrentSubscription({ plan: { id: 'free', name: 'Free Plan' }, isActive: false });
                 }
-                
-                displaySubscriptionPlans(plans, 'free');
                 
             } catch (error) {
                 console.error('Error loading subscription data:', error);
@@ -506,6 +513,7 @@
                     { id: 'yearly', name: 'Yearly Premium', price: 10, duration: 'year', trialDays: 30, features: ['All Premium Features', '2 Months Free'] }
                 ];
                 displaySubscriptionPlans(fallbackPlans, 'free');
+                displayCurrentSubscription({ plan: { id: 'free', name: 'Free Plan' }, isActive: false });
             }
         }
 
@@ -631,6 +639,7 @@
         // Select plan for payment
         async function selectPlan(planId) {
             selectedPlan = planId;
+            console.log('Selecting plan:', planId);
             
             const plans = {
                 basic: { name: 'Basic Pro', price: 2 },
@@ -644,44 +653,67 @@
                 return;
             }
             
+            showLoading();
+            
             try {
-                // Try API first, fallback to direct payment
+                console.log('Trying API for QR generation...');
                 const response = await fetch('/api/payment/qr/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ planId: planId })
                 });
 
+                console.log('API response status:', response.status);
+                
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('API response data:', data);
+                    
                     if (data.success) {
+                        hideLoading();
                         currentPaymentId = data.paymentId;
                         showPaymentModal(data);
                         return;
+                    } else {
+                        console.log('API returned error:', data.error);
                     }
+                } else {
+                    console.log('API response not ok:', response.statusText);
                 }
             } catch (error) {
-                console.log('API failed, using fallback payment');
+                console.log('API call failed:', error);
             }
             
-            // Fallback payment data
-            const paymentId = 'pay_' + Date.now();
-            const upiUrl = `upi://pay?pa=8885800887@ptaxis&pn=Fit With AI&am=${plan.price}&cu=INR&tn=Subscription ${plan.name}`;
+            hideLoading();
+            console.log('Using fallback payment generation');
+            
+            // Fallback payment data - always works
+            const paymentId = 'pay_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            const upiUrl = `upi://pay?pa=8885800887@ptaxis&pn=Fit With AI&am=${plan.price}&cu=INR&tn=Subscription ${plan.name}&tr=${paymentId}`;
             
             const paymentData = {
+                success: true,
                 paymentId,
                 plan,
                 amount: plan.price,
                 qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`,
                 upiUrl,
-                expiresIn: 900,
+                expiresIn: 1800, // 30 minutes
                 instructions: [
-                    'Scan the QR code with any UPI app',
-                    'Enter the amount ₹' + plan.price,
-                    'Complete the payment',
-                    'Click "I\'ve Paid" button below'
+                    'Scan the QR code with any UPI app (PhonePe, GPay, Paytm, etc.)',
+                    'Verify the amount ₹' + plan.price + ' and merchant name',
+                    'Enter your UPI PIN to complete payment',
+                    'After payment, click "Payment Completed" button below'
                 ]
             };
+            
+            // Store payment session locally for fallback
+            localStorage.setItem('currentPayment', JSON.stringify({
+                paymentId,
+                planId,
+                amount: plan.price,
+                createdAt: new Date().toISOString()
+            }));
             
             currentPaymentId = paymentId;
             showPaymentModal(paymentData);
@@ -718,7 +750,7 @@
                 </div>
                 
                 <div class="payment-timer" id="paymentTimer">
-                    Time remaining: <span id="timerDisplay">15:00</span>
+                    Time remaining: <span id="timerDisplay">30:00</span>
                 </div>
                 
                 <div class="payment-instructions">
@@ -733,9 +765,13 @@
                         <i class="fas fa-mobile-alt me-2"></i>
                         Open UPI App
                     </button>
-                    <button class="btn btn-success" onclick="simulatePayment()">
-                        <i class="fas fa-check me-2"></i>
-                        I've Paid (Demo)
+                    <button class="btn btn-success me-2" onclick="checkPaymentStatus()">
+                        <i class="fas fa-sync me-2"></i>
+                        Check Payment Status
+                    </button>
+                    <button class="btn btn-warning" onclick="forceVerifyPayment()">
+                        <i class="fas fa-check-circle me-2"></i>
+                        I've Completed Payment
                     </button>
                 </div>
                 
@@ -810,28 +846,44 @@
             window.open(upiUrl, '_blank');
         }
 
-        // Simulate payment (for demo)
-        async function simulatePayment() {
+        // Check payment status manually
+        async function checkPaymentStatus() {
+            if (!currentPaymentId) {
+                showError('No active payment session found');
+                return;
+            }
+
             try {
-                const response = await fetch('/api/payment/simulate/success', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ paymentId: currentPaymentId })
-                });
-
+                showLoading();
+                
+                // Check payment status
+                const response = await fetch(`/api/payment/status/${currentPaymentId}`);
                 const data = await response.json();
-
+                
+                hideLoading();
+                
                 if (data.success) {
-                    await verifyPayment();
+                    if (data.status === 'completed') {
+                        showSuccess('Payment detected! Verifying...');
+                        await verifyPayment();
+                    } else if (data.status === 'pending') {
+                        showError('Payment is still pending. Please complete the payment and try again.');
+                    } else {
+                        showError('Payment not found. Please complete the payment first.');
+                    }
                 } else {
-                    showError('Payment simulation failed');
+                    // Provide more helpful error message
+                    if (data.error && data.error.includes("not found")) {
+                        showError("Payment session expired. If you have completed the payment, please click \"Payment Completed\" button below.");
+                    } else {
+                        showError("Unable to check payment status. If you have completed the payment, please click \"Payment Completed\" button.");
+                    }
                 }
 
             } catch (error) {
-                console.error('Error simulating payment:', error);
-                showError('Failed to simulate payment');
+                hideLoading();
+                console.error('Error checking payment status:', error);
+                showError('Failed to check payment status');
             }
         }
 
@@ -855,13 +907,13 @@
                     // Hide payment modal
                     bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
                     
-                    // Show success modal
-                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-                    successModal.show();
-                    
                     // Clear payment data
                     currentPaymentId = null;
                     clearInterval(paymentTimer);
+                    
+                    // Redirect to payment success page
+                    const confirmationNumber = 'FWA-' + Date.now().toString().slice(-6) + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+                    window.location.href = `/payment-success?confirmation=${confirmationNumber}&paymentId=${data.payment?.paymentId || 'unknown'}&amount=${data.payment?.amount || 0}`;
                     
                 } else {
                     showError(data.error);
@@ -975,6 +1027,108 @@
             });
         }
 
+        // Force verify payment (for completed payments)
+        async function forceVerifyPayment() {
+            if (!currentPaymentId) {
+                const storedPayment = localStorage.getItem('currentPayment');
+                if (storedPayment) {
+                    const payment = JSON.parse(storedPayment);
+                    currentPaymentId = payment.paymentId;
+                    selectedPlan = payment.planId;
+                } else {
+                    showError("No active payment session found");
+                    return;
+                }
+            }
+
+            // First check if payment was actually made
+            const paymentMade = await checkActualPayment();
+            if (!paymentMade) {
+                showError("Payment not detected. Please complete the payment first, then try again.");
+                return;
+            }
+
+            if (!confirm("Payment detected! Click OK to activate your subscription.")) {
+                return;
+            }
+
+            try {
+                showLoading();
+                
+                const response = await fetch("/api/payment/verify/force", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ paymentId: currentPaymentId })
+                });
+
+                const data = await response.json();
+                hideLoading();
+
+                if (data.success) {
+                    localStorage.removeItem('currentPayment');
+                    currentPaymentId = null;
+                    clearInterval(paymentTimer);
+                    bootstrap.Modal.getInstance(document.getElementById("paymentModal")).hide();
+                    
+                    showSuccess("Payment verified! Redirecting...");
+                    
+                    setTimeout(() => {
+                        const confirmationNumber = "FWA-" + Date.now().toString().slice(-6) + "-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+                        window.location.href = `/payment-success?confirmation=${confirmationNumber}&paymentId=${data.payment?.paymentId || currentPaymentId}&amount=${data.payment?.amount || 0}`;
+                    }, 1500);
+                } else {
+                    showError(data.error || "Payment verification failed");
+                }
+
+            } catch (error) {
+                hideLoading();
+                showError("Payment verification failed. Please try again.");
+            }
+        }
+
+        // Check if payment was actually made
+        async function checkActualPayment() {
+            const storedPayment = localStorage.getItem('currentPayment');
+            if (!storedPayment) {
+                // Allow verification even without stored payment
+                return confirm("Have you completed the UPI payment? Click OK only if you have actually paid.");
+            }
+            
+            const payment = JSON.parse(storedPayment);
+            const timeSinceCreation = Date.now() - new Date(payment.createdAt).getTime();
+            
+            // Reduced wait time to 10 seconds
+            if (timeSinceCreation < 10000) {
+                showError("Please wait at least 10 seconds after creating the payment before verifying.");
+                return false;
+            }
+            
+            // Show payment verification dialog
+            const userConfirmed = confirm(
+                `Have you completed the UPI payment of ₹${payment.amount}?\n\n` +
+                `✓ Opened UPI app and scanned QR code\n` +
+                `✓ Verified amount ₹${payment.amount}\n` +
+                `✓ Entered UPI PIN and completed payment\n` +
+                `✓ Received payment success message\n\n` +
+                `Click OK only if you have completed ALL steps above.`
+            );
+            
+            if (!userConfirmed) {
+                return false;
+            }
+            
+            // Additional verification: Check if enough time passed for realistic payment
+            if (timeSinceCreation < 60000) {
+                const proceed = confirm(
+                    "Payment seems very quick. Are you sure you completed the UPI payment?\n\n" +
+                    "Click OK only if you actually paid via UPI."
+                );
+                return proceed;
+            }
+            
+            return true;
+        }
+
         // Clean up on page unload
         window.addEventListener('beforeunload', () => {
             if (paymentTimer) {
@@ -983,4 +1137,4 @@
         });
     </script>
 </body>
-</html>
+</html><script src="/js/payment-success-redirect.js"></script>

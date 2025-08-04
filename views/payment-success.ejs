@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful - Fit With AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .success-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 3rem;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .success-icon {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 1.5rem;
+            animation: bounce 1s ease-in-out;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+        
+        .confirmation-number {
+            background: #f8f9fa;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            font-family: monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .btn-dashboard {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-dashboard:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+            color: white;
+        }
+        
+        .payment-details {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            text-align: left;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .detail-row:last-child {
+            margin-bottom: 0;
+            font-weight: bold;
+            border-top: 1px solid #dee2e6;
+            padding-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="success-card">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        
+        <h2 class="mb-3">Payment Successful!</h2>
+        <p class="text-muted mb-4">Thank you for upgrading to premium. Your subscription has been activated successfully.</p>
+        
+        <div class="confirmation-number">
+            <div class="small text-muted mb-1">Confirmation Number</div>
+            <div id="confirmationNumber">Loading...</div>
+        </div>
+        
+        <div class="payment-details">
+            <h6 class="mb-3"><i class="fas fa-receipt me-2"></i>Payment Details</h6>
+            <div class="detail-row">
+                <span>Plan:</span>
+                <span id="planName">Premium Pro</span>
+            </div>
+            <div class="detail-row">
+                <span>Amount:</span>
+                <span id="amount">₹5</span>
+            </div>
+            <div class="detail-row">
+                <span>Payment ID:</span>
+                <span id="paymentId">Loading...</span>
+            </div>
+            <div class="detail-row">
+                <span>Status:</span>
+                <span class="text-success">Completed</span>
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <h6><i class="fas fa-crown me-2 text-warning"></i>What's Next?</h6>
+            <ul class="list-unstyled text-start">
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Access unlimited AI coach queries</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Unlock advanced nutrition tracking</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Get personalized workout plans</li>
+                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Enjoy priority customer support</li>
+            </ul>
+        </div>
+        
+        <div class="d-grid gap-2">
+            <a href="/dashboard" class="btn btn-dashboard">
+                <i class="fas fa-home me-2"></i>
+                Go to Dashboard
+            </a>
+            <a href="/subscription" class="btn btn-outline-secondary">
+                <i class="fas fa-cog me-2"></i>
+                Manage Subscription
+            </a>
+        </div>
+        
+        <div class="mt-4">
+            <small class="text-muted">
+                <i class="fas fa-envelope me-1"></i>
+                A confirmation email has been sent to your registered email address.
+            </small>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const confirmation = urlParams.get('confirmation');
+        const paymentId = urlParams.get('paymentId');
+        const amount = urlParams.get('amount');
+        const plan = urlParams.get('plan');
+        
+        // Update page content
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set confirmation number
+            if (confirmation) {
+                document.getElementById('confirmationNumber').textContent = confirmation;
+            } else {
+                document.getElementById('confirmationNumber').textContent = 'FWA-' + Date.now().toString().slice(-6);
+            }
+            
+            // Set payment ID
+            if (paymentId && paymentId !== 'unknown') {
+                document.getElementById('paymentId').textContent = paymentId;
+            } else {
+                document.getElementById('paymentId').textContent = 'PAY-' + Date.now().toString().slice(-8);
+            }
+            
+            // Set amount
+            if (amount && amount !== '0') {
+                document.getElementById('amount').textContent = '₹' + amount;
+            }
+            
+            // Set plan name
+            const planNames = {
+                'basic': 'Basic Pro',
+                'premium': 'Premium Pro',
+                'yearly': 'Yearly Premium'
+            };
+            
+            if (plan && planNames[plan]) {
+                document.getElementById('planName').textContent = planNames[plan];
+            }
+            
+            // Auto-redirect after 10 seconds
+            setTimeout(() => {
+                if (confirm('Redirecting to dashboard in 5 seconds. Click OK to continue now or Cancel to stay.')) {
+                    window.location.href = '/dashboard';
+                }
+            }, 10000);
+        });
+        
+        // Confetti animation
+        function createConfetti() {
+            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'];
+            
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.cssText = `
+                    position: fixed;
+                    width: 10px;
+                    height: 10px;
+                    background: ${colors[Math.floor(Math.random() * colors.length)]};
+                    left: ${Math.random() * 100}vw;
+                    top: -10px;
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: 1000;
+                    animation: fall ${Math.random() * 3 + 2}s linear forwards;
+                `;
+                
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    confetti.remove();
+                }, 5000);
+            }
+        }
+        
+        // Add confetti animation CSS
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fall {
+                to {
+                    transform: translateY(100vh) rotate(360deg);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Trigger confetti on load
+        setTimeout(createConfetti, 500);
+    </script>
+</body>
+</html>
