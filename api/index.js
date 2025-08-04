@@ -11,18 +11,18 @@ const path = require('path');
 const jwt = require('jsonwebtoken'); 
 
 console.log('Loading services...');
-const { sendWelcomeEmail, generateOTP, sendPasswordResetOTP, sendPasswordResetConfirmation, sendFriendRequestEmail, sendFriendRequestAcceptedEmail } = require('./services/emailService');
+const { sendWelcomeEmail, generateOTP, sendPasswordResetOTP, sendPasswordResetConfirmation, sendFriendRequestEmail, sendFriendRequestAcceptedEmail } = require('../services/emailService');
 
 
-const database = require('./config/database');
-const UserService = require('./services/userService');
+const database = require('../config/database');
+const UserService = require('../services/userService');
 console.log('Services loaded successfully');
 
 let redisClient = null;
 try {
   if (process.env.REDIS_URL && !process.env.VERCEL) {
     console.log('Attempting to connect to Redis...');
-    const redis = require('./services/redis');
+    const redis = require('../services/redis');
     redisClient = redis;
     console.log('Redis client initialized');
   } else {
@@ -122,7 +122,7 @@ database.connect().then(() => {
 // Middleware
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
-app.use(express.static('public'));
+app.use(express.static('../public'));
 
 // Ensure proper JSON serialization
 app.set('json spaces', 0);
@@ -130,7 +130,7 @@ app.set('json replacer', null);
 
 
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set('views', path.join(__dirname, '../views'));
 
 
 if (!process.env.SESSION_SECRET) {
@@ -194,7 +194,7 @@ app.use(async (req, res, next) => {
   
   // Try to load user from database
   try {
-    const UserSession = require('./models/UserSession');
+    const UserSession = require('../models/UserSession');
     const dbSession = await UserSession.getSession(sessionId);
     
     if (dbSession && dbSession.userId) {
@@ -253,7 +253,7 @@ const isAuthenticated = async (req, res, next) => {
     if (process.env.VERCEL && req.sessionID && (!req.session.user)) {
       console.log('🗄️ Vercel environment - checking database session...');
       try {
-        const UserSession = require('./models/UserSession');
+        const UserSession = require('../models/UserSession');
         const dbSession = await UserSession.getSession(req.sessionID);
         
         if (dbSession && dbSession.onboardingCompleted) {
@@ -388,7 +388,7 @@ if (process.env.NODE_ENV !== 'production') {
 
     app.get('/debug-email', async (req, res) => {
         try {
-            const { sendTestEmail, testEmailConnection } = require('./services/emailService');
+            const { sendTestEmail, testEmailConnection } = require('../services/emailService');
             const testEmail = req.query.email || 'test@example.com';
             const connectionResult = await testEmailConnection();
             const emailResult = await sendTestEmail(testEmail);
@@ -458,7 +458,7 @@ if (process.env.NODE_ENV !== 'production') {
       }
       
       // Find user in database
-      const User = require('./models/User');
+      const User = require('../models/User');
       const user = await User.findOne({ email: email.toLowerCase().trim() });
       
       if (!user) {
@@ -553,7 +553,7 @@ app.post('/signup', ensureDbConnection, async (req, res) => {
       
       try {
         // Create database session for serverless persistence
-        const UserSession = require('./models/UserSession');
+        const UserSession = require('../models/UserSession');
         try {
           await UserSession.createSession(req.sessionID, user);
           console.log('Database session created for signup');
@@ -653,7 +653,7 @@ app.post('/login', ensureDbConnection, async (req, res) => {
     console.log('🗄️ Creating database session...');
     
     try {
-      const UserSession = require('./models/UserSession');
+      const UserSession = require('../models/UserSession');
       // Clean up any existing session first
       await UserSession.deleteSession(req.sessionID).catch(() => {});
       await UserSession.createSession(req.sessionID, user);
@@ -922,7 +922,7 @@ app.post('/CustomOnboarding/complete', ensureDbConnection, async (req, res) => {
 
       // Send onboarding completion email (async, don't wait)
       try {
-        const { sendOnboardingCompletionEmail } = require('./services/emailService');
+        const { sendOnboardingCompletionEmail } = require('../services/emailService');
         sendOnboardingCompletionEmail(userEmail, fullName || userName, transformedData)
           .then(() => console.log('Onboarding completion email sent successfully'))
           .catch(emailError => console.error('Failed to send onboarding completion email:', emailError));
@@ -1088,7 +1088,7 @@ app.post('/forgot-password', ensureDbConnection, async (req, res) => {
     
     // Generate OTP and store it in database
     const otp = generateOTP();
-    const PasswordReset = require('./models/PasswordReset');
+    const PasswordReset = require('../models/PasswordReset');
     
     // Create password reset record in database
     await PasswordReset.createReset(email.trim(), otp);
@@ -1155,7 +1155,7 @@ app.post('/verify-reset-otp', ensureDbConnection, async (req, res) => {
       });
     }
     
-    const PasswordReset = require('./models/PasswordReset');
+    const PasswordReset = require('../models/PasswordReset');
     
     try {
       // Verify OTP using database
@@ -1194,7 +1194,7 @@ app.post('/reset-password', ensureDbConnection, async (req, res) => {
     }
     
     // Check if reset is verified in database
-    const PasswordReset = require('./models/PasswordReset');
+    const PasswordReset = require('../models/PasswordReset');
     const isVerified = await PasswordReset.isVerified(email.trim());
     
     if (!isVerified) {
@@ -1704,39 +1704,39 @@ app.post('/api/subscription/cancel', isAuthenticated, ensureDbConnection, async 
 });
 
 // AI Coach API Routes
-const aiService = require('./services/aiService');
-const gamificationService = require('./services/gamificationService');
+const aiService = require('../services/aiService');
+const gamificationService = require('../services/gamificationService');
 
 // NutriScan Service
-const nutriScanService = require('./services/nutriScanService');
+const nutriScanService = require('../services/nutriScanService');
 
 // Health Service
-const healthService = require('./services/healthService');
+const healthService = require('../services/healthService');
 
 // Chat Service
-const chatService = require('./services/chatService');
+const chatService = require('../services/chatService');
 chatService.init(io);
 
 // Schedule Service
-const scheduleService = require('./services/scheduleService');
+const scheduleService = require('../services/scheduleService');
 
 // Community Service
-const communityService = require('./services/communityService');
+const communityService = require('../services/communityService');
 
 // Dynamic Nutrition Service
-const dynamicNutritionService = require('./services/dynamicNutritionService');
+const dynamicNutritionService = require('../services/dynamicNutritionService');
 
 // Challenge Service
 // Challenge Service - conditional loading
 let challengeService;
 try {
-  challengeService = require('./services/challengeService');
+  challengeService = require('../services/challengeService');
 } catch (error) {
   console.warn('Challenge service not loaded:', error.message);
 }
 
 // Import API routes
-const settingsRoutes = require('./routes/settings');
+const settingsRoutes = require('../routes/settings');
 
 // Use API routes
 app.use('/api/settings', settingsRoutes);
@@ -3338,7 +3338,7 @@ app.post('/api/friends/respond', isAuthenticated, ensureDbConnection, async (req
     }
     
     // Find the friend request
-    const FriendRequest = require('./models/FriendRequest');
+    const FriendRequest = require('../models/FriendRequest');
     const request = await FriendRequest.findOne({
       sender: senderId,
       receiver: userId,
@@ -3384,7 +3384,7 @@ app.get('/logout', async (req, res) => {
   try {
     // Clean up database session
     if (req.sessionID) {
-      const UserSession = require('./models/UserSession');
+      const UserSession = require('../models/UserSession');
       await UserSession.deleteSession(req.sessionID);
       console.log('✅ Database session cleaned up');
     }
@@ -3404,10 +3404,10 @@ app.get('/logout', async (req, res) => {
 });
 
 // Settings API Routes
-app.use('/api/settings', isAuthenticated, ensureDbConnection, require('./routes/settings'));
+app.use('/api/settings', isAuthenticated, ensureDbConnection, require('../routes/settings'));
 
 // Meal Planner API Routes
-app.use('/api/meal-planner', isAuthenticated, ensureDbConnection, require('./routes/mealPlanner'));
+app.use('/api/meal-planner', isAuthenticated, ensureDbConnection, require('../routes/mealPlanner'));
 
 // Community API Routes
 
@@ -4086,7 +4086,7 @@ app.use(async (req, res, next) => {
       const decoded = jwt.decode(req.query.token);
       if (decoded && decoded.email) {
        
-        const User = require('./models/User');
+        const User = require('../models/User');
         const user = await User.findOne({ email: decoded.email });
         if (user) {
           req.session.user = user;
