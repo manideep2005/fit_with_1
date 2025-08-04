@@ -1,11 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "app.js",
-      "use": "@vercel/node"
-    }
-  ],
   "rewrites": [
     { "source": "/dashboard", "destination": "/app.js" },
     { "source": "/workouts", "destination": "/app.js" },
