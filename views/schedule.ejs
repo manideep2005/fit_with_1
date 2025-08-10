@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Schedule - Fit With AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
     <style>
         :root {
             --primary-color: #667eea;
@@ -22,45 +25,91 @@
             --transition: all 0.3s ease;
         }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            overflow-x: hidden;
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
         }
 
         .sidebar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            padding: 2rem;
-            margin: 1rem;
-            height: calc(100vh - 2rem);
+            background: transparent;
+            border: none;
+            padding: 30px 20px;
             position: fixed;
             width: 280px;
+            height: calc(100vh - 40px);
+            top: 20px;
+            left: 20px;
             overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
         }
 
         .main-content {
             margin-left: 320px;
-            padding: 2rem;
+            padding: 20px;
             min-height: 100vh;
         }
 
         .nav-link {
-            color: var(--dark-color);
-            padding: 0.75rem 1rem;
-            margin: 0.25rem 0;
-            border-radius: 10px;
-            transition: var(--transition);
-            text-decoration: none;
             display: flex;
             align-items: center;
+            padding: 12px 15px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin: 5px 0;
         }
-
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .nav-link:hover::before {
+            left: 100%;
+        }
+        
         .nav-link:hover, .nav-link.active {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
+            background: rgba(108, 99, 255, 0.2);
+            color: #ffffff;
             transform: translateX(5px);
         }
 
@@ -70,12 +119,26 @@
         }
 
         .schedule-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
+            background: transparent;
+            border: none;
             padding: 2rem;
             margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .schedule-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(108, 99, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(108, 99, 255, 0.08) 100%);
+            border-radius: 12px;
+            z-index: -1;
         }
 
         .schedule-header {
@@ -88,12 +151,12 @@
         }
 
         .schedule-title {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, #667eea, #764ba2);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            font-size: 2.5rem;
-            font-weight: bold;
+            font-size: 2rem;
+            font-weight: 600;
             margin: 0;
         }
 
@@ -112,29 +175,97 @@
         }
 
         .calendar-container {
-            background: white;
-            border-radius: var(--border-radius);
+            background: transparent;
+            border: none;
             padding: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            position: relative;
+        }
+        
+        .calendar-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(108, 99, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(108, 99, 255, 0.08) 100%);
+            border-radius: 12px;
+            z-index: -1;
         }
 
         .fc {
             font-family: inherit;
+            color: white;
+        }
+        
+        .fc-theme-standard .fc-scrollgrid {
+            border-color: rgba(255,255,255,0.1);
+        }
+        
+        .fc-theme-standard td, .fc-theme-standard th {
+            border-color: rgba(255,255,255,0.1);
+        }
+        
+        .fc-col-header-cell {
+            background: rgba(108, 99, 255, 0.1);
+            color: white;
+        }
+        
+        .fc-daygrid-day {
+            background: transparent;
+        }
+        
+        .fc-daygrid-day:hover {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .fc-day-today {
+            background: rgba(108, 99, 255, 0.2) !important;
+        }
+        
+        .fc-daygrid-day-number {
+            color: rgba(255,255,255,0.9);
+        }
+        
+        .fc-day-other .fc-daygrid-day-number {
+            color: rgba(255,255,255,0.4);
         }
 
         .fc-toolbar-title {
-            color: var(--dark-color);
+            color: white;
             font-weight: bold;
+        }
+        
+        .fc-toolbar-chunk {
+            display: flex;
+            align-items: center;
         }
 
         .fc-button-primary {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             border: none;
             border-radius: 8px;
+            color: white;
         }
 
-        .fc-button-primary:hover {
+        .fc-button-primary:hover, .fc-button-primary:focus {
             background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            border: none;
+            color: white;
+        }
+        
+        .fc-button-primary:disabled {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .fc-button-active {
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-color)) !important;
+            border: none !important;
         }
 
         .fc-event {
@@ -142,18 +273,37 @@
             border-radius: 8px;
             padding: 2px 6px;
             font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .fc-event:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
         .fc-event.workout-event {
-            background: linear-gradient(135deg, var(--success-color), #00d2ff);
+            background: linear-gradient(135deg, #4facfe, #00d2ff);
         }
 
         .fc-event.meal-event {
-            background: linear-gradient(135deg, var(--warning-color), #ffa726);
+            background: linear-gradient(135deg, #f6d365, #ffa726);
         }
 
         .fc-event.appointment-event {
-            background: linear-gradient(135deg, var(--danger-color), #ff8a80);
+            background: linear-gradient(135deg, #ff6b6b, #ff8a80);
+        }
+        
+        .fc-event.health-check-event {
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+        }
+        
+        .fc-event.reminder-event {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+        
+        .fc-event.custom-event {
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
         }
 
         .quick-actions {
@@ -164,35 +314,69 @@
         }
 
         .quick-action-card {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: var(--border-radius);
+            background: transparent;
+            border: none;
             padding: 1.5rem;
             text-align: center;
-            transition: var(--transition);
+            transition: all 0.3s ease;
             cursor: pointer;
-            border: 2px solid transparent;
+            position: relative;
+        }
+        
+        .quick-action-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(108, 99, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(108, 99, 255, 0.08) 100%);
+            border-radius: 12px;
+            z-index: -1;
+            transition: all 0.3s ease;
         }
 
         .quick-action-card:hover {
             transform: translateY(-5px);
-            box-shadow: var(--box-shadow);
-            border-color: var(--primary-color);
+        }
+        
+        .quick-action-card:hover::before {
+            background: linear-gradient(135deg, 
+                rgba(108, 99, 255, 0.15) 0%,
+                rgba(255, 255, 255, 0.1) 50%,
+                rgba(108, 99, 255, 0.12) 100%);
         }
 
         .quick-action-icon {
             font-size: 2.5rem;
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--primary-color);
         }
 
         .upcoming-events {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: var(--border-radius);
+            background: transparent;
+            border: none;
             padding: 1.5rem;
             margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .upcoming-events::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(108, 99, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(108, 99, 255, 0.08) 100%);
+            border-radius: 12px;
+            z-index: -1;
         }
 
         .event-item {
@@ -200,15 +384,15 @@
             align-items: center;
             padding: 1rem;
             margin: 0.5rem 0;
-            background: rgba(102, 126, 234, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
             border-left: 4px solid var(--primary-color);
-            transition: var(--transition);
+            transition: all 0.3s ease;
         }
 
         .event-item:hover {
             transform: translateX(5px);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .event-time {
@@ -228,7 +412,7 @@
         }
 
         .event-description {
-            color: #666;
+            color: rgba(255, 255, 255, 0.7);
             font-size: 0.9rem;
         }
 
@@ -251,57 +435,111 @@
         }
 
         .stat-card {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: var(--border-radius);
+            background: transparent;
+            border: none;
             padding: 1.5rem;
             text-align: center;
             position: relative;
-            overflow: hidden;
+            transition: transform 0.3s ease;
         }
-
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
         .stat-card::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            height: 4px;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(108, 99, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(108, 99, 255, 0.08) 100%);
+            border-radius: 12px;
+            z-index: -1;
         }
 
         .stat-number {
             font-size: 2rem;
-            font-weight: bold;
+            font-weight: 600;
             color: var(--primary-color);
             margin-bottom: 0.5rem;
         }
 
         .stat-label {
-            color: #666;
+            color: rgba(255, 255, 255, 0.7);
             font-size: 0.9rem;
         }
 
         .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: var(--border-radius);
-            border: none;
-            box-shadow: var(--box-shadow);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            color: white;
         }
 
         .modal-header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             border-radius: var(--border-radius) var(--border-radius) 0 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .modal-body {
+            background: transparent;
+            color: white;
+        }
+        
+        .modal-footer {
+            background: transparent;
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
 
         .form-control, .form-select {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
             border-radius: 10px;
-            border: 2px solid #e9ecef;
+            color: white;
             transition: var(--transition);
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+        
+        .form-select option {
+            background: #1a1a2e;
+            color: white;
         }
 
         .form-control:focus, .form-select:focus {
+            background: rgba(255,255,255,0.1);
             border-color: var(--primary-color);
             box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            color: white;
+        }
+        
+        .form-label {
+            color: rgba(255,255,255,0.9);
+            font-weight: 500;
+        }
+        
+        .form-check-input {
+            background-color: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.3);
+        }
+        
+        .form-check-input:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .form-check-label {
+            color: rgba(255,255,255,0.9);
         }
 
         .loading-spinner {
@@ -313,29 +551,55 @@
         .empty-state {
             text-align: center;
             padding: 3rem;
-            color: #666;
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .empty-state i {
             font-size: 4rem;
             margin-bottom: 1rem;
-            color: #ddd;
+            color: rgba(255, 255, 255, 0.3);
         }
 
+        .btn-outline-primary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-outline-primary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .btn-outline-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-outline-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
                 transition: transform 0.3s ease;
                 z-index: 1000;
+                background: rgba(26, 26, 46, 0.95);
+                backdrop-filter: blur(10px);
             }
-
+            
             .sidebar.show {
                 transform: translateX(0);
             }
 
             .main-content {
                 margin-left: 0;
-                padding: 1rem;
+                padding: 10px;
             }
 
             .schedule-header {
@@ -353,49 +617,82 @@
         }
 
         .ai-suggestions {
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-            border-radius: var(--border-radius);
+            background: transparent;
+            border: none;
             padding: 1.5rem;
             margin-bottom: 2rem;
-            border: 1px solid rgba(102, 126, 234, 0.2);
+            position: relative;
+        }
+        
+        .ai-suggestions::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(108, 99, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(108, 99, 255, 0.08) 100%);
+            border-radius: 12px;
+            z-index: -1;
         }
 
         .suggestion-item {
-            background: white;
+            background: rgba(255, 255, 255, 0.05);
             border-radius: 10px;
             padding: 1rem;
             margin: 0.5rem 0;
             border-left: 4px solid var(--accent-color);
-            transition: var(--transition);
+            transition: all 0.3s ease;
             cursor: pointer;
         }
 
         .suggestion-item:hover {
             transform: translateX(5px);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
 <body>
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
-        <div class="text-center mb-4">
-            <h3 class="text-primary fw-bold">Fit With AI</h3>
-            <p class="text-muted mb-0">Welcome, <%= user.fullName || 'User' %></p>
+        <div class="sidebar-header">
+            <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar" style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+            <div>
+                <h3 style="font-weight: 600; margin: 0; color: white;"><%= user.fullName %></h3>
+                <span style="font-size: 0.8rem; color: var(--primary-color); background: rgba(108, 99, 255, 0.1); padding: 2px 8px; border-radius: 20px; margin-top: 5px;">Premium Plan</span>
+            </div>
         </div>
         
         <nav class="nav flex-column">
             <a href="/dashboard?token=<%= navToken %>" class="nav-link">
-                <i class="fas fa-tachometer-alt"></i> Dashboard
+                <i class="fas fa-home"></i> Dashboard
             </a>
             <a href="/workouts?token=<%= navToken %>" class="nav-link">
                 <i class="fas fa-dumbbell"></i> Workouts
             </a>
-            <a href="/nutrition?token=<%= navToken %>" class="nav-link">
-                <i class="fas fa-apple-alt"></i> Nutrition
-            </a>
             <a href="/progress?token=<%= navToken %>" class="nav-link">
                 <i class="fas fa-chart-line"></i> Progress
+            </a>
+            <a href="/nutrition?token=<%= navToken %>" class="nav-link">
+                <i class="fas fa-utensils"></i> Nutrition
+            </a>
+            <a href="/nutriscan?token=<%= navToken %>" class="nav-link">
+                <i class="fas fa-qrcode"></i> NutriScan
+            </a>
+            <a href="/meal-planner?token=<%= navToken %>" class="nav-link">
+                <i class="fas fa-calendar-check"></i> Meal Planner
+            </a>
+            <a href="/challenges?token=<%= navToken %>" class="nav-link">
+                <i class="fas fa-trophy"></i> Challenges
+            </a>
+            <a href="/health?token=<%= navToken %>" class="nav-link">
+                <i class="fas fa-heartbeat"></i> Health Metrics
+            </a>
+            <a href="/biometrics?token=<%= navToken %>" class="nav-link" data-premium="analytics">
+                <i class="fas fa-chart-bar"></i> Biometrics
             </a>
             <a href="/schedule?token=<%= navToken %>" class="nav-link active">
                 <i class="fas fa-calendar-alt"></i> Schedule
@@ -403,11 +700,17 @@
             <a href="/community?token=<%= navToken %>" class="nav-link">
                 <i class="fas fa-users"></i> Community
             </a>
-            <a href="/ai-coach?token=<%= navToken %>" class="nav-link">
+            <a href="/chat?token=<%= navToken %>" class="nav-link">
+                <i class="fas fa-comments"></i> Chat
+            </a>
+            <a href="/ai-coach?token=<%= navToken %>" class="nav-link" data-premium="ai-coach">
                 <i class="fas fa-robot"></i> AI Coach
             </a>
             <a href="/settings?token=<%= navToken %>" class="nav-link">
                 <i class="fas fa-cog"></i> Settings
+            </a>
+            <a href="/subscription?token=<%= navToken %>" class="nav-link">
+                <i class="fas fa-crown"></i> Subscription
             </a>
         </nav>
     </div>
@@ -444,29 +747,29 @@
                     <div class="quick-action-icon">
                         <i class="fas fa-dumbbell"></i>
                     </div>
-                    <h5>Quick Workout</h5>
-                    <p class="text-muted mb-0">Schedule a workout session</p>
+                    <h5 style="color: white;">Quick Workout</h5>
+                    <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 0;">Schedule a workout session</p>
                 </div>
                 <div class="quick-action-card" onclick="quickAddMeal()">
                     <div class="quick-action-icon">
                         <i class="fas fa-utensils"></i>
                     </div>
-                    <h5>Meal Planning</h5>
-                    <p class="text-muted mb-0">Plan your meals</p>
+                    <h5 style="color: white;">Meal Planning</h5>
+                    <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 0;">Plan your meals</p>
                 </div>
                 <div class="quick-action-card" onclick="quickAddAppointment()">
                     <div class="quick-action-icon">
                         <i class="fas fa-user-md"></i>
                     </div>
-                    <h5>Health Appointment</h5>
-                    <p class="text-muted mb-0">Book health checkup</p>
+                    <h5 style="color: white;">Health Appointment</h5>
+                    <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 0;">Book health checkup</p>
                 </div>
                 <div class="quick-action-card" onclick="viewStats()">
                     <div class="quick-action-icon">
                         <i class="fas fa-chart-bar"></i>
                     </div>
-                    <h5>Schedule Stats</h5>
-                    <p class="text-muted mb-0">View your statistics</p>
+                    <h5 style="color: white;">Schedule Stats</h5>
+                    <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 0;">View your statistics</p>
                 </div>
             </div>
 
@@ -506,7 +809,7 @@
 
         <!-- Upcoming Events -->
         <div class="upcoming-events">
-            <h4><i class="fas fa-clock me-2"></i>Upcoming Events</h4>
+            <h4 style="color: white;"><i class="fas fa-clock me-2"></i>Upcoming Events</h4>
             <div id="upcomingEventsList">
                 <div class="loading-spinner">
                     <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
@@ -597,6 +900,25 @@
                                 </select>
                             </div>
                         </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="eventRecurring">
+                                    <label class="form-check-label" for="eventRecurring">
+                                        Recurring Event
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Repeat</label>
+                                <select class="form-select" id="recurringType" disabled>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly" selected>Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                            </div>
+                        </div>
                     </form>
                 </div>
                 <div class="modal-footer">
@@ -646,6 +968,14 @@
 
         // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
+            // GSAP Animations
+            gsap.registerPlugin(ScrollTrigger);
+            
+            gsap.from(".schedule-header", {duration: 1, y: -50, opacity: 0, ease: "power2.out"});
+            gsap.from(".quick-actions .quick-action-card", {duration: 1, y: 50, opacity: 0, stagger: 0.1, delay: 0.3, ease: "power2.out"});
+            gsap.from(".stats-grid .stat-card", {duration: 1, y: 50, opacity: 0, stagger: 0.1, delay: 0.6, ease: "power2.out"});
+            gsap.from(".calendar-container", {duration: 1, y: 50, opacity: 0, delay: 0.9, ease: "power2.out"});
+            
             initializeCalendar();
             loadScheduleData();
             loadUpcomingEvents();
@@ -656,6 +986,16 @@
             const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
             document.getElementById('eventStartDate').value = formatDateTimeLocal(tomorrow);
             document.getElementById('eventEndDate').value = formatDateTimeLocal(new Date(tomorrow.getTime() + 60 * 60 * 1000));
+            
+            // Handle recurring event checkbox
+            const recurringCheckbox = document.getElementById('eventRecurring');
+            const recurringSelect = document.getElementById('recurringType');
+            
+            if (recurringCheckbox && recurringSelect) {
+                recurringCheckbox.addEventListener('change', function() {
+                    recurringSelect.disabled = !this.checked;
+                });
+            }
         });
 
         // Initialize FullCalendar
@@ -666,8 +1006,9 @@
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
                 },
+                height: 'auto',
                 events: [],
                 eventClick: function(info) {
                     showEventDetails(info.event);
@@ -686,6 +1027,47 @@
                     const eventType = info.event.extendedProps.type;
                     if (eventType) {
                         info.el.classList.add(eventType + '-event');
+                    }
+                    
+                    // Add priority indicator
+                    const priority = info.event.extendedProps.priority;
+                    if (priority === 'high') {
+                        info.el.style.borderLeft = '4px solid #ff6b6b';
+                    }
+                },
+                eventMouseEnter: function(info) {
+                    // Show tooltip on hover
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'event-tooltip';
+                    tooltip.style.cssText = `
+                        position: absolute;
+                        background: rgba(0,0,0,0.9);
+                        color: white;
+                        padding: 8px 12px;
+                        border-radius: 6px;
+                        font-size: 0.8rem;
+                        z-index: 10000;
+                        pointer-events: none;
+                        max-width: 200px;
+                    `;
+                    tooltip.innerHTML = `
+                        <strong>${info.event.title}</strong><br>
+                        ${info.event.extendedProps.description || 'No description'}<br>
+                        <small>${formatDateTime(info.event.start)}</small>
+                    `;
+                    
+                    document.body.appendChild(tooltip);
+                    info.el.addEventListener('mousemove', function(e) {
+                        tooltip.style.left = e.pageX + 10 + 'px';
+                        tooltip.style.top = e.pageY + 10 + 'px';
+                    });
+                    
+                    info.el._tooltip = tooltip;
+                },
+                eventMouseLeave: function(info) {
+                    if (info.el._tooltip) {
+                        info.el._tooltip.remove();
+                        delete info.el._tooltip;
                     }
                 }
             });
@@ -860,7 +1242,11 @@
                 reminders: document.getElementById('eventReminder').checked ? [{
                     minutesBefore: parseInt(document.getElementById('reminderMinutes').value),
                     sent: false
-                }] : []
+                }] : [],
+                recurring: document.getElementById('eventRecurring').checked ? {
+                    type: document.getElementById('recurringType').value,
+                    enabled: true
+                } : null
             };
 
             try {
@@ -1102,23 +1488,39 @@
         function quickAddWorkout() {
             document.getElementById('eventType').value = 'workout';
             document.getElementById('eventTitle').value = 'Workout Session';
+            document.getElementById('eventDescription').value = 'Scheduled workout session';
             showAddEventModal();
         }
 
         function quickAddMeal() {
             document.getElementById('eventType').value = 'meal';
             document.getElementById('eventTitle').value = 'Meal Planning';
+            document.getElementById('eventDescription').value = 'Plan and prepare meals';
             showAddEventModal();
         }
 
         function quickAddAppointment() {
             document.getElementById('eventType').value = 'health-check';
             document.getElementById('eventTitle').value = 'Health Appointment';
+            document.getElementById('eventDescription').value = 'Medical checkup or consultation';
             showAddEventModal();
+        }
+        
+        function showCalendarView(view) {
+            calendar.changeView(view);
+            showNotification(`Switched to ${view.replace('Grid', ' ').replace('time', 'Time ')} view`, 'success');
+        }
+        
+        function exportSchedule() {
+            showNotification('Export feature coming soon! You\'ll be able to download your schedule as PDF or CSV.', 'info');
+        }
+        
+        function showRecurringEvents() {
+            showNotification('Recurring events management coming soon!', 'info');
         }
 
         function viewStats() {
-            // Scroll to stats section
+            // Scroll to stats section with animation
             document.getElementById('scheduleStats').scrollIntoView({ behavior: 'smooth' });
         }
 

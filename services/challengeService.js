@@ -329,9 +329,17 @@ class ChallengeService {
         throw new Error('You cannot challenge yourself!');
       }
       
+      // Map challenge type to category
+      const categoryMap = {
+        'workout': challengeData.category || 'strength',
+        'nutrition': 'nutrition',
+        'habit': challengeData.category || 'hydration'
+      };
+      
       // Create challenge
       const challenge = new Challenge({
         ...challengeData,
+        category: categoryMap[challengeData.type] || 'strength',
         creator: creatorId,
         isPublic: false,
         participants: [
@@ -339,7 +347,11 @@ class ChallengeService {
           { user: friend._id, status: 'active' }
         ],
         startDate: new Date(),
-        endDate: new Date(Date.now() + (challengeData.duration.value * (challengeData.duration.unit === 'weeks' ? 7 : 1) * 24 * 60 * 60 * 1000))
+        endDate: new Date(Date.now() + (challengeData.duration.value * (challengeData.duration.unit === 'weeks' ? 7 : 1) * 24 * 60 * 60 * 1000)),
+        rewards: {
+          points: challengeData.points || 100,
+          badges: []
+        }
       });
       
       await challenge.save();

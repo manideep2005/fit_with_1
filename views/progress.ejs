@@ -21,22 +21,44 @@
         
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #F5F7FA;
-            color: var(--dark);
+            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
             margin: 0;
             padding: 0;
         }
         
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
         .dashboard-container {
-            display: flex;
+            display: grid;
+            grid-template-columns: 280px 1fr;
             min-height: 100vh;
+            gap: 20px;
+            padding: 20px;
         }
         
         .sidebar {
-            width: 250px;
-            background: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            padding: 2rem 1rem;
+            background: transparent;
+            border: none;
+            padding: 30px 20px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
         }
         
         .sidebar-header {
@@ -80,16 +102,34 @@
         .nav-link {
             display: flex;
             align-items: center;
-            padding: 12px 1rem;
-            color: var(--gray);
+            padding: 12px 15px;
+            color: rgba(255, 255, 255, 0.7);
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 15px;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .nav-link:hover::before {
+            left: 100%;
         }
         
         .nav-link:hover, .nav-link.active {
-            background: rgba(108, 99, 255, 0.1);
-            color: var(--primary);
+            background: rgba(108, 99, 255, 0.2);
+            color: #ffffff;
+            transform: translateX(5px);
         }
         
         .nav-link i {
@@ -124,8 +164,9 @@
         }
         
         .main-content {
-            flex: 1;
-            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
         }
         
         .page-header {
@@ -136,9 +177,12 @@
         }
         
         .page-title {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 600;
-            color: var(--dark);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .time-filters {
@@ -150,8 +194,9 @@
         .time-filter {
             padding: 8px 16px;
             border-radius: 20px;
-            background: white;
-            border: 1px solid var(--light-gray);
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.7);
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -163,11 +208,25 @@
         }
         
         .progress-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            background: transparent;
+            border: none;
             padding: 2rem;
             margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .progress-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(108, 99, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(108, 99, 255, 0.08) 100%);
+            z-index: -1;
         }
         
         .card-header {
@@ -181,6 +240,7 @@
             font-size: 1.2rem;
             font-weight: 600;
             margin: 0;
+            color: white;
         }
         
         .stats-grid {
@@ -191,11 +251,26 @@
         }
         
         .stat-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            background: transparent;
+            border: none;
             padding: 1.5rem;
             text-align: center;
+            position: relative;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(108, 99, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(108, 99, 255, 0.08) 100%);
+            border-radius: 12px;
+            z-index: -1;
         }
         
         .stat-value {
@@ -206,7 +281,7 @@
         }
         
         .stat-label {
-            color: var(--gray);
+            color: rgba(255, 255, 255, 0.7);
             font-size: 0.9rem;
         }
         
@@ -240,12 +315,16 @@
         .progress-table th, .progress-table td {
             padding: 12px 15px;
             text-align: left;
-            border-bottom: 1px solid var(--light-gray);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .progress-table th {
             font-weight: 500;
-            color: var(--gray);
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .progress-table td {
+            color: white;
         }
         
         .progress-table tr:last-child td {
@@ -300,6 +379,8 @@
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -313,19 +394,22 @@
                 </div>
             </div>
             
-             <ul class="nav-menu">
-                <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li class="nav-item"><a href="/workouts" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
-                <li class="nav-item"><a href="/progress" class="nav-link active"><i class="fas fa-chart-line"></i> Progress</a></li>
-                <li class="nav-item"><a href="/nutrition" class="nav-link"><i class="fas fa-utensils"></i> Nutrition</a></li>
-                <li class="nav-item"><a href="/meal-planner" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
-                <li class="nav-item"><a href="/challenges" class="nav-link"><i class="fas fa-trophy"></i> Challenges</a></li>
-                <li class="nav-item"><a href="/health" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
-                <li class="nav-item"><a href="/biometrics" class="nav-link"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
-                <li class="nav-item"><a href="/schedule" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
-                <li class="nav-item"><a href="/community" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
-                <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
-                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+            <ul class="nav-menu">
+                <li class="nav-item"><a href="/dashboard?token=<%= navToken %>" class="nav-link "><i class="fas fa-home"></i> Dashboard</a></li>
+                <li class="nav-item"><a href="/workouts?token=<%= navToken %>" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
+                <li class="nav-item"><a href="/progress?token=<%= navToken %>" class="nav-link active"><i class="fas fa-chart-line"></i> Progress</a></li>
+                <li class="nav-item"><a href="/nutrition?token=<%= navToken %>" class="nav-link"><i class="fas fa-utensils"></i> Nutrition</a></li>
+                <li class="nav-item"><a href="/nutriscan?token=<%= navToken %>" class="nav-link"><i class="fas fa-qrcode"></i> NutriScan</a></li>
+                <li class="nav-item"><a href="/meal-planner?token=<%= navToken %>" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
+                <li class="nav-item"><a href="/challenges?token=<%= navToken %>" class="nav-link"><i class="fas fa-trophy"></i> Challenges</a></li>
+                <li class="nav-item"><a href="/health?token=<%= navToken %>" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
+                <li class="nav-item"><a href="/biometrics?token=<%= navToken %>" class="nav-link" data-premium="analytics"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
+                <li class="nav-item"><a href="/schedule?token=<%= navToken %>" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
+                <li class="nav-item"><a href="/community?token=<%= navToken %>" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
+                <li class="nav-item"><a href="/chat?token=<%= navToken %>" class="nav-link"><i class="fas fa-comments"></i> Chat</a></li>
+                <li class="nav-item"><a href="/ai-coach?token=<%= navToken %>" class="nav-link" data-premium="ai-coach"><i class="fas fa-robot"></i> AI Coach</a></li>
+                <li class="nav-item"><a href="/settings?token=<%= navToken %>" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
+                 <li class="nav-item"><a href="/subscription?token=<%= navToken %>" class="nav-link"><i class="fas fa-crown"></i> Subscription</a></li>
             </ul>
             
             <!-- Logout Section -->
@@ -477,6 +561,51 @@
     </div>
     
     <script>
+        // Initialize GSAP animations
+        document.addEventListener('DOMContentLoaded', function() {
+            gsap.registerPlugin(ScrollTrigger);
+            
+            // Animate stats cards
+            gsap.fromTo('.stat-card', 
+                { y: 50, opacity: 0, scale: 0.9 },
+                { 
+                    y: 0, 
+                    opacity: 1, 
+                    scale: 1,
+                    duration: 0.8,
+                    stagger: 0.1,
+                    delay: 0.3,
+                    ease: "back.out(1.7)"
+                }
+            );
+            
+            // Animate progress cards
+            gsap.fromTo('.progress-card', 
+                { x: -50, opacity: 0 },
+                { 
+                    x: 0, 
+                    opacity: 1,
+                    duration: 0.8,
+                    stagger: 0.2,
+                    delay: 0.5,
+                    ease: "power2.out"
+                }
+            );
+            
+            // Animate time filters
+            gsap.fromTo('.time-filter', 
+                { x: -30, opacity: 0 },
+                { 
+                    x: 0, 
+                    opacity: 1,
+                    duration: 0.6,
+                    stagger: 0.1,
+                    delay: 0.2,
+                    ease: "power2.out"
+                }
+            );
+        });
+        
         // Time filter functionality
         document.querySelectorAll('.time-filter').forEach(filter => {
             filter.addEventListener('click', function() {

@@ -57,41 +57,142 @@ class CommunityService {
   }
 
   async joinGroup(userId, groupId) {
-        const group = await Group.findById(groupId);
-        if (!group) {
-            throw new Error('Group not found');
-        }
+    try {
+      console.log('CommunityService: joinGroup called with userId:', userId, 'groupId:', groupId);
+      
+      const group = await Group.findById(groupId);
+      if (!group) {
+        throw new Error('Group not found');
+      }
 
-        if (group.privacy === 'private') {
-            // Handle private group logic if necessary (e.g., invitations)
-            throw new Error('This group is private and requires an invitation to join');
-        }
+      // Check if user is already a member
+      const isAlreadyMember = group.members.some(member => 
+        member.user && member.user.toString() === userId.toString()
+      );
+      
+      if (isAlreadyMember) {
+        console.log('User is already a member of this group');
+        return group;
+      }
 
-        const updatedGroup = await Group.findByIdAndUpdate(groupId, { 
-            $addToSet: { members: userId },
-            $inc: { 'stats.totalMembers': 1 }
-        }, { new: true });
+      if (group.privacy === 'private') {
+        throw new Error('This group is private and requires an invitation to join');
+      }
 
-        await User.findByIdAndUpdate(userId, { $addToSet: { groups: groupId } });
+      // Add user to group members with proper structure
+      const updatedGroup = await Group.findByIdAndUpdate(groupId, { 
+        $addToSet: { 
+          members: {
+            user: userId,
+            role: 'member',
+            joinedAt: new Date()
+          }
+        },
+        $inc: { 'stats.totalMembers': 1 }
+      }, { new: true }).populate('creator', 'fullName email');
 
-        return updatedGroup;
+      console.log('User successfully joined group:', updatedGroup.name);
+      return updatedGroup;
+    } catch (error) {
+      console.error('Error in joinGroup:', error);
+      throw new Error('Failed to join group: ' + error.message);
     }
+  }
 
-    async leaveGroup(userId, groupId) {
-        const group = await Group.findById(groupId);
-        if (!group) {
-            throw new Error('Group not found');
-        }
+  async leaveGroup(userId, groupId) {
+    try {
+      console.log('CommunityService: leaveGroup called with userId:', userId, 'groupId:', groupId);
+      
+      const group = await Group.findById(groupId);
+      if (!group) {
+        throw new Error('Group not found');
+      }
 
-        const updatedGroup = await Group.findByIdAndUpdate(groupId, { 
-            $pull: { members: userId },
-            $inc: { 'stats.totalMembers': -1 }
-        }, { new: true });
+      // Check if user is a member
+      const isMember = group.members.some(member => 
+        member.user && member.user.toString() === userId.toString()
+      );
+      
+      if (!isMember) {
+        throw new Error('You are not a member of this group');
+      }
 
-        await User.findByIdAndUpdate(userId, { $pull: { groups: groupId } });
+      // Remove user from group members
+      const updatedGroup = await Group.findByIdAndUpdate(groupId, { 
+        $pull: { 
+          members: { user: userId }
+        },
+        $inc: { 'stats.totalMembers': -1 }
+      }, { new: true });
 
-        return updatedGroup;
+      console.log('User successfully left group:', updatedGroup.name);
+      return updatedGroup;
+    } catch (error) {
+      console.error('Error in leaveGroup:', error);
+      throw new Error('Failed to leave group: ' + error.message);
     }
+  }
+  
+  async getGroupMembers(groupId) {
+    try {
+      const group = await Group.findById(groupId)
+        .populate('members.user', 'fullName email personalInfo')
+        .populate('creator', 'fullName email');
+        
+      if (!group) {
+        throw new Error('Group not found');
+      }
+      
+      return group.members.map(member => ({
+        _id: member.user._id,
+        fullName: member.user.fullName,
+        email: member.user.email,
+        role: member.role,
+        joinedAt: member.joinedAt,
+        firstName: member.user.personalInfo?.firstName || member.user.fullName?.split(' ')[0] || 'User'
+      }));
+    } catch (error) {
+      throw new Error('Failed to get group members: ' + error.message);
+    }
+  }
+  
+  async deleteGroup(userId, groupId) {
+    try {
+      const group = await Group.findById(groupId);
+      if (!group) {
+        throw new Error('Group not found');
+      }
+      
+      // Check if user is the creator
+      if (group.creator.toString() !== userId.toString()) {
+        throw new Error('Only the group creator can delete this group');
+      }
+      
+      // Delete all posts in the group
+      await Post.deleteMany({ group: groupId });
+      
+      // Delete the group
+      await Group.findByIdAndDelete(groupId);
+      
+      return { success: true, message: 'Group deleted successfully' };
+    } catch (error) {
+      throw new Error('Failed to delete group: ' + error.message);
+    }
+  }
+  
+  async searchContent(query) {
+    try {
+      const groups = await this.searchGroups(query, 5);
+      const posts = await this.searchPosts(query, null, 10);
+      
+      return {
+        groups: groups,
+        posts: posts
+      };
+    } catch (error) {
+      throw new Error('Failed to search content: ' + error.message);
+    }
+  }
 
   // Post Management
   async createPost(userId, postData) {
@@ -167,18 +268,27 @@ class CommunityService {
         like.user.toString() === userId.toString()
       );
 
+      let isLiked = false;
       if (existingLike) {
         // Unlike
         post.likes = post.likes.filter(like => 
           like.user.toString() !== userId.toString()
         );
+        isLiked = false;
       } else {
         // Like
         post.likes.push({ user: userId });
+        isLiked = true;
       }
 
+      // Update stats
+      post.stats.totalLikes = post.likes.length;
       await post.save();
-      return post;
+      
+      return {
+        likes: post.stats.totalLikes,
+        isLiked: isLiked
+      };
     } catch (error) {
       throw new Error('Failed to like/unlike post: ' + error.message);
     }

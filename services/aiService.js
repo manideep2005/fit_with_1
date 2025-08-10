@@ -312,6 +312,268 @@ Response:`;
         return formatted;
     }
 
+    // Advanced AI-Powered Workout Generation
+    async generateAdvancedWorkoutPlan(userProfile, preferences = {}) {
+        try {
+            const {
+                fitnessGoals,
+                personalInfo,
+                healthInfo,
+                workoutHistory,
+                availableEquipment = [],
+                timeAvailable = 30,
+                fitnessLevel = 'beginner'
+            } = userProfile;
+
+            // Create detailed prompt for AI workout generation
+            const workoutPrompt = this.createWorkoutGenerationPrompt(
+                fitnessGoals,
+                personalInfo,
+                healthInfo,
+                workoutHistory,
+                availableEquipment,
+                timeAvailable,
+                fitnessLevel,
+                preferences
+            );
+
+            let aiResponse = null;
+            if (this.geminiApiKey && this.model) {
+                try {
+                    const result = await this.model.generateContent(workoutPrompt);
+                    const response = await result.response;
+                    aiResponse = response.text();
+                } catch (error) {
+                    console.error('Gemini workout generation error:', error);
+                }
+            }
+
+            // Parse AI response or use intelligent fallback
+            const workoutPlan = aiResponse ? 
+                this.parseAIWorkoutResponse(aiResponse) : 
+                this.generateIntelligentWorkoutFallback(userProfile, preferences);
+
+            return {
+                success: true,
+                workoutPlan: workoutPlan,
+                generatedBy: aiResponse ? 'AI' : 'Intelligent Algorithm',
+                timestamp: new Date().toISOString()
+            };
+
+        } catch (error) {
+            console.error('Advanced workout generation error:', error);
+            return {
+                success: false,
+                error: 'Failed to generate workout plan',
+                fallbackPlan: this.getBasicWorkoutPlan(userProfile.fitnessGoals?.primaryGoal || 'general fitness')
+            };
+        }
+    }
+
+    // Create comprehensive workout generation prompt
+    createWorkoutGenerationPrompt(goals, personalInfo, healthInfo, history, equipment, time, level, preferences) {
+        let prompt = `You are an expert personal trainer and exercise physiologist. Create a detailed, personalized workout plan based on the following user profile:
+
+USER PROFILE:
+- Age: ${personalInfo?.age || 'Not specified'}
+- Gender: ${personalInfo?.gender || 'Not specified'}
+- Height: ${personalInfo?.height || 'Not specified'} cm
+- Weight: ${personalInfo?.weight || 'Not specified'} kg
+- Fitness Level: ${level}
+- Primary Goal: ${goals?.primaryGoal || 'General fitness'}
+- Target Weight: ${goals?.targetWeight || 'Not specified'} kg
+- Activity Level: ${goals?.activityLevel || 'Moderate'}
+- Workout Frequency: ${goals?.workoutFrequency || 3} times per week
+- Preferred Workout Types: ${goals?.preferredWorkoutTypes?.join(', ') || 'Varied'}
+
+CONSTRAINTS:
+- Available Time: ${time} minutes per session
+- Available Equipment: ${equipment.length > 0 ? equipment.join(', ') : 'Bodyweight only'}
+- Health Considerations: ${healthInfo?.dietaryRestrictions?.join(', ') || 'None specified'}
+
+PREFERENCES:
+- Workout Intensity: ${preferences.intensity || 'Moderate'}
+- Focus Areas: ${preferences.focusAreas?.join(', ') || 'Full body'}
+- Avoid: ${preferences.avoid?.join(', ') || 'None'}
+
+Please create a comprehensive workout plan that includes:
+1. Weekly schedule (specific days and workout types)
+2. Detailed exercises with sets, reps, and rest periods
+3. Progression plan for the next 4 weeks
+4. Warm-up and cool-down routines
+5. Modifications for different fitness levels
+6. Safety considerations and form tips
+7. Expected results timeline
+
+Format the response as a structured workout plan with clear sections.`;
+
+        return prompt;
+    }
+
+    // Parse AI response into structured workout plan
+    parseAIWorkoutResponse(aiResponse) {
+        return {
+            title: "AI-Generated Personalized Workout Plan",
+            description: "Custom workout plan created by AI based on your profile",
+            content: aiResponse,
+            duration: "4 weeks",
+            difficulty: "Personalized",
+            equipment: "As specified",
+            structure: this.extractWorkoutStructure(aiResponse)
+        };
+    }
+
+    // Extract workout structure from AI response
+    extractWorkoutStructure(response) {
+        const lines = response.split('\n');
+        const structure = {
+            weeklySchedule: [],
+            exercises: [],
+            progressionPlan: []
+        };
+
+        lines.forEach(line => {
+            if (line.toLowerCase().includes('day') && line.includes(':')) {
+                structure.weeklySchedule.push(line.trim());
+            }
+            if (line.includes('sets') || line.includes('reps')) {
+                structure.exercises.push(line.trim());
+            }
+            if (line.toLowerCase().includes('week') && line.toLowerCase().includes('progress')) {
+                structure.progressionPlan.push(line.trim());
+            }
+        });
+
+        return structure;
+    }
+
+    // Intelligent workout fallback system
+    generateIntelligentWorkoutFallback(userProfile, preferences) {
+        const { fitnessGoals, personalInfo } = userProfile;
+        const goal = fitnessGoals?.primaryGoal?.toLowerCase() || 'general fitness';
+        const level = preferences.fitnessLevel || 'beginner';
+        const timeAvailable = preferences.timeAvailable || 30;
+
+        const workoutPlans = {
+            'weight loss': this.getWeightLossWorkout(level, timeAvailable),
+            'muscle gain': this.getMuscleGainWorkout(level, timeAvailable),
+            'strength': this.getStrengthWorkout(level, timeAvailable),
+            'endurance': this.getEnduranceWorkout(level, timeAvailable),
+            'general fitness': this.getGeneralFitnessWorkout(level, timeAvailable)
+        };
+
+        const selectedPlan = workoutPlans[goal] || workoutPlans['general fitness'];
+        
+        return {
+            ...selectedPlan,
+            personalizedFor: `${personalInfo?.firstName || 'User'} - ${goal}`,
+            adaptedFor: level,
+            sessionDuration: `${timeAvailable} minutes`
+        };
+    }
+
+    // Specific workout plan generators
+    getWeightLossWorkout(level, time) {
+        return {
+            title: "AI-Optimized Weight Loss Program",
+            description: "High-intensity circuit training designed for maximum calorie burn",
+            weeklySchedule: [
+                "Monday: HIIT Cardio + Core (30 min)",
+                "Tuesday: Strength Circuit (30 min)",
+                "Wednesday: Active Recovery - Walking/Yoga (20 min)",
+                "Thursday: Full Body Circuit (35 min)",
+                "Friday: Cardio + Strength Combo (30 min)",
+                "Saturday: Long Cardio Session (45 min)",
+                "Sunday: Rest or Light Activity"
+            ],
+            expectedResults: "3-5 lbs weight loss, improved cardiovascular fitness, increased energy"
+        };
+    }
+
+    getMuscleGainWorkout(level, time) {
+        return {
+            title: "AI-Designed Muscle Building Program",
+            description: "Progressive overload strength training for maximum muscle growth",
+            weeklySchedule: [
+                "Monday: Upper Body Push (45 min)",
+                "Tuesday: Lower Body (45 min)",
+                "Wednesday: Rest or Light Cardio",
+                "Thursday: Upper Body Pull (45 min)",
+                "Friday: Full Body Power (40 min)",
+                "Saturday: Core + Flexibility (30 min)",
+                "Sunday: Complete Rest"
+            ],
+            expectedResults: "2-4 lbs muscle gain, increased strength, improved body composition"
+        };
+    }
+
+    getStrengthWorkout(level, time) {
+        return {
+            title: "AI-Optimized Strength Training",
+            description: "Progressive strength building with compound movements",
+            weeklySchedule: [
+                "Monday: Lower Body Strength",
+                "Tuesday: Upper Body Strength", 
+                "Wednesday: Rest",
+                "Thursday: Full Body Power",
+                "Friday: Accessory Work",
+                "Saturday: Active Recovery",
+                "Sunday: Rest"
+            ],
+            expectedResults: "25-40% strength increase, improved power, better movement quality"
+        };
+    }
+
+    getEnduranceWorkout(level, time) {
+        return {
+            title: "AI-Designed Endurance Program",
+            description: "Cardiovascular and muscular endurance development",
+            weeklySchedule: [
+                "Monday: Long Steady Cardio",
+                "Tuesday: Interval Training",
+                "Wednesday: Cross Training",
+                "Thursday: Tempo Work",
+                "Friday: Recovery Cardio",
+                "Saturday: Long Session",
+                "Sunday: Rest"
+            ],
+            expectedResults: "Improved VO2 max, better endurance, faster recovery"
+        };
+    }
+
+    getGeneralFitnessWorkout(level, time) {
+        return {
+            title: "AI-Balanced Fitness Program",
+            description: "Well-rounded program for overall health and fitness",
+            weeklySchedule: [
+                "Monday: Full Body Strength",
+                "Tuesday: Cardio + Core",
+                "Wednesday: Flexibility + Balance",
+                "Thursday: Circuit Training",
+                "Friday: Strength + Cardio Combo",
+                "Saturday: Active Recreation",
+                "Sunday: Rest or Gentle Movement"
+            ],
+            expectedResults: "Improved overall fitness, better energy, enhanced quality of life"
+        };
+    }
+
+    // Get basic workout plan for fallback
+    getBasicWorkoutPlan(goal) {
+        return {
+            title: `Basic ${goal} Workout`,
+            description: "Simple workout plan to get you started",
+            exercises: [
+                "Bodyweight squats - 3x10",
+                "Push-ups - 3x8",
+                "Plank - 3x30 seconds",
+                "Walking - 20 minutes"
+            ],
+            frequency: "3 times per week",
+            duration: "20-30 minutes"
+        };
+    }
+
     // Health check for AI service
     async healthCheck() {
         return {
@@ -324,7 +586,9 @@ Response:`;
                 realAI: !!this.geminiApiKey,
                 enhancedFallback: true,
                 personalizedResponses: true,
-                workoutPlans: true
+                workoutPlans: true,
+                advancedWorkoutGeneration: true,
+                intelligentFallback: true
             },
             timestamp: new Date().toISOString()
         };

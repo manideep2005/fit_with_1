@@ -3,17 +3,22 @@
         <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
         <div>
             <h3 class="user-name"><%= user.fullName %></h3>
-            <span class="user-plan">
+            <span class="user-plan" id="sidebar-plan">
                 <% 
                 const planNames = {
                     'free': 'Free Plan',
-                    'basic': 'Basic Plan', 
-                    'premium': 'Premium Plan',
-                    'pro': 'Pro Plan'
+                    'basic': 'Basic Pro',
+                    'premium': 'Premium Pro',
+                    'yearly': 'Yearly Premium'
                 };
                 const currentPlan = user.subscription?.plan || 'free';
+                const planName = planNames[currentPlan] || 'Free Plan';
+                const isPremium = currentPlan !== 'free';
                 %>
-                <%= planNames[currentPlan] || 'Free Plan' %>
+                <% if (isPremium) { %>
+                    <i class="fas fa-crown" style="color: #ffd700; margin-right: 5px;"></i>
+                <% } %>
+                <%= planName %>
             </span>
         </div>
     </div>
@@ -55,13 +60,8 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="/health?token=<%= navToken %>" class="nav-link <%= currentPage === 'health' ? 'active' : '' %>">
-                <i class="fas fa-heartbeat"></i> Health Metrics
-            </a>
-        </li>
-        <li class="nav-item">
-            <a href="/biometrics?token=<%= navToken %>" class="nav-link <%= currentPage === 'biometrics' ? 'active' : '' %>" data-premium="analytics">
-                <i class="fas fa-chart-bar"></i> Biometrics
+            <a href="/schedule?token=<%= navToken %>" class="nav-link <%= currentPage === 'schedule' ? 'active' : '' %>">
+                <i class="fas fa-calendar-alt"></i> Schedule
             </a>
         </li>
         <li class="nav-item">
@@ -75,7 +75,7 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="/ai-coach?token=<%= navToken %>" class="nav-link <%= currentPage === 'ai-coach' ? 'active' : '' %>" data-premium="ai-coach">
+            <a href="/ai-coach?token=<%= navToken %>" class="nav-link <%= currentPage === 'ai-coach' ? 'active' : '' %>">
                 <i class="fas fa-robot"></i> AI Coach
             </a>
         </li>
@@ -90,6 +90,20 @@
             </a>
         </li>
     </ul>
+    
+    <script>
+        // Update plan status dynamically
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentSuccess = localStorage.getItem('paymentSuccess');
+            if (paymentSuccess) {
+                const payment = JSON.parse(paymentSuccess);
+                const sidebarPlan = document.getElementById('sidebar-plan');
+                if (sidebarPlan) {
+                    sidebarPlan.innerHTML = `<i class="fas fa-crown" style="color: #ffd700; margin-right: 5px;"></i>${payment.plan}`;
+                }
+            }
+        });
+    </script>
     
     <div class="logout-section">
         <a href="/logout" class="logout-link" onclick="return confirmLogout()">

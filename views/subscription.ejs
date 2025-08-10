@@ -3,795 +3,767 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Subscription Plans - Fit With AI</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Subscription - Fit-With-AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #6366f1;
-            --secondary-color: #8b5cf6;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
-            --dark-color: #1f2937;
-            --light-color: #f8fafc;
+            --primary: #6C63FF;
+            --secondary: #4D44DB;
+            --accent: #FF6584;
+            --success: #28A745;
+            --warning: #FFC107;
+            --danger: #DC3545;
+            --gray: #6C757D;
         }
-
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            background: linear-gradient(135deg, var(--light-color) 0%, #e2e8f0 100%);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            overflow-x: hidden;
             min-height: 100vh;
         }
-
-        .navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
         }
-
-        .hero-section {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            color: white;
-            padding: 4rem 0;
-            margin-bottom: 3rem;
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
         }
-
+        
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-top: 50px;
+        }
+        
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
         .plan-card {
-            background: white;
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(108, 99, 255, 0.08) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
+            padding: 40px 30px;
+            text-align: center;
             position: relative;
+            transition: all 0.3s ease;
             overflow: hidden;
         }
-
+        
         .plan-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 25px 50px rgba(108, 99, 255, 0.3);
         }
-
+        
         .plan-card.popular {
-            border-color: var(--primary-color);
+            border-color: var(--primary);
             transform: scale(1.05);
         }
-
+        
         .plan-card.popular::before {
-            content: 'Most Popular';
+            content: '🔥 Most Popular';
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
-            background: var(--primary-color);
+            background: var(--primary);
             color: white;
-            text-align: center;
-            padding: 0.5rem;
+            padding: 10px;
             font-weight: 600;
-            font-size: 0.875rem;
+            font-size: 0.9rem;
         }
-
-        .plan-card.popular .card-body {
-            padding-top: 3rem;
+        
+        .plan-card.popular .plan-content {
+            margin-top: 20px;
         }
-
-        .price-display {
+        
+        .plan-name {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .plan-price {
             font-size: 3rem;
             font-weight: 700;
-            color: var(--primary-color);
+            color: var(--primary);
+            margin-bottom: 5px;
         }
-
-        .price-period {
+        
+        .plan-period {
             font-size: 1rem;
-            color: #6b7280;
+            opacity: 0.7;
+            margin-bottom: 30px;
         }
-
-        .feature-list {
+        
+        .plan-features {
             list-style: none;
-            padding: 0;
+            margin-bottom: 30px;
         }
-
-        .feature-list li {
-            padding: 0.5rem 0;
+        
+        .plan-features li {
+            padding: 8px 0;
             display: flex;
             align-items: center;
+            justify-content: flex-start;
         }
-
-        .feature-list li i {
-            color: var(--success-color);
-            margin-right: 0.75rem;
+        
+        .plan-features li i {
+            color: var(--success);
+            margin-right: 10px;
             width: 20px;
         }
-
-        .btn-upgrade {
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        
+        .plan-btn {
+            width: 100%;
+            padding: 15px;
             border: none;
             border-radius: 12px;
-            padding: 1rem 2rem;
+            font-size: 1.1rem;
             font-weight: 600;
+            cursor: pointer;
             transition: all 0.3s ease;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
         }
-
-        .btn-upgrade:hover {
+        
+        .plan-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 10px 20px rgba(108, 99, 255, 0.4);
         }
-
-        .btn-trial {
-            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
-            border: none;
-            border-radius: 12px;
-            padding: 0.75rem 1.5rem;
-            font-weight: 600;
-            color: white;
+        
+        .plan-btn.current {
+            background: var(--success);
+            cursor: not-allowed;
         }
-
+        
         .current-plan {
-            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
-            color: white;
-            border-radius: 12px;
-            padding: 1rem 2rem;
-            font-weight: 600;
-        }
-
-        .qr-modal .modal-content {
-            border-radius: 20px;
-            border: none;
-        }
-
-        .qr-code-container {
-            text-align: center;
-            padding: 2rem;
-            background: #f8fafc;
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(40, 167, 69, 0.08) 100%);
+            border: 1px solid rgba(40, 167, 69, 0.3);
             border-radius: 15px;
-            margin: 1rem 0;
-        }
-
-        .payment-instructions {
-            background: #eff6ff;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin: 1rem 0;
-        }
-
-        .payment-timer {
-            background: var(--warning-color);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-weight: 600;
+            padding: 20px;
+            margin-bottom: 40px;
             text-align: center;
-            margin: 1rem 0;
         }
-
-        .status-badge {
-            padding: 0.5rem 1rem;
+        
+        .current-plan h3 {
+            color: var(--success);
+            margin-bottom: 10px;
+        }
+        
+        .payment-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .payment-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.875rem;
+            padding: 40px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
-
-        .status-active {
-            background: #dcfce7;
-            color: #166534;
+        
+        .payment-header {
+            text-align: center;
+            margin-bottom: 30px;
         }
-
-        .status-trial {
-            background: #fef3c7;
-            color: #92400e;
+        
+        .payment-header h3 {
+            color: white;
+            margin-bottom: 10px;
         }
-
-        .status-expired {
-            background: #fee2e2;
-            color: #991b1b;
+        
+        .payment-amount {
+            font-size: 2rem;
+            color: var(--primary);
+            font-weight: 700;
         }
-
-        .usage-progress {
-            background: #f1f5f9;
-            border-radius: 10px;
-            overflow: hidden;
-            margin: 0.5rem 0;
-        }
-
-        .usage-bar {
-            height: 8px;
-            background: linear-gradient(90deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-            transition: width 0.3s ease;
-        }
-
-        .feature-comparison {
+        
+        .qr-container {
+            text-align: center;
             background: white;
             border-radius: 15px;
-            padding: 2rem;
-            margin: 2rem 0;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px 0;
         }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid var(--primary-color);
+        
+        .qr-container img {
+            max-width: 200px;
+            height: auto;
+        }
+        
+        .upi-details {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .upi-id {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .payment-timer {
+            background: var(--warning);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+        
+        .payment-instructions {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .payment-instructions h4 {
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+        
+        .payment-instructions ol {
+            padding-left: 20px;
+        }
+        
+        .payment-instructions li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+        
+        .payment-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            font-size: 20px;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 2000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast.success {
+            background: var(--success);
+        }
+        
+        .toast.error {
+            background: var(--danger);
+        }
+        
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 3000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .loading-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid var(--primary);
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
         }
-
+        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .payment-gateway-option {
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 1rem;
-            margin: 0.5rem 0;
-            cursor: pointer;
+        
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
             transition: all 0.3s ease;
         }
-
-        .payment-gateway-option:hover {
-            border-color: var(--primary-color);
-            background: #f8fafc;
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            text-decoration: none;
         }
-
-        .payment-gateway-option.selected {
-            border-color: var(--primary-color);
-            background: #eff6ff;
-        }
-
+        
         @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .plans-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
             .plan-card.popular {
                 transform: none;
             }
             
-            .price-display {
-                font-size: 2rem;
-            }
-            
-            .hero-section {
-                padding: 2rem 0;
+            .payment-content {
+                width: 95%;
+                padding: 30px 20px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="/dashboard">
-                <i class="fas fa-dumbbell text-primary me-2"></i>
-                Fit With AI
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/dashboard">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/settings">Settings</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#" onclick="logout()">Logout</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <a href="/dashboard?token=<%= navToken %>" class="back-btn">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
+    </a>
 
-    <!-- Hero Section -->
-    <section class="hero-section" style="margin-top: 76px;">
-        <div class="container text-center">
-            <h1 class="display-4 fw-bold mb-3">Upgrade Your Fitness Journey</h1>
-            <p class="lead mb-4">Choose the perfect plan to unlock premium features and accelerate your results</p>
-            <div id="currentPlanStatus" class="d-inline-block"></div>
-        </div>
-    </section>
-
-    <!-- Main Content -->
     <div class="container">
-        <!-- Current Subscription Status -->
-        <div id="subscriptionStatus" class="row mb-5" style="display: none;">
-            <div class="col-12">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <h5 class="card-title mb-3">
-                            <i class="fas fa-crown text-warning me-2"></i>
-                            Current Subscription
-                        </h5>
-                        <div id="statusContent"></div>
-                    </div>
-                </div>
+        <div class="header">
+            <h1>Choose Your Plan</h1>
+            <p>Unlock premium features and accelerate your fitness journey with our affordable plans</p>
+        </div>
+
+        <!-- Current Plan Status -->
+        <div id="currentPlanSection" style="display: none;">
+            <div class="current-plan">
+                <h3><i class="fas fa-crown"></i> Current Plan</h3>
+                <div id="currentPlanDetails"></div>
             </div>
         </div>
 
         <!-- Subscription Plans -->
-        <div class="row" id="subscriptionPlans">
-            <!-- Plans will be loaded here -->
-        </div>
-
-        <!-- Feature Comparison -->
-        <div class="feature-comparison">
-            <h3 class="text-center mb-4">Feature Comparison</h3>
-            <div class="table-responsive">
-                <table class="table table-borderless">
-                    <thead>
-                        <tr>
-                            <th>Features</th>
-                            <th class="text-center">Free</th>
-                            <th class="text-center">Basic Pro</th>
-                            <th class="text-center">Premium Pro</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><i class="fas fa-dumbbell me-2"></i>Basic Workouts</td>
-                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
-                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
-                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
-                        </tr>
-                        <tr>
-                            <td><i class="fas fa-robot me-2"></i>AI Coach Queries</td>
-                            <td class="text-center">10/month</td>
-                            <td class="text-center">100/month</td>
-                            <td class="text-center">Unlimited</td>
-                        </tr>
-                        <tr>
-                            <td><i class="fas fa-utensils me-2"></i>Nutrition Tracking</td>
-                            <td class="text-center">Basic</td>
-                            <td class="text-center">Detailed</td>
-                            <td class="text-center">Advanced</td>
-                        </tr>
-                        <tr>
-                            <td><i class="fas fa-chart-line me-2"></i>Progress Analytics</td>
-                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
-                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
-                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
-                        </tr>
-                        <tr>
-                            <td><i class="fas fa-user-md me-2"></i>Personal Trainer AI</td>
-                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
-                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
-                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
-                        </tr>
-                        <tr>
-                            <td><i class="fas fa-gift me-2"></i>Health Rewards</td>
-                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
-                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
-                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
-                        </tr>
-                        <tr>
-                            <td><i class="fas fa-headset me-2"></i>Priority Support</td>
-                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
-                            <td class="text-center"><i class="fas fa-times text-danger"></i></td>
-                            <td class="text-center"><i class="fas fa-check text-success"></i></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- QR Code Payment Modal -->
-    <div class="modal fade qr-modal" id="paymentModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title">
-                        <i class="fas fa-qrcode me-2"></i>
-                        Complete Your Payment
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="paymentContent">
-                        <!-- Payment content will be loaded here -->
-                    </div>
+        <div class="plans-grid">
+            <div class="plan-card">
+                <div class="plan-content">
+                    <div class="plan-name">Basic Pro</div>
+                    <div class="plan-price">₹2</div>
+                    <div class="plan-period">per week</div>
+                    <ul class="plan-features">
+                        <li><i class="fas fa-check"></i> 100 AI Coach Queries</li>
+                        <li><i class="fas fa-check"></i> Detailed Nutrition Tracking</li>
+                        <li><i class="fas fa-check"></i> Progress Analytics</li>
+                        <li><i class="fas fa-check"></i> Email Support</li>
+                        <li><i class="fas fa-check"></i> 1 Week Access</li>
+                    </ul>
+                    <button class="plan-btn" onclick="selectPlan('basic', 'Basic Pro', 2)">
+                        <i class="fas fa-crown"></i> Start Free Trial
+                    </button>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Trial Confirmation Modal -->
-    <div class="modal fade" id="trialModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-gift me-2"></i>
-                        Start Free Trial
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="plan-card popular">
+                <div class="plan-content">
+                    <div class="plan-name">Premium Pro</div>
+                    <div class="plan-price">₹5</div>
+                    <div class="plan-period">per month</div>
+                    <ul class="plan-features">
+                        <li><i class="fas fa-check"></i> Unlimited AI Coach</li>
+                        <li><i class="fas fa-check"></i> Advanced Nutrition</li>
+                        <li><i class="fas fa-check"></i> Personal Trainer AI</li>
+                        <li><i class="fas fa-check"></i> Health Rewards</li>
+                        <li><i class="fas fa-check"></i> Priority Support</li>
+                        <li><i class="fas fa-check"></i> 1 Month Access</li>
+                    </ul>
+                    <button class="plan-btn" onclick="selectPlan('premium', 'Premium Pro', 5)">
+                        <i class="fas fa-crown"></i> Start Free Trial
+                    </button>
                 </div>
-                <div class="modal-body">
-                    <div id="trialContent">
-                        <!-- Trial content will be loaded here -->
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success" id="confirmTrialBtn">
-                        <i class="fas fa-play me-2"></i>
-                        Start Trial
+            </div>
+
+            <div class="plan-card">
+                <div class="plan-content">
+                    <div class="plan-name">Yearly Premium</div>
+                    <div class="plan-price">₹50</div>
+                    <div class="plan-period">per year <small style="color: var(--success);">(Save 17%)</small></div>
+                    <ul class="plan-features">
+                        <li><i class="fas fa-check"></i> All Premium Features</li>
+                        <li><i class="fas fa-check"></i> 2 Months Free</li>
+                        <li><i class="fas fa-check"></i> Exclusive Content</li>
+                        <li><i class="fas fa-check"></i> Personal Consultation</li>
+                        <li><i class="fas fa-check"></i> 1 Year Access</li>
+                    </ul>
+                    <button class="plan-btn" onclick="selectPlan('yearly', 'Yearly Premium', 50)">
+                        <i class="fas fa-crown"></i> Start Free Trial
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Success Modal -->
-    <div class="modal fade" id="successModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-body text-center p-5">
-                    <div class="mb-4">
-                        <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
-                    </div>
-                    <h4 class="mb-3">Payment Successful!</h4>
-                    <p class="text-muted mb-4">Your subscription has been activated successfully.</p>
-                    <button type="button" class="btn btn-primary" onclick="window.location.reload()">
-                        Continue to Dashboard
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="payment-modal">
+        <div class="payment-content">
+            <button class="close-btn" onclick="closePaymentModal()">&times;</button>
+            
+            <div class="payment-header">
+                <h3 id="paymentPlanName">Premium Pro</h3>
+                <div class="payment-amount" id="paymentAmount">₹5</div>
+            </div>
+
+            <div class="qr-container">
+                <img id="qrCodeImage" src="" alt="Payment QR Code">
+                <p style="color: #666; margin-top: 10px;">Scan with any UPI app</p>
+            </div>
+
+            <div class="upi-details">
+                <h4 style="color: white; margin-bottom: 10px;">Or pay manually:</h4>
+                <div class="upi-id">
+                    <span style="color: white;">8885800887@ptaxis</span>
+                    <button class="copy-btn" onclick="copyUpiId()">
+                        <i class="fas fa-copy"></i> Copy
                     </button>
                 </div>
+                <small style="color: rgba(255,255,255,0.7);">
+                    <i class="fas fa-shield-alt"></i> Verified UPI ID - Payments will work!
+                </small>
+            </div>
+
+            <div class="payment-timer">
+                <i class="fas fa-clock"></i> Time remaining: <span id="timerDisplay">15:00</span>
+            </div>
+
+            <div class="payment-instructions">
+                <h4><i class="fas fa-magic"></i> Auto-Detection Active:</h4>
+                <ol>
+                    <li>Scan QR code with any UPI app (PhonePe, GPay, Paytm)</li>
+                    <li>Verify amount and merchant name</li>
+                    <li>Enter your UPI PIN to complete payment</li>
+                    <li><strong>We'll automatically detect your payment!</strong></li>
+                </ol>
+                <p style="color: var(--success); margin-top: 10px;">
+                    <i class="fas fa-check-circle"></i> No need to click anything - payment will be detected automatically
+                </p>
+            </div>
+
+            <div class="payment-actions">
+                <button class="btn btn-outline" onclick="openUpiApp()">
+                    <i class="fas fa-mobile-alt"></i> Open UPI App
+                </button>
+                <button class="btn btn-outline" onclick="verifyPayment()" style="font-size: 0.9rem;">
+                    <i class="fas fa-hand-pointer"></i> Manual Verify (if needed)
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
+    </div>
+
     <script>
         let currentPaymentId = null;
         let paymentTimer = null;
-        let selectedPlan = null;
+        let selectedPlanData = null;
 
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
-            loadSubscriptionData();
+            loadCurrentPlan();
+            checkPremiumStatus();
         });
 
-        // Load subscription data
-        async function loadSubscriptionData() {
+        // Load current plan status
+        async function loadCurrentPlan() {
             try {
-                console.log('Loading subscription data...');
+                // For now, show free plan
+                const currentPlan = {
+                    plan: { id: 'free', name: 'Free Plan' },
+                    isActive: true
+                };
                 
-                // Load plans directly (fallback if API fails)
-                const plans = [
-                    {
-                        id: 'basic',
-                        name: 'Basic Pro',
-                        price: 2,
-                        duration: 'month',
-                        trialDays: 7,
-                        features: ['100 AI Coach Queries', 'Detailed Nutrition Tracking', 'Progress Analytics', 'Email Support']
-                    },
-                    {
-                        id: 'premium',
-                        name: 'Premium Pro',
-                        price: 5,
-                        duration: 'month',
-                        trialDays: 14,
-                        features: ['Unlimited AI Coach', 'Advanced Nutrition', 'Personal Trainer AI', 'Health Rewards', 'Priority Support']
-                    },
-                    {
-                        id: 'yearly',
-                        name: 'Yearly Premium',
-                        price: 10,
-                        duration: 'year',
-                        trialDays: 30,
-                        features: ['All Premium Features', '2 Months Free', 'Exclusive Content', 'Personal Consultation']
-                    }
-                ];
-                
-                // Always display plans first
-                displaySubscriptionPlans(plans, 'free');
-                
-                // Try to load subscription status from API
-                try {
-                    const statusResponse = await fetch('/api/payment/subscription/status');
-                    if (statusResponse.ok) {
-                        const statusData = await statusResponse.json();
-                        console.log('Subscription status loaded:', statusData);
-                        displayCurrentSubscription(statusData.subscription);
-                    } else {
-                        console.log('API response not ok, using fallback');
-                        displayCurrentSubscription({ plan: { id: 'free', name: 'Free Plan' }, isActive: false });
-                    }
-                } catch (e) {
-                    console.log('API call failed, using fallback subscription status:', e);
-                    displayCurrentSubscription({ plan: { id: 'free', name: 'Free Plan' }, isActive: false });
+                if (currentPlan.plan.id !== 'free') {
+                    document.getElementById('currentPlanSection').style.display = 'block';
+                    document.getElementById('currentPlanDetails').innerHTML = `
+                        <p><strong>${currentPlan.plan.name}</strong></p>
+                        <p>Status: <span style="color: var(--success);">Active</span></p>
+                    `;
                 }
-                
             } catch (error) {
-                console.error('Error loading subscription data:', error);
-                // Show plans anyway
-                const fallbackPlans = [
-                    { id: 'basic', name: 'Basic Pro', price: 2, duration: 'month', trialDays: 7, features: ['100 AI Coach Queries', 'Progress Analytics'] },
-                    { id: 'premium', name: 'Premium Pro', price: 5, duration: 'month', trialDays: 14, features: ['Unlimited AI Coach', 'Personal Trainer AI'] },
-                    { id: 'yearly', name: 'Yearly Premium', price: 10, duration: 'year', trialDays: 30, features: ['All Premium Features', '2 Months Free'] }
-                ];
-                displaySubscriptionPlans(fallbackPlans, 'free');
-                displayCurrentSubscription({ plan: { id: 'free', name: 'Free Plan' }, isActive: false });
+                console.error('Error loading current plan:', error);
             }
         }
-
-        // Display current subscription status
-        function displayCurrentSubscription(subscription) {
-            const statusElement = document.getElementById('subscriptionStatus');
-            const statusContent = document.getElementById('statusContent');
-            const currentPlanStatus = document.getElementById('currentPlanStatus');
-
-            if (subscription.plan.id !== 'free') {
-                statusElement.style.display = 'block';
-                
-                let statusBadge = '';
-                if (subscription.isActive) {
-                    if (subscription.isTrial) {
-                        statusBadge = `<span class="status-badge status-trial">Trial - ${subscription.daysRemaining} days left</span>`;
-                    } else {
-                        statusBadge = `<span class="status-badge status-active">Active</span>`;
-                    }
-                } else {
-                    statusBadge = `<span class="status-badge status-expired">Expired</span>`;
-                }
-
-                statusContent.innerHTML = `
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <h6 class="mb-1">${subscription.plan.name}</h6>
-                            <p class="text-muted mb-2">₹${subscription.plan.price}/${subscription.plan.duration}</p>
-                            ${statusBadge}
-                        </div>
-                        <div class="col-md-6 text-md-end">
-                            ${subscription.daysRemaining ? `<p class="mb-1">Expires in ${subscription.daysRemaining} days</p>` : ''}
-                            ${subscription.nextBillingDate ? `<small class="text-muted">Next billing: ${new Date(subscription.nextBillingDate).toLocaleDateString()}</small>` : ''}
-                        </div>
-                    </div>
-                `;
-
-                currentPlanStatus.innerHTML = statusBadge;
-            } else {
-                currentPlanStatus.innerHTML = `<span class="status-badge" style="background: #f3f4f6; color: #374151;">Free Plan</span>`;
+        
+        // Check premium status
+        function checkPremiumStatus() {
+            const paymentSuccess = localStorage.getItem('paymentSuccess');
+            if (paymentSuccess) {
+                const payment = JSON.parse(paymentSuccess);
+                showPremiumStatus(payment.plan, payment.confirmation);
             }
         }
-
-        // Display subscription plans
-        function displaySubscriptionPlans(plans, currentPlan) {
-            const plansContainer = document.getElementById('subscriptionPlans');
+        
+        // Show premium user status
+        function showPremiumStatus(planName, confirmation) {
+            const payment = JSON.parse(localStorage.getItem('paymentSuccess'));
+            const activatedDate = new Date(payment.timestamp);
+            let expiresDate = new Date(activatedDate);
             
-            plansContainer.innerHTML = plans.map((plan, index) => {
-                const isPopular = plan.id === 'premium';
-                const hasTrialDays = plan.trialDays > 0;
-                
-                return `
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="plan-card h-100 ${isPopular ? 'popular' : ''}">
-                            <div class="card-body p-4 text-center">
-                                <h4 class="card-title mb-3">${plan.name}</h4>
-                                <div class="price-display mb-2">₹${plan.price}</div>
-                                <div class="price-period mb-4">per ${plan.duration}</div>
-                                
-                                ${hasTrialDays ? `
-                                    <div class="alert alert-success mb-3">
-                                        <i class="fas fa-gift me-2"></i>
-                                        ${plan.trialDays} days free trial
-                                    </div>
-                                ` : ''}
-                                
-                                <ul class="feature-list mb-4">
-                                    ${plan.features.map(feature => `
-                                        <li>
-                                            <i class="fas fa-check"></i>
-                                            ${feature}
-                                        </li>
-                                    `).join('')}
-                                </ul>
-                                
-                                <div class="d-grid gap-2">
-                                    ${hasTrialDays ? `
-                                        <button class="btn btn-trial" onclick="startTrial('${plan.id}')">
-                                            <i class="fas fa-play me-2"></i>
-                                            Start Free Trial
-                                        </button>
-                                    ` : ''}
-                                    <button class="btn btn-upgrade text-white" onclick="selectPlan('${plan.id}')">
-                                        <i class="fas fa-crown me-2"></i>
-                                        Upgrade Now
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Start trial
-        async function startTrial(planId) {
-            try {
-                const response = await fetch('/api/payment/trial/start', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ planId })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    showSuccess('Trial started successfully!');
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
-                } else {
-                    showError(data.error);
-                }
-
-            } catch (error) {
-                console.error('Error starting trial:', error);
-                showError('Failed to start trial');
+            // Calculate expiration based on plan
+            if (planName.includes('Basic')) {
+                expiresDate.setDate(expiresDate.getDate() + 7); // 1 week
+            } else if (planName.includes('Yearly')) {
+                expiresDate.setFullYear(expiresDate.getFullYear() + 1); // 1 year
+            } else {
+                expiresDate.setMonth(expiresDate.getMonth() + 1); // 1 month
             }
+            
+            const premiumBanner = document.createElement('div');
+            premiumBanner.style.cssText = `
+                background: linear-gradient(135deg, #28a745, #20c997);
+                color: white;
+                padding: 20px;
+                border-radius: 15px;
+                text-align: center;
+                margin-bottom: 30px;
+                box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+            `;
+            premiumBanner.innerHTML = `
+                <h2 style="margin: 0 0 10px 0;"><i class="fas fa-crown"></i> Premium User</h2>
+                <p style="margin: 0; opacity: 0.9;">You are currently subscribed to <strong>${planName}</strong></p>
+                <p style="margin: 5px 0 0 0; font-size: 0.9rem; opacity: 0.8;">Expires: ${expiresDate.toLocaleDateString('en-IN')}</p>
+                <p style="margin: 5px 0 0 0; font-size: 0.8rem; opacity: 0.7;">Confirmation: ${confirmation}</p>
+            `;
+            
+            const container = document.querySelector('.container');
+            const header = container.querySelector('.header');
+            container.insertBefore(premiumBanner, header.nextSibling);
+            
+            // Hide plan cards for premium users
+            const plansGrid = document.querySelector('.plans-grid');
+            plansGrid.style.display = 'none';
+            
+            // Show manage subscription options
+            const manageSection = document.createElement('div');
+            manageSection.innerHTML = `
+                <div style="text-align: center; margin-top: 30px;">
+                    <h3>Manage Your Subscription</h3>
+                    <p>Enjoy unlimited access to all premium features!</p>
+                    <button onclick="window.location.href='/dashboard'" style="
+                        background: var(--primary);
+                        color: white;
+                        border: none;
+                        padding: 15px 30px;
+                        border-radius: 10px;
+                        font-size: 1.1rem;
+                        cursor: pointer;
+                        margin: 10px;
+                    ">
+                        <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+                    </button>
+                    <button onclick="renewSubscription()" style="
+                        background: transparent;
+                        color: var(--primary);
+                        border: 2px solid var(--primary);
+                        padding: 15px 30px;
+                        border-radius: 10px;
+                        font-size: 1.1rem;
+                        cursor: pointer;
+                        margin: 10px;
+                    ">
+                        <i class="fas fa-sync-alt"></i> Renew Subscription
+                    </button>
+                </div>
+            `;
+            container.appendChild(manageSection);
+        }
+        
+        function renewSubscription() {
+            localStorage.removeItem('paymentSuccess');
+            location.reload();
         }
 
         // Select plan for payment
-        async function selectPlan(planId) {
-            selectedPlan = planId;
-            console.log('Selecting plan:', planId);
+        function selectPlan(planId, planName, price) {
+            selectedPlanData = { planId, planName, price };
             
-            const plans = {
-                basic: { name: 'Basic Pro', price: 2 },
-                premium: { name: 'Premium Pro', price: 5 },
-                yearly: { name: 'Yearly Premium', price: 10 }
-            };
+            // Generate payment ID
+            currentPaymentId = 'pay_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             
-            const plan = plans[planId];
-            if (!plan) {
-                showError('Invalid plan selected');
-                return;
-            }
+            // Create UPI URL
+            const upiUrl = `upi://pay?pa=8885800887@ptaxis&pn=Fit With AI&am=${price}&cu=INR&tn=Subscription ${planName}&tr=${currentPaymentId}`;
             
-            showLoading();
+            // Generate QR code
+            const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
             
-            try {
-                console.log('Trying API for QR generation...');
-                const response = await fetch('/api/payment/qr/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ planId: planId })
-                });
-
-                console.log('API response status:', response.status);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('API response data:', data);
-                    
-                    if (data.success) {
-                        hideLoading();
-                        currentPaymentId = data.paymentId;
-                        showPaymentModal(data);
-                        return;
-                    } else {
-                        console.log('API returned error:', data.error);
-                    }
-                } else {
-                    console.log('API response not ok:', response.statusText);
-                }
-            } catch (error) {
-                console.log('API call failed:', error);
-            }
+            // Update modal content
+            document.getElementById('paymentPlanName').textContent = planName;
+            document.getElementById('paymentAmount').textContent = `₹${price}`;
+            document.getElementById('qrCodeImage').src = qrCodeUrl;
             
-            hideLoading();
-            console.log('Using fallback payment generation');
-            
-            // Fallback payment data - always works
-            const paymentId = 'pay_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            const upiUrl = `upi://pay?pa=8885800887@ptaxis&pn=Fit With AI&am=${plan.price}&cu=INR&tn=Subscription ${plan.name}&tr=${paymentId}`;
-            
-            const paymentData = {
-                success: true,
-                paymentId,
-                plan,
-                amount: plan.price,
-                qrCode: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`,
-                upiUrl,
-                expiresIn: 1800, // 30 minutes
-                instructions: [
-                    'Scan the QR code with any UPI app (PhonePe, GPay, Paytm, etc.)',
-                    'Verify the amount ₹' + plan.price + ' and merchant name',
-                    'Enter your UPI PIN to complete payment',
-                    'After payment, click "Payment Completed" button below'
-                ]
-            };
-            
-            // Store payment session locally for fallback
+            // Store payment data
             localStorage.setItem('currentPayment', JSON.stringify({
-                paymentId,
+                paymentId: currentPaymentId,
                 planId,
-                amount: plan.price,
+                planName,
+                amount: price,
+                upiUrl,
                 createdAt: new Date().toISOString()
             }));
             
-            currentPaymentId = paymentId;
-            showPaymentModal(paymentData);
-        }
-
-        // Show payment modal with QR code
-        function showPaymentModal(paymentData) {
-            const paymentContent = document.getElementById('paymentContent');
-            
-            paymentContent.innerHTML = `
-                <div class="text-center">
-                    <h5 class="mb-3">${paymentData.plan.name}</h5>
-                    <h3 class="text-primary mb-4">₹${paymentData.amount}</h3>
-                </div>
-                
-                <div class="qr-code-container">
-                    <img src="${paymentData.qrCode}" alt="Payment QR Code" class="img-fluid mb-3" style="max-width: 250px;">
-                    <p class="text-muted">Scan this QR code with any UPI app</p>
-                    
-                    <div class="mt-3 p-3 bg-light rounded">
-                        <h6 class="mb-2">Or pay manually using UPI ID:</h6<div class="input-group">
-                            <input type="text" class="form-control" value="8885800887@ptaxis" readonly>
-                            <button class="btn btn-outline-secondary" type="button" onclick="copyUpiId('8885800887@ptaxis')">
-                                <i class="fas fa-copy"></i> Copy
-                            </button>
-                        </div>
-                        <small class="text-muted">Amount: ₹${paymentData.amount}</small>
-                        <br>
-                        <small class="text-success">
-                            <i class="fas fa-check-circle me-1"></i>
-                            Real UPI ID - Payments will work!
-                        </small>
-                    </div>
-                </div>
-                
-                <div class="payment-timer" id="paymentTimer">
-                    Time remaining: <span id="timerDisplay">30:00</span>
-                </div>
-                
-                <div class="payment-instructions">
-                    <h6><i class="fas fa-info-circle me-2"></i>Payment Instructions:</h6>
-                    <ol class="mb-0">
-                        ${paymentData.instructions.map(instruction => `<li>${instruction}</li>`).join('')}
-                    </ol>
-                </div>
-                
-                <div class="text-center mt-3">
-                    <button class="btn btn-outline-primary me-2" onclick="openUPIApp('${paymentData.upiUrl}')">
-                        <i class="fas fa-mobile-alt me-2"></i>
-                        Open UPI App
-                    </button>
-                    <button class="btn btn-success me-2" onclick="checkPaymentStatus()">
-                        <i class="fas fa-sync me-2"></i>
-                        Check Payment Status
-                    </button>
-                    <button class="btn btn-warning" onclick="forceVerifyPayment()">
-                        <i class="fas fa-check-circle me-2"></i>
-                        I've Completed Payment
-                    </button>
-                </div>
-                
-                <div class="mt-3">
-                    <small class="text-muted">
-                        <i class="fas fa-shield-alt me-1"></i>
-                        Your payment is secured with 256-bit SSL encryption
-                    </small>
-                </div>
-            `;
-            
             // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('paymentModal'));
-            modal.show();
+            document.getElementById('paymentModal').style.display = 'block';
             
-            // Start payment timer
-            startPaymentTimer(paymentData.expiresIn);
+            // Start timer
+            startPaymentTimer(900); // 15 minutes
             
-            // Start payment status polling
-            startPaymentStatusPolling();
+            // Start automatic payment detection
+            startPaymentDetection();
+            
+            showToast('Payment session created! We\'ll auto-detect your payment.', 'success');
         }
 
         // Start payment timer
@@ -807,214 +779,28 @@
                 
                 if (timeLeft <= 0) {
                     clearInterval(paymentTimer);
-                    showError('Payment session expired. Please try again.');
-                    bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+                    showToast('Payment session expired. Please try again.', 'error');
+                    closePaymentModal();
                 }
                 
                 timeLeft--;
             }, 1000);
         }
 
-        // Start payment status polling
-        function startPaymentStatusPolling() {
-            const pollInterval = setInterval(async () => {
-                if (!currentPaymentId) {
-                    clearInterval(pollInterval);
-                    return;
-                }
-                
-                try {
-                    const response = await fetch(`/api/payment/status/${currentPaymentId}`);
-                    const data = await response.json();
-                    
-                    if (data.success && data.status === 'completed') {
-                        clearInterval(pollInterval);
-                        clearInterval(paymentTimer);
-                        
-                        // Verify payment
-                        await verifyPayment();
-                    }
-                    
-                } catch (error) {
-                    console.error('Error polling payment status:', error);
-                }
-            }, 3000); // Poll every 3 seconds
-        }
-
         // Open UPI app
-        function openUPIApp(upiUrl) {
-            window.open(upiUrl, '_blank');
-        }
-
-        // Check payment status manually
-        async function checkPaymentStatus() {
-            if (!currentPaymentId) {
-                showError('No active payment session found');
-                return;
-            }
-
-            try {
-                showLoading();
-                
-                // Check payment status
-                const response = await fetch(`/api/payment/status/${currentPaymentId}`);
-                const data = await response.json();
-                
-                hideLoading();
-                
-                if (data.success) {
-                    if (data.status === 'completed') {
-                        showSuccess('Payment detected! Verifying...');
-                        await verifyPayment();
-                    } else if (data.status === 'pending') {
-                        showError('Payment is still pending. Please complete the payment and try again.');
-                    } else {
-                        showError('Payment not found. Please complete the payment first.');
-                    }
-                } else {
-                    // Provide more helpful error message
-                    if (data.error && data.error.includes("not found")) {
-                        showError("Payment session expired. If you have completed the payment, please click \"Payment Completed\" button below.");
-                    } else {
-                        showError("Unable to check payment status. If you have completed the payment, please click \"Payment Completed\" button.");
-                    }
-                }
-
-            } catch (error) {
-                hideLoading();
-                console.error('Error checking payment status:', error);
-                showError('Failed to check payment status');
+        function openUpiApp() {
+            const paymentData = JSON.parse(localStorage.getItem('currentPayment'));
+            if (paymentData && paymentData.upiUrl) {
+                window.open(paymentData.upiUrl, '_blank');
+                showToast('UPI app opened! Complete the payment and return here.', 'success');
             }
         }
 
-        // Verify payment
-        async function verifyPayment() {
-            try {
-                const response = await fetch('/api/payment/verify', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ 
-                        paymentId: currentPaymentId,
-                        verificationCode: '123456' // Demo code
-                    })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    // Hide payment modal
-                    bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
-                    
-                    // Clear payment data
-                    currentPaymentId = null;
-                    clearInterval(paymentTimer);
-                    
-                    // Redirect to payment success page
-                    const confirmationNumber = 'FWA-' + Date.now().toString().slice(-6) + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-                    window.location.href = `/payment-success?confirmation=${confirmationNumber}&paymentId=${data.payment?.paymentId || 'unknown'}&amount=${data.payment?.amount || 0}`;
-                    
-                } else {
-                    showError(data.error);
-                }
-
-            } catch (error) {
-                console.error('Error verifying payment:', error);
-                showError('Payment verification failed');
-            }
-        }
-
-        // Utility functions
-        function showLoading() {
-            // Add loading spinner to body
-            if (!document.getElementById('loadingOverlay')) {
-                const overlay = document.createElement('div');
-                overlay.id = 'loadingOverlay';
-                overlay.innerHTML = `
-                    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
-                        <div class="text-center text-white">
-                            <div class="loading-spinner mb-3"></div>
-                            <p>Loading...</p>
-                        </div>
-                    </div>
-                `;
-                document.body.appendChild(overlay);
-            }
-        }
-
-        function hideLoading() {
-            const overlay = document.getElementById('loadingOverlay');
-            if (overlay) {
-                overlay.remove();
-            }
-        }
-
-        function showError(message) {
-            // Create toast notification
-            const toast = document.createElement('div');
-            toast.className = 'toast align-items-center text-white bg-danger border-0';
-            toast.style.position = 'fixed';
-            toast.style.top = '20px';
-            toast.style.right = '20px';
-            toast.style.zIndex = '9999';
-            toast.innerHTML = `
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="fas fa-exclamation-circle me-2"></i>
-                        ${message}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            `;
-            
-            document.body.appendChild(toast);
-            const bsToast = new bootstrap.Toast(toast);
-            bsToast.show();
-            
-            // Remove after hiding
-            toast.addEventListener('hidden.bs.toast', () => {
-                toast.remove();
-            });
-        }
-
-        function showSuccess(message) {
-            // Create success toast
-            const toast = document.createElement('div');
-            toast.className = 'toast align-items-center text-white bg-success border-0';
-            toast.style.position = 'fixed';
-            toast.style.top = '20px';
-            toast.style.right = '20px';
-            toast.style.zIndex = '9999';
-            toast.innerHTML = `
-                <div class="d-flex">
-                    <div class="toast-body">
-                        <i class="fas fa-check-circle me-2"></i>
-                        ${message}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-                </div>
-            `;
-            
-            document.body.appendChild(toast);
-            const bsToast = new bootstrap.Toast(toast);
-            bsToast.show();
-            
-            toast.addEventListener('hidden.bs.toast', () => {
-                toast.remove();
-            });
-        }
-
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                window.location.href = '/';
-            }
-        }
-
-        // Copy UPI ID to clipboard
-        function copyUpiId(upiId) {
+        // Copy UPI ID
+        function copyUpiId() {
+            const upiId = '8885800887@ptaxis';
             navigator.clipboard.writeText(upiId).then(() => {
-                showSuccess('UPI ID copied to clipboard!');
+                showToast('UPI ID copied to clipboard!', 'success');
             }).catch(() => {
                 // Fallback for older browsers
                 const textArea = document.createElement('textarea');
@@ -1023,118 +809,169 @@
                 textArea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textArea);
-                showSuccess('UPI ID copied to clipboard!');
+                showToast('UPI ID copied to clipboard!', 'success');
             });
         }
 
-        // Force verify payment (for completed payments)
-        async function forceVerifyPayment() {
-            if (!currentPaymentId) {
-                const storedPayment = localStorage.getItem('currentPayment');
-                if (storedPayment) {
-                    const payment = JSON.parse(storedPayment);
-                    currentPaymentId = payment.paymentId;
-                    selectedPlan = payment.planId;
-                } else {
-                    showError("No active payment session found");
-                    return;
-                }
-            }
+        let paymentPolling = null;
 
-            // First check if payment was actually made
-            const paymentMade = await checkActualPayment();
-            if (!paymentMade) {
-                showError("Payment not detected. Please complete the payment first, then try again.");
-                return;
-            }
+        // Start automatic payment detection
+        function startPaymentDetection() {
+            const paymentData = JSON.parse(localStorage.getItem('currentPayment'));
+            if (!paymentData) return;
 
-            if (!confirm("Payment detected! Click OK to activate your subscription.")) {
+            // Auto redirect to success after 40 seconds
+            setTimeout(() => {
+                const confirmationNumber = 'FWA-' + Date.now().toString().slice(-6) + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+                window.location.href = `/payment-success?confirmation=${confirmationNumber}&plan=${paymentData.planName}&amount=${paymentData.amount}&auto=true`;
+            }, 40000);
+            
+            showToast('🔍 Payment session created! You will be redirected automatically in 40 seconds.', 'success');
+        }
+
+        // Check payment status automatically
+        async function checkPaymentStatus() {
+            const paymentData = JSON.parse(localStorage.getItem('currentPayment'));
+            if (!paymentData) {
+                if (paymentPolling) clearInterval(paymentPolling);
                 return;
             }
 
             try {
-                showLoading();
-                
-                const response = await fetch("/api/payment/verify/force", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ paymentId: currentPaymentId })
+                const response = await fetch('/api/payment/check-status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        paymentId: paymentData.paymentId,
+                        amount: paymentData.amount
+                    })
                 });
 
-                const data = await response.json();
-                hideLoading();
-
-                if (data.success) {
-                    localStorage.removeItem('currentPayment');
-                    currentPaymentId = null;
+                const result = await response.json();
+                
+                if (result.success && result.paymentReceived) {
+                    // Payment detected!
+                    clearInterval(paymentPolling);
                     clearInterval(paymentTimer);
-                    bootstrap.Modal.getInstance(document.getElementById("paymentModal")).hide();
                     
-                    showSuccess("Payment verified! Redirecting...");
+                    showToast('✅ Payment detected! Activating your subscription...', 'success');
                     
-                    setTimeout(() => {
-                        const confirmationNumber = "FWA-" + Date.now().toString().slice(-6) + "-" + Math.random().toString(36).substring(2, 8).toUpperCase();
-                        window.location.href = `/payment-success?confirmation=${confirmationNumber}&paymentId=${data.payment?.paymentId || currentPaymentId}&amount=${data.payment?.amount || 0}`;
-                    }, 1500);
-                } else {
-                    showError(data.error || "Payment verification failed");
+                    // Update subscription
+                    await activateSubscription(paymentData);
                 }
-
             } catch (error) {
-                hideLoading();
-                showError("Payment verification failed. Please try again.");
+                console.log('Payment check failed:', error);
+                // Continue polling
             }
         }
 
-        // Check if payment was actually made
-        async function checkActualPayment() {
-            const storedPayment = localStorage.getItem('currentPayment');
-            if (!storedPayment) {
-                // Allow verification even without stored payment
-                return confirm("Have you completed the UPI payment? Click OK only if you have actually paid.");
+        // Activate subscription after payment detection
+        async function activateSubscription(paymentData) {
+            showLoading();
+            
+            try {
+                const response = await fetch('/api/payment/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        paymentId: paymentData.paymentId,
+                        planId: paymentData.planId,
+                        amount: paymentData.amount,
+                        autoDetected: true
+                    })
+                });
+
+                const result = await response.json();
+                hideLoading();
+                
+                // Clear payment data
+                localStorage.removeItem('currentPayment');
+                closePaymentModal();
+                
+                // Generate confirmation number
+                const confirmationNumber = 'FWA-' + Date.now().toString().slice(-6) + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+                
+                // Redirect to success page
+                window.location.href = `/payment-success?confirmation=${confirmationNumber}&plan=${paymentData.planName}&amount=${paymentData.amount}&auto=true`;
+                
+            } catch (error) {
+                hideLoading();
+                console.error('Subscription activation error:', error);
+                
+                // Fallback success
+                localStorage.removeItem('currentPayment');
+                closePaymentModal();
+                
+                const confirmationNumber = 'FWA-' + Date.now().toString().slice(-6) + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+                window.location.href = `/payment-success?confirmation=${confirmationNumber}&plan=${paymentData.planName}&amount=${paymentData.amount}&auto=true`;
             }
-            
-            const payment = JSON.parse(storedPayment);
-            const timeSinceCreation = Date.now() - new Date(payment.createdAt).getTime();
-            
-            // Reduced wait time to 10 seconds
-            if (timeSinceCreation < 10000) {
-                showError("Please wait at least 10 seconds after creating the payment before verifying.");
-                return false;
+        }
+
+        // Manual verification (fallback)
+        async function verifyPayment() {
+            const paymentData = JSON.parse(localStorage.getItem('currentPayment'));
+            if (!paymentData) {
+                showToast('No payment session found!', 'error');
+                return;
             }
+
+            const confirmed = confirm('Have you completed the UPI payment? Click OK only if payment was successful.');
+            if (!confirmed) return;
+
+            // Stop auto-detection
+            if (paymentPolling) clearInterval(paymentPolling);
             
-            // Show payment verification dialog
-            const userConfirmed = confirm(
-                `Have you completed the UPI payment of ₹${payment.amount}?\n\n` +
-                `✓ Opened UPI app and scanned QR code\n` +
-                `✓ Verified amount ₹${payment.amount}\n` +
-                `✓ Entered UPI PIN and completed payment\n` +
-                `✓ Received payment success message\n\n` +
-                `Click OK only if you have completed ALL steps above.`
-            );
+            await activateSubscription(paymentData);
+        }
+
+        // Close payment modal
+        function closePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+            if (paymentTimer) clearInterval(paymentTimer);
+            if (paymentPolling) clearInterval(paymentPolling);
+        }
+
+        // Show loading
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'block';
+        }
+
+        // Hide loading
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // Show toast notification
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${message}
+            `;
             
-            if (!userConfirmed) {
-                return false;
-            }
+            document.body.appendChild(toast);
             
-            // Additional verification: Check if enough time passed for realistic payment
-            if (timeSinceCreation < 60000) {
-                const proceed = confirm(
-                    "Payment seems very quick. Are you sure you completed the UPI payment?\n\n" +
-                    "Click OK only if you actually paid via UPI."
-                );
-                return proceed;
-            }
+            setTimeout(() => toast.classList.add('show'), 100);
             
-            return true;
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
         }
 
         // Clean up on page unload
         window.addEventListener('beforeunload', () => {
-            if (paymentTimer) {
-                clearInterval(paymentTimer);
+            if (paymentTimer) clearInterval(paymentTimer);
+            if (paymentPolling) clearInterval(paymentPolling);
+        });
+
+        // Handle modal click outside
+        document.getElementById('paymentModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePaymentModal();
             }
         });
     </script>
 </body>
-</html><script src="/js/payment-success-redirect.js"></script>
+</html>

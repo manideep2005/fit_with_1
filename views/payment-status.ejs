@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Status - Fit-With-AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --secondary: #4D44DB;
+            --success: #28A745;
+            --warning: #FFC107;
+            --danger: #DC3545;
+            --info: #17A2B8;
+            --light: #F8F9FA;
+            --dark: #343A40;
+            --gray: #6C757D;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .payment-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .payment-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .status-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .status-pending {
+            background: var(--warning);
+            animation: pulse 2s infinite;
+        }
+
+        .status-completed {
+            background: var(--success);
+            animation: checkmark 0.6s ease-in-out;
+        }
+
+        .status-failed {
+            background: var(--danger);
+        }
+
+        .status-detecting {
+            background: var(--info);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes checkmark {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .status-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .status-message {
+            color: var(--gray);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .payment-details {
+            background: var(--light);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: left;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: var(--gray);
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .progress-container {
+            margin: 2rem 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .detection-attempts {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 1rem 0;
+        }
+
+        .attempt-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .attempt-dot.active {
+            background: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .attempt-dot.completed {
+            background: var(--success);
+        }
+
+        .detection-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .method-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .method-card.active {
+            border-color: var(--primary);
+            background: rgba(108, 99, 255, 0.05);
+        }
+
+        .method-card.completed {
+            border-color: var(--success);
+            background: rgba(40, 167, 69, 0.05);
+        }
+
+        .method-icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--gray);
+        }
+
+        .method-card.active .method-icon {
+            color: var(--primary);
+            animation: pulse 1s infinite;
+        }
+
+        .method-card.completed .method-icon {
+            color: var(--success);
+        }
+
+        .method-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--gray);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            font-family: 'Poppins', sans-serif;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+            border: 1px solid #dee2e6;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .timer {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 1rem 0;
+        }
+
+        .tips-section {
+            background: rgba(108, 99, 255, 0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: left;
+        }
+
+        .tips-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tips-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tips-list li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .tips-list li::before {
+            content: '💡';
+            flex-shrink: 0;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            border-left: 4px solid var(--success);
+        }
+
+        .notification.error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .notification.info {
+            border-left: 4px solid var(--info);
+        }
+
+        @media (max-width: 768px) {
+            .payment-container {
+                padding: 1.5rem;
+                margin: 10px;
+            }
+
+            .detection-methods {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <div class="status-icon status-detecting" id="statusIcon">
+            <i class="fas fa-search" id="statusIconSymbol"></i>
+        </div>
+
+        <h1 class="status-title" id="statusTitle">Detecting Payment...</h1>
+        <p class="status-message" id="statusMessage">
+            We're automatically checking for your payment. This usually takes 30 seconds to 2 minutes.
+        </p>
+
+        <div class="payment-details">
+            <div class="detail-row">
+                <span class="detail-label">Payment ID:</span>
+                <span class="detail-value" id="paymentId"><%= paymentId || 'Loading...' %></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Amount:</span>
+                <span class="detail-value" id="amount">₹<%= amount || '0' %></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Plan:</span>
+                <span class="detail-value" id="planName"><%= planName || 'Premium' %></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span class="detail-value" id="paymentStatus">Detecting...</span>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 10%;"></div>
+            </div>
+            <div class="timer" id="timer">00:00</div>
+        </div>
+
+        <div class="detection-attempts" id="detectionAttempts">
+            <div class="attempt-dot active"></div>
+            <div class="attempt-dot"></div>
+            <div class="attempt-dot"></div>
+            <div class="attempt-dot"></div>
+            <div class="attempt-dot"></div>
+        </div>
+
+        <div class="detection-methods">
+            <div class="method-card active" id="method-bank">
+                <div class="method-icon"><i class="fas fa-university"></i></div>
+                <div class="method-name">Bank Check</div>
+            </div>
+            <div class="method-card" id="method-time">
+                <div class="method-icon"><i class="fas fa-clock"></i></div>
+                <div class="method-name">Time Based</div>
+            </div>
+            <div class="method-card" id="method-pattern">
+                <div class="method-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="method-name">Pattern</div>
+            </div>
+            <div class="method-card" id="method-ml">
+                <div class="method-icon"><i class="fas fa-brain"></i></div>
+                <div class="method-name">AI Detection</div>
+            </div>
+        </div>
+
+        <div class="action-buttons" id="actionButtons">
+            <button class="btn btn-secondary" onclick="checkManually()">
+                <i class="fas fa-sync"></i> Check Manually
+            </button>
+            <button class="btn btn-primary" onclick="confirmPayment()" style="display: none;" id="confirmBtn">
+                <i class="fas fa-check"></i> I've Paid
+            </button>
+        </div>
+
+        <div class="tips-section">
+            <div class="tips-title">
+                <i class="fas fa-lightbulb"></i>
+                Payment Detection Tips
+            </div>
+            <ul class="tips-list">
+                <li>Payment detection is automatic and usually takes 30 seconds to 2 minutes</li>
+                <li>Make sure you completed the UPI payment in your app</li>
+                <li>Check your bank SMS for payment confirmation</li>
+                <li>If detection fails, you can manually confirm your payment</li>
+                <li>All payments are secure and encrypted</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <i class="fas fa-info-circle"></i>
+        <span id="notificationText">Payment detection started...</span>
+    </div>
+
+    <script>
+        // Payment detection configuration
+        const PAYMENT_ID = '<%= paymentId %>' || 'demo_payment_123';
+        const AMOUNT = '<%= amount %>' || 99;
+        const PLAN_NAME = '<%= planName %>' || 'Premium Monthly';
+        
+        let detectionStartTime = Date.now();
+        let detectionAttempts = 0;
+        let maxAttempts = 5;
+        let isDetectionComplete = false;
+        let detectionInterval;
+        let timerInterval;
+
+        // DOM elements
+        const statusIcon = document.getElementById('statusIcon');
+        const statusIconSymbol = document.getElementById('statusIconSymbol');
+        const statusTitle = document.getElementById('statusTitle');
+        const statusMessage = document.getElementById('statusMessage');
+        const paymentStatus = document.getElementById('paymentStatus');
+        const progressFill = document.getElementById('progressFill');
+        const timer = document.getElementById('timer');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const notification = document.getElementById('notification');
+        const notificationText = document.getElementById('notificationText');
+
+        // Initialize payment detection
+        function initializeDetection() {
+            console.log('🔍 Starting payment detection for:', PAYMENT_ID);
+            
+            showNotification('Payment detection started...', 'info');
+            startTimer();
+            startDetection();
+            
+            // Show confirm button after 1 minute
+            setTimeout(() => {
+                confirmBtn.style.display = 'inline-flex';
+                showNotification('You can now manually confirm if you\'ve completed the payment', 'info');
+            }, 60000);
+        }
+
+        // Start detection process
+        function startDetection() {
+            detectionInterval = setInterval(async () => {
+                if (isDetectionComplete) {
+                    clearInterval(detectionInterval);
+                    return;
+                }
+
+                detectionAttempts++;
+                updateDetectionProgress();
+                
+                try {
+                    const result = await checkPaymentStatus();
+                    
+                    if (result.success && result.status === 'completed') {
+                        handlePaymentSuccess(result.payment);
+                    } else if (detectionAttempts >= maxAttempts) {
+                        handleDetectionTimeout();
+                    } else {
+                        updateDetectionMethod();
+                    }
+                } catch (error) {
+                    console.error('Detection error:', error);
+                    showNotification('Detection error, retrying...', 'error');
+                }
+            }, 30000); // Check every 30 seconds
+        }
+
+        // Check payment status via API
+        async function checkPaymentStatus() {
+            try {
+                const response = await fetch(`/api/payment/status/${PAYMENT_ID}`);
+                const data = await response.json();
+                
+                console.log('Payment status check:', data);
+                return data;
+            } catch (error) {
+                console.error('Status check error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Update detection progress
+        function updateDetectionProgress() {
+            const progress = Math.min((detectionAttempts / maxAttempts) * 100, 90);
+            progressFill.style.width = progress + '%';
+            
+            // Update attempt dots
+            const dots = document.querySelectorAll('.attempt-dot');
+            dots.forEach((dot, index) => {
+                if (index < detectionAttempts) {
+                    dot.classList.add('active');
+                } else {
+                    dot.classList.remove('active');
+                }
+            });
+            
+            paymentStatus.textContent = `Detecting... (Attempt ${detectionAttempts}/${maxAttempts})`;
+        }
+
+        // Update detection method visualization
+        function updateDetectionMethod() {
+            const methods = ['method-bank', 'method-time', 'method-pattern', 'method-ml'];
+            const currentMethod = methods[(detectionAttempts - 1) % methods.length];
+            
+            // Reset all methods
+            methods.forEach(method => {
+                const element = document.getElementById(method);
+                element.classList.remove('active', 'completed');
+            });
+            
+            // Activate current method
+            const activeElement = document.getElementById(currentMethod);
+            activeElement.classList.add('active');
+            
+            // Mark previous methods as completed
+            for (let i = 0; i < (detectionAttempts - 1) % methods.length; i++) {
+                document.getElementById(methods[i]).classList.add('completed');
+            }
+        }
+
+        // Handle successful payment detection
+        function handlePaymentSuccess(payment) {
+            isDetectionComplete = true;
+            clearInterval(detectionInterval);
+            clearInterval(timerInterval);
+            
+            // Update UI
+            statusIcon.className = 'status-icon status-completed';
+            statusIconSymbol.className = 'fas fa-check';
+            statusTitle.textContent = 'Payment Successful!';
+            statusMessage.textContent = 'Your payment has been detected and verified. Activating your premium subscription...';
+            paymentStatus.textContent = 'Completed';
+            progressFill.style.width = '100%';
+            
+            // Mark all methods as completed
+            document.querySelectorAll('.method-card').forEach(card => {
+                card.classList.remove('active');
+                card.classList.add('completed');
+            });
+            
+            // Mark all dots as completed
+            document.querySelectorAll('.attempt-dot').forEach(dot => {
+                dot.classList.add('completed');
+            });
+            
+            showNotification('Payment successful! Redirecting to dashboard...', 'success');
+            
+            // Update action buttons
+            document.getElementById('actionButtons').innerHTML = `
+                <a href="/dashboard" class="btn btn-success">
+                    <i class="fas fa-arrow-right"></i> Go to Dashboard
+                </a>
+            `;
+            
+            // Redirect after 3 seconds
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 3000);
+        }
+
+        // Handle detection timeout
+        function handleDetectionTimeout() {
+            statusIcon.className = 'status-icon status-pending';
+            statusIconSymbol.className = 'fas fa-exclamation-triangle';
+            statusTitle.textContent = 'Manual Confirmation Required';
+            statusMessage.textContent = 'Automatic detection is taking longer than expected. Please confirm if you\'ve completed the payment.';
+            paymentStatus.textContent = 'Pending Confirmation';
+            
+            showNotification('Please manually confirm your payment', 'info');
+            
+            // Update action buttons
+            document.getElementById('actionButtons').innerHTML = `
+                <button class="btn btn-primary" onclick="confirmPayment()">
+                    <i class="fas fa-check"></i> I've Completed Payment
+                </button>
+                <button class="btn btn-secondary" onclick="retryDetection()">
+                    <i class="fas fa-sync"></i> Retry Detection
+                </button>
+            `;
+        }
+
+        // Manual payment confirmation
+        async function confirmPayment() {
+            try {
+                showNotification('Verifying your payment...', 'info');
+                
+                const response = await fetch('/api/payment/verify/force', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        paymentId: PAYMENT_ID
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    handlePaymentSuccess(result.payment);
+                } else {
+                    showNotification('Verification failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Manual confirmation error:', error);
+                showNotification('Confirmation failed. Please try again.', 'error');
+            }
+        }
+
+        // Check manually
+        async function checkManually() {
+            showNotification('Checking payment status...', 'info');
+            
+            try {
+                const result = await checkPaymentStatus();
+                
+                if (result.success && result.status === 'completed') {
+                    handlePaymentSuccess(result.payment);
+                } else {
+                    showNotification('Payment not detected yet. Please wait or confirm manually.', 'info');
+                }
+            } catch (error) {
+                showNotification('Check failed. Please try again.', 'error');
+            }
+        }
+
+        // Retry detection
+        function retryDetection() {
+            detectionAttempts = 0;
+            isDetectionComplete = false;
+            
+            statusIcon.className = 'status-icon status-detecting';
+            statusIconSymbol.className = 'fas fa-search';
+            statusTitle.textContent = 'Detecting Payment...';
+            statusMessage.textContent = 'Retrying automatic payment detection...';
+            paymentStatus.textContent = 'Detecting...';
+            progressFill.style.width = '10%';
+            
+            showNotification('Retrying payment detection...', 'info');
+            startDetection();
+        }
+
+        // Start timer
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                const elapsed = Date.now() - detectionStartTime;
+                const minutes = Math.floor(elapsed / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                
+                timer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            notificationText.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 5000);
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDetection();
+        });
+
+        // Handle page visibility change (pause/resume detection when tab is hidden/visible)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                console.log('Page hidden, pausing detection');
+            } else {
+                console.log('Page visible, resuming detection');
+                if (!isDetectionComplete) {
+                    checkManually();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -19,24 +19,50 @@
             --light-gray: #E9ECEF;
         }
         
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #F5F7FA;
-            color: var(--dark);
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
         
-        .dashboard-container {
-            display: flex;
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            overflow-x: hidden;
             min-height: 100vh;
         }
         
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+            gap: 20px;
+            padding: 20px;
+        }
+        
         .sidebar {
-            width: 250px;
-            background: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            padding: 2rem 1rem;
+            background: transparent;
+            border: none;
+            padding: 30px 20px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
         }
         
         .sidebar-header {
@@ -56,6 +82,7 @@
         .user-name {
             font-weight: 600;
             margin: 0;
+            color: white;
         }
         
         .user-plan {
@@ -80,16 +107,35 @@
         .nav-link {
             display: flex;
             align-items: center;
-            padding: 12px 1rem;
-            color: var(--gray);
+            padding: 12px 15px;
+            color: rgba(255, 255, 255, 0.7);
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 15px;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .nav-link:hover::before {
+            left: 100%;
         }
         
         .nav-link:hover, .nav-link.active {
-            background: rgba(108, 99, 255, 0.1);
-            color: var(--primary);
+            background: rgba(108, 99, 255, 0.2);
+            color: #ffffff;
+            transform: translateX(5px);
         }
         
         .nav-link i {
@@ -124,8 +170,9 @@
         }
         
         .main-content {
-            flex: 1;
-            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
         }
         
         .page-header {
@@ -136,17 +183,35 @@
         }
         
         .page-title {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 600;
-            color: var(--dark);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .ai-coach-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            background: transparent;
+            border: none;
             padding: 2rem;
             margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .ai-coach-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(108, 99, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(108, 99, 255, 0.08) 100%);
+            border-radius: 12px;
+            z-index: -1;
         }
         
         .card-header {
@@ -160,21 +225,24 @@
             font-size: 1.2rem;
             font-weight: 600;
             margin: 0;
+            color: white;
         }
         
         .ai-message {
-            background: rgba(108, 99, 255, 0.05);
+            background: rgba(108, 99, 255, 0.1);
             border-left: 4px solid var(--primary);
             padding: 1rem;
             border-radius: 0 8px 8px 0;
             margin-bottom: 1rem;
+            color: white;
         }
         
         .user-message {
-            background: var(--light-gray);
+            background: rgba(255, 255, 255, 0.1);
             padding: 1rem;
             border-radius: 8px;
             margin-bottom: 1rem;
+            color: white;
         }
         
         .chat-container {
@@ -192,10 +260,16 @@
         .form-control {
             flex: 1;
             padding: 12px 16px;
-            border: 1px solid var(--light-gray);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
             font-family: 'Poppins', sans-serif;
             transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.5);
         }
         
         .form-control:focus {
@@ -231,11 +305,26 @@
         }
         
         .feature-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            background: transparent;
+            border: none;
             padding: 1.5rem;
             transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(108, 99, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(108, 99, 255, 0.08) 100%);
+            border-radius: 12px;
+            z-index: -1;
         }
         
         .feature-card:hover {
@@ -259,21 +348,22 @@
         .feature-title {
             font-weight: 600;
             margin-bottom: 0.5rem;
+            color: white;
         }
         
         .feature-desc {
-            color: var(--gray);
+            color: rgba(255, 255, 255, 0.7);
             font-size: 0.9rem;
         }
         
         @media (max-width: 768px) {
             .dashboard-container {
-                flex-direction: column;
+                grid-template-columns: 1fr;
+                padding: 10px;
             }
             
             .sidebar {
-                width: 100%;
-                padding: 1rem;
+                display: none;
             }
             
             .main-content {
@@ -327,7 +417,9 @@
             <div class="page-header">
                 <h1 class="page-title">AI Fitness Coach</h1>
                 <div>
-                    <button class="btn btn-primary"><i class="fas fa-magic"></i> Generate Workout Plan</button>
+                    <button class="btn btn-primary" id="generateWorkoutBtn"><i class="fas fa-magic"></i> Generate Workout Plan</button>
+                    <button class="btn btn-primary" id="formCorrectionBtn" style="margin-left: 10px;"><i class="fas fa-video"></i> Form Correction</button>
+                    <button class="btn btn-primary" id="virtualTrainingBtn" style="margin-left: 10px;"><i class="fas fa-user-tie"></i> Virtual Training</button>
                 </div>
             </div>
             
@@ -504,12 +596,363 @@
             }
         });
 
-        // Generate workout plan button
-        document.querySelector('.btn-primary').addEventListener('click', function() {
-            const input = document.getElementById('messageInput');
-            input.value = 'Can you create a personalized workout plan for me based on my fitness goals?';
-            sendMessage();
+        // Advanced AI Workout Plan Generation
+        document.getElementById('generateWorkoutBtn').addEventListener('click', async function() {
+            const button = this;
+            const originalText = button.innerHTML;
+            
+            try {
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+                
+                const response = await fetch('/api/ai-workout-plan', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        preferences: {
+                            timeAvailable: 30,
+                            fitnessLevel: 'intermediate',
+                            equipment: ['bodyweight'],
+                            intensity: 'moderate'
+                        }
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Add workout plan to chat
+                    const chatContainer = document.getElementById('chatContainer');
+                    const workoutMessage = document.createElement('div');
+                    workoutMessage.className = 'ai-message';
+                    workoutMessage.innerHTML = `
+                        <strong>AI Coach:</strong>
+                        <h4>🏋️ ${data.workoutPlan.title}</h4>
+                        <p><strong>Description:</strong> ${data.workoutPlan.description}</p>
+                        <div style="background: rgba(108, 99, 255, 0.1); padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                            <pre style="white-space: pre-wrap; font-family: inherit;">${data.workoutPlan.content}</pre>
+                        </div>
+                        <p><em>Generated by: ${data.generatedBy} at ${new Date(data.timestamp).toLocaleString()}</em></p>
+                    `;
+                    chatContainer.appendChild(workoutMessage);
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
+                } else {
+                    alert('Failed to generate workout plan: ' + data.error);
+                }
+                
+            } catch (error) {
+                console.error('Workout generation error:', error);
+                alert('Failed to generate workout plan. Please try again.');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
         });
+
+        // Form Correction Feature
+        document.getElementById('formCorrectionBtn').addEventListener('click', async function() {
+            const modal = createFormCorrectionModal();
+            document.body.appendChild(modal);
+        });
+
+        // Virtual Training Feature
+        document.getElementById('virtualTrainingBtn').addEventListener('click', async function() {
+            const modal = createVirtualTrainingModal();
+            document.body.appendChild(modal);
+        });
+
+        // Create Form Correction Modal
+        function createFormCorrectionModal() {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); display: flex; align-items: center;
+                justify-content: center; z-index: 1000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 12px; padding: 2rem; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0; color: var(--primary);">🎯 AI Form Correction</h2>
+                        <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    </div>
+                    
+                    <div id="formCorrectionContent">
+                        <p>Select an exercise to start form correction analysis:</p>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1rem 0;">
+                            <button class="exercise-btn" data-exercise="squat" style="padding: 1rem; border: 2px solid var(--light-gray); border-radius: 8px; background: white; cursor: pointer; transition: all 0.3s;">
+                                <i class="fas fa-dumbbell" style="font-size: 2rem; color: var(--primary); display: block; margin-bottom: 0.5rem;"></i>
+                                <strong>Squat</strong>
+                                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: var(--gray);">Beginner friendly</p>
+                            </button>
+                            
+                            <button class="exercise-btn" data-exercise="pushup" style="padding: 1rem; border: 2px solid var(--light-gray); border-radius: 8px; background: white; cursor: pointer; transition: all 0.3s;">
+                                <i class="fas fa-hand-paper" style="font-size: 2rem; color: var(--primary); display: block; margin-bottom: 0.5rem;"></i>
+                                <strong>Push-up</strong>
+                                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: var(--gray);">Intermediate</p>
+                            </button>
+                            
+                            <button class="exercise-btn" data-exercise="plank" style="padding: 1rem; border: 2px solid var(--light-gray); border-radius: 8px; background: white; cursor: pointer; transition: all 0.3s;">
+                                <i class="fas fa-stopwatch" style="font-size: 2rem; color: var(--primary); display: block; margin-bottom: 0.5rem;"></i>
+                                <strong>Plank</strong>
+                                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: var(--gray);">Beginner friendly</p>
+                            </button>
+                            
+                            <button class="exercise-btn" data-exercise="lunge" style="padding: 1rem; border: 2px solid var(--light-gray); border-radius: 8px; background: white; cursor: pointer; transition: all 0.3s;">
+                                <i class="fas fa-walking" style="font-size: 2rem; color: var(--primary); display: block; margin-bottom: 0.5rem;"></i>
+                                <strong>Lunge</strong>
+                                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: var(--gray);">Intermediate</p>
+                            </button>
+                        </div>
+                        
+                        <div style="background: rgba(108, 99, 255, 0.1); padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                            <h4 style="margin: 0 0 0.5rem 0;">📱 How it works:</h4>
+                            <ol style="margin: 0; padding-left: 1.2rem;">
+                                <li>Select an exercise above</li>
+                                <li>Position your camera for side view</li>
+                                <li>Start the session and perform the exercise</li>
+                                <li>Get real-time feedback on your form</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add exercise button click handlers
+            modal.querySelectorAll('.exercise-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const exercise = this.dataset.exercise;
+                    startFormCorrectionSession(exercise, modal);
+                });
+                
+                btn.addEventListener('mouseenter', function() {
+                    this.style.borderColor = 'var(--primary)';
+                    this.style.transform = 'translateY(-2px)';
+                });
+                
+                btn.addEventListener('mouseleave', function() {
+                    this.style.borderColor = 'var(--light-gray)';
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+            
+            modal.className = 'modal';
+            return modal;
+        }
+
+        // Start Form Correction Session
+        async function startFormCorrectionSession(exercise, modal) {
+            try {
+                const response = await fetch('/api/form-correction/start-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ exerciseType: exercise })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update modal content with session interface
+                    const content = modal.querySelector('#formCorrectionContent');
+                    content.innerHTML = `
+                        <div style="text-align: center;">
+                            <h3>🎯 ${data.session.exercise} Form Correction Active</h3>
+                            <p>Session ID: ${data.session.sessionId}</p>
+                            
+                            <div style="background: rgba(40, 167, 69, 0.1); padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                                <h4 style="color: var(--success); margin: 0 0 0.5rem 0;">✅ Session Started Successfully!</h4>
+                                <p style="margin: 0;">${data.message}</p>
+                            </div>
+                            
+                            <div style="background: rgba(108, 99, 255, 0.1); padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                                <h4 style="margin: 0 0 0.5rem 0;">📋 Setup Instructions:</h4>
+                                <ul style="text-align: left; margin: 0; padding-left: 1.2rem;">
+                                    ${data.session.setupTips.map(tip => `<li>${tip}</li>`).join('')}
+                                </ul>
+                            </div>
+                            
+                            <div style="background: rgba(255, 193, 7, 0.1); padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                                <h4 style="margin: 0 0 0.5rem 0;">💡 Exercise Instructions:</h4>
+                                <p style="margin: 0;">${data.session.instructions}</p>
+                            </div>
+                            
+                            <div style="margin: 2rem 0;">
+                                <button id="endSessionBtn" class="btn btn-primary" style="margin-right: 1rem;">End Session</button>
+                                <button onclick="this.closest('.modal').remove()" class="btn" style="background: var(--gray); color: white;">Close</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add end session handler
+                    modal.querySelector('#endSessionBtn').addEventListener('click', async function() {
+                        await endFormCorrectionSession(modal);
+                    });
+                    
+                } else {
+                    alert('Failed to start form correction session: ' + data.error);
+                }
+                
+            } catch (error) {
+                console.error('Form correction error:', error);
+                alert('Failed to start form correction session. Please try again.');
+            }
+        }
+
+        // End Form Correction Session
+        async function endFormCorrectionSession(modal) {
+            try {
+                const response = await fetch('/api/form-correction/end-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show session summary
+                    const content = modal.querySelector('#formCorrectionContent');
+                    content.innerHTML = `
+                        <div style="text-align: center;">
+                            <h3>🏁 Session Complete!</h3>
+                            
+                            <div style="background: rgba(40, 167, 69, 0.1); padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                                <h4 style="color: var(--success); margin: 0 0 1rem 0;">📊 Session Summary</h4>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; text-align: center;">
+                                    <div>
+                                        <strong style="display: block; font-size: 1.5rem; color: var(--primary);">${data.summary.repCount || 0}</strong>
+                                        <span style="font-size: 0.9rem; color: var(--gray);">Reps Completed</span>
+                                    </div>
+                                    <div>
+                                        <strong style="display: block; font-size: 1.5rem; color: var(--primary);">${data.summary.overallScore || 0}</strong>
+                                        <span style="font-size: 0.9rem; color: var(--gray);">Form Score</span>
+                                    </div>
+                                    <div>
+                                        <strong style="display: block; font-size: 1.5rem; color: var(--primary);">${data.summary.duration || 0}m</strong>
+                                        <span style="font-size: 0.9rem; color: var(--gray);">Duration</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button onclick="this.closest('.modal').remove()" class="btn btn-primary">Close</button>
+                        </div>
+                    `;
+                } else {
+                    alert('Failed to end session: ' + data.error);
+                }
+                
+            } catch (error) {
+                console.error('End session error:', error);
+                alert('Failed to end session. Please try again.');
+            }
+        }
+
+        // Create Virtual Training Modal
+        function createVirtualTrainingModal() {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.5); display: flex; align-items: center;
+                justify-content: center; z-index: 1000;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; border-radius: 12px; padding: 2rem; max-width: 800px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                        <h2 style="margin: 0; color: var(--primary);">👨‍💼 Virtual Personal Training</h2>
+                        <button onclick="this.closest('.modal').remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                    </div>
+                    
+                    <div id="virtualTrainingContent">
+                        <p>Connect with certified personal trainers for one-on-one virtual sessions:</p>
+                        
+                        <div id="trainersList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin: 1rem 0;">
+                            <!-- Trainers will be loaded here -->
+                        </div>
+                        
+                        <div style="text-align: center; margin: 2rem 0;">
+                            <button id="loadTrainersBtn" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Find Available Trainers
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add load trainers handler
+            modal.querySelector('#loadTrainersBtn').addEventListener('click', function() {
+                loadVirtualTrainers(modal);
+            });
+            
+            modal.className = 'modal';
+            return modal;
+        }
+
+        // Load Virtual Trainers
+        async function loadVirtualTrainers(modal) {
+            const button = modal.querySelector('#loadTrainersBtn');
+            const originalText = button.innerHTML;
+            
+            try {
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+                
+                const response = await fetch('/api/virtual-training/trainers');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const trainersList = modal.querySelector('#trainersList');
+                    trainersList.innerHTML = data.trainers.map(trainer => `
+                        <div style="border: 1px solid var(--light-gray); border-radius: 8px; padding: 1rem; transition: all 0.3s;">
+                            <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                                <img src="${trainer.avatar}" alt="${trainer.name}" style="width: 50px; height: 50px; border-radius: 50%; margin-right: 1rem;" onerror="this.src='https://ui-avatars.com/api/?name=${trainer.name}&background=6C63FF&color=fff'">
+                                <div>
+                                    <h4 style="margin: 0; color: var(--primary);">${trainer.name}</h4>
+                                    <div style="display: flex; align-items: center; margin-top: 0.25rem;">
+                                        <span style="color: var(--warning);">★</span>
+                                        <span style="margin-left: 0.25rem; font-size: 0.9rem;">${trainer.rating} (${trainer.experience})</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <p style="margin: 0.5rem 0; font-size: 0.9rem; color: var(--gray);">
+                                <strong>Specialties:</strong> ${trainer.specialties.join(', ')}
+                            </p>
+                            
+                            <p style="margin: 0.5rem 0; font-size: 0.9rem;">
+                                <strong>Rate:</strong> ${trainer.hourlyRate}/hour
+                            </p>
+                            
+                            <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="bookTrainer('${trainer.id}', '${trainer.name}')">
+                                <i class="fas fa-calendar-plus"></i> Book Session
+                            </button>
+                        </div>
+                    `).join('');
+                    
+                    button.style.display = 'none';
+                } else {
+                    alert('Failed to load trainers: ' + data.error);
+                }
+                
+            } catch (error) {
+                console.error('Load trainers error:', error);
+                alert('Failed to load trainers. Please try again.');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        }
+
+        // Book Trainer Function
+        window.bookTrainer = function(trainerId, trainerName) {
+            alert(`Booking functionality for ${trainerName} will be implemented. This would open a booking calendar and payment interface.`);
+        };
 
         // Auto-focus on input when page loads
         document.addEventListener('DOMContentLoaded', function() {

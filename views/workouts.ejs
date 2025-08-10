@@ -19,24 +19,54 @@
             --light-gray: #E9ECEF;
         }
         
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #F5F7FA;
-            color: var(--dark);
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
         
-        .dashboard-container {
-            display: flex;
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            overflow-x: hidden;
             min-height: 100vh;
         }
         
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 280px 1fr 400px;
+            min-height: 100vh;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .dashboard-container.video-hidden {
+            grid-template-columns: 280px 1fr;
+        }
+        
         .sidebar {
-            width: 250px;
-            background: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            padding: 2rem 1rem;
+            background: transparent;
+            border: none;
+            padding: 30px 20px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
         }
         
         .sidebar-header {
@@ -80,16 +110,34 @@
         .nav-link {
             display: flex;
             align-items: center;
-            padding: 12px 1rem;
-            color: var(--gray);
+            padding: 12px 15px;
+            color: rgba(255, 255, 255, 0.7);
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 15px;
             transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .nav-link:hover::before {
+            left: 100%;
         }
         
         .nav-link:hover, .nav-link.active {
-            background: rgba(108, 99, 255, 0.1);
-            color: var(--primary);
+            background: rgba(108, 99, 255, 0.2);
+            color: #ffffff;
+            transform: translateX(5px);
         }
         
         .nav-link i {
@@ -124,8 +172,9 @@
         }
         
         .main-content {
-            flex: 1;
-            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
         }
         
         .page-header {
@@ -136,9 +185,12 @@
         }
         
         .page-title {
-            font-size: 1.8rem;
+            font-size: 2rem;
             font-weight: 600;
-            color: var(--dark);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .search-filter {
@@ -206,11 +258,11 @@
         }
         
         .workout-card {
-            background: white;
-            border-radius: 12px;
+            background: transparent;
+            border: none;
             overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             transition: transform 0.3s ease;
+            position: relative;
         }
         
         .workout-card:hover {
@@ -313,12 +365,26 @@
 
         /* Gamification Bar Styles */
         .gamification-bar {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            border-radius: 16px;
+            background: transparent;
+            border: none;
             padding: 20px;
-            margin-bottom: 2rem;
+            margin-bottom: 25px;
             color: white;
-            box-shadow: 0 8px 32px rgba(108, 99, 255, 0.3);
+            position: relative;
+        }
+        
+        .gamification-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(108, 99, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(108, 99, 255, 0.08) 100%);
+            z-index: -1;
         }
 
         .gamification-stats {
@@ -332,10 +398,8 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            background: rgba(255, 255, 255, 0.1);
+            background: transparent;
             padding: 15px;
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
             transition: all 0.3s ease;
         }
 
@@ -538,7 +602,55 @@
             outline: none;
         }
         
-        /* Video Modal Styles */
+        /* Video Sidebar Styles */
+        .video-sidebar {
+            background: transparent;
+            border: none;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            display: block;
+        }
+        
+        .video-sidebar-header {
+            padding: 1rem;
+            background: rgba(108, 99, 255, 0.1);
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .video-sidebar-title {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .close-video {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+        
+        .close-video:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Video Modal Styles - Legacy */
         .video-modal {
             display: none;
             position: fixed;
@@ -600,7 +712,7 @@
         .video-container {
             position: relative;
             width: 100%;
-            height: 500px;
+            height: 250px;
             background: #000;
         }
         
@@ -611,29 +723,33 @@
         }
         
         .video-controls {
-            padding: 1.5rem;
-            background: white;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 0 0 12px 12px;
         }
         
         .workout-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             margin-bottom: 1rem;
+        }
+        
+        .workout-info h3 {
+            margin: 0 0 8px 0;
+            font-size: 1rem;
+            color: white;
         }
         
         .workout-stats {
             display: flex;
-            gap: 20px;
-            font-size: 0.9rem;
-            color: var(--gray);
+            gap: 15px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         .video-progress {
             width: 100%;
-            height: 6px;
-            background: var(--light-gray);
-            border-radius: 3px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
             margin-bottom: 1rem;
             overflow: hidden;
         }
@@ -647,20 +763,22 @@
         
         .video-actions {
             display: flex;
-            gap: 10px;
-            justify-content: center;
+            flex-direction: column;
+            gap: 8px;
         }
         
         .video-btn {
-            padding: 10px 20px;
+            padding: 8px 12px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-family: 'Poppins', sans-serif;
             cursor: pointer;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.9rem;
         }
         
         .video-btn-primary {
@@ -673,23 +791,39 @@
         }
         
         .video-btn-secondary {
-            background: var(--light-gray);
-            color: var(--dark);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
         }
         
         .video-btn-secondary:hover {
-            background: var(--gray);
-            color: white;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        @media (max-width: 1200px) {
+            .dashboard-container {
+                grid-template-columns: 280px 1fr;
+            }
+            
+            .video-sidebar {
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                width: 350px;
+                z-index: 1000;
+                background: rgba(26, 26, 46, 0.95);
+                backdrop-filter: blur(10px);
+                border-radius: 12px;
+            }
         }
         
         @media (max-width: 768px) {
             .dashboard-container {
-                flex-direction: column;
+                grid-template-columns: 1fr;
+                padding: 10px;
             }
             
             .sidebar {
-                width: 100%;
-                padding: 1rem;
+                display: none;
             }
             
             .main-content {
@@ -714,27 +848,27 @@
                 grid-template-columns: 1fr;
             }
             
-            .video-modal-content {
-                width: 95%;
-                margin: 5% auto;
+            .video-sidebar {
+                position: fixed;
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                width: auto;
+                z-index: 1000;
+                background: rgba(26, 26, 46, 0.98);
+                backdrop-filter: blur(10px);
+                border-radius: 12px;
             }
             
             .video-container {
-                height: 300px;
-            }
-            
-            .video-actions {
-                flex-direction: column;
-            }
-            
-            .video-btn {
-                width: 100%;
-                justify-content: center;
+                height: 200px;
             }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="/css/voice-assistant.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -833,19 +967,19 @@
                 <!-- Workouts will be loaded dynamically -->
             </div>
         </div>
-    </div>
-
-    <!-- Video Modal -->
-    <div id="videoModal" class="video-modal">
-        <div class="video-modal-content">
-            <div class="video-modal-header">
-                <h2 id="modalWorkoutTitle" class="video-modal-title">Workout Video</h2>
-                <button class="close-modal" id="closeModal">
-                    <i class="fas fa-times"></i>
-                </button>
+        </div>
+        
+        <!-- Video Sidebar -->
+        <div id="videoSidebar" class="video-sidebar">
+            <div class="video-sidebar-header">
+                <h3 id="sidebarWorkoutTitle" class="video-sidebar-title">Select a Workout</h3>
             </div>
             
-            <div class="video-container">
+            <div class="video-container" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, rgba(108, 99, 255, 0.1), rgba(255, 255, 255, 0.05));">
+                <div id="videoPlaceholder" style="text-align: center; color: rgba(255, 255, 255, 0.7);">
+                    <i class="fas fa-play-circle" style="font-size: 3rem; margin-bottom: 10px; opacity: 0.5;"></i>
+                    <p style="margin: 0; font-size: 0.9rem;">Click a workout to start</p>
+                </div>
                 <video id="workoutVideo" class="workout-video" controls style="display: none;">
                     <source src="" type="video/mp4">
                     Your browser does not support the video tag.
@@ -857,12 +991,10 @@
             
             <div class="video-controls">
                 <div class="workout-info">
-                    <div>
-                        <h3 id="modalWorkoutName">Workout Name</h3>
-                        <div class="workout-stats">
-                            <span id="modalDuration"><i class="far fa-clock"></i> 0 min</span>
-                            <span id="modalCalories"><i class="fas fa-fire"></i> 0 cal</span>
-                        </div>
+                    <h3 id="sidebarWorkoutName" style="color: rgba(255, 255, 255, 0.7);">Ready to workout?</h3>
+                    <div class="workout-stats">
+                        <span id="sidebarDuration"><i class="far fa-clock"></i> -- min</span>
+                        <span id="sidebarCalories"><i class="fas fa-fire"></i> -- cal</span>
                     </div>
                 </div>
                 
@@ -871,21 +1003,21 @@
                 </div>
                 
                 <div class="video-actions">
-                    <button class="video-btn video-btn-primary" id="playPauseBtn">
+                    <button class="video-btn video-btn-primary" id="playPauseBtn" disabled style="opacity: 0.5;">
                         <i class="fas fa-play"></i>
                         <span>Play</span>
                     </button>
-                    <button class="video-btn video-btn-secondary" id="restartBtn">
+                    <button class="video-btn video-btn-secondary" id="restartBtn" disabled style="opacity: 0.5;">
                         <i class="fas fa-redo"></i>
                         <span>Restart</span>
                     </button>
-                    <button class="video-btn video-btn-secondary" id="fullscreenBtn">
+                    <button class="video-btn video-btn-secondary" id="fullscreenBtn" disabled style="opacity: 0.5;">
                         <i class="fas fa-expand"></i>
                         <span>Fullscreen</span>
                     </button>
-                    <button class="video-btn" id="completeWorkoutBtn" style="background: linear-gradient(135deg, var(--success), #20c997); color: white; margin-left: auto;">
+                    <button class="video-btn" id="completeWorkoutBtn" disabled style="background: rgba(40, 167, 69, 0.3); color: rgba(255, 255, 255, 0.5);">
                         <i class="fas fa-trophy"></i>
-                        <span>Complete Workout</span>
+                        <span>Complete</span>
                     </button>
                 </div>
             </div>
@@ -896,14 +1028,15 @@
         // Global variables for current workout
         let currentWorkout = null;
 
-        // Video Modal Functionality
-        const videoModal = document.getElementById('videoModal');
+        // Video Sidebar Functionality
+        const videoSidebar = document.getElementById('videoSidebar');
+        const dashboardContainer = document.querySelector('.dashboard-container');
         const workoutVideo = document.getElementById('workoutVideo');
-        const modalWorkoutTitle = document.getElementById('modalWorkoutTitle');
-        const modalWorkoutName = document.getElementById('modalWorkoutName');
-        const modalDuration = document.getElementById('modalDuration');
-        const modalCalories = document.getElementById('modalCalories');
-        const closeModal = document.getElementById('closeModal');
+        const sidebarWorkoutTitle = document.getElementById('sidebarWorkoutTitle');
+        const sidebarWorkoutName = document.getElementById('sidebarWorkoutName');
+        const sidebarDuration = document.getElementById('sidebarDuration');
+        const sidebarCalories = document.getElementById('sidebarCalories');
+        const closeVideo = document.getElementById('closeVideo');
         const playPauseBtn = document.getElementById('playPauseBtn');
         const restartBtn = document.getElementById('restartBtn');
         const fullscreenBtn = document.getElementById('fullscreenBtn');
@@ -914,7 +1047,51 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadGamificationData();
             showDefaultWorkouts(); // Load default workouts on page load
+            initializeAnimations();
         });
+        
+        // Initialize GSAP animations
+        function initializeAnimations() {
+            gsap.registerPlugin(ScrollTrigger);
+            
+            // Animate gamification bar
+            gsap.fromTo('.gamification-bar', 
+                { y: -50, opacity: 0 },
+                { 
+                    y: 0, 
+                    opacity: 1,
+                    duration: 0.8,
+                    ease: "power2.out"
+                }
+            );
+            
+            // Animate category buttons
+            gsap.fromTo('.category-btn', 
+                { x: -30, opacity: 0 },
+                { 
+                    x: 0, 
+                    opacity: 1,
+                    duration: 0.6,
+                    stagger: 0.1,
+                    delay: 0.3,
+                    ease: "power2.out"
+                }
+            );
+            
+            // Animate workout cards
+            gsap.fromTo('.workout-card', 
+                { y: 50, opacity: 0, scale: 0.9 },
+                { 
+                    y: 0, 
+                    opacity: 1, 
+                    scale: 1,
+                    duration: 0.8,
+                    stagger: 0.1,
+                    delay: 0.5,
+                    ease: "back.out(1.7)"
+                }
+            );
+        }
 
         // Load gamification data
         async function loadGamificationData() {
@@ -1014,8 +1191,8 @@
                     // Refresh gamification data
                     console.log("Loading gamification data..."); await loadGamificationData();
                     
-                    // Close modal
-                    closeVideoModal();
+                    // Close video sidebar
+                    closeVideoSidebar();
                 } else {
                     showNotification('Failed to log workout: ' + result.error, 'error');
                 }
@@ -1029,29 +1206,26 @@
         // Complete workout button event listener
         completeWorkoutBtn.addEventListener('click', completeWorkout);
 
-        // Close modal functionality
-        function closeVideoModal() {
-            videoModal.style.display = 'none';
-            document.body.style.overflow = 'auto';
+        // Close video sidebar functionality
+        function closeVideoSidebar() {
+            videoSidebar.classList.remove('active');
+            dashboardContainer.classList.add('video-hidden');
             workoutVideo.pause();
             workoutVideo.currentTime = 0;
             progressBar.style.width = '0%';
             playPauseBtn.innerHTML = '<i class="fas fa-play"></i><span>Play</span>';
+            
+            // Clear YouTube iframe
+            const youtubePlayer = document.getElementById('youtubePlayer');
+            youtubePlayer.src = '';
         }
 
-        closeModal.addEventListener('click', closeVideoModal);
+        closeVideo.addEventListener('click', closeVideoSidebar);
 
-        // Close modal when clicking outside
-        videoModal.addEventListener('click', function(e) {
-            if (e.target === videoModal) {
-                closeVideoModal();
-            }
-        });
-
-        // Close modal with Escape key
+        // Close video sidebar with Escape key
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && videoModal.style.display === 'block') {
-                closeVideoModal();
+            if (e.key === 'Escape' && videoSidebar.classList.contains('active')) {
+                closeVideoSidebar();
             }
         });
 
@@ -1425,18 +1599,18 @@
                         xpReward: parseInt(xpReward)
                     };
 
-                    // Update modal content
-                    modalWorkoutTitle.textContent = workoutTitle;
-                    modalWorkoutName.textContent = workoutTitle;
-                    modalDuration.innerHTML = `<i class="far fa-clock"></i> ${workoutDuration}`;
-                    modalCalories.innerHTML = `<i class="fas fa-fire"></i> ${workoutCalories}`;
+                    // Update sidebar content
+                    sidebarWorkoutTitle.textContent = workoutTitle;
+                    sidebarWorkoutName.textContent = workoutTitle;
+                    sidebarDuration.innerHTML = `<i class="far fa-clock"></i> ${workoutDuration}`;
+                    sidebarCalories.innerHTML = `<i class="fas fa-fire"></i> ${workoutCalories}`;
                     
                     // Load YouTube video
                     loadYouTubeVideo(workoutVideo);
                     
-                    // Show modal
-                    videoModal.style.display = 'block';
-                    document.body.style.overflow = 'hidden';
+                    // Show video sidebar
+                    videoSidebar.classList.add('active');
+                    dashboardContainer.classList.remove('video-hidden');
                 });
             });
         }

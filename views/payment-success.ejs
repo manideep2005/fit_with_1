@@ -3,244 +3,534 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Successful - Fit With AI</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Payment Successful - Fit-With-AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --primary: #6C63FF;
+            --secondary: #4D44DB;
+            --success: #28A745;
+            --warning: #FFC107;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #ffffff;
+            overflow-x: hidden;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Inter', sans-serif;
         }
         
-        .success-card {
-            background: white;
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .success-container {
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(108, 99, 255, 0.08) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            padding: 3rem;
+            padding: 60px 40px;
             text-align: center;
-            max-width: 500px;
+            max-width: 600px;
             width: 90%;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
         }
         
         .success-icon {
-            font-size: 4rem;
-            color: #28a745;
-            margin-bottom: 1.5rem;
-            animation: bounce 1s ease-in-out;
+            font-size: 5rem;
+            color: var(--success);
+            margin-bottom: 30px;
+            animation: bounce 2s infinite;
         }
         
         @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
         }
         
-        .confirmation-number {
-            background: #f8f9fa;
-            border: 2px dashed #dee2e6;
-            border-radius: 10px;
-            padding: 1rem;
-            margin: 1.5rem 0;
-            font-family: monospace;
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: #495057;
+        .success-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
-        .btn-dashboard {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 10px;
-            padding: 0.75rem 2rem;
-            font-weight: 600;
-            color: white;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-dashboard:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-            color: white;
+        .success-message {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+            line-height: 1.6;
         }
         
         .payment-details {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-            text-align: left;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .detail-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 0.5rem;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .detail-row:last-child {
+            border-bottom: none;
             margin-bottom: 0;
-            font-weight: bold;
-            border-top: 1px solid #dee2e6;
-            padding-top: 0.5rem;
+        }
+        
+        .detail-label {
+            font-weight: 500;
+            opacity: 0.8;
+        }
+        
+        .detail-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .confirmation-number {
+            background: var(--success);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .features-unlocked {
+            background: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+        }
+        
+        .features-title {
+            color: var(--success);
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            list-style: none;
+        }
+        
+        .features-list li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+        }
+        
+        .features-list i {
+            color: var(--success);
+            width: 20px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            text-decoration: none;
+            color: white;
+        }
+        
+        .celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            animation: confetti-fall 3s linear infinite;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        
+        .email-notice {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .email-notice i {
+            color: var(--warning);
+            font-size: 1.5rem;
+        }
+        
+        .email-notice-text {
+            flex: 1;
+        }
+        
+        .email-notice h4 {
+            color: var(--warning);
+            margin-bottom: 5px;
+        }
+        
+        .email-notice p {
+            opacity: 0.9;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            .success-container {
+                padding: 40px 20px;
+                margin: 20px;
+            }
+            
+            .success-title {
+                font-size: 2rem;
+            }
+            
+            .success-icon {
+                font-size: 4rem;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .features-list {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="success-card">
+    <div class="success-container">
         <div class="success-icon">
             <i class="fas fa-check-circle"></i>
         </div>
         
-        <h2 class="mb-3">Payment Successful!</h2>
-        <p class="text-muted mb-4">Thank you for upgrading to premium. Your subscription has been activated successfully.</p>
+        <h1 class="success-title">Payment Successful!</h1>
         
-        <div class="confirmation-number">
-            <div class="small text-muted mb-1">Confirmation Number</div>
-            <div id="confirmationNumber">Loading...</div>
-        </div>
+        <p class="success-message">
+            🎉 Congratulations! Your subscription has been activated successfully. 
+            Welcome to the premium Fit-With-AI experience!
+        </p>
         
         <div class="payment-details">
-            <h6 class="mb-3"><i class="fas fa-receipt me-2"></i>Payment Details</h6>
             <div class="detail-row">
-                <span>Plan:</span>
-                <span id="planName">Premium Pro</span>
+                <span class="detail-label">Plan</span>
+                <span class="detail-value" id="planName">Premium Pro</span>
             </div>
             <div class="detail-row">
-                <span>Amount:</span>
-                <span id="amount">₹5</span>
+                <span class="detail-label">Amount Paid</span>
+                <span class="detail-value" id="amountPaid">₹5</span>
             </div>
             <div class="detail-row">
-                <span>Payment ID:</span>
-                <span id="paymentId">Loading...</span>
+                <span class="detail-label">Payment Date</span>
+                <span class="detail-value" id="paymentDate"></span>
             </div>
             <div class="detail-row">
-                <span>Status:</span>
-                <span class="text-success">Completed</span>
+                <span class="detail-label">Confirmation Number</span>
+                <span class="confirmation-number" id="confirmationNumber">FWA-123456-ABC</span>
             </div>
         </div>
         
-        <div class="mb-4">
-            <h6><i class="fas fa-crown me-2 text-warning"></i>What's Next?</h6>
-            <ul class="list-unstyled text-start">
-                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Access unlimited AI coach queries</li>
-                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Unlock advanced nutrition tracking</li>
-                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Get personalized workout plans</li>
-                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Enjoy priority customer support</li>
+        <div class="features-unlocked">
+            <div class="features-title">
+                <i class="fas fa-unlock-alt"></i>
+                Features Unlocked
+            </div>
+            <ul class="features-list" id="featuresList">
+                <li><i class="fas fa-robot"></i> Unlimited AI Coach</li>
+                <li><i class="fas fa-utensils"></i> Advanced Nutrition</li>
+                <li><i class="fas fa-user-md"></i> Personal Trainer AI</li>
+                <li><i class="fas fa-gift"></i> Health Rewards</li>
+                <li><i class="fas fa-headset"></i> Priority Support</li>
+                <li><i class="fas fa-chart-line"></i> Advanced Analytics</li>
             </ul>
         </div>
         
-        <div class="d-grid gap-2">
-            <a href="/dashboard" class="btn btn-dashboard">
-                <i class="fas fa-home me-2"></i>
-                Go to Dashboard
-            </a>
-            <a href="/subscription" class="btn btn-outline-secondary">
-                <i class="fas fa-cog me-2"></i>
-                Manage Subscription
-            </a>
+        <div class="email-notice">
+            <i class="fas fa-envelope"></i>
+            <div class="email-notice-text">
+                <h4>Receipt Sent</h4>
+                <p>A payment receipt and PDF bill have been sent to your registered email address.</p>
+            </div>
         </div>
         
-        <div class="mt-4">
-            <small class="text-muted">
-                <i class="fas fa-envelope me-1"></i>
-                A confirmation email has been sent to your registered email address.
-            </small>
+        <div class="action-buttons">
+            <a href="/dashboard" class="btn btn-primary">
+                <i class="fas fa-tachometer-alt"></i>
+                Go to Dashboard
+            </a>
+            <button onclick="downloadBill()" class="btn btn-outline" style="background: var(--success); border-color: var(--success);">
+                <i class="fas fa-file-invoice"></i>
+                Download Bill
+            </button>
+            <a href="/ai-coach" class="btn btn-outline">
+                <i class="fas fa-robot"></i>
+                Try AI Coach
+            </a>
         </div>
     </div>
+    
+    <!-- Celebration Animation -->
+    <div class="celebration" id="celebration"></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        const confirmation = urlParams.get('confirmation');
-        const paymentId = urlParams.get('paymentId');
-        const amount = urlParams.get('amount');
-        const plan = urlParams.get('plan');
+        const confirmation = urlParams.get('confirmation') || 'FWA-' + Date.now().toString().slice(-6);
+        const plan = urlParams.get('plan') || 'Premium Pro';
+        const amount = urlParams.get('amount') || '5';
         
         // Update page content
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set confirmation number
-            if (confirmation) {
-                document.getElementById('confirmationNumber').textContent = confirmation;
-            } else {
-                document.getElementById('confirmationNumber').textContent = 'FWA-' + Date.now().toString().slice(-6);
-            }
-            
-            // Set payment ID
-            if (paymentId && paymentId !== 'unknown') {
-                document.getElementById('paymentId').textContent = paymentId;
-            } else {
-                document.getElementById('paymentId').textContent = 'PAY-' + Date.now().toString().slice(-8);
-            }
-            
-            // Set amount
-            if (amount && amount !== '0') {
-                document.getElementById('amount').textContent = '₹' + amount;
-            }
-            
-            // Set plan name
-            const planNames = {
-                'basic': 'Basic Pro',
-                'premium': 'Premium Pro',
-                'yearly': 'Yearly Premium'
-            };
-            
-            if (plan && planNames[plan]) {
-                document.getElementById('planName').textContent = planNames[plan];
-            }
-            
-            // Auto-redirect after 10 seconds
-            setTimeout(() => {
-                if (confirm('Redirecting to dashboard in 5 seconds. Click OK to continue now or Cancel to stay.')) {
-                    window.location.href = '/dashboard';
-                }
-            }, 10000);
+        document.getElementById('confirmationNumber').textContent = confirmation;
+        document.getElementById('planName').textContent = plan;
+        document.getElementById('amountPaid').textContent = `₹${amount}`;
+        document.getElementById('paymentDate').textContent = new Date().toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
         });
         
-        // Confetti animation
+        // Update features based on plan
+        const features = {
+            'Basic Pro': [
+                '<i class="fas fa-robot"></i> 100 AI Coach Queries',
+                '<i class="fas fa-utensils"></i> Detailed Nutrition',
+                '<i class="fas fa-chart-line"></i> Progress Analytics',
+                '<i class="fas fa-envelope"></i> Email Support'
+            ],
+            'Premium Pro': [
+                '<i class="fas fa-robot"></i> Unlimited AI Coach',
+                '<i class="fas fa-utensils"></i> Advanced Nutrition',
+                '<i class="fas fa-user-md"></i> Personal Trainer AI',
+                '<i class="fas fa-gift"></i> Health Rewards',
+                '<i class="fas fa-headset"></i> Priority Support',
+                '<i class="fas fa-chart-line"></i> Advanced Analytics'
+            ],
+            'Yearly Premium': [
+                '<i class="fas fa-crown"></i> All Premium Features',
+                '<i class="fas fa-calendar"></i> 2 Months Free',
+                '<i class="fas fa-star"></i> Exclusive Content',
+                '<i class="fas fa-user-tie"></i> Personal Consultation',
+                '<i class="fas fa-infinity"></i> Unlimited Everything'
+            ]
+        };
+        
+        const planFeatures = features[plan] || features['Premium Pro'];
+        document.getElementById('featuresList').innerHTML = planFeatures.map(feature => `<li>${feature}</li>`).join('');
+        
+        // Create celebration animation
         function createConfetti() {
-            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'];
+            const celebration = document.getElementById('celebration');
+            const colors = ['#6C63FF', '#FF6584', '#28A745', '#FFC107', '#17A2B8'];
             
             for (let i = 0; i < 50; i++) {
                 const confetti = document.createElement('div');
-                confetti.style.cssText = `
-                    position: fixed;
-                    width: 10px;
-                    height: 10px;
-                    background: ${colors[Math.floor(Math.random() * colors.length)]};
-                    left: ${Math.random() * 100}vw;
-                    top: -10px;
-                    border-radius: 50%;
-                    pointer-events: none;
-                    z-index: 1000;
-                    animation: fall ${Math.random() * 3 + 2}s linear forwards;
-                `;
-                
-                document.body.appendChild(confetti);
-                
-                setTimeout(() => {
-                    confetti.remove();
-                }, 5000);
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animationDelay = Math.random() * 3 + 's';
+                confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                celebration.appendChild(confetti);
+            }
+            
+            // Remove confetti after animation
+            setTimeout(() => {
+                celebration.innerHTML = '';
+            }, 6000);
+        }
+        
+        // Start celebration when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            createConfetti();
+            
+            // Send email receipt
+            sendEmailReceipt();
+            
+            // Play success sound (if available)
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+                audio.play().catch(() => {});
+            } catch (e) {}
+        });
+        
+        // Send email receipt
+        async function sendEmailReceipt() {
+            try {
+                await fetch('/api/send-receipt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        confirmation: confirmation,
+                        plan: plan,
+                        amount: amount
+                    })
+                });
+            } catch (error) {
+                console.log('Email sending failed:', error);
             }
         }
         
-        // Add confetti animation CSS
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes fall {
-                to {
-                    transform: translateY(100vh) rotate(360deg);
-                }
-            }
-        `;
-        document.head.appendChild(style);
+        // Store payment success in localStorage for dashboard
+        localStorage.setItem('paymentSuccess', JSON.stringify({
+            plan: plan,
+            amount: amount,
+            confirmation: confirmation,
+            timestamp: new Date().toISOString()
+        }));
         
-        // Trigger confetti on load
-        setTimeout(createConfetti, 500);
+        // Download PDF bill function
+        async function downloadBill() {
+            try {
+                const response = await fetch('/api/generate-bill', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        confirmation: confirmation,
+                        plan: plan,
+                        amount: amount
+                    })
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `FitWithAI_Bill_${confirmation}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    showToast('PDF bill downloaded successfully!', 'success');
+                } else {
+                    showToast('Failed to generate bill', 'error');
+                }
+            } catch (error) {
+                showToast('Error downloading bill', 'error');
+            }
+        }
+        
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? 'var(--success)' : '#dc3545'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                z-index: 9999;
+                font-weight: 600;
+            `;
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : 'exclamation-triangle'}"></i> ${message}`;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 3000);
+        }
     </script>
 </body>
 </html>

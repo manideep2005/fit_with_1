@@ -1,6 +1,6 @@
 {
   "name": "fit-with-ai",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Fitness platform with AI capabilities",
   "main": "app.js",
   "scripts": {

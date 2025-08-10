@@ -280,87 +280,10 @@ class PremiumChecker {
     this.trackEvent('upgrade_modal_shown', { feature: featureKey });
   }
 
-  // Lock feature with visual indicators
+  // Lock feature with visual indicators (DISABLED)
   async lockFeature(element, featureKey, options = {}) {
-    const hasAccess = await this.hasFeatureAccess(featureKey);
-    
-    if (!hasAccess) {
-      const feature = this.premiumFeatures[featureKey];
-      
-      // Add click handler to show upgrade modal
-      element.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.showUpgradeModal(featureKey, options.customMessage);
-      });
-      
-      // Add visual lock indicators
-      element.style.position = 'relative';
-      element.style.cursor = 'pointer';
-      
-      // Add lock overlay
-      const lockOverlay = document.createElement('div');
-      lockOverlay.className = 'premium-lock-overlay';
-      lockOverlay.innerHTML = `
-        <div class="lock-content">
-          <i class="fas fa-crown lock-icon"></i>
-          <span class="lock-text">Premium</span>
-        </div>
-      `;
-      
-      // Add lock styles
-      const lockStyles = `
-        .premium-lock-overlay {
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.7);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: inherit;
-          z-index: 10;
-          transition: all 0.3s ease;
-        }
-        .premium-lock-overlay:hover {
-          background: rgba(0, 0, 0, 0.8);
-        }
-        .premium-lock-overlay .lock-content {
-          text-align: center;
-          color: white;
-        }
-        .premium-lock-overlay .lock-icon {
-          font-size: 1.5rem;
-          color: #fbbf24;
-          display: block;
-          margin-bottom: 0.5rem;
-        }
-        .premium-lock-overlay .lock-text {
-          font-size: 0.8rem;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-        }
-      `;
-      
-      if (!document.getElementById('premium-lock-styles')) {
-        const styleElement = document.createElement('style');
-        styleElement.id = 'premium-lock-styles';
-        styleElement.textContent = lockStyles;
-        document.head.appendChild(styleElement);
-      }
-      
-      element.appendChild(lockOverlay);
-      
-      // Add premium badge to parent container if specified
-      if (options.showBadge !== false) {
-        this.addPremiumBadge(element, feature);
-      }
-    }
-    
-    return hasAccess;
+    // All features are now free - no locking
+    return true;
   }
 
   // Add premium badge to element
@@ -462,20 +385,9 @@ class PremiumChecker {
 
   // Initialize premium features on page load
   async initializePage() {
-    // Auto-lock features based on data attributes
-    const premiumElements = document.querySelectorAll('[data-premium]');
+    // Disabled premium locking - all features are now free
+    console.log('Premium checking disabled - all features available');
     
-    for (const element of premiumElements) {
-      const featureKey = element.getAttribute('data-premium');
-      const customMessage = element.getAttribute('data-premium-message');
-      const showBadge = element.getAttribute('data-premium-badge') !== 'false';
-      
-      await this.lockFeature(element, featureKey, {
-        customMessage,
-        showBadge
-      });
-    }
-
     // Update UI based on subscription status
     await this.updateSubscriptionUI();
   }

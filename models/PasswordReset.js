@@ -29,8 +29,7 @@ const passwordResetSchema = new mongoose.Schema({
   expiresAt: {
     type: Date,
     required: true,
-    default: () => new Date(Date.now() + 10 * 60 * 1000), // 10 minutes from now
-    index: { expireAfterSeconds: 0 } // MongoDB TTL index for automatic cleanup
+    default: () => new Date(Date.now() + 10 * 60 * 1000) // 10 minutes from now
   }
 }, {
   timestamps: true

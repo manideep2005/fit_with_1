@@ -21,22 +21,52 @@
         
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #F5F7FA;
-            color: var(--dark);
+            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
             margin: 0;
             padding: 0;
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
         }
         
-        .settings-container {
-            display: flex;
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+        
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
             min-height: 100vh;
+            gap: 20px;
+            padding: 20px;
         }
         
         .sidebar {
-            width: 250px;
-            background: white;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-            padding: 2rem 1rem;
+            background: transparent;
+            border: none;
+            padding: 30px 20px;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
         }
         
         .sidebar-header {
@@ -81,15 +111,16 @@
             display: flex;
             align-items: center;
             padding: 12px 1rem;
-            color: var(--gray);
+            color: rgba(255, 255, 255, 0.7);
             text-decoration: none;
             border-radius: 8px;
             transition: all 0.3s ease;
         }
         
         .nav-link:hover, .nav-link.active {
-            background: rgba(108, 99, 255, 0.1);
-            color: var(--primary);
+            background: rgba(108, 99, 255, 0.2);
+            color: white;
+            transform: translateX(5px);
         }
         
         .nav-link i {
@@ -129,17 +160,20 @@
             padding: 2rem;
         }
         
-        .settings-header {
+        .page-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 2rem;
         }
         
-        .settings-title {
-            font-size: 1.8rem;
+        .page-title {
+            font-size: 2rem;
             font-weight: 600;
-            color: var(--dark);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .settings-tabs {
@@ -152,20 +186,22 @@
             padding: 12px 20px;
             cursor: pointer;
             font-weight: 500;
-            color: var(--gray);
+            color: rgba(255, 255, 255, 0.7);
             border-bottom: 3px solid transparent;
             transition: all 0.3s ease;
         }
         
         .tab.active {
-            color: var(--primary);
+            color: white;
             border-bottom: 3px solid var(--primary);
         }
         
         .settings-card {
-            background: white;
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(108, 99, 255, 0.08) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             padding: 2rem;
             margin-bottom: 2rem;
         }
@@ -181,6 +217,7 @@
             font-size: 1.2rem;
             font-weight: 600;
             margin: 0;
+            color: white;
         }
         
         .form-group {
@@ -191,21 +228,29 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
+            color: white;
         }
         
         .form-control {
             width: 100%;
             padding: 12px 16px;
-            border: 1px solid var(--light-gray);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
             font-family: 'Poppins', sans-serif;
             transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
         }
         
         .form-control:focus {
             border-color: var(--primary);
             outline: none;
             box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.5);
         }
         
         .btn {
@@ -310,9 +355,10 @@
             align-items: center;
             justify-content: space-between;
             padding: 12px;
-            border: 1px solid var(--light-gray);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
             margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.05);
         }
         
         .account-info {
@@ -346,7 +392,9 @@
         }
         
         .current-plan {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 50%, rgba(108, 99, 255, 0.15) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             color: white;
             border-radius: 12px;
             padding: 2rem;
@@ -391,8 +439,9 @@
         }
         
         .pricing-card {
-            background: white;
-            border: 2px solid var(--light-gray);
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(108, 99, 255, 0.08) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 12px;
             padding: 2rem;
             text-align: center;
@@ -428,7 +477,7 @@
             font-size: 1.3rem;
             font-weight: 600;
             margin-bottom: 1rem;
-            color: var(--dark);
+            color: white;
         }
         
         .pricing-plan-price {
@@ -518,7 +567,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <div class="settings-container">
+    <div class="dashboard-container">
         <!-- Sidebar Navigation -->
         <div class="sidebar">
             <div class="sidebar-header">
@@ -565,10 +614,10 @@
         
         <!-- Main Content -->
         <div class="main-content">
-            <div class="settings-header">
-                <h1 class="settings-title">Settings</h1>
+            <div class="page-header">
+                <h1 class="page-title">Settings</h1>
                 <div>
-                    <button class="btn btn-outline"><i class="fas fa-download"></i> Export Data</button>
+                    <button class="btn btn-outline" onclick="exportUserData()"><i class="fas fa-download"></i> Export Data</button>
                 </div>
             </div>
             
@@ -715,6 +764,510 @@
                             <small style="color: var(--gray);">2 active sessions</small>
                         </div>
                         <button class="btn btn-outline">View All</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Preferences Content -->
+            <div class="preferences-content" style="display: none;">
+                <!-- App Preferences -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">App Preferences</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Theme</label>
+                        <select class="form-control" id="themeSelect" onchange="updatePreference('theme', this.value)">
+                            <option value="dark" <%= (user.preferences?.theme || 'dark') === 'dark' ? 'selected' : '' %>>Dark Theme</option>
+                            <option value="light" <%= (user.preferences?.theme || 'dark') === 'light' ? 'selected' : '' %>>Light Theme</option>
+                            <option value="auto" <%= (user.preferences?.theme || 'dark') === 'auto' ? 'selected' : '' %>>Auto (System)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Language</label>
+                        <select class="form-control" id="languageSelect" onchange="updatePreference('language', this.value)">
+                            <option value="en" <%= (user.preferences?.language || 'en') === 'en' ? 'selected' : '' %>>English</option>
+                            <option value="es" <%= (user.preferences?.language || 'en') === 'es' ? 'selected' : '' %>>Spanish</option>
+                            <option value="fr" <%= (user.preferences?.language || 'en') === 'fr' ? 'selected' : '' %>>French</option>
+                            <option value="de" <%= (user.preferences?.language || 'en') === 'de' ? 'selected' : '' %>>German</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Units</label>
+                        <select class="form-control" id="unitsSelect" onchange="updatePreference('units', this.value)">
+                            <option value="metric" <%= (user.preferences?.units || 'metric') === 'metric' ? 'selected' : '' %>>Metric (kg, cm)</option>
+                            <option value="imperial" <%= (user.preferences?.units || 'metric') === 'imperial' ? 'selected' : '' %>>Imperial (lbs, ft)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Time Format</label>
+                        <select class="form-control" id="timeFormatSelect" onchange="updatePreference('timeFormat', this.value)">
+                            <option value="12" <%= (user.preferences?.timeFormat || '12') === '12' ? 'selected' : '' %>>12-hour (AM/PM)</option>
+                            <option value="24" <%= (user.preferences?.timeFormat || '12') === '24' ? 'selected' : '' %>>24-hour</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Workout Preferences -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Workout Preferences</h2>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Auto-start Rest Timer</h4>
+                                <small style="color: var(--gray);">Automatically start rest timer after each set</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="autoRestTimer" <%= (user.preferences?.autoRestTimer !== false) ? 'checked' : '' %> onchange="updatePreference('autoRestTimer', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Default Rest Time (seconds)</label>
+                        <input type="number" class="form-control" id="defaultRestTime" value="<%= user.preferences?.defaultRestTime || 90 %>" min="30" max="300" onchange="updatePreference('defaultRestTime', parseInt(this.value))">
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Workout Music</h4>
+                                <small style="color: var(--gray);">Play background music during workouts</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="workoutMusic" <%= (user.preferences?.workoutMusic) ? 'checked' : '' %> onchange="updatePreference('workoutMusic', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Preferred Workout Days</label>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                            <label style="display: flex; align-items: center; gap: 5px;"><input type="checkbox" checked> Mon</label>
+                            <label style="display: flex; align-items: center; gap: 5px;"><input type="checkbox" checked> Tue</label>
+                            <label style="display: flex; align-items: center; gap: 5px;"><input type="checkbox"> Wed</label>
+                            <label style="display: flex; align-items: center; gap: 5px;"><input type="checkbox" checked> Thu</label>
+                            <label style="display: flex; align-items: center; gap: 5px;"><input type="checkbox" checked> Fri</label>
+                            <label style="display: flex; align-items: center; gap: 5px;"><input type="checkbox"> Sat</label>
+                            <label style="display: flex; align-items: center; gap: 5px;"><input type="checkbox"> Sun</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Privacy Preferences -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Privacy Preferences</h2>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Profile Visibility</h4>
+                                <small style="color: var(--gray);">Make your profile visible to other users</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="profileVisibility" <%= (user.preferences?.profileVisibility !== false) ? 'checked' : '' %> onchange="updatePreference('profileVisibility', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Share Workout Stats</h4>
+                                <small style="color: var(--gray);">Allow others to see your workout statistics</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="shareWorkoutStats" <%= (user.preferences?.shareWorkoutStats) ? 'checked' : '' %> onchange="updatePreference('shareWorkoutStats', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Data Analytics</h4>
+                                <small style="color: var(--gray);">Help improve the app by sharing anonymous usage data</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="dataAnalytics" <%= (user.preferences?.dataAnalytics !== false) ? 'checked' : '' %> onchange="updatePreference('dataAnalytics', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notifications Content -->
+            <div class="notifications-content" style="display: none;">
+                <!-- Push Notifications -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Push Notifications</h2>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Workout Reminders</h4>
+                                <small style="color: var(--gray);">Get reminded about your scheduled workouts</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="workoutReminders" <%= (user.notifications?.workoutReminders !== false) ? 'checked' : '' %> onchange="updateNotification('workoutReminders', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Progress Updates</h4>
+                                <small style="color: var(--gray);">Weekly progress summaries and achievements</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="progressUpdates" <%= (user.notifications?.progressUpdates !== false) ? 'checked' : '' %> onchange="updateNotification('progressUpdates', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Challenge Notifications</h4>
+                                <small style="color: var(--gray);">Updates about challenges and competitions</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="challengeNotifications" <%= (user.notifications?.challengeNotifications) ? 'checked' : '' %> onchange="updateNotification('challengeNotifications', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Social Updates</h4>
+                                <small style="color: var(--gray);">Friend activities and community updates</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="socialUpdates" <%= (user.notifications?.socialUpdates) ? 'checked' : '' %> onchange="updateNotification('socialUpdates', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Email Notifications -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Email Notifications</h2>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Weekly Reports</h4>
+                                <small style="color: var(--gray);">Detailed weekly fitness reports</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="weeklyReports" <%= (user.notifications?.weeklyReports !== false) ? 'checked' : '' %> onchange="updateNotification('weeklyReports', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Marketing Emails</h4>
+                                <small style="color: var(--gray);">Tips, news, and promotional content</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="marketingEmails" <%= (user.notifications?.marketingEmails) ? 'checked' : '' %> onchange="updateNotification('marketingEmails', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Security Alerts</h4>
+                                <small style="color: var(--gray);">Account security and login notifications</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="securityAlerts" <%= (user.notifications?.securityAlerts !== false) ? 'checked' : '' %> onchange="updateNotification('securityAlerts', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Notification Schedule -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Notification Schedule</h2>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Quiet Hours</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="time" class="form-control" id="quietHoursStart" value="<%= user.notifications?.quietHours?.start || '22:00' %>" style="width: auto;" onchange="updateNotification('quietHours', {start: this.value, end: document.getElementById('quietHoursEnd').value})">
+                            <span>to</span>
+                            <input type="time" class="form-control" id="quietHoursEnd" value="<%= user.notifications?.quietHours?.end || '08:00' %>" style="width: auto;" onchange="updateNotification('quietHours', {start: document.getElementById('quietHoursStart').value, end: this.value})">
+                        </div>
+                        <small style="color: var(--gray);">No notifications during these hours</small>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Weekend Notifications</h4>
+                                <small style="color: var(--gray);">Receive notifications on weekends</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="weekendNotifications" <%= (user.notifications?.weekendNotifications) ? 'checked' : '' %> onchange="updateNotification('weekendNotifications', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Security Content -->
+            <div class="security-content" style="display: none;">
+                <!-- Account Security -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Account Security</h2>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Two-Factor Authentication</h4>
+                                <small style="color: var(--gray);">Add an extra layer of security</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Password</h4>
+                                <small style="color: var(--gray);">Last changed 3 months ago</small>
+                            </div>
+                            <button class="btn btn-outline">Change</button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Login Notifications</h4>
+                                <small style="color: var(--gray);">Get notified of new login attempts</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Active Sessions -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Active Sessions</h2>
+                    </div>
+                    
+                    <div class="session-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; margin-bottom: 10px;">
+                        <div>
+                            <h4 style="margin: 0;">Current Session</h4>
+                            <small style="color: var(--gray);">Chrome on macOS • Active now</small>
+                        </div>
+                        <span class="badge badge-success">Current</span>
+                    </div>
+                    
+                    <div class="session-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; margin-bottom: 10px;">
+                        <div>
+                            <h4 style="margin: 0;">Mobile App</h4>
+                            <small style="color: var(--gray);">iPhone • Last active 2 hours ago</small>
+                        </div>
+                        <button class="btn btn-outline" style="font-size: 0.8rem; padding: 6px 12px;">Revoke</button>
+                    </div>
+                    
+                    <button class="btn btn-outline" style="margin-top: 10px;">Revoke All Other Sessions</button>
+                </div>
+                
+                <!-- Privacy Settings -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Privacy Settings</h2>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Data Encryption</h4>
+                                <small style="color: var(--gray);">Encrypt sensitive data at rest</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked disabled>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Activity Logging</h4>
+                                <small style="color: var(--gray);">Log account activity for security</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Advanced Content -->
+            <div class="advanced-content" style="display: none;">
+                <!-- Data Management -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Data Management</h2>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Auto Backup</h4>
+                                <small style="color: var(--gray);">Automatically backup your data weekly</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Data Sync</h4>
+                                <small style="color: var(--gray);">Sync data across all your devices</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Data Retention Period</label>
+                        <select class="form-control">
+                            <option value="1year" selected>1 Year</option>
+                            <option value="2years">2 Years</option>
+                            <option value="5years">5 Years</option>
+                            <option value="forever">Forever</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Developer Options -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Developer Options</h2>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Debug Mode</h4>
+                                <small style="color: var(--gray);">Enable detailed logging for troubleshooting</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">Beta Features</h4>
+                                <small style="color: var(--gray);">Access experimental features</small>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h4 style="margin: 0;">API Access</h4>
+                                <small style="color: var(--gray);">Generate API keys for third-party integrations</small>
+                            </div>
+                            <button class="btn btn-outline">Manage Keys</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- System Information -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">System Information</h2>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div>
+                            <h4 style="margin: 0 0 5px 0;">App Version</h4>
+                            <small style="color: var(--gray);">v2.1.0</small>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0 0 5px 0;">Database Version</h4>
+                            <small style="color: var(--gray);">v1.8.3</small>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0 0 5px 0;">Last Backup</h4>
+                            <small style="color: var(--gray);">2 days ago</small>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0 0 5px 0;">Storage Used</h4>
+                            <small style="color: var(--gray);">245 MB</small>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-outline" onclick="checkForUpdates()">Check for Updates</button>
+                        <button class="btn btn-outline" style="margin-left: 10px;" onclick="clearCache()">Clear Cache</button>
                     </div>
                 </div>
             </div>
@@ -905,18 +1458,40 @@
     
     <script>
         // Tab switching functionality
-        document.querySelectorAll('.tab').forEach(tab => {
+        document.querySelectorAll('.tab').forEach((tab, index) => {
             tab.addEventListener('click', function() {
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
                 
-                // Show/hide content based on tab
-                if (this.id === 'billingTab') {
-                    document.querySelectorAll('.account-content').forEach(el => el.style.display = 'none');
-                    document.querySelector('.subscription-content').classList.add('active');
-                } else {
-                    document.querySelectorAll('.account-content').forEach(el => el.style.display = 'block');
-                    document.querySelector('.subscription-content').classList.remove('active');
+                // Hide all content sections
+                document.querySelectorAll('.account-content').forEach(el => el.style.display = 'none');
+                document.querySelector('.subscription-content').classList.remove('active');
+                document.querySelector('.preferences-content').style.display = 'none';
+                document.querySelector('.notifications-content').style.display = 'none';
+                document.querySelector('.security-content').style.display = 'none';
+                document.querySelector('.advanced-content').style.display = 'none';
+                
+                // Show content based on tab
+                const tabText = this.textContent.trim();
+                switch(tabText) {
+                    case 'Account':
+                        document.querySelectorAll('.account-content').forEach(el => el.style.display = 'block');
+                        break;
+                    case 'Preferences':
+                        document.querySelector('.preferences-content').style.display = 'block';
+                        break;
+                    case 'Notifications':
+                        document.querySelector('.notifications-content').style.display = 'block';
+                        break;
+                    case 'Security':
+                        document.querySelector('.security-content').style.display = 'block';
+                        break;
+                    case 'Subscription':
+                        document.querySelector('.subscription-content').classList.add('active');
+                        break;
+                    case 'Advanced':
+                        document.querySelector('.advanced-content').style.display = 'block';
+                        break;
                 }
             });
         });
@@ -999,35 +1574,16 @@
             document.getElementById('currentPlanPrice').textContent = `$${price}/month`;
         }
 
-        // Show notification
+        // Legacy notification function (updated to use toast)
         function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 15px 20px;
-                border-radius: 8px;
-                color: white;
-                font-weight: 500;
-                z-index: 2000;
-                background: ${type === 'success' ? '#28A745' : '#DC3545'};
-                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            `;
-            notification.textContent = message;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.remove();
-            }, 4000);
+            showToast(message, type);
         }
 
         function copyFitnessId(fitnessId) {
             navigator.clipboard.writeText(fitnessId).then(() => {
-                showNotification('Fitness ID copied to clipboard!', 'success');
+                showToast('Fitness ID copied!', 'success');
             }, () => {
-                showNotification('Failed to copy Fitness ID', 'error');
+                showToast('Copy failed', 'error');
             });
         }
 
@@ -1157,7 +1713,7 @@
                 const formData = new FormData();
                 formData.append('photo', file);
 
-                showNotification('Uploading photo...', 'info');
+                showToast('Uploading photo...', 'info');
 
                 const response = await fetch('/api/settings/profile-photo', {
                     method: 'POST',
@@ -1172,13 +1728,13 @@
                     const img = document.getElementById('profileImage');
                     const newSrc = result.photoUrl.split('?')[0] + '?t=' + Date.now();
                     img.src = newSrc;
-                    showNotification('Profile photo updated successfully!', 'success');
+                    showToast('Photo updated!', 'success');
                 } else {
-                    showNotification('Failed to upload photo: ' + result.error, 'error');
+                    showToast('Upload failed', 'error');
                 }
             } catch (error) {
                 console.error('Photo upload error:', error);
-                showNotification('Failed to upload photo', 'error');
+                showToast('Upload failed', 'error');
             }
         }
 
@@ -1196,13 +1752,13 @@
 
                 if (result.success) {
                     document.getElementById('profileImage').src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent('<%= user.fullName %>') + '&background=6C63FF&color=fff';
-                    showNotification('Profile photo removed successfully!', 'success');
+                    showToast('Photo removed!', 'success');
                 } else {
-                    showNotification('Failed to remove photo: ' + result.error, 'error');
+                    showToast('Remove failed', 'error');
                 }
             } catch (error) {
                 console.error('Remove photo error:', error);
-                showNotification('Failed to remove photo', 'error');
+                showToast('Remove failed', 'error');
             }
         }
 
@@ -1217,12 +1773,12 @@
             const email = emailInput.value;
 
             if (!fullName || !email) {
-                showNotification('Please fill in all required fields', 'error');
+                showToast('Fill all fields', 'error');
                 return;
             }
 
             try {
-                showNotification('Updating profile...', 'info');
+                showToast('Updating profile...', 'info');
 
                 const response = await fetch('/api/settings/profile', {
                     method: 'POST',
@@ -1238,17 +1794,17 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    showNotification('Profile updated successfully!', 'success');
+                    showToast('Profile updated!', 'success');
                     // Reload page after a short delay to reflect changes
                     setTimeout(() => {
                         window.location.reload();
                     }, 1500);
                 } else {
-                    showNotification('Failed to update profile: ' + result.error, 'error');
+                    showToast('Update failed', 'error');
                 }
             } catch (error) {
                 console.error('Update profile error:', error);
-                showNotification('Failed to update profile', 'error');
+                showToast('Update failed', 'error');
             }
         }
 
@@ -1329,9 +1885,39 @@
             }
         }
 
-        // Enhanced notification function
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
+        // Export user data
+        async function exportUserData() {
+            try {
+                showNotification('Preparing data export...', 'info');
+                
+                const response = await fetch('/api/settings/export-data', {
+                    method: 'GET'
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `fit-with-ai-data-${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    
+                    showNotification('Data exported successfully!', 'success');
+                } else {
+                    showNotification('Failed to export data', 'error');
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                showNotification('Export failed', 'error');
+            }
+        }
+        
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
             const colors = {
                 success: '#28A745',
                 error: '#DC3545',
@@ -1339,29 +1925,116 @@
                 warning: '#FFC107'
             };
             
-            notification.style.cssText = `
+            toast.style.cssText = `
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                padding: 15px 20px;
+                padding: 12px 20px;
                 border-radius: 8px;
                 color: white;
                 font-weight: 500;
-                z-index: 2000;
-                background: ${colors[type] || colors.info};
-                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-                max-width: 400px;
-                word-wrap: break-word;
+                z-index: 3000;
+                background: ${colors[type]};
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                max-width: 350px;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                font-size: 14px;
             `;
-            notification.textContent = message;
+            toast.textContent = message;
             
-            document.body.appendChild(notification);
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.style.transform = 'translateX(0)', 100);
             
             setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // Update user preferences
+        async function updatePreference(key, value) {
+            try {
+                const response = await fetch('/api/settings/preferences', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ [key]: value })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast(`${key.charAt(0).toUpperCase() + key.slice(1)} updated`, 'success');
+                } else {
+                    showToast('Failed to update preference', 'error');
                 }
-            }, 4000);
+            } catch (error) {
+                showToast('Update failed', 'error');
+            }
+        }
+        
+        // Update notification settings
+        async function updateNotification(key, value) {
+            try {
+                const response = await fetch('/api/settings/notifications', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ [key]: value })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast(`Notification setting updated`, 'success');
+                } else {
+                    showToast('Failed to update notification', 'error');
+                }
+            } catch (error) {
+                showToast('Update failed', 'error');
+            }
+        }
+        
+        // Update security settings
+        async function updateSecurity(key, value) {
+            try {
+                const response = await fetch('/api/settings/security', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ [key]: value })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast(`Security setting updated`, 'success');
+                } else {
+                    showToast('Failed to update security', 'error');
+                }
+            } catch (error) {
+                showToast('Update failed', 'error');
+            }
+        }
+        
+        // Advanced settings functions
+        async function checkForUpdates() {
+            showToast('Checking for updates...', 'info');
+            try {
+                const response = await fetch('/api/settings/check-updates');
+                const result = await response.json();
+                showToast(result.message, result.hasUpdate ? 'warning' : 'success');
+            } catch (error) {
+                showToast('Update check failed', 'error');
+            }
+        }
+        
+        async function clearCache() {
+            if (confirm('Clear all cached data?')) {
+                try {
+                    const response = await fetch('/api/settings/clear-cache', { method: 'POST' });
+                    const result = await response.json();
+                    showToast(result.success ? 'Cache cleared!' : 'Clear failed', result.success ? 'success' : 'error');
+                } catch (error) {
+                    showToast('Clear failed', 'error');
+                }
+            }
         }
     </script>
 

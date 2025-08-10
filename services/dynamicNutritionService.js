@@ -83,31 +83,37 @@ class DynamicNutritionService {
   async calculateStreak(userId) {
     try {
       const user = await User.findById(userId);
+      if (!user.nutritionLogs || user.nutritionLogs.length === 0) {
+        return 0;
+      }
+      
       let streak = 0;
       let currentDate = moment().startOf('day');
       
-      // Check each day backwards until we find a day without proper nutrition
+      // Check each day backwards from today
       while (true) {
-        const dayLogs = user.nutritionLogs?.filter(log => 
+        const dayLogs = user.nutritionLogs.filter(log => 
           moment(log.date).isSame(currentDate, 'day')
-        ) || [];
+        );
         
         const dayCalories = dayLogs.reduce((sum, log) => sum + (log.totalCalories || 0), 0);
+        const dayWater = dayLogs.reduce((sum, log) => sum + (log.waterIntake || 0), 0);
         
-        // Consider it a "good day" if they logged at least 1000 calories
-        if (dayCalories >= 1000) {
+        // Consider it a "good day" if they logged at least 500 calories OR 1000ml water
+        if (dayCalories >= 500 || dayWater >= 1000) {
           streak++;
           currentDate.subtract(1, 'day');
+          
+          // Don't go back more than 30 days for performance
+          if (streak >= 30) break;
         } else {
           break;
         }
-        
-        // Limit to 365 days to prevent infinite loops
-        if (streak >= 365) break;
       }
       
       return streak;
     } catch (error) {
+      console.error('Calculate streak error:', error);
       return 0;
     }
   }
@@ -185,16 +191,75 @@ class DynamicNutritionService {
         totalCalories: food.calories * quantity,
         totalProtein: food.protein * quantity,
         totalCarbs: food.carbs * quantity,
-        totalFat: food.fat * quantity
+        totalFat: food.fat * quantity,
+        waterIntake: 0
       };
       
       const user = await User.findById(userId);
+      if (!user.nutritionLogs) {
+        user.nutritionLogs = [];
+      }
       user.nutritionLogs.push(nutritionData);
       await user.save();
       
+      console.log('✅ Food logged successfully:', nutritionData);
       return nutritionData;
     } catch (error) {
+      console.error('❌ Quick log food error:', error);
       throw new Error('Failed to quick log food: ' + error.message);
+    }
+  }
+  
+  // Log water intake
+  async logWater(userId, amount) {
+    try {
+      const user = await User.findById(userId);
+      const today = moment().startOf('day');
+      
+      // Find today's nutrition log or create one
+      let todayLog = user.nutritionLogs?.find(log => 
+        moment(log.date).isSame(today, 'day')
+      );
+      
+      if (todayLog) {
+        // Update existing log
+        todayLog.waterIntake = (todayLog.waterIntake || 0) + amount;
+      } else {
+        // Create new log for today
+        const newLog = {
+          date: new Date(),
+          meals: [],
+          totalCalories: 0,
+          totalProtein: 0,
+          totalCarbs: 0,
+          totalFat: 0,
+          waterIntake: amount
+        };
+        
+        if (!user.nutritionLogs) {
+          user.nutritionLogs = [];
+        }
+        user.nutritionLogs.push(newLog);
+      }
+      
+      await user.save();
+      console.log('✅ Water logged successfully:', amount + 'ml');
+      return { success: true, waterIntake: amount };
+    } catch (error) {
+      console.error('❌ Log water error:', error);
+      throw new Error('Failed to log water: ' + error.message);
+    }
+  }
+
+  // Reset all nutrition data to zero
+  async resetNutritionData(userId) {
+    try {
+      const user = await User.findById(userId);
+      user.nutritionLogs = [];
+      await user.save();
+      return { success: true, message: 'All nutrition data reset to zero' };
+    } catch (error) {
+      throw new Error('Failed to reset nutrition data: ' + error.message);
     }
   }
 
@@ -224,8 +289,8 @@ class DynamicNutritionService {
       }
       
       const streak = await this.calculateStreak(userId);
-      if (streak >= 7) {
-        insights.push(`🔥 Amazing! You've been consistent for ${streak} days!`);
+      if (streak >= 1) {
+        insights.push(`🔥 Great start! Keep logging your nutrition!`);
       }
       
       return insights.length > 0 ? insights : ['Keep up the great work with your nutrition tracking!'];

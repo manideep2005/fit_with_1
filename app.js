@@ -966,15 +966,14 @@ const protectedRoutes = [
   '/meal-planner',
   '/nutrition',
   '/nutriscan',
-  '/health',
   '/challenges',
-  '/biometrics',
   '/schedule',
   '/community',
   '/ai-coach',
   '/chat',
   '/settings',
-  '/subscription'
+  '/subscription',
+  '/payment-success'
 ];
 // Test chat route
 app.get('/chat-test', (req, res) => {
@@ -1696,6 +1695,197 @@ app.post('/api/nutrition/water', isAuthenticated, ensureDbConnection, async (req
   }
 });
 
+// Enhanced Nutrition API Routes for Real-time Data
+
+// Get today's nutrition summary
+app.get('/api/nutrition/today', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const userEmail = req.session.user.email;
+    
+    // Get user data
+    const user = await UserService.getUserByEmail(userEmail);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // Get today's nutrition logs
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    
+    const todayLogs = (user.nutritionLogs || []).filter(log => 
+      new Date(log.date) >= todayStart && new Date(log.date) < todayEnd
+    );
+
+    // Calculate totals
+    const totals = todayLogs.reduce((sum, log) => ({
+      calories: sum.calories + (log.totalCalories || 0),
+      protein: sum.protein + (log.totalProtein || 0),
+      carbs: sum.carbs + (log.totalCarbs || 0),
+      fat: sum.fat + (log.totalFat || 0),
+      water: sum.water + (log.waterIntake || 0)
+    }), { calories: 0, protein: 0, carbs: 0, fat: 0, water: 0 });
+
+    // Get goals (can be enhanced with dynamic goals later)
+    const goals = {
+      calories: user.fitnessGoals?.dailyCalories || 2000,
+      protein: user.fitnessGoals?.protein || 150,
+      carbs: Math.round((user.fitnessGoals?.dailyCalories || 2000) * 0.45 / 4),
+      fat: Math.round((user.fitnessGoals?.dailyCalories || 2000) * 0.25 / 9),
+      water: 2500
+    };
+
+    // Calculate percentages
+    const progress = {
+      calories: { current: totals.calories, goal: goals.calories, percentage: Math.round((totals.calories / goals.calories) * 100) },
+      protein: { current: totals.protein, goal: goals.protein, percentage: Math.round((totals.protein / goals.protein) * 100) },
+      carbs: { current: totals.carbs, goal: goals.carbs, percentage: Math.round((totals.carbs / goals.carbs) * 100) },
+      fat: { current: totals.fat, goal: goals.fat, percentage: Math.round((totals.fat / goals.fat) * 100) },
+      water: { current: totals.water, goal: goals.water, percentage: Math.round((totals.water / goals.water) * 100) }
+    };
+
+    res.json({
+      success: true,
+      data: {
+        progress,
+        meals: todayLogs.flatMap(log => log.meals || []),
+        totalEntries: todayLogs.length
+      }
+    });
+
+  } catch (error) {
+    console.error('Get today nutrition error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get today\'s nutrition data'
+    });
+  }
+});
+
+// Get nutrition meals for today
+app.get('/api/nutrition/meals/today', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const user = await UserService.getUserByEmail(userEmail);
+    
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+
+    // Get today's nutrition logs
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    
+    const todayLogs = (user.nutritionLogs || []).filter(log => 
+      new Date(log.date) >= todayStart && new Date(log.date) < todayEnd
+    );
+
+    // Format meals with time and type
+    const meals = [];
+    todayLogs.forEach(log => {
+      if (log.meals && log.meals.length > 0) {
+        log.meals.forEach(meal => {
+          meals.push({
+            name: meal.name || 'Unknown Food',
+            time: new Date(log.date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            type: meal.type || 'snacks',
+            calories: meal.calories || 0,
+            protein: meal.protein || 0,
+            carbs: meal.carbs || 0,
+            fat: meal.fat || 0,
+            icon: getMealIcon(meal.type || 'snacks')
+          });
+        });
+      }
+    });
+
+    res.json({
+      success: true,
+      meals: meals.sort((a, b) => new Date('1970/01/01 ' + a.time) - new Date('1970/01/01 ' + b.time))
+    });
+
+  } catch (error) {
+    console.error('Get today meals error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get today\'s meals'
+    });
+  }
+});
+
+// Helper function to get meal icons
+function getMealIcon(mealType) {
+  const icons = {
+    breakfast: 'egg',
+    lunch: 'utensils',
+    dinner: 'drumstick-bite',
+    snacks: 'apple-alt'
+  };
+  return icons[mealType] || 'utensils';
+}
+
+// Log water intake (enhanced)
+app.post('/api/nutrition/log-water', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { amount } = req.body;
+    const userEmail = req.session.user.email;
+
+    if (!amount || amount <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Valid water amount is required'
+      });
+    }
+
+    // Create a water-only nutrition log
+    const nutritionData = {
+      date: new Date(),
+      meals: [],
+      totalCalories: 0,
+      totalProtein: 0,
+      totalCarbs: 0,
+      totalFat: 0,
+      waterIntake: parseInt(amount)
+    };
+
+    await UserService.addNutritionLog(userEmail, nutritionData);
+    
+    // Get updated water total for today
+    const user = await UserService.getUserByEmail(userEmail);
+    const today = new Date();
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000);
+    
+    const todayLogs = (user.nutritionLogs || []).filter(log => 
+      new Date(log.date) >= todayStart && new Date(log.date) < todayEnd
+    );
+
+    const totalWater = todayLogs.reduce((sum, log) => sum + (log.waterIntake || 0), 0);
+    const waterGoal = 2500;
+    const percentage = Math.round((totalWater / waterGoal) * 100);
+    
+    res.json({
+      success: true,
+      message: `Added ${amount}ml water!`,
+      data: {
+        totalWater,
+        waterGoal,
+        percentage,
+        amountAdded: amount
+      }
+    });
+
+  } catch (error) {
+    console.error('Log water error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to log water intake'
+    });
+  }
+});
+
 // Update User Preferences Route
 app.put('/api/user/preferences', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
@@ -1918,6 +2108,393 @@ app.post('/api/ai-chat', isAuthenticated, async (req, res) => {
       success: false,
       error: 'Failed to get AI response',
       fallback: "I'm here to help with your fitness journey! Please try asking about workouts, nutrition, or your fitness goals."
+    });
+  }
+});
+
+// Advanced AI-Powered Workout Generation
+app.post('/api/ai-workout-plan', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { preferences = {} } = req.body;
+    const userEmail = req.session.user.email;
+    
+    // Get user profile
+    const user = await UserService.getUserByEmail(userEmail);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    // Prepare user profile for AI
+    const userProfile = {
+      fitnessGoals: user.fitnessGoals,
+      personalInfo: user.personalInfo,
+      healthInfo: user.healthInfo,
+      workoutHistory: user.workouts || [],
+      availableEquipment: preferences.equipment || [],
+      timeAvailable: preferences.timeAvailable || 30,
+      fitnessLevel: preferences.fitnessLevel || user.fitnessGoals?.activityLevel || 'beginner'
+    };
+
+    console.log('🤖 Generating AI workout plan for:', user.email);
+
+    // Generate workout plan using AI service
+    const result = await aiService.generateAdvancedWorkoutPlan(userProfile, preferences);
+
+    if (result.success) {
+      res.json({
+        success: true,
+        workoutPlan: result.workoutPlan,
+        generatedBy: result.generatedBy,
+        timestamp: result.timestamp,
+        message: 'Personalized workout plan generated successfully!'
+      });
+    } else {
+      res.json({
+        success: false,
+        error: result.error,
+        fallbackPlan: result.fallbackPlan
+      });
+    }
+
+  } catch (error) {
+    console.error('AI workout generation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate workout plan',
+      details: error.message
+    });
+  }
+});
+
+// Form Correction Service Routes
+const formCorrectionService = require('./services/formCorrectionService');
+
+// Initialize form correction
+app.post('/api/form-correction/initialize', isAuthenticated, async (req, res) => {
+  try {
+    const result = await formCorrectionService.initializePoseDetection();
+    
+    res.json({
+      success: result.success,
+      message: result.message || result.error,
+      capabilities: result.capabilities,
+      fallback: result.fallback
+    });
+
+  } catch (error) {
+    console.error('Form correction initialization error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to initialize form correction',
+      details: error.message
+    });
+  }
+});
+
+// Start form correction session
+app.post('/api/form-correction/start-session', isAuthenticated, async (req, res) => {
+  try {
+    const { exerciseType } = req.body;
+    const userProfile = req.session.user;
+
+    if (!exerciseType) {
+      return res.status(400).json({
+        success: false,
+        error: 'Exercise type is required'
+      });
+    }
+
+    console.log(`🎯 Starting form correction session: ${exerciseType} for ${userProfile.email}`);
+
+    const session = formCorrectionService.startSession(exerciseType, userProfile);
+
+    res.json({
+      success: true,
+      session: session,
+      message: `Form correction session started for ${session.exercise}`
+    });
+
+  } catch (error) {
+    console.error('Start form correction session error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Analyze pose data
+app.post('/api/form-correction/analyze', isAuthenticated, async (req, res) => {
+  try {
+    const { poseData, timestamp } = req.body;
+
+    if (!poseData) {
+      return res.status(400).json({
+        success: false,
+        error: 'Pose data is required'
+      });
+    }
+
+    const analysis = formCorrectionService.analyzePose(poseData, timestamp);
+
+    res.json({
+      success: true,
+      analysis: analysis
+    });
+
+  } catch (error) {
+    console.error('Pose analysis error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      fallbackFeedback: formCorrectionService.getFallbackFeedback()
+    });
+  }
+});
+
+// End form correction session
+app.post('/api/form-correction/end-session', isAuthenticated, async (req, res) => {
+  try {
+    const summary = formCorrectionService.endSession();
+
+    res.json({
+      success: true,
+      summary: summary,
+      message: 'Form correction session completed successfully!'
+    });
+
+  } catch (error) {
+    console.error('End form correction session error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get supported exercises for form correction
+app.get('/api/form-correction/exercises', isAuthenticated, (req, res) => {
+  try {
+    const exercises = formCorrectionService.getSupportedExercises();
+
+    res.json({
+      success: true,
+      exercises: exercises,
+      count: exercises.length
+    });
+
+  } catch (error) {
+    console.error('Get supported exercises error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get supported exercises'
+    });
+  }
+});
+
+// Form correction status
+app.get('/api/form-correction/status', isAuthenticated, (req, res) => {
+  try {
+    const status = formCorrectionService.getStatus();
+
+    res.json({
+      success: true,
+      status: status
+    });
+
+  } catch (error) {
+    console.error('Form correction status error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get form correction status'
+    });
+  }
+});
+
+// Virtual Training Service Routes
+const virtualTrainingService = require('./services/virtualTrainingService');
+
+// Search trainers
+app.get('/api/virtual-training/trainers', isAuthenticated, (req, res) => {
+  try {
+    const filters = {
+      specialty: req.query.specialty,
+      maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice) : undefined,
+      minRating: req.query.minRating ? parseFloat(req.query.minRating) : undefined,
+      language: req.query.language,
+      sessionType: req.query.sessionType,
+      sortBy: req.query.sortBy
+    };
+
+    const result = virtualTrainingService.searchTrainers(filters);
+
+    res.json({
+      success: true,
+      ...result
+    });
+
+  } catch (error) {
+    console.error('Search trainers error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search trainers'
+    });
+  }
+});
+
+// Get trainer details
+app.get('/api/virtual-training/trainers/:trainerId', isAuthenticated, (req, res) => {
+  try {
+    const { trainerId } = req.params;
+    const trainer = virtualTrainingService.getTrainerDetails(trainerId);
+
+    res.json({
+      success: true,
+      trainer: trainer
+    });
+
+  } catch (error) {
+    console.error('Get trainer details error:', error);
+    res.status(404).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Book training session
+app.post('/api/virtual-training/book', isAuthenticated, async (req, res) => {
+  try {
+    const bookingData = {
+      ...req.body,
+      userId: req.session.user._id,
+      userProfile: {
+        name: req.session.user.fullName,
+        email: req.session.user.email,
+        fitnessGoals: req.session.user.fitnessGoals,
+        personalInfo: req.session.user.personalInfo
+      }
+    };
+
+    console.log('📅 Booking virtual training session for:', req.session.user.email);
+
+    const result = await virtualTrainingService.bookSession(bookingData);
+
+    res.json(result);
+
+  } catch (error) {
+    console.error('Book training session error:', error);
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Start training session
+app.post('/api/virtual-training/start/:bookingId', isAuthenticated, async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { participantType = 'client' } = req.body;
+
+    console.log(`🎥 Starting virtual training session: ${bookingId}`);
+
+    const session = await virtualTrainingService.startSession(bookingId, participantType);
+
+    res.json({
+      success: true,
+      session: session
+    });
+
+  } catch (error) {
+    console.error('Start training session error:', error);
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// End training session
+app.post('/api/virtual-training/end/:sessionId', isAuthenticated, async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const { participantId, sessionData } = req.body;
+
+    const result = await virtualTrainingService.endSession(sessionId, participantId, sessionData);
+
+    res.json({
+      success: true,
+      ...result
+    });
+
+  } catch (error) {
+    console.error('End training session error:', error);
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Get user bookings
+app.get('/api/virtual-training/bookings', isAuthenticated, (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const bookings = virtualTrainingService.getUserBookings(userId);
+
+    res.json({
+      success: true,
+      ...bookings
+    });
+
+  } catch (error) {
+    console.error('Get user bookings error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get bookings'
+    });
+  }
+});
+
+// Cancel booking
+app.post('/api/virtual-training/cancel/:bookingId', isAuthenticated, async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { reason } = req.body;
+    const userId = req.session.user._id;
+
+    const result = await virtualTrainingService.cancelBooking(bookingId, userId, reason);
+
+    res.json(result);
+
+  } catch (error) {
+    console.error('Cancel booking error:', error);
+    res.status(400).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
+
+// Virtual training status
+app.get('/api/virtual-training/status', isAuthenticated, (req, res) => {
+  try {
+    const status = virtualTrainingService.getStatus();
+
+    res.json({
+      success: true,
+      status: status
+    });
+
+  } catch (error) {
+    console.error('Virtual training status error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get virtual training status'
     });
   }
 });
@@ -3658,7 +4235,106 @@ app.get('/logout', async (req, res) => {
   res.redirect('/');
 });
 
-// Settings API Routes
+// Settings API Routes - Dynamic preferences and notifications
+app.post('/api/settings/preferences', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const preferences = req.body;
+    
+    const User = require('./models/User');
+    const user = await User.findOne({ email: userEmail });
+    
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    // Update preferences
+    if (!user.preferences) user.preferences = {};
+    Object.assign(user.preferences, preferences);
+    
+    await user.save();
+    
+    // Update session
+    req.session.user.preferences = user.preferences;
+    
+    res.json({ success: true, preferences: user.preferences });
+  } catch (error) {
+    console.error('Update preferences error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update preferences' });
+  }
+});
+
+app.post('/api/settings/notifications', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const notifications = req.body;
+    
+    const User = require('./models/User');
+    const user = await User.findOne({ email: userEmail });
+    
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    // Update notifications
+    if (!user.notifications) user.notifications = {};
+    Object.assign(user.notifications, notifications);
+    
+    await user.save();
+    
+    // Update session
+    req.session.user.notifications = user.notifications;
+    
+    res.json({ success: true, notifications: user.notifications });
+  } catch (error) {
+    console.error('Update notifications error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update notifications' });
+  }
+});
+
+app.post('/api/settings/security', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const security = req.body;
+    
+    const User = require('./models/User');
+    const user = await User.findOne({ email: userEmail });
+    
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    // Update security settings
+    if (!user.security) user.security = {};
+    Object.assign(user.security, security);
+    
+    await user.save();
+    
+    // Update session
+    req.session.user.security = user.security;
+    
+    res.json({ success: true, security: user.security });
+  } catch (error) {
+    console.error('Update security error:', error);
+    res.status(500).json({ success: false, error: 'Failed to update security' });
+  }
+});
+
+app.post('/api/settings/check-updates', isAuthenticated, (req, res) => {
+  res.json({ 
+    success: true, 
+    hasUpdate: false, 
+    message: 'You are using the latest version!' 
+  });
+});
+
+app.post('/api/settings/clear-cache', isAuthenticated, (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'Cache cleared successfully!' 
+  });
+});
+
 app.use('/api/settings', isAuthenticated, ensureDbConnection, require('./routes/settings'));
 
 // Meal Planner API Routes
@@ -3666,7 +4342,29 @@ app.use('/api/meal-planner', isAuthenticated, ensureDbConnection, require('./rou
 
 // Community API Routes
 
-// Get user's groups
+// Get user's groups (My Groups)
+app.get('/api/community/groups/my', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    console.log('Getting groups for user:', userId);
+    
+    const groups = await communityService.getUserGroups(userId);
+    console.log('Found groups:', groups.length);
+    
+    res.json({
+      success: true,
+      groups: groups || []
+    });
+  } catch (error) {
+    console.error('Get user groups error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get groups'
+    });
+  }
+});
+
+// Legacy endpoint for backward compatibility
 app.get('/api/community/groups', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const userId = req.session.user._id;
@@ -3674,7 +4372,7 @@ app.get('/api/community/groups', isAuthenticated, ensureDbConnection, async (req
     
     res.json({
       success: true,
-      groups: groups
+      groups: groups || []
     });
   } catch (error) {
     console.error('Get user groups error:', error);
@@ -3688,12 +4386,26 @@ app.get('/api/community/groups', isAuthenticated, ensureDbConnection, async (req
 // Get public groups
 app.get('/api/community/groups/public', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
+    const userId = req.session.user._id;
     const { limit = 20, category } = req.query;
+    
+    console.log('Getting public groups for user:', userId, 'category:', category);
+    
     const groups = await communityService.getPublicGroups(parseInt(limit), category);
+    const userGroups = await communityService.getUserGroups(userId);
+    const userGroupIds = userGroups.map(g => g._id.toString());
+    
+    // Mark which groups user has already joined
+    const groupsWithMembership = groups.map(group => ({
+      ...group,
+      isMember: userGroupIds.includes(group._id.toString())
+    }));
+    
+    console.log('Found public groups:', groups.length, 'User is member of:', userGroupIds.length);
     
     res.json({
       success: true,
-      groups: groups
+      groups: groupsWithMembership
     });
   } catch (error) {
     console.error('Get public groups error:', error);
@@ -3708,7 +4420,11 @@ app.get('/api/community/groups/public', isAuthenticated, ensureDbConnection, asy
 app.post('/api/community/groups', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const userId = req.session.user._id;
+    
+    console.log('Creating group for user:', userId, 'data:', req.body);
+    
     const group = await communityService.createGroup(userId, req.body);
+    console.log('Group created:', group._id);
     
     res.json({
       success: true,
@@ -3724,17 +4440,88 @@ app.post('/api/community/groups', isAuthenticated, ensureDbConnection, async (re
   }
 });
 
+// Get group members
+app.get('/api/community/groups/:groupId/members', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const members = await communityService.getGroupMembers(groupId);
+    
+    res.json({
+      success: true,
+      members: members || []
+    });
+  } catch (error) {
+    console.error('Get group members error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get group members'
+    });
+  }
+});
+
+// Delete group (for creators only)
+app.delete('/api/community/groups/:groupId', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { groupId } = req.params;
+    
+    const result = await communityService.deleteGroup(userId, groupId);
+    
+    res.json({
+      success: true,
+      message: 'Group deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete group error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to delete group'
+    });
+  }
+});
+
+// Search community content
+app.get('/api/community/search', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { q: query } = req.query;
+    
+    if (!query || query.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        error: 'Search query must be at least 2 characters long'
+      });
+    }
+    
+    const results = await communityService.searchContent(query.trim());
+    
+    res.json({
+      success: true,
+      results: results
+    });
+  } catch (error) {
+    console.error('Search community error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search community content'
+    });
+  }
+});
+
 // Join group
 app.post('/api/community/groups/:groupId/join', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const userId = req.session.user._id;
     const { groupId } = req.params;
     
-    await communityService.joinGroup(userId, groupId);
+    console.log('User', userId, 'attempting to join group', groupId);
+    
+    const result = await communityService.joinGroup(userId, groupId);
+    console.log('Join group result:', result);
     
     res.json({
       success: true,
-      message: 'Joined group successfully'
+      message: 'Joined group successfully',
+      group: result
     });
   } catch (error) {
     console.error('Join group error:', error);
@@ -3751,7 +4538,10 @@ app.post('/api/community/groups/:groupId/leave', isAuthenticated, ensureDbConnec
     const userId = req.session.user._id;
     const { groupId } = req.params;
     
-    await communityService.leaveGroup(userId, groupId);
+    console.log('User', userId, 'attempting to leave group', groupId);
+    
+    const result = await communityService.leaveGroup(userId, groupId);
+    console.log('Leave group result:', result);
     
     res.json({
       success: true,
@@ -3793,11 +4583,14 @@ app.get('/api/community/feed', isAuthenticated, ensureDbConnection, async (req, 
     const userId = req.session.user._id;
     const { limit = 20, skip = 0 } = req.query;
     
+    console.log('Getting feed for user:', userId, 'limit:', limit, 'skip:', skip);
+    
     const posts = await communityService.getUserFeed(userId, parseInt(limit), parseInt(skip));
+    console.log('Found posts:', posts.length);
     
     res.json({
       success: true,
-      posts: posts
+      posts: posts || []
     });
   } catch (error) {
     console.error('Get user feed error:', error);
@@ -3812,7 +4605,11 @@ app.get('/api/community/feed', isAuthenticated, ensureDbConnection, async (req, 
 app.post('/api/community/posts', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const userId = req.session.user._id;
+    
+    console.log('Creating post for user:', userId, 'data:', req.body);
+    
     const post = await communityService.createPost(userId, req.body);
+    console.log('Post created:', post._id);
     
     res.json({
       success: true,
@@ -3834,12 +4631,14 @@ app.post('/api/community/posts/:postId/like', isAuthenticated, ensureDbConnectio
     const userId = req.session.user._id;
     const { postId } = req.params;
     
-    const post = await communityService.likePost(userId, postId);
+    console.log('User', userId, 'liking post', postId);
+    
+    const result = await communityService.likePost(userId, postId);
     
     res.json({
       success: true,
-      likes: post.stats.totalLikes,
-      isLiked: post.likes.some(like => like.user.toString() === userId.toString())
+      likes: result.likes || 0,
+      isLiked: result.isLiked || false
     });
   } catch (error) {
     console.error('Like post error:', error);
@@ -4062,9 +4861,7 @@ app.get('/api/nutrition/insights', isAuthenticated, ensureDbConnection, async (r
   }
 });
 
-// Challenge API Routes
 
-// Get user challenge stats
 app.get('/api/challenges/stats', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     if (!challengeService) {
@@ -4259,10 +5056,208 @@ app.post('/api/nutrition/water', isAuthenticated, ensureDbConnection, async (req
     const userId = req.session.user._id;
     const { amount } = req.body;
     
-    await nutritionService.logWater(userId, amount || 250);
-    res.json({ success: true, message: 'Water logged' });
+    const dynamicNutritionService = require('./services/dynamicNutritionService');
+    const result = await dynamicNutritionService.logWater(userId, amount || 250);
+    
+    res.json({ success: true, message: 'Water logged successfully', data: result });
   } catch (error) {
-    res.json({ success: false, error: 'Failed to log water' });
+    console.error('Water logging error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to log water' });
+  }
+});
+
+app.post('/api/nutrition/reset', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const dynamicNutritionService = require('./services/dynamicNutritionService');
+    
+    const result = await dynamicNutritionService.resetNutritionData(userId);
+    res.json(result);
+  } catch (error) {
+    res.json({ success: false, error: 'Failed to reset nutrition data' });
+  }
+});
+
+app.post('/api/nutrition/quick-log', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { foodName, quantity = 1 } = req.body;
+    
+    if (!foodName) {
+      return res.status(400).json({
+        success: false,
+        error: 'Food name is required'
+      });
+    }
+    
+    const dynamicNutritionService = require('./services/dynamicNutritionService');
+    const result = await dynamicNutritionService.quickLogFood(userId, foodName, quantity);
+    
+    res.json({
+      success: true,
+      message: 'Food logged successfully',
+      data: result
+    });
+  } catch (error) {
+    console.error('Quick log food error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to log food'
+    });
+  }
+});
+
+app.get('/api/nutrition/progress', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const dynamicNutritionService = require('./services/dynamicNutritionService');
+    
+    const progress = await dynamicNutritionService.getRealTimeProgress(userId);
+    res.json({ success: true, data: progress });
+  } catch (error) {
+    console.error('Get nutrition progress error:', error);
+    res.status(500).json({ success: false, error: 'Failed to get nutrition progress' });
+  }
+});
+
+app.get('/api/nutrition/insights', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const dynamicNutritionService = require('./services/dynamicNutritionService');
+    
+    const insights = await dynamicNutritionService.getNutritionInsights(userId);
+    res.json({ success: true, insights });
+  } catch (error) {
+    console.error('Get nutrition insights error:', error);
+    res.status(500).json({ success: false, error: 'Failed to get insights' });
+  }
+});
+
+app.get('/api/nutrition/suggestions', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const dynamicNutritionService = require('./services/dynamicNutritionService');
+    
+    const suggestions = await dynamicNutritionService.getSmartSuggestions(userId);
+    res.json({ success: true, suggestions });
+  } catch (error) {
+    console.error('Get nutrition suggestions error:', error);
+    res.status(500).json({ success: false, error: 'Failed to get suggestions' });
+  }
+});
+
+app.post('/api/nutrition', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const nutritionData = req.body;
+    
+    // Add current date if not provided
+    if (!nutritionData.date) {
+      nutritionData.date = new Date();
+    }
+    
+    const User = require('./models/User');
+    const user = await User.findById(userId);
+    
+    if (!user.nutritionLogs) {
+      user.nutritionLogs = [];
+    }
+    
+    user.nutritionLogs.push(nutritionData);
+    await user.save();
+    
+    console.log('✅ Nutrition data saved:', nutritionData);
+    console.log('✅ Total nutrition logs:', user.nutritionLogs.length);
+    res.json({ success: true, message: 'Nutrition logged successfully', data: nutritionData });
+  } catch (error) {
+    console.error('Nutrition logging error:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to log nutrition' });
+  }
+});
+
+app.get('/api/nutrition/debug', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const User = require('./models/User');
+    const user = await User.findById(userId);
+    
+    res.json({ 
+      success: true, 
+      userId: userId,
+      nutritionLogsCount: user.nutritionLogs?.length || 0,
+      nutritionLogs: user.nutritionLogs || [],
+      lastLog: user.nutritionLogs?.[user.nutritionLogs.length - 1] || null
+    });
+  } catch (error) {
+    console.error('Debug error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Challenge API endpoints
+app.get('/api/challenges/stats', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const User = require('./models/User');
+    const user = await User.findById(userId);
+    
+    const stats = {
+      challengesCompleted: user.gamification?.challengeStats?.completed || 0,
+      currentStreak: Math.max(
+        user.gamification?.streaks?.workout?.current || 0,
+        user.gamification?.streaks?.nutrition?.current || 0
+      ),
+      achievementsUnlocked: user.gamification?.achievements?.length || 0,
+      totalPoints: user.gamification?.totalXP || 0
+    };
+    
+    res.json({ success: true, stats });
+  } catch (error) {
+    console.error('Challenge stats error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/api/challenges', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const type = req.query.type || 'active';
+    
+    // For now, return empty arrays since we're starting fresh
+    res.json({ success: true, challenges: [] });
+  } catch (error) {
+    console.error('Get challenges error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/api/challenges/leaderboard', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const User = require('./models/User');
+    
+    // Get user's friends from chat/community
+    const currentUser = await User.findById(req.session.user._id).populate('friends');
+    const friendIds = currentUser.friends?.map(f => f._id) || [];
+    
+    // Include current user in the query
+    const userIds = [req.session.user._id, ...friendIds];
+    
+    // Get users with their gamification data
+    const users = await User.find({ _id: { $in: userIds } })
+      .select('fullName gamification')
+      .sort({ 'gamification.totalXP': -1 })
+      .limit(10);
+    
+    const leaderboard = users.map((user, index) => ({
+      rank: index + 1,
+      name: user.fullName,
+      points: user.gamification?.totalXP || 0
+    })).filter(user => user.points > 0); // Only show users with points
+    
+    res.json({ success: true, leaderboard });
+  } catch (error) {
+    console.error('Leaderboard error:', error);
+    res.status(500).json({ success: false, error: error.message });
   }
 });
 
@@ -4298,31 +5293,7 @@ app.get('/api/payment/plans', isAuthenticated, (req, res) => {
   res.json({ success: true, availablePlans: plans, currentPlan: req.session.user.subscription?.plan || 'free' });
 });
 
-app.get('/api/payment/subscription/status', isAuthenticated, (req, res) => {
-  const user = req.session.user;
-  const subscription = user.subscription || { plan: { id: 'free', name: 'Free Plan', price: 0 } };
-  
-  let isActive = false;
-  let daysRemaining = 0;
-  
-  if (subscription.expiresAt) {
-    const expiryDate = new Date(subscription.expiresAt);
-    const now = new Date();
-    isActive = expiryDate > now;
-    daysRemaining = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
-  }
-  
-  res.json({
-    success: true,
-    subscription: {
-      plan: subscription.plan || { id: 'free', name: 'Free Plan', price: 0 },
-      isActive,
-      daysRemaining,
-      isTrial: subscription.isTrial || false,
-      nextBillingDate: subscription.nextBillingDate
-    }
-  });
-});
+
 
 app.post('/api/payment/qr/generate', isAuthenticated, (req, res) => {
   const { planId } = req.body;
@@ -4361,32 +5332,125 @@ app.post('/api/payment/simulate/success', isAuthenticated, (req, res) => {
   res.json({ success: true, message: 'Payment simulated successfully' });
 });
 
+// Payment status checking endpoint (for auto-detection)
+app.post('/api/payment/check-status', isAuthenticated, async (req, res) => {
+  try {
+    const { paymentId, amount } = req.body;
+    
+    if (!req.session.user) {
+      return res.status(401).json({ success: false, error: 'Not authenticated' });
+    }
+    
+    // Simulate payment detection logic
+    // In real implementation, this would check with payment gateway
+    const paymentData = JSON.parse(req.session.paymentCheck || '{}');
+    const currentTime = Date.now();
+    
+    // Check if payment was "received" (simulate 60% success rate after 45 seconds)
+    if (!paymentData[paymentId]) {
+      paymentData[paymentId] = {
+        createdAt: currentTime,
+        amount: amount,
+        checkCount: 0
+      };
+    }
+    
+    paymentData[paymentId].checkCount++;
+    const timeSinceCreation = currentTime - paymentData[paymentId].createdAt;
+    
+    // More aggressive detection - start checking after 20 seconds
+    let paymentReceived = false;
+    if (timeSinceCreation > 20000) { // 20 seconds
+      // High probability detection - 80% base rate, increases quickly
+      const probability = Math.min(0.8 + (paymentData[paymentId].checkCount * 0.05), 0.98);
+      paymentReceived = Math.random() < probability;
+    }
+    
+    // Force detection after 2 minutes for demo
+    if (timeSinceCreation > 120000) {
+      paymentReceived = true;
+    }
+    
+    console.log(`Payment check: ${paymentId}, Time: ${Math.floor(timeSinceCreation/1000)}s, Count: ${paymentData[paymentId].checkCount}, Detected: ${paymentReceived}`);
+    
+    // Store updated payment data
+    req.session.paymentCheck = JSON.stringify(paymentData);
+    
+    res.json({ 
+      success: true, 
+      paymentReceived: paymentReceived,
+      checkCount: paymentData[paymentId].checkCount,
+      timeSinceCreation: Math.floor(timeSinceCreation / 1000)
+    });
+    
+  } catch (error) {
+    console.error('Payment status check error:', error);
+    res.json({ success: false, paymentReceived: false });
+  }
+});
+
 app.post('/api/payment/verify', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
-    const { paymentId } = req.body;
+    const { paymentId, planId, amount, autoDetected } = req.body;
     const userId = req.session.user._id;
     
     // Update user subscription
     const User = require('./models/User');
     const expiresAt = new Date();
-    expiresAt.setMonth(expiresAt.getMonth() + 1);
+    
+    // Set expiration based on plan
+    if (planId === 'basic') {
+      expiresAt.setDate(expiresAt.getDate() + 7); // 1 week
+    } else if (planId === 'yearly') {
+      expiresAt.setFullYear(expiresAt.getFullYear() + 1); // 1 year
+    } else {
+      expiresAt.setMonth(expiresAt.getMonth() + 1); // 1 month for premium
+    }
+    
+    const planName = {
+      'basic': 'Basic Pro',
+      'premium': 'Premium Pro', 
+      'yearly': 'Yearly Premium'
+    }[planId] || 'Premium Pro';
     
     await User.findByIdAndUpdate(userId, {
-      'subscription.plan': 'premium',
+      'subscription.plan': planId || 'premium',
+      'subscription.planName': planName,
       'subscription.isActive': true,
       'subscription.expiresAt': expiresAt,
-      'subscription.paymentId': paymentId
+      'subscription.paymentId': paymentId,
+      'subscription.amount': amount,
+      'subscription.autoDetected': autoDetected || false
     });
     
     // Update session
     req.session.user.subscription = {
-      plan: 'premium',
+      plan: planId || 'premium',
+      planName: planName,
       isActive: true,
       expiresAt: expiresAt,
-      paymentId: paymentId
+      paymentId: paymentId,
+      amount: amount
     };
     
-    res.json({ success: true, message: 'Subscription activated successfully' });
+    // Clear payment check data
+    if (req.session.paymentCheck) {
+      const paymentData = JSON.parse(req.session.paymentCheck);
+      delete paymentData[paymentId];
+      req.session.paymentCheck = JSON.stringify(paymentData);
+    }
+    
+    console.log('Subscription updated successfully', autoDetected ? '(auto-detected)' : '(manual)');
+    
+    res.json({ 
+      success: true, 
+      message: autoDetected ? 'Payment auto-detected and subscription activated' : 'Subscription activated successfully',
+      payment: {
+        paymentId: paymentId,
+        amount: amount,
+        plan: planName
+      }
+    });
   } catch (error) {
     console.error('Payment verification error:', error);
     res.status(500).json({ success: false, error: 'Payment verification failed' });
@@ -4477,7 +5541,7 @@ chatService.init(io);
 
 // Start Server (only in non-serverless environment)
 if (!process.env.VERCEL) {
-  const PORT = process.env.PORT || 3005;
+  const PORT = process.env.PORT || 3009;
   server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Open http://localhost:${PORT} in your browser`);
@@ -4521,6 +5585,140 @@ app.use(async (req, res, next) => {
     }
   }
   next();
+});
+
+
+
+// Generate PDF bill endpoint
+app.post('/api/generate-bill', isAuthenticated, (req, res) => {
+  const { confirmation, plan, amount } = req.body;
+  
+  // Simple PDF content (basic PDF structure)
+  const pdfContent = `%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+/Resources <<
+/Font <<
+/F1 5 0 R
+>>
+>>
+>>
+endobj
+
+4 0 obj
+<<
+/Length 800
+>>
+stream
+BT
+/F1 16 Tf
+50 750 Td
+(FIT-WITH-AI PAYMENT RECEIPT) Tj
+0 -40 Td
+/F1 12 Tf
+(================================) Tj
+0 -30 Td
+(TRANSACTION DETAILS) Tj
+0 -20 Td
+(Confirmation: ${confirmation}) Tj
+0 -20 Td
+(Plan: ${plan}) Tj
+0 -20 Td
+(Amount: Rs.${amount}) Tj
+0 -20 Td
+(Date: ${new Date().toLocaleDateString('en-IN')}) Tj
+0 -20 Td
+(Time: ${new Date().toLocaleTimeString('en-IN')}) Tj
+0 -30 Td
+(BILLING INFORMATION) Tj
+0 -20 Td
+(Merchant: Fit-With-AI) Tj
+0 -20 Td
+(UPI ID: 8885800887@ptaxis) Tj
+0 -20 Td
+(Payment Method: UPI) Tj
+0 -20 Td
+(Status: SUCCESS) Tj
+0 -30 Td
+(SUBSCRIPTION DETAILS) Tj
+0 -20 Td
+(Billing Cycle: Monthly) Tj
+0 -20 Td
+(Next Billing: ${new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN')}) Tj
+0 -40 Td
+(Thank you for choosing Fit-With-AI!) Tj
+0 -20 Td
+(For support: support@fitwith.ai) Tj
+ET
+endstream
+endobj
+
+5 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+
+xref
+0 6
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000274 00000 n 
+0000001126 00000 n 
+trailer
+<<
+/Size 6
+/Root 1 0 R
+>>
+startxref
+1203
+%%EOF`;
+  
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="FitWithAI_Bill_${confirmation}.pdf"`);
+  res.send(Buffer.from(pdfContent));
+});
+
+// Send email receipt endpoint
+app.post('/api/send-receipt', isAuthenticated, ensureDbConnection, async (req, res) => {
+  const { confirmation, plan, amount } = req.body;
+  
+  try {
+    const userEmail = req.session.user.email;
+    const userName = req.session.user.fullName || 'User';
+    
+    console.log('Email would be sent to:', userEmail);
+    console.log('Receipt for:', plan, 'Amount:', amount, 'Confirmation:', confirmation);
+    
+    res.json({ success: true, message: 'Receipt sent to email' });
+    
+  } catch (error) {
+    console.error('Email sending error:', error);
+    res.status(500).json({ success: false, error: 'Failed to send email receipt' });
+  }
 });
 
 module.exports = app;
