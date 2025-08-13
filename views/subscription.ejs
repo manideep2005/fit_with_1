@@ -613,53 +613,30 @@
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             loadCurrentPlan();
-            checkPremiumStatus();
         });
 
-        // Load current plan status
+        // Load current plan from database
         async function loadCurrentPlan() {
             try {
-                // For now, show free plan
-                const currentPlan = {
-                    plan: { id: 'free', name: 'Free Plan' },
-                    isActive: true
-                };
+                const response = await fetch('/api/user/subscription-status');
+                const data = await response.json();
                 
-                if (currentPlan.plan.id !== 'free') {
-                    document.getElementById('currentPlanSection').style.display = 'block';
-                    document.getElementById('currentPlanDetails').innerHTML = `
-                        <p><strong>${currentPlan.plan.name}</strong></p>
-                        <p>Status: <span style="color: var(--success);">Active</span></p>
-                    `;
+                if (data.success && data.subscription && data.subscription.isActive) {
+                    showPremiumUser(data.subscription);
                 }
             } catch (error) {
                 console.error('Error loading current plan:', error);
+                // Show regular plan selection if no premium subscription
             }
         }
         
-        // Check premium status
-        function checkPremiumStatus() {
-            const paymentSuccess = localStorage.getItem('paymentSuccess');
-            if (paymentSuccess) {
-                const payment = JSON.parse(paymentSuccess);
-                showPremiumStatus(payment.plan, payment.confirmation);
-            }
-        }
+
         
-        // Show premium user status
-        function showPremiumStatus(planName, confirmation) {
-            const payment = JSON.parse(localStorage.getItem('paymentSuccess'));
-            const activatedDate = new Date(payment.timestamp);
-            let expiresDate = new Date(activatedDate);
-            
-            // Calculate expiration based on plan
-            if (planName.includes('Basic')) {
-                expiresDate.setDate(expiresDate.getDate() + 7); // 1 week
-            } else if (planName.includes('Yearly')) {
-                expiresDate.setFullYear(expiresDate.getFullYear() + 1); // 1 year
-            } else {
-                expiresDate.setMonth(expiresDate.getMonth() + 1); // 1 month
-            }
+        // Show premium user interface
+        function showPremiumUser(subscription) {
+            const expiryDate = new Date(subscription.expiresAt);
+            const today = new Date();
+            const daysLeft = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
             
             const premiumBanner = document.createElement('div');
             premiumBanner.style.cssText = `
@@ -672,58 +649,47 @@
                 box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
             `;
             premiumBanner.innerHTML = `
-                <h2 style="margin: 0 0 10px 0;"><i class="fas fa-crown"></i> Premium User</h2>
-                <p style="margin: 0; opacity: 0.9;">You are currently subscribed to <strong>${planName}</strong></p>
-                <p style="margin: 5px 0 0 0; font-size: 0.9rem; opacity: 0.8;">Expires: ${expiresDate.toLocaleDateString('en-IN')}</p>
-                <p style="margin: 5px 0 0 0; font-size: 0.8rem; opacity: 0.7;">Confirmation: ${confirmation}</p>
+                <h2 style="margin: 0 0 10px 0;"><i class="fas fa-crown"></i> You are a Premium User!</h2>
+                <p style="margin: 0; opacity: 0.9;">Current Plan: <strong>${subscription.planName}</strong></p>
+                <p style="margin: 5px 0 0 0; font-size: 0.9rem; opacity: 0.8;">Expires: ${expiryDate.toLocaleDateString('en-IN')} (${daysLeft} days left)</p>
+                <button onclick="renewSubscription()" style="
+                    background: rgba(255,255,255,0.2);
+                    color: white;
+                    border: 1px solid rgba(255,255,255,0.3);
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    margin-top: 10px;
+                ">
+                    <i class="fas fa-sync-alt"></i> Renew Subscription
+                </button>
             `;
             
             const container = document.querySelector('.container');
             const header = container.querySelector('.header');
             container.insertBefore(premiumBanner, header.nextSibling);
             
-            // Hide plan cards for premium users
-            const plansGrid = document.querySelector('.plans-grid');
-            plansGrid.style.display = 'none';
-            
-            // Show manage subscription options
-            const manageSection = document.createElement('div');
-            manageSection.innerHTML = `
-                <div style="text-align: center; margin-top: 30px;">
-                    <h3>Manage Your Subscription</h3>
-                    <p>Enjoy unlimited access to all premium features!</p>
-                    <button onclick="window.location.href='/dashboard'" style="
-                        background: var(--primary);
-                        color: white;
-                        border: none;
-                        padding: 15px 30px;
-                        border-radius: 10px;
-                        font-size: 1.1rem;
-                        cursor: pointer;
-                        margin: 10px;
-                    ">
-                        <i class="fas fa-tachometer-alt"></i> Go to Dashboard
-                    </button>
-                    <button onclick="renewSubscription()" style="
-                        background: transparent;
-                        color: var(--primary);
-                        border: 2px solid var(--primary);
-                        padding: 15px 30px;
-                        border-radius: 10px;
-                        font-size: 1.1rem;
-                        cursor: pointer;
-                        margin: 10px;
-                    ">
-                        <i class="fas fa-sync-alt"></i> Renew Subscription
-                    </button>
-                </div>
-            `;
-            container.appendChild(manageSection);
+            // Hide plan cards
+            document.querySelector('.plans-grid').style.display = 'none';
         }
         
         function renewSubscription() {
-            localStorage.removeItem('paymentSuccess');
-            location.reload();
+            // Get current subscription data
+            fetch('/api/user/subscription-status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.subscription) {
+                        const sub = data.subscription;
+                        // Directly renew with same plan
+                        selectPlan(sub.planId, sub.planName, sub.amount);
+                    } else {
+                        showToast('Unable to load current plan details', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading subscription:', error);
+                    showToast('Error loading subscription details', 'error');
+                });
         }
 
         // Select plan for payment
@@ -820,13 +786,18 @@
             const paymentData = JSON.parse(localStorage.getItem('currentPayment'));
             if (!paymentData) return;
 
-            // Auto redirect to success after 40 seconds
-            setTimeout(() => {
-                const confirmationNumber = 'FWA-' + Date.now().toString().slice(-6) + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-                window.location.href = `/payment-success?confirmation=${confirmationNumber}&plan=${paymentData.planName}&amount=${paymentData.amount}&auto=true`;
-            }, 40000);
+            // Start polling for payment detection
+            paymentPolling = setInterval(checkPaymentStatus, 3000);
             
-            showToast('🔍 Payment session created! You will be redirected automatically in 40 seconds.', 'success');
+            // Auto activate after 25 seconds as fallback
+            setTimeout(() => {
+                if (paymentPolling) {
+                    clearInterval(paymentPolling);
+                    activateSubscription(paymentData);
+                }
+            }, 25000);
+            
+            showToast('🔍 Payment detection active! Will auto-detect in 15-25 seconds.', 'success');
         }
 
         // Check payment status automatically
@@ -870,40 +841,35 @@
             showLoading();
             
             try {
-                const response = await fetch('/api/payment/verify', {
+                // Save subscription to database
+                const response = await fetch('/api/subscription/activate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        paymentId: paymentData.paymentId,
                         planId: paymentData.planId,
+                        planName: paymentData.planName,
                         amount: paymentData.amount,
-                        autoDetected: true
+                        paymentId: paymentData.paymentId
                     })
                 });
 
                 const result = await response.json();
                 hideLoading();
                 
-                // Clear payment data
-                localStorage.removeItem('currentPayment');
-                closePaymentModal();
-                
-                // Generate confirmation number
-                const confirmationNumber = 'FWA-' + Date.now().toString().slice(-6) + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-                
-                // Redirect to success page
-                window.location.href = `/payment-success?confirmation=${confirmationNumber}&plan=${paymentData.planName}&amount=${paymentData.amount}&auto=true`;
+                if (result.success) {
+                    localStorage.removeItem('currentPayment');
+                    closePaymentModal();
+                    
+                    const confirmationNumber = 'FWA-' + Date.now().toString().slice(-6) + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+                    window.location.href = `/payment-success?confirmation=${confirmationNumber}&plan=${paymentData.planName}&amount=${paymentData.amount}&auto=true`;
+                } else {
+                    throw new Error(result.error || 'Failed to activate subscription');
+                }
                 
             } catch (error) {
                 hideLoading();
                 console.error('Subscription activation error:', error);
-                
-                // Fallback success
-                localStorage.removeItem('currentPayment');
-                closePaymentModal();
-                
-                const confirmationNumber = 'FWA-' + Date.now().toString().slice(-6) + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-                window.location.href = `/payment-success?confirmation=${confirmationNumber}&plan=${paymentData.planName}&amount=${paymentData.amount}&auto=true`;
+                showToast('Failed to activate subscription: ' + error.message, 'error');
             }
         }
 
@@ -973,5 +939,6 @@
             }
         });
     </script>
+    <script src="/js/smart-voice-assistant.js"></script>
 </body>
 </html>

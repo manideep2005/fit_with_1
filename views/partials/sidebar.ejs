@@ -1,6 +1,6 @@
 <div class="sidebar">
     <div class="sidebar-header">
-        <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
+        <img id="sidebar-avatar" src="<%= user.profilePhoto || `https://ui-avatars.com/api/?name=${user.fullName}&background=6C63FF&color=fff` %>" alt="User Avatar">
         <div>
             <h3 class="user-name"><%= user.fullName %></h3>
             <span class="user-plan" id="sidebar-plan">
@@ -51,7 +51,7 @@
         </li>
         <li class="nav-item">
             <a href="/meal-planner?token=<%= navToken %>" class="nav-link <%= currentPage === 'meal-planner' ? 'active' : '' %>">
-                <i class="fas fa-calendar-check"></i> Meal Planner
+                <i class="fas fa-calendar-check"></i> meal palnner
             </a>
         </li>
         <li class="nav-item">
@@ -103,11 +103,22 @@
                 }
             }
         });
+        
+        // Listen for profile photo updates
+        window.addEventListener('profilePhotoUpdated', function(event) {
+            const sidebarAvatar = document.getElementById('sidebar-avatar');
+            if (sidebarAvatar && event.detail.photoUrl) {
+                sidebarAvatar.src = event.detail.photoUrl;
+            }
+        });
     </script>
     
     <div class="logout-section">
-        <a href="/logout" class="logout-link" onclick="return confirmLogout()">
+        <a href="/logout" class="logout-link">
             <i class="fas fa-sign-out-alt"></i> Logout
         </a>
     </div>
+    
+    <!-- Include global logout toast handler -->
+    <script src="/js/logout-toast.js"></script>
 </div>

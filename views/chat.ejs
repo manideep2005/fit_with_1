@@ -7,6 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="/css/voice-assistant.css">
+    <link rel="stylesheet" href="/css/webrtc.css">
+    <script src="/socket.io/socket.io.js"></script>
     <style>
         :root {
             --primary: #6C63FF;
@@ -328,15 +330,19 @@
             background: rgba(0, 0, 0, 0.5);
             z-index: 1000;
         }
-
-        .modal-content {
-            background: white;
+ .modal-content {
+            background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(22, 33, 62, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 12px;
             padding: 30px;
             max-width: 500px;
             margin: 10% auto;
             position: relative;
+            color: white;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         }
+
 
         .close-btn {
             position: absolute;
@@ -1161,62 +1167,55 @@
             ]
         };
         
-        // Initialize WebSocket connection
+        // Initialize Socket.IO connection for WebRTC
         function initializeSocket() {
-            socket = new WebSocket('ws://localhost:3010');
+            // Socket.IO connection for WebRTC signaling
+            socket = io('/api/socket', {
+                path: '/api/socket'
+            });
             
-            socket.onopen = () => {
-                console.log('✅ WebSocket connected for calling');
-                // Register user with WebSocket server
-                socket.send(JSON.stringify({
-                    type: 'register',
+            socket.on('connect', () => {
+                console.log('✅ Socket.IO connected for calling');
+                // Register user with Socket.IO server
+                socket.emit('register', {
                     userId: '<%= user._id %>'
-                }));
-            };
+                });
+            });
             
-            socket.onmessage = async (event) => {
-                const data = JSON.parse(event.data);
-                await handleSignalingMessage(data);
-            };
+            socket.on('incoming-call', (data) => {
+                showIncomingCall(data.from, data.callId, data.isVideo);
+            });
             
-            socket.onclose = () => {
-                console.log('❌ WebSocket disconnected');
-                setTimeout(initializeSocket, 3000);
-            };
+            socket.on('call-accepted', async (data) => {
+                await handleCallAccepted();
+            });
             
-            socket.onerror = (error) => {
-                console.error('WebSocket error:', error);
-            };
+            socket.on('call-rejected', (data) => {
+                handleCallRejected();
+            });
+            
+            socket.on('call-offer', async (data) => {
+                await handleCallOffer(data.offer, data.from);
+            });
+            
+            socket.on('call-answer', async (data) => {
+                await handleCallAnswer(data.answer);
+            });
+            
+            socket.on('call-ended', (data) => {
+                handleCallEnded();
+            });
+            
+            socket.on('ice-candidate', async (data) => {
+                await handleIceCandidate(data.candidate);
+            });
+            
+            socket.on('disconnect', () => {
+                console.log('❌ Socket.IO disconnected');
+            });
         }
         
-        // Handle signaling messages
-        async function handleSignalingMessage(data) {
-            console.log('📨 Received:', data.type);
-            
-            switch(data.type) {
-                case 'incoming-call':
-                    showIncomingCall(data.from, data.callId, data.isVideo);
-                    break;
-                case 'call-accepted':
-                    await handleCallAccepted();
-                    break;
-                case 'call-rejected':
-                    handleCallRejected();
-                    break;
-                case 'call-offer':
-                    await handleCallOffer(data.offer, data.from);
-                    break;
-                case 'call-answer':
-                    await handleCallAnswer(data.answer);
-                    break;
-                case 'call-ended':
-                    handleCallEnded();
-                    break;
-                case 'ice-candidate':
-                    await handleIceCandidate(data.candidate);
-                    break;
-            }
-        }
+
         
         // Show incoming call notification
         function showIncomingCall(fromUser, callId, isVideo) {
@@ -1248,7 +1247,7 @@
         
         // Initiate call (send call request)
         async function initiateCall() {
-            if (!socket || socket.readyState !== WebSocket.OPEN) {
+            if (!socket || !socket.connected) {
                 showToast('Connection not ready. Please wait...', 'warning');
                 return;
             }
@@ -1256,9 +1255,8 @@
             try {
                 currentCallId = generateCallId();
                 
-                // Send call request through WebSocket
-                socket.send(JSON.stringify({
-                    type: 'call-request',
+                // Send call request through Socket.IO
+                socket.emit('call-request', {
                     to: currentFriend,
                     from: {
                         id: '<%= user._id %>',
@@ -1266,7 +1264,7 @@
                     },
                     callId: currentCallId,
                     isVideo: isVideoCall
-                }));
+                });
                 
                 // Show calling interface
                 document.getElementById('callModal').style.display = 'block';
@@ -1322,12 +1320,11 @@
                 // Handle ICE candidates
                 peerConnection.onicecandidate = (event) => {
                     if (event.candidate && socket) {
-                        socket.send(JSON.stringify({
-                            type: 'ice-candidate',
+                        socket.emit('ice-candidate', {
                             callId: currentCallId,
                             to: currentFriend,
                             candidate: event.candidate
-                        }));
+                        });
                     }
                 };
                 
@@ -1335,17 +1332,13 @@
                     const offer = await peerConnection.createOffer();
                     await peerConnection.setLocalDescription(offer);
                     
-                    // Send offer through WebSocket
-                    socket.send(JSON.stringify({
-                        type: 'call-offer',
+                    // Send offer through Socket.IO
+                    socket.emit('call-offer', {
                         callId: currentCallId,
                         to: currentFriend,
-                        from: {
-                            id: '<%= user._id %>',
-                            fullName: '<%= user.fullName %>'
-                        },
+                        from: '<%= user._id %>',
                         offer: offer
-                    }));
+                    });
                 }
                 
                 isCallActive = true;
@@ -1362,16 +1355,12 @@
             stopRingtone();
             
             try {
-                // Send acceptance through WebSocket
-                socket.send(JSON.stringify({
-                    type: 'call-accept',
+                // Send acceptance through Socket.IO
+                socket.emit('call-accept', {
                     callId: currentCallId,
                     to: currentFriend,
-                    from: {
-                        id: '<%= user._id %>',
-                        fullName: '<%= user.fullName %>'
-                    }
-                }));
+                    from: '<%= user._id %>'
+                });
                 
                 // Initialize WebRTC as receiver
                 await initializeCall(false);
@@ -1387,12 +1376,11 @@
             document.getElementById('incomingCallModal').style.display = 'none';
             stopRingtone();
             
-            // Send rejection through WebSocket
-            socket.send(JSON.stringify({
-                type: 'call-reject',
+            // Send rejection through Socket.IO
+            socket.emit('call-reject', {
                 callId: currentCallId,
                 to: currentFriend
-            }));
+            });
             
             showToast('Call rejected', 'info');
             currentCallId = null;
@@ -1402,11 +1390,10 @@
         function endCall() {
             // Notify other user
             if (currentCallId && socket && currentFriend) {
-                socket.send(JSON.stringify({
-                    type: 'call-end',
+                socket.emit('call-end', {
                     callId: currentCallId,
                     to: currentFriend
-                }));
+                });
             }
             
             cleanupCall();
@@ -1451,12 +1438,11 @@
             await peerConnection.setLocalDescription(answer);
             
             // Send answer back
-            socket.send(JSON.stringify({
-                type: 'call-answer',
+            socket.emit('call-answer', {
                 callId: currentCallId,
-                to: from.id,
+                to: from,
                 answer: answer
-            }));
+            });
             
             document.getElementById('callTitle').textContent = 
                 `${isVideoCall ? 'Video' : 'Voice'} Call Connected`;
@@ -1578,5 +1564,6 @@
     
     <!-- Voice Assistant -->
     <script src="/js/voice-assistant-siri.js"></script>
+    <script src="/js/smart-voice-assistant.js"></script>
 </body>
 </html>

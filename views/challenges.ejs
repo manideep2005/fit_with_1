@@ -631,6 +631,115 @@
             background-clip: text;
         }
         
+        /* Streak Card Styles */
+        .streak-card {
+            background: transparent;
+            border: none;
+            padding: 1.5rem;
+            position: relative;
+            transition: all 0.3s ease;
+            border-radius: 16px;
+        }
+        
+        .streak-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(108, 99, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.05) 50%,
+                rgba(108, 99, 255, 0.08) 100%);
+            border-radius: 16px;
+            z-index: -1;
+        }
+        
+        .streak-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .streak-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .streak-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .streak-header h4 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .streak-status {
+            font-size: 0.85rem;
+            margin: 5px 0 0 0;
+            font-weight: 500;
+        }
+        
+        .streak-status.active {
+            color: var(--success);
+        }
+        
+        .streak-status.at-risk {
+            color: var(--warning);
+        }
+        
+        .streak-status.broken {
+            color: var(--danger);
+        }
+        
+        .streak-status.inactive {
+            color: var(--gray);
+        }
+        
+        .streak-stats {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .streak-current {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .streak-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+        }
+        
+        .streak-emoji {
+            font-size: 2rem;
+        }
+        
+        .streak-details {
+            flex: 1;
+        }
+        
+        .streak-details p {
+            margin: 0 0 5px 0;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
         .close {
             font-size: 24px;
             font-weight: bold;
@@ -760,6 +869,16 @@
             .stats-overview {
                 grid-template-columns: repeat(2, 1fr);
             }
+            
+            .streak-stats {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .streak-current {
+                align-self: center;
+            }
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -769,40 +888,7 @@
 <body>
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
-                <div>
-                    <h3 class="user-name"><%= user.fullName %></h3>
-                    <span class="user-plan">Premium Plan</span>
-                </div>
-            </div>
-            
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="/dashboard?token=<%= navToken %>" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li class="nav-item"><a href="/workouts?token=<%= navToken %>" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
-                <li class="nav-item"><a href="/progress?token=<%= navToken %>" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
-                <li class="nav-item"><a href="/nutrition?token=<%= navToken %>" class="nav-link"><i class="fas fa-utensils"></i> Nutrition</a></li>
-                <li class="nav-item"><a href="/nutriscan?token=<%= navToken %>" class="nav-link"><i class="fas fa-qrcode"></i> NutriScan</a></li>
-                <li class="nav-item"><a href="/meal-planner?token=<%= navToken %>" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
-                <li class="nav-item"><a href="/challenges?token=<%= navToken %>" class="nav-link active"><i class="fas fa-trophy"></i> Challenges</a></li>
-                <li class="nav-item"><a href="/health?token=<%= navToken %>" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
-                <li class="nav-item"><a href="/biometrics?token=<%= navToken %>" class="nav-link" data-premium="analytics"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
-                <li class="nav-item"><a href="/schedule?token=<%= navToken %>" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
-                <li class="nav-item"><a href="/community?token=<%= navToken %>" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
-                <li class="nav-item"><a href="/chat?token=<%= navToken %>" class="nav-link"><i class="fas fa-comments"></i> Chat</a></li>
-                <li class="nav-item"><a href="/ai-coach?token=<%= navToken %>" class="nav-link" data-premium="ai-coach"><i class="fas fa-robot"></i> AI Coach</a></li>
-                <li class="nav-item"><a href="/settings?token=<%= navToken %>" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
-                <li class="nav-item"><a href="/subscription?token=<%= navToken %>" class="nav-link"><i class="fas fa-crown"></i> Subscription</a></li>
-            </ul>
-            
-            <!-- Logout Section -->
-            <div class="logout-section">
-                <a href="/logout" class="logout-link" onclick="return confirmLogout()">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-            </div>
-        </div>
+        <%- include('partials/sidebar', { currentPage: 'challenges' }) %>
         
         <!-- Main Content -->
         <div class="main-content">
@@ -815,6 +901,17 @@
             
             <div class="stats-overview" id="statsOverview">
                 <div class="loading">Loading your stats...</div>
+            </div>
+            
+            <!-- Streak Section -->
+            <div class="challenges-section" style="margin-bottom: 2rem;">
+                <div class="section-header">
+                    <h2 class="section-title">🔥 Your Streaks</h2>
+                    <button class="btn btn-outline btn-small" onclick="refreshStreaks()">Refresh</button>
+                </div>
+                <div id="streaksContainer">
+                    <div class="loading">Loading your streaks...</div>
+                </div>
             </div>
             
             <div class="content-grid">
@@ -967,6 +1064,7 @@
             gsap.to(".challenge-card", {y: 0, opacity: 1, duration: 0.6, stagger: 0.1, delay: 1, ease: "power2.out"});
             
             loadUserStats();
+            loadStreaks();
             loadChallenges('active');
             loadLeaderboard();
         });
@@ -1601,6 +1699,137 @@
             }
         }
         
+        // Load and display streaks
+        async function loadStreaks() {
+            try {
+                const response = await fetch('/api/streaks/status');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayStreaks(data.streaks);
+                } else {
+                    displayStreaks(null);
+                }
+            } catch (error) {
+                console.error('Error loading streaks:', error);
+                displayStreaks(null);
+            }
+        }
+        
+        function displayStreaks(streaks) {
+            const container = document.getElementById('streaksContainer');
+            
+            if (!streaks) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-fire" style="font-size: 2rem; color: var(--gray); margin-bottom: 1rem;"></i>
+                        <p>Start logging workouts and nutrition to build your streaks!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                    <div class="streak-card" data-streak-type="workout">
+                        <div class="streak-header">
+                            <div class="streak-icon" style="background: linear-gradient(135deg, #FF6B6B, #FF8E53);">
+                                <i class="fas fa-dumbbell"></i>
+                            </div>
+                            <div>
+                                <h4>Workout Streak</h4>
+                                <p class="streak-status ${streaks.workout.status}">${getStreakStatusText(streaks.workout.status)}</p>
+                            </div>
+                        </div>
+                        <div class="streak-stats">
+                            <div class="streak-current">
+                                <span class="streak-number">${streaks.workout.current}</span>
+                                <span class="streak-emoji">${streaks.workout.emoji}</span>
+                            </div>
+                            <div class="streak-details">
+                                <p>Current: ${streaks.workout.current} days</p>
+                                <p>Best: ${streaks.workout.longest} days</p>
+                                <p>Next milestone: ${streaks.workout.nextMilestone} days</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="streak-card" data-streak-type="nutrition">
+                        <div class="streak-header">
+                            <div class="streak-icon" style="background: linear-gradient(135deg, #4ECDC4, #44A08D);">
+                                <i class="fas fa-utensils"></i>
+                            </div>
+                            <div>
+                                <h4>Nutrition Streak</h4>
+                                <p class="streak-status ${streaks.nutrition.status}">${getStreakStatusText(streaks.nutrition.status)}</p>
+                            </div>
+                        </div>
+                        <div class="streak-stats">
+                            <div class="streak-current">
+                                <span class="streak-number">${streaks.nutrition.current}</span>
+                                <span class="streak-emoji">${streaks.nutrition.emoji}</span>
+                            </div>
+                            <div class="streak-details">
+                                <p>Current: ${streaks.nutrition.current} days</p>
+                                <p>Best: ${streaks.nutrition.longest} days</p>
+                                <p>Next milestone: ${streaks.nutrition.nextMilestone} days</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="streak-card" data-streak-type="login">
+                        <div class="streak-header">
+                            <div class="streak-icon" style="background: linear-gradient(135deg, #667eea, #764ba2);">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <div>
+                                <h4>Login Streak</h4>
+                                <p class="streak-status ${streaks.login.status}">${getStreakStatusText(streaks.login.status)}</p>
+                            </div>
+                        </div>
+                        <div class="streak-stats">
+                            <div class="streak-current">
+                                <span class="streak-number">${streaks.login.current}</span>
+                                <span class="streak-emoji">${streaks.login.emoji}</span>
+                            </div>
+                            <div class="streak-details">
+                                <p>Current: ${streaks.login.current} days</p>
+                                <p>Best: ${streaks.login.longest} days</p>
+                                <p>Next milestone: ${streaks.login.nextMilestone} days</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getStreakStatusText(status) {
+            switch(status) {
+                case 'active': return '✅ On track!';
+                case 'at-risk': return '⚠️ Don\'t break it!';
+                case 'broken': return '💔 Streak broken';
+                case 'inactive': return '😴 Not started';
+                default: return 'Unknown';
+            }
+        }
+        
+        async function refreshStreaks() {
+            try {
+                const response = await fetch('/api/streaks/update', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showNotification('Streaks updated!', 'success');
+                    loadStreaks();
+                } else {
+                    showNotification('Failed to update streaks', 'error');
+                }
+            } catch (error) {
+                console.error('Error refreshing streaks:', error);
+                showNotification('Failed to refresh streaks', 'error');
+            }
+        }
+        
         function confirmLogout() {
             return confirm('Are you sure you want to logout?');
         }
@@ -1617,5 +1846,6 @@
     </script>
     
     <script src="/js/voice-assistant-siri.js"></script>
+    <script src="/js/smart-voice-assistant.js"></script>
 </body>
 </html>

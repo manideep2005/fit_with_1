@@ -569,48 +569,7 @@
 <body>
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
-                <div>
-                    <h3 class="user-name"><%= user.fullName %></h3>
-                    <span class="user-plan">
-                        <% 
-                        const planNames = {
-                            'free': 'Free Plan',
-                            'basic': 'Basic Plan', 
-                            'premium': 'Premium Plan',
-                            'pro': 'Pro Plan'
-                        };
-                        const currentPlan = user.subscription?.plan || 'free';
-                        %>
-                        <%= planNames[currentPlan] || 'Free Plan' %>
-                    </span>
-                </div>
-            </div>
-            
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li class="nav-item"><a href="/workouts" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
-                <li class="nav-item"><a href="/progress" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
-                <li class="nav-item"><a href="/nutrition" class="nav-link"><i class="fas fa-utensils"></i> Nutrition</a></li>
-                <li class="nav-item"><a href="/meal-planner" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
-                <li class="nav-item"><a href="/challenges" class="nav-link"><i class="fas fa-trophy"></i> Challenges</a></li>
-                <li class="nav-item"><a href="/health" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
-                <li class="nav-item"><a href="/biometrics" class="nav-link"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
-                <li class="nav-item"><a href="/schedule" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
-                <li class="nav-item"><a href="/community" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
-                <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
-                <li class="nav-item"><a href="/settings" class="nav-link active"><i class="fas fa-cog"></i> Settings</a></li>
-            </ul>
-            
-            <!-- Logout Section -->
-            <div class="logout-section">
-                <a href="/logout" class="logout-link" onclick="return confirmLogout()">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-            </div>
-        </div>
+        <%- include('partials/sidebar', { currentPage: 'settings' }) %>
         
         <!-- Main Content -->
         <div class="main-content">
@@ -652,7 +611,7 @@
                     <div class="form-group">
                         <label class="form-label">Profile Photo</label>
                         <div style="display: flex; align-items: center; gap: 20px;">
-                            <img id="profileImage" src="<%= user.profilePhoto ? user.profilePhoto + '?t=' + Date.now() : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.fullName) + '&background=6C63FF&color=fff' %>" alt="User Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+                            <img id="profileImage" src="<%= user.profilePhoto ? user.profilePhoto + '?t=' + Date.now() : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.fullName) + '&background=6C63FF&color=fff' %>" alt="User Avatar" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover;" onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('<%= user.fullName %>') + '&background=6C63FF&color=fff'">
                             <div>
                                 <button type="button" class="btn btn-outline" onclick="showPhotoOptions()" style="margin-right: 10px;">
                                     <i class="fas fa-camera"></i> Change Photo
@@ -741,7 +700,7 @@
                             <small style="color: var(--gray);">Add an extra layer of security</small>
                         </div>
                         <label class="toggle-switch">
-                            <input type="checkbox">
+                            <input type="checkbox" id="twoFactorToggle" <%= user.security?.twoFactorEnabled ? 'checked' : '' %> onchange="toggleTwoFactor(this.checked)">
                             <span class="slider"></span>
                         </label>
                     </div>
@@ -751,9 +710,9 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <div>
                             <h4 style="margin: 0;">Password</h4>
-                            <small style="color: var(--gray);">Last changed 3 months ago</small>
+                            <small style="color: var(--gray);" id="passwordLastChanged">Last changed <%= user.security?.passwordLastChanged ? new Date(user.security.passwordLastChanged).toLocaleDateString() : 'Never' %></small>
                         </div>
-                        <button class="btn btn-outline">Change</button>
+                        <button class="btn btn-outline" onclick="changePassword()">Change</button>
                     </div>
                 </div>
                 
@@ -761,9 +720,9 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <div>
                             <h4 style="margin: 0;">Active Sessions</h4>
-                            <small style="color: var(--gray);">2 active sessions</small>
+                            <small style="color: var(--gray);" id="activeSessionsCount">Loading...</small>
                         </div>
-                        <button class="btn btn-outline">View All</button>
+                        <button class="btn btn-outline" onclick="viewActiveSessions()">View All</button>
                     </div>
                 </div>
             </div>
@@ -1304,6 +1263,15 @@
                 <!-- Current Plan Card -->
                 <div class="current-plan">
                     <div class="plan-name" id="currentPlanName">
+                        <% 
+                        const planNames = {
+                            'free': 'Free Plan',
+                            'basic': 'Basic Pro',
+                            'premium': 'Premium Pro',
+                            'yearly': 'Yearly Premium'
+                        };
+                        const currentPlan = user.subscription?.plan || 'free';
+                        %>
                         <%= planNames[user.subscription?.plan || 'free'] || 'Free Plan' %>
                     </div>
                     <div class="plan-price" id="currentPlanPrice">
@@ -1618,15 +1586,18 @@
 
             const content = document.createElement('div');
             content.style.cssText = `
-                background: white;
+                background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(108, 99, 255, 0.08) 100%);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
                 padding: 2rem;
                 border-radius: 12px;
                 text-align: center;
                 min-width: 300px;
+                color: white;
             `;
 
             content.innerHTML = `
-                <h3 style="margin-bottom: 1.5rem;">Choose Photo Option</h3>
+                <h3 style="margin-bottom: 1.5rem; color: white;">Choose Photo Option</h3>
                 <div style="display: flex; flex-direction: column; gap: 10px;">
                     <button class="btn btn-primary" onclick="startCamera(); closeModal();">📷 Take Photo</button>
                     <button class="btn btn-outline" onclick="document.getElementById('photoInput').click(); closeModal();">📁 Upload Photo</button>
@@ -1726,15 +1697,24 @@
                 if (result.success) {
                     console.log('Setting image src to:', result.photoUrl);
                     const img = document.getElementById('profileImage');
-                    const newSrc = result.photoUrl.split('?')[0] + '?t=' + Date.now();
-                    img.src = newSrc;
-                    showToast('Photo updated!', 'success');
+                    img.src = result.photoUrl;
+                    showToast('Photo updated successfully!', 'success');
+                    
+                    // Trigger sidebar avatar update
+                    window.dispatchEvent(new CustomEvent('profilePhotoUpdated', {
+                        detail: { photoUrl: result.photoUrl }
+                    }));
+                    
+                    // Reload page after 1 second to ensure changes persist
+                    setTimeout(() => {
+                        window.location.reload(true);
+                    }, 1000);
                 } else {
-                    showToast('Upload failed', 'error');
+                    showToast('Upload failed: ' + (result.error || 'Unknown error'), 'error');
                 }
             } catch (error) {
                 console.error('Photo upload error:', error);
-                showToast('Upload failed', 'error');
+                showToast('Network error. Please try again.', 'error');
             }
         }
 
@@ -1769,8 +1749,8 @@
             const fullNameInput = document.querySelector('input[name="fullName"]');
             const emailInput = document.querySelector('input[name="email"]');
             
-            const fullName = fullNameInput.value;
-            const email = emailInput.value;
+            const fullName = fullNameInput.value.trim();
+            const email = emailInput.value.trim();
 
             if (!fullName || !email) {
                 showToast('Fill all fields', 'error');
@@ -1792,19 +1772,21 @@
                 });
 
                 const result = await response.json();
+                console.log('Profile update result:', result);
 
                 if (result.success) {
-                    showToast('Profile updated!', 'success');
-                    // Reload page after a short delay to reflect changes
+                    showToast('Profile updated successfully!', 'success');
+                    
+                    // Force reload after 1 second to show changes
                     setTimeout(() => {
-                        window.location.reload();
-                    }, 1500);
+                        window.location.reload(true);
+                    }, 1000);
                 } else {
-                    showToast('Update failed', 'error');
+                    showToast('Update failed: ' + (result.error || 'Unknown error'), 'error');
                 }
             } catch (error) {
                 console.error('Update profile error:', error);
-                showToast('Update failed', 'error');
+                showToast('Network error. Please try again.', 'error');
             }
         }
 
@@ -2036,6 +2018,215 @@
                 }
             }
         }
+        
+        // Toggle two-factor authentication
+        async function toggleTwoFactor(enabled) {
+            try {
+                showToast('Updating 2FA...', 'info');
+                
+                const response = await fetch('/api/settings/two-factor', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ enabled })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast(enabled ? '2FA enabled successfully!' : '2FA disabled', 'success');
+                } else {
+                    showToast('Failed to update 2FA: ' + result.error, 'error');
+                    document.getElementById('twoFactorToggle').checked = !enabled;
+                }
+            } catch (error) {
+                showToast('2FA update failed', 'error');
+                document.getElementById('twoFactorToggle').checked = !enabled;
+            }
+        }
+        
+        // Change password
+        async function changePassword() {
+            const currentPassword = prompt('Enter your current password:');
+            if (!currentPassword) return;
+            
+            const newPassword = prompt('Enter your new password:');
+            if (!newPassword || newPassword.length < 6) {
+                showToast('Password must be at least 6 characters', 'error');
+                return;
+            }
+            
+            const confirmPassword = prompt('Confirm your new password:');
+            if (newPassword !== confirmPassword) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+            
+            try {
+                showToast('Changing password...', 'info');
+                
+                const response = await fetch('/api/settings/change-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        currentPassword, 
+                        newPassword 
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Password changed successfully!', 'success');
+                    document.getElementById('passwordLastChanged').textContent = 'Last changed today';
+                } else {
+                    showToast('Failed to change password: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Password change failed', 'error');
+            }
+        }
+        
+        // View active sessions
+        async function viewActiveSessions() {
+            try {
+                const response = await fetch('/api/settings/active-sessions');
+                const result = await response.json();
+                
+                if (result.success) {
+                    showSessionsModal(result.sessions);
+                } else {
+                    showToast('Failed to load sessions', 'error');
+                }
+            } catch (error) {
+                showToast('Failed to load sessions', 'error');
+            }
+        }
+        
+        // Show sessions modal
+        function showSessionsModal(sessions) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(108, 99, 255, 0.08) 100%);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 2rem;
+                border-radius: 12px;
+                min-width: 500px;
+                max-width: 90vw;
+                max-height: 80vh;
+                overflow-y: auto;
+                color: white;
+            `;
+            
+            content.innerHTML = `
+                <h3 style="margin-bottom: 1.5rem; color: white;">Active Sessions</h3>
+                <div id="sessionsList">
+                    ${sessions.map(session => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; margin-bottom: 10px; background: rgba(255,255,255,0.05);">
+                            <div>
+                                <h4 style="margin: 0; color: white;">${session.device || 'Unknown Device'}</h4>
+                                <small style="color: rgba(255,255,255,0.7);">${session.browser || 'Unknown Browser'} • ${session.location || 'Unknown Location'}</small><br>
+                                <small style="color: rgba(255,255,255,0.5);">Last active: ${new Date(session.lastActive).toLocaleString()}</small>
+                            </div>
+                            ${session.current ? 
+                                '<span style="background: var(--success); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">Current</span>' : 
+                                `<button onclick="revokeSession('${session.id}')" style="background: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Revoke</button>`
+                            }
+                        </div>
+                    `).join('')}
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button onclick="revokeAllSessions()" class="btn btn-outline" style="color: var(--danger); border-color: var(--danger);">Revoke All Others</button>
+                    <button onclick="closeModal()" class="btn btn-outline">Close</button>
+                </div>
+            `;
+            
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            window.closeModal = function() {
+                document.body.removeChild(modal);
+            };
+        }
+        
+        // Revoke session
+        async function revokeSession(sessionId) {
+            try {
+                const response = await fetch('/api/settings/revoke-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sessionId })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Session revoked', 'success');
+                    viewActiveSessions();
+                } else {
+                    showToast('Failed to revoke session', 'error');
+                }
+            } catch (error) {
+                showToast('Failed to revoke session', 'error');
+            }
+        }
+        
+        // Revoke all other sessions
+        async function revokeAllSessions() {
+            if (!confirm('Revoke all other sessions? You will need to log in again on other devices.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/settings/revoke-all-sessions', {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast('All other sessions revoked', 'success');
+                    closeModal();
+                    loadActiveSessionsCount();
+                } else {
+                    showToast('Failed to revoke sessions', 'error');
+                }
+            } catch (error) {
+                showToast('Failed to revoke sessions', 'error');
+            }
+        }
+        
+        // Load active sessions count
+        async function loadActiveSessionsCount() {
+            try {
+                const response = await fetch('/api/settings/sessions-count');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const count = result.count;
+                    document.getElementById('activeSessionsCount').textContent = `${count} active session${count !== 1 ? 's' : ''}`;
+                } else {
+                    document.getElementById('activeSessionsCount').textContent = 'Unable to load';
+                }
+            } catch (error) {
+                document.getElementById('activeSessionsCount').textContent = 'Unable to load';
+            }
+        }
+        
+        // Load active sessions count on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadActiveSessionsCount();
+        });
     </script>
 
     <!-- Photo Options Modal Styles -->
@@ -2054,11 +2245,14 @@
         }
         
         .photo-modal-content {
-            background: white;
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(108, 99, 255, 0.08) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             padding: 2rem;
             border-radius: 12px;
             text-align: center;
             min-width: 300px;
+            color: white;
         }
         
         #cameraPreview {
@@ -2083,6 +2277,7 @@
     </style>
     
     <script src="/js/voice-assistant-siri.js"></script>
+    <script src="/js/smart-voice-assistant.js"></script>
 </body>
 </html>
 

@@ -380,37 +380,7 @@
 <body>
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
-                <div>
-                    <h3 class="user-name"><%= user.fullName %></h3>
-                    <span class="user-plan">Premium Plan</span>
-                </div>
-            </div>
-            
-            <ul class="nav-menu">
-                <li class="nav-item"><a href="/dashboard" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li class="nav-item"><a href="/workouts" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
-                <li class="nav-item"><a href="/progress" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
-                <li class="nav-item"><a href="/nutrition" class="nav-link"><i class="fas fa-utensils"></i> Nutrition</a></li>
-                <li class="nav-item"><a href="/meal-planner" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
-                <li class="nav-item"><a href="/challenges" class="nav-link"><i class="fas fa-trophy"></i> Challenges</a></li>
-                <li class="nav-item"><a href="/health" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
-                <li class="nav-item"><a href="/biometrics" class="nav-link"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
-                <li class="nav-item"><a href="/schedule" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
-                <li class="nav-item"><a href="/community" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
-                <li class="nav-item"><a href="/ai-coach" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
-                <li class="nav-item"><a href="/settings" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
-            </ul>
-            
-            <!-- Logout Section -->
-            <div class="logout-section">
-                <a href="/logout" class="logout-link" onclick="return confirmLogout()">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-            </div>
-        </div>
+        <%- include('partials/sidebar', { currentPage: 'ai-coach' }) %>
         
         <!-- Main Content -->
         <div class="main-content">
@@ -984,5 +954,6 @@
     
     <!-- Enhanced Fit-With-AI Voice Assistant -->
     <script src="/js/voice-assistant-enhanced-fitwithai.js"></script>
+    <script src="/js/smart-voice-assistant.js"></script>
 </body>
 </html>

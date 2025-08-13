@@ -2,6 +2,7 @@ const Challenge = require('../models/Challenge');
 const { Achievement, UserAchievement } = require('../models/Achievement');
 const User = require('../models/User');
 const moment = require('moment');
+const streakService = require('./streakService');
 
 class ChallengeService {
   // Get user's challenge stats
@@ -34,33 +35,18 @@ class ChallengeService {
     }
   }
 
-  // Calculate current streak
+  // Calculate current streak using streak service
   async calculateCurrentStreak(userId) {
     try {
       const user = await User.findById(userId);
-      let streak = 0;
-      let currentDate = moment().startOf('day');
+      if (!user || !user.gamification?.streaks) return 0;
       
-      while (true) {
-        const dayWorkouts = user.workouts?.filter(w => 
-          moment(w.date).isSame(currentDate, 'day')
-        ) || [];
-        
-        const dayNutrition = user.nutritionLogs?.filter(n => 
-          moment(n.date).isSame(currentDate, 'day')
-        ) || [];
-        
-        if (dayWorkouts.length > 0 || dayNutrition.length > 0) {
-          streak++;
-          currentDate.subtract(1, 'day');
-        } else {
-          break;
-        }
-        
-        if (streak >= 365) break;
-      }
-      
-      return streak;
+      const streaks = user.gamification.streaks;
+      return Math.max(
+        streaks.workout?.current || 0,
+        streaks.nutrition?.current || 0,
+        streaks.login?.current || 0
+      );
     } catch (error) {
       return 0;
     }

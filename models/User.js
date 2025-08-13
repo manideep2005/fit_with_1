@@ -40,11 +40,11 @@ const healthInfoSchema = new mongoose.Schema({
   dietaryRestrictions: [{ type: String }],
   smokingStatus: { 
     type: String, 
-    enum: ['never', 'former', 'current'] 
+    enum: ['never', 'former', 'current', 'occasional'] 
   },
   alcoholConsumption: { 
     type: String, 
-    enum: ['none', 'occasional', 'moderate', 'frequent', 'never'] 
+    enum: ['none', 'occasional', 'moderate', 'frequent', 'never', 'moderately'] 
   }
 }, { _id: false });
 
@@ -102,8 +102,7 @@ const userSchema = new mongoose.Schema({
   fitnessId: {
     type: String,
     unique: true,
-    sparse: true,
-    index: true
+    sparse: true
   },
 
   // Account Status
@@ -352,8 +351,6 @@ const userSchema = new mongoose.Schema({
 });
 
 // Indexes for better performance
-userSchema.index({ fitnessId: 1 });
-// userSchema.index({ email: 1 }); // Removed: duplicate index (email already has unique: true)
 userSchema.index({ createdAt: -1 });
 userSchema.index({ lastLogin: -1 });
 userSchema.index({ 'workouts.date': -1 });

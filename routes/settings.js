@@ -44,6 +44,8 @@ router.post('/profile', async (req, res) => {
     const userEmail = req.session.user.email;
     const { fullName, email } = req.body;
 
+    console.log('Profile update request:', { userEmail, fullName, email });
+
     if (!fullName || !email) {
       return res.status(400).json({
         success: false,
@@ -56,17 +58,30 @@ router.post('/profile', async (req, res) => {
       email: email.trim()
     });
 
-    // Update session
+    console.log('Profile updated successfully:', updatedUser);
+
+    // Update session with new data
     req.session.user.fullName = updatedUser.fullName;
     req.session.user.email = updatedUser.email;
-
-    res.json({
-      success: true,
-      message: 'Profile updated successfully',
-      user: {
-        fullName: updatedUser.fullName,
-        email: updatedUser.email
+    
+    // Save session
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({
+          success: false,
+          error: 'Failed to save session'
+        });
       }
+      
+      res.json({
+        success: true,
+        message: 'Profile updated successfully',
+        user: {
+          fullName: updatedUser.fullName,
+          email: updatedUser.email
+        }
+      });
     });
 
   } catch (error) {
@@ -90,11 +105,17 @@ router.post('/profile-photo', upload.single('photo'), async (req, res) => {
 
     const userEmail = req.session.user.email;
     const photoUrl = `/uploads/profiles/${req.file.filename}`;
+    
+    console.log('Uploading photo for user:', userEmail);
+    console.log('Photo URL:', photoUrl);
+    console.log('File info:', req.file);
 
-    await UserService.updateProfilePhoto(userEmail, photoUrl);
+    const result = await UserService.updateProfilePhoto(userEmail, photoUrl);
+    console.log('Database update result:', result);
     
     // Update session
     req.session.user.profilePhoto = photoUrl;
+    console.log('Updated session user:', req.session.user);
     
     // Save session immediately and wait for it to complete
     req.session.save((err) => {
@@ -105,6 +126,8 @@ router.post('/profile-photo', upload.single('photo'), async (req, res) => {
           error: 'Failed to save session'
         });
       }
+      
+      console.log('Session saved successfully');
       
       res.json({
         success: true,

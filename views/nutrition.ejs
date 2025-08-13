@@ -1233,40 +1233,7 @@
 <body>
     <div class="dashboard-container">
         <!-- Sidebar Navigation -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <img src="https://ui-avatars.com/api/?name=<%= user.fullName %>&background=6C63FF&color=fff" alt="User Avatar">
-                <div>
-                    <h3 class="user-name"><%= user.fullName %></h3>
-                    <span class="user-plan">Premium Plan</span>
-                </div>
-            </div>
-            
-             <ul class="nav-menu">
-                <li class="nav-item"><a href="/dashboard?token=<%= navToken %>" class="nav-link"><i class="fas fa-home"></i> Dashboard</a></li>
-                <li class="nav-item"><a href="/workouts?token=<%= navToken %>" class="nav-link"><i class="fas fa-dumbbell"></i> Workouts</a></li>
-                <li class="nav-item"><a href="/progress?token=<%= navToken %>" class="nav-link"><i class="fas fa-chart-line"></i> Progress</a></li>
-                <li class="nav-item"><a href="/nutrition?token=<%= navToken %>" class="nav-link active"><i class="fas fa-utensils"></i> Nutrition</a></li>
-                <li class="nav-item"><a href="/nutriscan?token=<%= navToken %>" class="nav-link"><i class="fas fa-qrcode"></i> NutriScan</a></li>
-                <li class="nav-item"><a href="/meal-planner?token=<%= navToken %>" class="nav-link"><i class="fas fa-calendar-check"></i> Meal Planner</a></li>
-                <li class="nav-item"><a href="/challenges?token=<%= navToken %>" class="nav-link"><i class="fas fa-trophy"></i> Challenges</a></li>
-                <li class="nav-item"><a href="/health?token=<%= navToken %>" class="nav-link"><i class="fas fa-heartbeat"></i> Health Metrics</a></li>
-                <li class="nav-item"><a href="/biometrics?token=<%= navToken %>" class="nav-link"><i class="fas fa-chart-bar"></i> Biometrics</a></li>
-                <li class="nav-item"><a href="/schedule?token=<%= navToken %>" class="nav-link"><i class="fas fa-calendar-alt"></i> Schedule</a></li>
-                <li class="nav-item"><a href="/community?token=<%= navToken %>" class="nav-link"><i class="fas fa-users"></i> Community</a></li>
-                <li class="nav-item"><a href="/chat?token=<%= navToken %>" class="nav-link"><i class="fas fa-comments"></i> Chat</a></li>
-                <li class="nav-item"><a href="/ai-coach?token=<%= navToken %>" class="nav-link"><i class="fas fa-robot"></i> AI Coach</a></li>
-                <li class="nav-item"><a href="/settings?token=<%= navToken %>" class="nav-link"><i class="fas fa-cog"></i> Settings</a></li>
-                <li class="nav-item"><a href="/subscription?token=<%= navToken %>" class="nav-link"><i class="fas fa-crown"></i> Subscription</a></li>
-            </ul>
-            
-            <!-- Logout Section -->
-            <div class="logout-section">
-                <a href="/logout" class="logout-link" onclick="return confirmLogout()">
-                    <i class="fas fa-sign-out-alt"></i> Logout
-                </a>
-            </div>
-        </div>
+        <%- include('partials/sidebar', { currentPage: 'nutrition' }) %>
         
         <!-- Main Content -->
         <div class="main-content">
@@ -1636,24 +1603,40 @@
         }
         
         function showCameraModal(stream) {
-            // Create camera modal
             const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.style.display = 'block';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3>📸 Photo Food Log</h3>
-                        <span class="close" onclick="closeCameraModal()">&times;</span>
-                    </div>
-                    <div style="padding: 20px; text-align: center;">
-                        <video id="cameraVideo" width="400" height="300" autoplay style="border-radius: 8px;"></video>
-                        <br><br>
-                        <button class="btn btn-primary" onclick="capturePhoto()">📷 Capture</button>
-                        <button class="btn btn-outline" onclick="closeCameraModal()">Cancel</button>
-                    </div>
-                </div>
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
             `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(108, 99, 255, 0.08) 100%);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 2rem;
+                border-radius: 12px;
+                text-align: center;
+                color: white;
+            `;
+            
+            content.innerHTML = `
+                <h3 style="margin-bottom: 1.5rem; color: white;">📸 Photo Food Log</h3>
+                <video id="cameraVideo" width="400" height="300" autoplay style="border-radius: 8px; border: 1px solid rgba(255,255,255,0.2);"></video>
+                <br><br>
+                <button class="btn btn-primary" onclick="capturePhoto()" style="margin-right: 10px;">📷 Capture</button>
+                <button class="btn btn-outline" onclick="closeCameraModal()">Cancel</button>
+            `;
+            
+            modal.appendChild(content);
             document.body.appendChild(modal);
             
             const video = document.getElementById('cameraVideo');
@@ -1705,33 +1688,54 @@
         
         function showPhotoAnalysisResults(results) {
             const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.style.display = 'block';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3>🎯 Food Recognition Results</h3>
-                        <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
-                    </div>
-                    <div style="padding: 20px;">
-                        ${results.map(food => `
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee;">
-                                <div>
-                                    <strong>${food.name}</strong><br>
-                                    <small>${food.confidence}% confidence</small>
-                                </div>
-                                <div>
-                                    <span>${food.calories} cal</span>
-                                    <button class="btn btn-primary" style="margin-left: 10px;" onclick="quickLogPhoto('${food.name}', ${food.calories})">Add</button>
-                                </div>
-                            </div>
-                        `).join('')}
-                        <div style="margin-top: 20px; text-align: center;">
-                            <button class="btn btn-primary" onclick="logAllPhotoFoods()">Add All Items</button>
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(108, 99, 255, 0.08) 100%);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 2rem;
+                border-radius: 12px;
+                min-width: 500px;
+                max-width: 90vw;
+                max-height: 80vh;
+                overflow-y: auto;
+                color: white;
+            `;
+            
+            content.innerHTML = `
+                <h3 style="margin-bottom: 1.5rem; color: white;">🎯 Food Recognition Results</h3>
+                ${results.map(food => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; margin-bottom: 10px; background: rgba(255,255,255,0.05);">
+                        <div>
+                            <strong style="color: white;">${food.name}</strong><br>
+                            <small style="color: rgba(255,255,255,0.7);">${food.confidence}% confidence</small>
+                        </div>
+                        <div>
+                            <span style="color: white;">${food.calories} cal</span>
+                            <button class="btn btn-primary" style="margin-left: 10px;" onclick="quickLogPhoto('${food.name}', ${food.calories})">Add</button>
                         </div>
                     </div>
+                `).join('')}
+                <div style="margin-top: 20px; text-align: center;">
+                    <button class="btn btn-primary" onclick="logAllPhotoFoods()">Add All Items</button>
+                    <button class="btn btn-outline" onclick="this.closest('div').parentElement.remove()" style="margin-left: 10px;">Close</button>
                 </div>
             `;
+            
+            modal.appendChild(content);
             document.body.appendChild(modal);
         }
         
@@ -1758,30 +1762,48 @@
         
         function showBarcodeResult(product) {
             const modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.style.display = 'block';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h3>📦 Product Found</h3>
-                        <span class="close" onclick="this.closest('.modal').remove()">&times;</span>
-                    </div>
-                    <div style="padding: 20px;">
-                        <h4>${product.name}</h4>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0;">
-                            <div>Calories: <strong>${product.calories}</strong></div>
-                            <div>Protein: <strong>${product.protein}g</strong></div>
-                            <div>Carbs: <strong>${product.carbs}g</strong></div>
-                            <div>Fat: <strong>${product.fat}g</strong></div>
-                        </div>
-                        <div style="margin-top: 20px;">
-                            <label>Quantity:</label>
-                            <input type="number" id="barcodeQuantity" value="1" min="0.1" step="0.1" style="width: 80px; margin: 0 10px;">
-                            <button class="btn btn-primary" onclick="logBarcodeProduct()">Add to Log</button>
-                        </div>
-                    </div>
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 2000;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(108, 99, 255, 0.08) 100%);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                padding: 2rem;
+                border-radius: 12px;
+                color: white;
+                min-width: 400px;
+            `;
+            
+            content.innerHTML = `
+                <h3 style="margin-bottom: 1.5rem; color: white;">📦 Product Found</h3>
+                <h4 style="color: white;">${product.name}</h4>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0;">
+                    <div style="color: rgba(255,255,255,0.9);">Calories: <strong>${product.calories}</strong></div>
+                    <div style="color: rgba(255,255,255,0.9);">Protein: <strong>${product.protein}g</strong></div>
+                    <div style="color: rgba(255,255,255,0.9);">Carbs: <strong>${product.carbs}g</strong></div>
+                    <div style="color: rgba(255,255,255,0.9);">Fat: <strong>${product.fat}g</strong></div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <label style="color: white;">Quantity:</label>
+                    <input type="number" id="barcodeQuantity" value="1" min="0.1" step="0.1" style="width: 80px; margin: 0 10px; padding: 8px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; background: rgba(255,255,255,0.1); color: white;">
+                    <button class="btn btn-primary" onclick="logBarcodeProduct()">Add to Log</button>
+                    <button class="btn btn-outline" onclick="this.closest('div').parentElement.remove()" style="margin-left: 10px;">Cancel</button>
                 </div>
             `;
+            
+            modal.appendChild(content);
             document.body.appendChild(modal);
             window.currentBarcodeProduct = product;
         }
@@ -1967,9 +1989,17 @@
                     nutritionData = data.data;
                     displayNutritionSummary(data.data.progress);
                     displayAdjustmentReason(data.data.adjustmentReason);
-                    displayStreak(data.data.streak);
+                    displayStreak();
                 } else {
                     console.error('Failed to load nutrition data');
+                    displayNutritionSummary({
+                        calories: { current: 0, goal: 2000, percentage: 0 },
+                        protein: { current: 0, goal: 150, percentage: 0 },
+                        carbs: { current: 0, goal: 250, percentage: 0 },
+                        fat: { current: 0, goal: 67, percentage: 0 },
+                        water: { current: 0, goal: 2500, percentage: 0 }
+                    });
+                    displayStreak();
                 }
             } catch (error) {
                 console.error('Error loading nutrition data:', error);
@@ -2051,26 +2081,36 @@
         }
         
         // Display nutrition streak
-        function displayStreak(streak) {
+        async function displayStreak() {
             const streakDisplay = document.getElementById('streakDisplay');
             const achievementBadges = document.getElementById('achievementBadges');
             
-            if (streak > 0) {
-                streakDisplay.style.display = 'block';
-                streakDisplay.innerHTML = `🔥 ${streak} day streak!`;
+            try {
+                const response = await fetch('/api/nutrition/streak');
+                const data = await response.json();
                 
-                // Update achievement badges based on streak
-                let badges = [];
-                if (streak >= 3) badges.push('🏆 Consistent');
-                if (streak >= 7) badges.push('🔥 Week Warrior');
-                if (streak >= 14) badges.push('⭐ Streak Master');
+                const streak = data.success ? data.streak : 0;
                 
-                if (badges.length > 0) {
-                    achievementBadges.innerHTML = badges.map(badge => `<span class="badge">${badge}</span>`).join('');
+                if (streak > 0) {
+                    streakDisplay.style.display = 'block';
+                    streakDisplay.innerHTML = `🔥 ${streak} day streak!`;
+                    
+                    let badges = [];
+                    if (streak >= 3) badges.push('🏆 Consistent');
+                    if (streak >= 7) badges.push('🔥 Week Warrior');
+                    if (streak >= 14) badges.push('⭐ Streak Master');
+                    
+                    if (badges.length > 0) {
+                        achievementBadges.innerHTML = badges.map(badge => `<span class="badge">${badge}</span>`).join('');
+                    } else {
+                        achievementBadges.innerHTML = '<span class="badge">🌱 Getting Started</span>';
+                    }
                 } else {
-                    achievementBadges.innerHTML = '<span class="badge">🌱 Getting Started</span>';
+                    streakDisplay.style.display = 'none';
+                    achievementBadges.innerHTML = '<span class="badge" style="opacity: 0.3;">🏆 Start logging to unlock</span>';
                 }
-            } else {
+            } catch (error) {
+                console.error('Error loading streak:', error);
                 streakDisplay.style.display = 'none';
                 achievementBadges.innerHTML = '<span class="badge" style="opacity: 0.3;">🏆 Start logging to unlock</span>';
             }
@@ -2134,16 +2174,19 @@
         
         // Load today's meals
         async function loadTodaysMeals() {
-            // This would typically fetch from your nutrition API
-            const mockMeals = [
-                { name: 'Scrambled Eggs with Avocado', time: '8:30 AM', type: 'breakfast', calories: 420, icon: 'egg' },
-                { name: 'Greek Yogurt with Berries', time: '11:00 AM', type: 'snacks', calories: 210, icon: 'apple-alt' },
-                { name: 'Grilled Salmon with Quinoa', time: '1:15 PM', type: 'lunch', calories: 580, icon: 'fish' },
-                { name: 'Protein Shake', time: '4:30 PM', type: 'snacks', calories: 240, icon: 'seedling' },
-                { name: 'Chicken & Vegetable Stir Fry', time: '7:45 PM', type: 'dinner', calories: 490, icon: 'drumstick-bite' }
-            ];
-            
-            displayMeals(mockMeals);
+            try {
+                const response = await fetch('/api/nutrition/meals/today');
+                const data = await response.json();
+                
+                if (data.success && data.meals) {
+                    displayMeals(data.meals);
+                } else {
+                    displayMeals([]);
+                }
+            } catch (error) {
+                console.error('Error loading meals:', error);
+                displayMeals([]);
+            }
         }
         
         // Display meals
@@ -2458,5 +2501,6 @@
     
     <!-- Enhanced Fit-With-AI Voice Assistant -->
     <script src="/js/voice-assistant-enhanced-fitwithai.js"></script>
+    <script src="/js/smart-voice-assistant.js"></script>
 </body>
 </html>

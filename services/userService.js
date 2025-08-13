@@ -629,7 +629,7 @@ class UserService {
       
       const result = await collection.updateOne(
         { email: email.toLowerCase().trim() },
-        { $push: { 'subscription.paymentHistory': paymentData } }
+        { $push: { paymentHistory: paymentData } }
       );
       
       if (result.matchedCount === 0) {
@@ -671,14 +671,20 @@ class UserService {
       const db = mongoose.connection.db;
       const collection = db.collection('users');
       
+      console.log('UserService.updateProfile called with:', { email, profileData });
+      
       const updateData = {};
       if (profileData.fullName) updateData.fullName = profileData.fullName;
       if (profileData.email) updateData.email = profileData.email.toLowerCase().trim();
+      
+      console.log('Update data:', updateData);
       
       const result = await collection.updateOne(
         { email: email.toLowerCase().trim() },
         { $set: updateData }
       );
+      
+      console.log('Database update result:', result);
       
       if (result.matchedCount === 0) {
         throw new Error('User not found');
@@ -686,6 +692,8 @@ class UserService {
       
       const updatedUser = await collection.findOne({ email: profileData.email?.toLowerCase().trim() || email.toLowerCase().trim() });
       delete updatedUser.password;
+      
+      console.log('Updated user retrieved:', updatedUser);
       
       return updatedUser;
     } catch (error) {
@@ -701,14 +709,24 @@ class UserService {
       const db = mongoose.connection.db;
       const collection = db.collection('users');
       
+      console.log('Updating profile photo in database:');
+      console.log('Email:', email);
+      console.log('Photo URL:', photoUrl);
+      
       const result = await collection.updateOne(
         { email: email.toLowerCase().trim() },
         { $set: { profilePhoto: photoUrl } }
       );
       
+      console.log('Database update result:', result);
+      
       if (result.matchedCount === 0) {
         throw new Error('User not found');
       }
+      
+      // Verify the update by fetching the user
+      const updatedUser = await collection.findOne({ email: email.toLowerCase().trim() });
+      console.log('Updated user profilePhoto field:', updatedUser?.profilePhoto);
       
       return { photoUrl };
     } catch (error) {

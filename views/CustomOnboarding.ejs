@@ -28,18 +28,44 @@
         
         body {
             font-family: 'Poppins', sans-serif;
-            background-color: #F5F7FA;
-            color: var(--dark);
+            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
             min-height: 100vh;
             padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(30px, -30px) rotate(120deg); }
+            66% { transform: translate(-20px, 20px) rotate(240deg); }
         }
         
         .onboarding-container {
             max-width: 800px;
             margin: 0 auto;
-            background: white;
+            background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(108, 99, 255, 0.08) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }
         
@@ -117,7 +143,7 @@
         }
         
         .form-content h2 {
-            color: var(--dark);
+            color: white;
             margin-bottom: 25px;
             font-size: 1.5rem;
             text-align: center;
@@ -131,7 +157,7 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
-            color: var(--dark);
+            color: white;
         }
         
         .form-group input,
@@ -139,11 +165,17 @@
         .form-group textarea {
             width: 100%;
             padding: 12px 15px;
-            border: 1px solid var(--light-gray);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
             font-size: 1rem;
             transition: all 0.3s ease;
             font-family: 'Poppins', sans-serif;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
         }
         
         .form-group input:focus,
@@ -168,7 +200,7 @@
         }
         
         .option-item {
-            background: white;
+            background: rgba(255, 255, 255, 0.05);
             padding: 15px;
             border-radius: 8px;
             cursor: pointer;
@@ -177,8 +209,9 @@
             align-items: center;
             gap: 10px;
             transition: all 0.3s ease;
-            border: 1px solid var(--light-gray);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             text-align: center;
+            color: white;
         }
         
         .option-item:hover {
@@ -197,12 +230,13 @@
         }
         
         .health-tip {
-            background: rgba(108, 99, 255, 0.05);
+            background: rgba(108, 99, 255, 0.1);
             padding: 15px;
             border-radius: 8px;
             margin: 20px 0;
             border-left: 4px solid var(--primary);
             font-size: 0.9rem;
+            color: white;
         }
         
         .health-tip i {
@@ -233,13 +267,13 @@
         }
         
         .btn-secondary {
-            background: white;
-            color: var(--primary);
-            border: 1px solid var(--light-gray);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
         
         .btn-secondary:hover {
-            background: var(--light-gray);
+            background: rgba(255, 255, 255, 0.2);
         }
         
         .btn-primary {
@@ -273,6 +307,19 @@
         
         .checkbox-item label {
             margin-bottom: 0;
+            color: white;
+        }
+        
+        #stressLevel {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        #stressLevel::-webkit-slider-thumb {
+            background: var(--primary);
+        }
+        
+        #stressLevel::-moz-range-thumb {
+            background: var(--primary);
         }
         
         @media (max-width: 768px) {

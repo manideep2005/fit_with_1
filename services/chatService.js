@@ -122,7 +122,8 @@ class ChatService {
       
       const messages = await Message.find({
         conversationId: conversationId,
-        isDeleted: false
+        isDeleted: false,
+        [`deletedBy.${userId}`]: { $ne: true }
       })
       .populate('sender', 'fullName personalInfo.firstName personalInfo.lastName')
       .sort({ createdAt: 1 }) // Ascending order for chat display
@@ -296,19 +297,18 @@ class ChatService {
   // Remove friend
   static async removeFriend(userId, friendId) {
     try {
-      const user = await User.findById(userId);
-      const friend = await User.findById(friendId);
+      // Use direct database update to avoid validation issues
+      await User.updateOne(
+        { _id: userId },
+        { $pull: { friends: friendId } },
+        { validateBeforeSave: false }
+      );
       
-      if (!user || !friend) {
-        throw new Error('User or friend not found');
-      }
-      
-      // Remove from both users' friend lists
-      user.friends = user.friends.filter(id => id.toString() !== friendId);
-      friend.friends = friend.friends.filter(id => id.toString() !== userId);
-      
-      await user.save();
-      await friend.save();
+      await User.updateOne(
+        { _id: friendId },
+        { $pull: { friends: userId } },
+        { validateBeforeSave: false }
+      );
       
       // Clean up any existing friend requests between these users
       const FriendRequest = require('../models/FriendRequest');
@@ -509,19 +509,10 @@ class ChatService {
     try {
       const conversationId = Message.createConversationId(userId, friendId);
       
-      // Soft delete all messages in the conversation for the current user
-      await Message.updateMany(
-        { 
-          conversationId: conversationId,
-          $or: [{ sender: userId }, { receiver: userId }]
-        },
-        { 
-          $set: { 
-            [`deletedBy.${userId}`]: true,
-            [`deletedAt.${userId}`]: new Date()
-          }
-        }
-      );
+      // Hard delete all messages in the conversation
+      await Message.deleteMany({
+        conversationId: conversationId
+      });
       
       return true;
     } catch (error) {

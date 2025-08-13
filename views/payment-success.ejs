@@ -485,9 +485,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        confirmation: confirmation,
-                        plan: plan,
-                        amount: amount
+                        paymentId: confirmation
                     })
                 });
                 
@@ -496,18 +494,18 @@
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `FitWithAI_Bill_${confirmation}.pdf`;
+                    a.download = `FitWithAI_Receipt_${confirmation}.txt`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
                     window.URL.revokeObjectURL(url);
                     
-                    showToast('PDF bill downloaded successfully!', 'success');
+                    showToast('Receipt downloaded successfully!', 'success');
                 } else {
-                    showToast('Failed to generate bill', 'error');
+                    showToast('Failed to generate receipt', 'error');
                 }
             } catch (error) {
-                showToast('Error downloading bill', 'error');
+                showToast('Error downloading receipt', 'error');
             }
         }
         
@@ -531,6 +529,38 @@
                 document.body.removeChild(toast);
             }, 3000);
         }
+         // Save subscription to database
+        async function saveSubscriptionToDatabase(planName, amount, confirmation) {
+            try {
+                let planId = "premium";
+                if (planName.includes("Basic")) planId = "basic";
+                if (planName.includes("Yearly")) planId = "yearly";
+                
+                await fetch("/api/subscription-enhanced/activate", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        planId: planId,
+                        paymentDetails: {
+                            amount: amount,
+                            paymentId: confirmation,
+                            transactionId: confirmation,
+                            paymentMethod: "UPI",
+                            gateway: "RAZORPAY"
+                        }
+                    })
+                });
+                console.log("✅ Subscription saved to database");
+            } catch (error) {
+                console.log("❌ Failed to save subscription to database:", error);
+            }
+        }
+        
+        // Call save function
+        saveSubscriptionToDatabase(plan, amount, confirmation);
+
+
     </script>
 </body>
 </html>
+      

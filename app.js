@@ -35,12 +35,19 @@ try {
 const app = express();
 let server, io;
 
-// Only initialize Socket.IO in non-serverless environment
+// Vercel-compatible setup - no Socket.IO for serverless
 if (!process.env.VERCEL) {
   const http = require('http');
   server = http.createServer(app);
+  
+  // Only use Socket.IO for non-calling features in local development
   const { Server } = require("socket.io");
-  io = new Server(server);
+  io = new Server(server, {
+    cors: {
+      origin: process.env.CLIENT_URL || "http://localhost:3000",
+      methods: ["GET", "POST"]
+    }
+  });
 
   io.on('connection', (socket) => {
     console.log('User connected to socket');
@@ -93,8 +100,10 @@ if (!process.env.VERCEL) {
     });
   });
 } else {
+  // Vercel serverless setup
   server = app;
   io = null;
+  console.log('🚀 Running in Vercel serverless mode - WebRTC calls will use external signaling server');
 }
 
 
@@ -212,6 +221,7 @@ app.use(async (req, res, next) => {
         email: user.email,
         fullName: user.fullName,
         fitnessId: user.fitnessId, // Get ID from the main user profile
+        profilePhoto: user.profilePhoto, // Add profile photo to session
         onboardingCompleted: user.onboardingCompleted,
         personalInfo: user.personalInfo
       };
@@ -272,6 +282,7 @@ const isAuthenticated = async (req, res, next) => {
             email: dbSession.userId.email,
             fullName: dbSession.userId.fullName,
             fitnessId: dbSession.userId.fitnessId, // Ensure fitnessId is loaded
+            profilePhoto: dbSession.userId.profilePhoto, // Add profile photo
             onboardingCompleted: dbSession.userId.onboardingCompleted,
             personalInfo: dbSession.userId.personalInfo,
             fromDatabase: true
@@ -671,6 +682,7 @@ app.post('/login', ensureDbConnection, async (req, res) => {
         email: user.email,
         fullName: user.fullName,
         fitnessId: user.fitnessId, // Add fitnessId to session
+        profilePhoto: user.profilePhoto, // Add profile photo to session
         onboardingCompleted: user.onboardingCompleted,
         personalInfo: user.personalInfo
       };
@@ -1343,6 +1355,13 @@ app.post('/api/workouts', isAuthenticated, ensureDbConnection, async (req, res) 
 
     const updatedUser = await UserService.addWorkout(userEmail, workoutData);
     
+    // Update workout streak
+    try {
+      await streakService.updateUserStreaks(updatedUser._id);
+    } catch (streakError) {
+      console.error('Streak update error:', streakError);
+    }
+    
     // Process gamification for workout completion
     let gamificationResults = null;
     try {
@@ -1422,6 +1441,13 @@ app.post('/api/nutrition', isAuthenticated, ensureDbConnection, async (req, res)
     };
 
     const updatedUser = await UserService.addNutritionLog(userEmail, nutritionData);
+    
+    // Update nutrition streak
+    try {
+      await streakService.updateUserStreaks(updatedUser._id);
+    } catch (streakError) {
+      console.error('Streak update error:', streakError);
+    }
     
     // Process gamification for nutrition logging
     let gamificationResults = null;
@@ -1981,15 +2007,35 @@ app.post('/api/subscription/upgrade', isAuthenticated, ensureDbConnection, async
   }
 });
 
-// Get subscription details
+// Get subscription details with payment history
 app.get('/api/subscription', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const userEmail = req.session.user.email;
-    const subscription = await UserService.getSubscription(userEmail);
+    const user = await UserService.getUserByEmail(userEmail);
+    
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const subscription = user.subscription || { isActive: false, plan: 'free' };
+    const paymentHistory = user.paymentHistory || [];
+    
+    // Calculate days remaining
+    let daysRemaining = 0;
+    if (subscription.isActive && subscription.expiresAt) {
+      const now = new Date();
+      const expiresAt = new Date(subscription.expiresAt);
+      daysRemaining = Math.max(0, Math.ceil((expiresAt - now) / (1000 * 60 * 60 * 24)));
+    }
     
     res.json({
       success: true,
-      subscription: subscription
+      subscription: {
+        ...subscription,
+        daysRemaining: daysRemaining,
+        isExpired: daysRemaining === 0 && subscription.isActive
+      },
+      paymentHistory: paymentHistory.slice(-10) // Last 10 payments
     });
 
   } catch (error) {
@@ -2068,13 +2114,107 @@ try {
   console.warn('Challenge service not loaded:', error.message);
 }
 
+
+
 // Import API routes
 const settingsRoutes = require('./routes/settings');
 const paymentRoutes = require('./routes/payment');
 
+// Streak Service
+const streakService = require('./services/streakService');
+const { updateWorkoutStreak, updateNutritionStreak } = require('./middleware/streakMiddleware');
+
+// Initialize streak job
+const { scheduleStreakCheck } = require('./jobs/streakJob');
+if (!process.env.VERCEL) {
+  scheduleStreakCheck();
+}
+
 // Use API routes
 app.use('/api/settings', settingsRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/streaks', require('./routes/streaks'));
+app.use('/api/subscription', isAuthenticated, ensureDbConnection, require('./routes/subscription'));
+
+// Subscription activation endpoint
+app.post('/api/subscription/activate', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { planId, planName, amount, paymentId } = req.body;
+    const userEmail = req.session.user.email;
+    
+    if (!planId || !planName || !amount || !paymentId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields'
+      });
+    }
+    
+    // Calculate expiration date
+    const expiresAt = new Date();
+    if (planId === 'basic') {
+      expiresAt.setDate(expiresAt.getDate() + 7); // 1 week
+    } else if (planId === 'yearly') {
+      expiresAt.setFullYear(expiresAt.getFullYear() + 1); // 1 year
+    } else {
+      expiresAt.setMonth(expiresAt.getMonth() + 1); // 1 month for premium
+    }
+    
+    // Create subscription data
+    const subscriptionData = {
+      plan: planId,
+      planName: planName,
+      isActive: true,
+      startDate: new Date(),
+      expiresAt: expiresAt,
+      amount: amount,
+      autoRenew: true
+    };
+    
+    // Create payment record
+    const paymentData = {
+      date: new Date(),
+      amount: amount,
+      plan: planId,
+      planName: planName,
+      duration: planId === 'yearly' ? 'yearly' : (planId === 'basic' ? 'weekly' : 'monthly'),
+      paymentMethod: 'UPI',
+      transactionId: paymentId,
+      status: 'completed'
+    };
+    
+    // Update subscription using UserService
+    await UserService.updateSubscription(userEmail, subscriptionData);
+    
+    // Add payment to history - fix the payment history structure
+    const mongoose = require('mongoose');
+    const db = mongoose.connection.db;
+    const collection = db.collection('users');
+    
+    await collection.updateOne(
+      { email: userEmail.toLowerCase().trim() },
+      { $push: { paymentHistory: paymentData } }
+    );
+    
+    // Update session
+    req.session.user.subscription = subscriptionData;
+    
+    console.log('Subscription activated successfully for:', userEmail);
+    
+    res.json({
+      success: true,
+      message: 'Subscription activated successfully',
+      subscription: subscriptionData,
+      payment: paymentData
+    });
+    
+  } catch (error) {
+    console.error('Subscription activation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to activate subscription: ' + error.message
+    });
+  }
+});
 
 // AI Chat endpoint
 app.post('/api/ai-chat', isAuthenticated, async (req, res) => {
@@ -3521,15 +3661,15 @@ app.post('/api/health/generate-booking-link', isAuthenticated, async (req, res) 
 app.get('/api/chat/conversations', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const userId = req.session.user._id;
-    const friends = await chatService.getUserFriends(userId);
+    const friends = await chatService.getUserFriends(userId).catch(() => []);
     
-    const conversations = friends.map(friend => ({
+    const conversations = (friends || []).map(friend => ({
       conversationId: `${userId}_${friend._id}`,
       friend: {
         _id: friend._id,
-        fullName: friend.fullName,
-        firstName: friend.firstName,
-        avatar: friend.avatar
+        fullName: friend.fullName || 'Unknown',
+        firstName: friend.firstName || friend.fullName?.split(' ')[0] || 'User',
+        avatar: friend.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.fullName || 'User')}&background=6C63FF&color=fff`
       },
       lastMessage: {
         content: 'Ready to chat',
@@ -3563,23 +3703,23 @@ app.get('/api/chat/messages/:friendId', isAuthenticated, ensureDbConnection, asy
     const messages = await chatService.getConversationMessages(
       userId, 
       friendId, 
-      parseInt(limit), 
-      parseInt(skip)
-    );
+      parseInt(limit) || 50, 
+      parseInt(skip) || 0
+    ).catch(() => []);
     
-    // Mark messages as read
-    await chatService.markMessagesAsRead(userId, friendId, userId);
+    // Mark messages as read (ignore errors)
+    chatService.markMessagesAsRead(userId, friendId, userId).catch(() => {});
     
     res.json({
       success: true,
-      messages: messages
+      messages: messages || []
     });
     
   } catch (error) {
     console.error('Get messages error:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to get messages'
+    res.json({
+      success: true,
+      messages: []
     });
   }
 });
@@ -3641,19 +3781,19 @@ try {
 const userId = req.session.user._id;
 console.log('👥 Getting friends for user:', userId);
 
-const friends = await chatService.getUserFriends(userId);
+const friends = await chatService.getUserFriends(userId).catch(() => []);
 console.log('✅ Friends retrieved:', friends.length);
 
 res.json({
 success: true,
-friends: friends
+friends: friends || []
 });
 
 } catch (error) {
 console.error('❌ Get friends error:', error);
-res.status(500).json({
-success: false,
-error: 'Failed to get friends list'
+res.json({
+success: true,
+friends: []
 });
 }
 });
@@ -4336,6 +4476,45 @@ app.post('/api/settings/clear-cache', isAuthenticated, (req, res) => {
 });
 
 app.use('/api/settings', isAuthenticated, ensureDbConnection, require('./routes/settings'));
+
+// Subscription API Routes
+app.get('/api/user/subscription-status', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const User = require('./models/User');
+    const user = await User.findOne({ email: userEmail });
+    
+    if (!user) {
+      return res.json({ success: true, subscription: { isActive: false } });
+    }
+
+    const now = new Date();
+    const hasActiveSubscription = user.subscription && 
+                                user.subscription.isActive && 
+                                new Date(user.subscription.expiresAt) > now;
+
+    if (hasActiveSubscription) {
+      return res.json({
+        success: true,
+        subscription: {
+          isActive: true,
+          planId: user.subscription.plan,
+          planName: user.subscription.planName,
+          amount: user.subscription.amount,
+          expiresAt: user.subscription.expiresAt,
+          status: 'active'
+        }
+      });
+    } else {
+      return res.json({
+        success: true,
+        subscription: { isActive: false }
+      });
+    }
+  } catch (error) {
+    return res.json({ success: true, subscription: { isActive: false } });
+  }
+});
 
 // Meal Planner API Routes
 app.use('/api/meal-planner', isAuthenticated, ensureDbConnection, require('./routes/mealPlanner'));
@@ -5148,30 +5327,50 @@ app.get('/api/nutrition/suggestions', isAuthenticated, ensureDbConnection, async
 
 app.post('/api/nutrition', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
-    const userId = req.session.user._id;
-    const nutritionData = req.body;
+    const userEmail = req.session.user.email;
+    const { meals, totalCalories, totalProtein, totalCarbs, totalFat, waterIntake } = req.body;
+
+    const nutritionData = {
+      date: new Date(),
+      meals: meals || [],
+      totalCalories: totalCalories ? parseInt(totalCalories) : 0,
+      totalProtein: totalProtein ? parseFloat(totalProtein) : 0,
+      totalCarbs: totalCarbs ? parseFloat(totalCarbs) : 0,
+      totalFat: totalFat ? parseFloat(totalFat) : 0,
+      waterIntake: waterIntake ? parseInt(waterIntake) : 0
+    };
+
+    const updatedUser = await UserService.addNutritionLog(userEmail, nutritionData);
     
-    // Add current date if not provided
-    if (!nutritionData.date) {
-      nutritionData.date = new Date();
+    // Update nutrition streak
+    try {
+      await streakService.updateUserStreaks(updatedUser._id);
+    } catch (streakError) {
+      console.error('Streak update error:', streakError);
     }
     
-    const User = require('./models/User');
-    const user = await User.findById(userId);
-    
-    if (!user.nutritionLogs) {
-      user.nutritionLogs = [];
+    // Process gamification for nutrition logging
+    let gamificationResults = null;
+    try {
+      gamificationResults = await gamificationService.processNutritionLog(updatedUser._id, nutritionData);
+      console.log('Gamification results for nutrition:', gamificationResults);
+    } catch (gamificationError) {
+      console.error('Gamification processing error:', gamificationError);
     }
     
-    user.nutritionLogs.push(nutritionData);
-    await user.save();
-    
-    console.log('✅ Nutrition data saved:', nutritionData);
-    console.log('✅ Total nutrition logs:', user.nutritionLogs.length);
-    res.json({ success: true, message: 'Nutrition logged successfully', data: nutritionData });
+    res.json({
+      success: true,
+      message: 'Nutrition data logged successfully',
+      nutrition: nutritionData,
+      gamification: gamificationResults
+    });
+
   } catch (error) {
-    console.error('Nutrition logging error:', error);
-    res.status(500).json({ success: false, error: error.message || 'Failed to log nutrition' });
+    console.error('Add nutrition error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to log nutrition data'
+    });
   }
 });
 
@@ -5358,16 +5557,14 @@ app.post('/api/payment/check-status', isAuthenticated, async (req, res) => {
     paymentData[paymentId].checkCount++;
     const timeSinceCreation = currentTime - paymentData[paymentId].createdAt;
     
-    // More aggressive detection - start checking after 20 seconds
+    // Detect payment after 15 seconds for faster demo
     let paymentReceived = false;
-    if (timeSinceCreation > 20000) { // 20 seconds
-      // High probability detection - 80% base rate, increases quickly
-      const probability = Math.min(0.8 + (paymentData[paymentId].checkCount * 0.05), 0.98);
-      paymentReceived = Math.random() < probability;
+    if (timeSinceCreation > 15000) {
+      paymentReceived = Math.random() < 0.9; // 90% success rate
     }
     
-    // Force detection after 2 minutes for demo
-    if (timeSinceCreation > 120000) {
+    // Force detection after 25 seconds
+    if (timeSinceCreation > 25000) {
       paymentReceived = true;
     }
     
@@ -5392,15 +5589,12 @@ app.post('/api/payment/check-status', isAuthenticated, async (req, res) => {
 app.post('/api/payment/verify', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const { paymentId, planId, amount, autoDetected } = req.body;
-    const userId = req.session.user._id;
+    const userEmail = req.session.user.email;
     
-    // Update user subscription
-    const User = require('./models/User');
+    // Calculate expiration date
     const expiresAt = new Date();
-    
-    // Set expiration based on plan
     if (planId === 'basic') {
-      expiresAt.setDate(expiresAt.getDate() + 7); // 1 week
+      expiresAt.setDate(expiresAt.getDate() + 30); // 1 month
     } else if (planId === 'yearly') {
       expiresAt.setFullYear(expiresAt.getFullYear() + 1); // 1 year
     } else {
@@ -5413,43 +5607,44 @@ app.post('/api/payment/verify', isAuthenticated, ensureDbConnection, async (req,
       'yearly': 'Yearly Premium'
     }[planId] || 'Premium Pro';
     
-    await User.findByIdAndUpdate(userId, {
-      'subscription.plan': planId || 'premium',
-      'subscription.planName': planName,
-      'subscription.isActive': true,
-      'subscription.expiresAt': expiresAt,
-      'subscription.paymentId': paymentId,
-      'subscription.amount': amount,
-      'subscription.autoDetected': autoDetected || false
-    });
-    
-    // Update session
-    req.session.user.subscription = {
+    // Create subscription data
+    const subscriptionData = {
       plan: planId || 'premium',
       planName: planName,
       isActive: true,
+      startDate: new Date(),
       expiresAt: expiresAt,
-      paymentId: paymentId,
-      amount: amount
+      amount: amount,
+      autoRenew: true
     };
     
-    // Clear payment check data
-    if (req.session.paymentCheck) {
-      const paymentData = JSON.parse(req.session.paymentCheck);
-      delete paymentData[paymentId];
-      req.session.paymentCheck = JSON.stringify(paymentData);
-    }
+    // Create payment record
+    const paymentData = {
+      date: new Date(),
+      amount: amount,
+      plan: planId,
+      planName: planName,
+      duration: planId === 'yearly' ? 'yearly' : 'monthly',
+      paymentMethod: 'UPI',
+      transactionId: paymentId,
+      status: 'completed',
+      autoDetected: autoDetected || false
+    };
+    
+    // Update subscription using UserService
+    await UserService.updateSubscription(userEmail, subscriptionData);
+    await UserService.addPayment(userEmail, paymentData);
+    
+    // Update session
+    req.session.user.subscription = subscriptionData;
     
     console.log('Subscription updated successfully', autoDetected ? '(auto-detected)' : '(manual)');
     
     res.json({ 
       success: true, 
       message: autoDetected ? 'Payment auto-detected and subscription activated' : 'Subscription activated successfully',
-      payment: {
-        paymentId: paymentId,
-        amount: amount,
-        plan: planName
-      }
+      subscription: subscriptionData,
+      payment: paymentData
     });
   } catch (error) {
     console.error('Payment verification error:', error);
@@ -5589,117 +5784,75 @@ app.use(async (req, res, next) => {
 
 
 
-// Generate PDF bill endpoint
-app.post('/api/generate-bill', isAuthenticated, (req, res) => {
-  const { confirmation, plan, amount } = req.body;
-  
-  // Simple PDF content (basic PDF structure)
-  const pdfContent = `%PDF-1.4
-1 0 obj
-<<
-/Type /Catalog
-/Pages 2 0 R
->>
-endobj
+// Generate PDF bill endpoint with database lookup
+app.post('/api/generate-bill', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { paymentId } = req.body;
+    const userEmail = req.session.user.email;
+    const user = await UserService.getUserByEmail(userEmail);
+    
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    // Find payment record
+    const payment = user.paymentHistory?.find(p => p.transactionId === paymentId) || 
+                   user.paymentHistory?.[user.paymentHistory.length - 1]; // Latest payment
+    
+    if (!payment) {
+      return res.status(404).json({ success: false, error: 'Payment record not found' });
+    }
+    
+    const billContent = `
+===========================================
+           FIT-WITH-AI PAYMENT RECEIPT
+===========================================
 
-2 0 obj
-<<
-/Type /Pages
-/Kids [3 0 R]
-/Count 1
->>
-endobj
+CUSTOMER DETAILS:
+-------------------------------------------
+Name: ${user.fullName}
+Email: ${user.email}
+User ID: ${user._id}
 
-3 0 obj
-<<
-/Type /Page
-/Parent 2 0 R
-/MediaBox [0 0 612 792]
-/Contents 4 0 R
-/Resources <<
-/Font <<
-/F1 5 0 R
->>
->>
->>
-endobj
+TRANSACTION DETAILS:
+-------------------------------------------
+Transaction ID: ${payment.transactionId}
+Plan: ${payment.planName}
+Amount: Rs.${payment.amount}
+Date: ${new Date(payment.date).toLocaleDateString('en-IN')}
+Time: ${new Date(payment.date).toLocaleTimeString('en-IN')}
+Payment Method: ${payment.paymentMethod}
+Status: ${payment.status.toUpperCase()}
 
-4 0 obj
-<<
-/Length 800
->>
-stream
-BT
-/F1 16 Tf
-50 750 Td
-(FIT-WITH-AI PAYMENT RECEIPT) Tj
-0 -40 Td
-/F1 12 Tf
-(================================) Tj
-0 -30 Td
-(TRANSACTION DETAILS) Tj
-0 -20 Td
-(Confirmation: ${confirmation}) Tj
-0 -20 Td
-(Plan: ${plan}) Tj
-0 -20 Td
-(Amount: Rs.${amount}) Tj
-0 -20 Td
-(Date: ${new Date().toLocaleDateString('en-IN')}) Tj
-0 -20 Td
-(Time: ${new Date().toLocaleTimeString('en-IN')}) Tj
-0 -30 Td
-(BILLING INFORMATION) Tj
-0 -20 Td
-(Merchant: Fit-With-AI) Tj
-0 -20 Td
-(UPI ID: 8885800887@ptaxis) Tj
-0 -20 Td
-(Payment Method: UPI) Tj
-0 -20 Td
-(Status: SUCCESS) Tj
-0 -30 Td
-(SUBSCRIPTION DETAILS) Tj
-0 -20 Td
-(Billing Cycle: Monthly) Tj
-0 -20 Td
-(Next Billing: ${new Date(Date.now() + 30*24*60*60*1000).toLocaleDateString('en-IN')}) Tj
-0 -40 Td
-(Thank you for choosing Fit-With-AI!) Tj
-0 -20 Td
-(For support: support@fitwith.ai) Tj
-ET
-endstream
-endobj
+BILLING INFORMATION:
+-------------------------------------------
+Merchant: Fit-With-AI
+UPI ID: 8885800887@ptaxis
+GST: Not Applicable
 
-5 0 obj
-<<
-/Type /Font
-/Subtype /Type1
-/BaseFont /Helvetica
->>
-endobj
+SUBSCRIPTION DETAILS:
+-------------------------------------------
+Plan: ${payment.planName}
+Billing Cycle: ${payment.duration === 'yearly' ? 'Yearly' : 'Monthly'}
+Start Date: ${new Date(user.subscription?.startDate || payment.date).toLocaleDateString('en-IN')}
+Expiry Date: ${new Date(user.subscription?.expiresAt).toLocaleDateString('en-IN')}
+Auto Renewal: ${user.subscription?.autoRenew ? 'Enabled' : 'Disabled'}
 
-xref
-0 6
-0000000000 65535 f 
-0000000009 00000 n 
-0000000058 00000 n 
-0000000115 00000 n 
-0000000274 00000 n 
-0000001126 00000 n 
-trailer
-<<
-/Size 6
-/Root 1 0 R
->>
-startxref
-1203
-%%EOF`;
-  
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `attachment; filename="FitWithAI_Bill_${confirmation}.pdf"`);
-  res.send(Buffer.from(pdfContent));
+===========================================
+Thank you for choosing Fit-With-AI!
+For support: support@fitwith.ai
+Website: https://fitwith.ai
+===========================================
+`;
+    
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Content-Disposition', `attachment; filename="FitWithAI_Receipt_${payment.transactionId}.txt"`);
+    res.send(billContent);
+    
+  } catch (error) {
+    console.error('Generate bill error:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate bill' });
+  }
 });
 
 // Send email receipt endpoint
