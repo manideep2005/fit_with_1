@@ -22,10 +22,10 @@ class Database {
       console.log('Connection URI:', uri.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@'));
 
       const options = {
-        maxPoolSize: 10,
-        serverSelectionTimeoutMS: 10000,
-        socketTimeoutMS: 45000,
-        connectTimeoutMS: 10000,
+        maxPoolSize: process.env.VERCEL ? 5 : 10,
+        serverSelectionTimeoutMS: process.env.VERCEL ? 5000 : 10000,
+        socketTimeoutMS: process.env.VERCEL ? 20000 : 45000,
+        connectTimeoutMS: process.env.VERCEL ? 5000 : 10000,
         heartbeatFrequencyMS: 10000,
       };
 

@@ -1,58 +1,41 @@
 {
   "version": 2,
-  "rewrites": [
-    { "source": "/dashboard", "destination": "/api/index.js" },
-    { "source": "/workouts", "destination": "/api/index.js" },
-    { "source": "/progress", "destination": "/api/index.js" },
-    { "source": "/meal-planner", "destination": "/api/index.js" },
-    { "source": "/nutrition", "destination": "/api/index.js" },
-    { "source": "/nutriscan", "destination": "/api/index.js" },
-    { "source": "/health", "destination": "/api/index.js" },
-    { "source": "/challenges", "destination": "/api/index.js" },
-    { "source": "/biometrics", "destination": "/api/index.js" },
-    { "source": "/schedule", "destination": "/api/index.js" },
-    { "source": "/community", "destination": "/api/index.js" },
-    { "source": "/ai-coach", "destination": "/api/index.js" },
-    { "source": "/chat", "destination": "/api/index.js" },
-    { "source": "/settings", "destination": "/api/index.js" },
-    { "source": "/subscription", "destination": "/api/index.js" },
-    { "source": "/CustomOnboarding", "destination": "/api/index.js" },
-    { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/(.*)", "destination": "/api/index.js" }
-  ],
-  "headers": [
+  "builds": [
     {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "Permissions-Policy",
-          "value": "microphone=(self), camera=(self), geolocation=(self)"
-        },
-        {
-          "key": "Feature-Policy",
-          "value": "microphone 'self'; camera 'self'; geolocation 'self'"
-        },
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        }
-      ]
+      "src": "api/index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/css/(.*)",
+      "dest": "/public/css/$1"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/public/js/$1"
+    },
+    {
+      "src": "/uploads/(.*)",
+      "dest": "/public/uploads/$1"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/index.js"
     }
   ],
   "functions": {
     "api/index.js": {
-      "maxDuration": 30
-    },
-    "api/socket.js": {
-      "maxDuration": 300
+      "maxDuration": 30,
+      "memory": 1024
     }
   },
   "env": {

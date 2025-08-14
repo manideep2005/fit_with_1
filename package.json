@@ -9,6 +9,7 @@
     "setup-community": "node setup-community.js",
     "setup-challenges": "node setup-challenges.js",
     "setup-all": "node setup-community.js && node setup-challenges.js",
+    "build": "echo 'Build complete'",
     "vercel-build": "npm install"
   },
   "dependencies": {

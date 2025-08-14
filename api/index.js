@@ -96,7 +96,15 @@ const ensureDbConnection = async (req, res, next) => {
     const status = database.getConnectionStatus();
     if (status.status !== 'connected') {
       console.log('Database not connected, attempting to connect...');
-      await database.connect();
+      
+      // Add timeout for Vercel
+      const connectPromise = database.connect();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Database connection timeout')), 
+          process.env.VERCEL ? 8000 : 15000)
+      );
+      
+      await Promise.race([connectPromise, timeoutPromise]);
       console.log('Database connected successfully');
     }
     next();
@@ -105,7 +113,7 @@ const ensureDbConnection = async (req, res, next) => {
     res.status(500).json({
       success: false,
       error: 'Database connection failed',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: process.env.NODE_ENV === 'development' ? error.message : 'Please try again later'
     });
   }
 };
@@ -122,7 +130,7 @@ database.connect().then(() => {
 // Middleware
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
-app.use(express.static('../public'));
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Ensure proper JSON serialization
 app.set('json spaces', 0);
@@ -174,8 +182,9 @@ app.use(async (req, res, next) => {
     res.cookie('fit-with-ai-session', sessionId, {
       maxAge: 1000 * 60 * 60 * 24, // 24 hours
       httpOnly: false,
-      secure: false,
-      sameSite: 'lax'
+      secure: process.env.VERCEL ? true : false,
+      sameSite: process.env.VERCEL ? 'none' : 'lax',
+      domain: process.env.VERCEL ? undefined : undefined
     });
   }
   
