@@ -61,6 +61,38 @@ class ChatService {
         io.to(receiverId.toString()).emit('new message', message);
       }
       
+      // Send push notification to receiver
+      try {
+        const User = require('../models/User');
+        const receiver = await User.findById(receiverId);
+        
+        if (receiver && receiver.fcmToken) {
+          const notificationService = require('./notificationService');
+          
+          const senderName = message.sender.fullName || 'Someone';
+          const messagePreview = content.length > 100 ? content.substring(0, 100) + '...' : content;
+          
+          await notificationService.sendNotification(
+            receiver.fcmToken,
+            `New message from ${senderName}`,
+            messagePreview,
+            {
+              type: 'chat_message',
+              senderId: senderId.toString(),
+              senderName: senderName,
+              message: messagePreview,
+              senderAvatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(senderName)}&background=6C63FF&color=fff`,
+              timestamp: new Date().toISOString()
+            }
+          );
+          
+          console.log('✅ Push notification sent to:', receiver.email);
+        }
+      } catch (notificationError) {
+        console.error('❌ Push notification failed:', notificationError.message);
+        // Don't fail the message sending if notification fails
+      }
+      
       console.log('Message populated and ready to return');
       return message;
       
@@ -571,6 +603,34 @@ class ChatService {
     }));
 
     return [...friends, ...groups];
+  }
+  
+  // Get new messages since timestamp (for polling)
+  static async getNewMessages(userId, friendId, sinceDate) {
+    try {
+      const conversationId = Message.createConversationId(userId, friendId);
+      
+      const messages = await Message.find({
+        conversationId: conversationId,
+        createdAt: { $gt: sinceDate },
+        isDeleted: false
+      })
+      .populate('sender', 'fullName')
+      .sort({ createdAt: 1 });
+
+      return messages.map(message => ({
+        _id: message._id,
+        content: message.content,
+        messageType: message.messageType,
+        createdAt: message.createdAt,
+        isFromCurrentUser: message.sender._id.toString() === userId.toString(),
+        senderName: message.sender.fullName,
+        status: message.status
+      }));
+    } catch (error) {
+      console.error('Get new messages error:', error);
+      return [];
+    }
   }
 }
 

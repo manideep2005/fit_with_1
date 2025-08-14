@@ -227,6 +227,9 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'User' 
   }],
+  
+  // FCM Token for push notifications
+  fcmToken: { type: String, default: null },
   challenges: [{
     challengeId: { type: mongoose.Schema.Types.ObjectId, ref: 'Challenge' },
     joinedAt: { type: Date, default: Date.now },

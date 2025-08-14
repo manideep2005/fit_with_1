@@ -2840,6 +2840,24 @@ app.get('/api/chat/conversations', isAuthenticated, ensureDbConnection, async (r
   }
 });
 
+// Get new messages since timestamp (for polling)
+app.get('/api/chat/messages/:friendId/new', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { friendId } = req.params;
+    const { since } = req.query;
+    
+    const sinceDate = since ? new Date(since) : new Date(Date.now() - 30000); // Last 30 seconds
+    
+    const newMessages = await chatService.getNewMessages(userId, friendId, sinceDate);
+    
+    res.json({ success: true, messages: newMessages || [] });
+  } catch (error) {
+    console.error('Get new messages error:', error);
+    res.json({ success: true, messages: [] });
+  }
+});
+
 // Get conversation messages
 app.get('/api/chat/messages/:friendId', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
@@ -2905,6 +2923,22 @@ content.trim(),
 messageType,
 attachmentData
 );
+
+// Send FCM notification instead of WebSocket
+try {
+  const notificationService = require('../services/notificationService');
+  const receiver = await UserService.getUserById(receiverId);
+  
+  if (receiver?.fcmToken) {
+    await notificationService.sendNotification(
+      receiver.fcmToken,
+      `New message from ${req.session.user.fullName}`,
+      content.trim().substring(0, 100)
+    );
+  }
+} catch (notifError) {
+  console.error('FCM notification error:', notifError);
+}
 
 console.log('✅ Message sent successfully:', message._id);
 
@@ -3137,6 +3171,25 @@ success: false,
 error: 'Failed to search users'
 });
 }
+});
+
+// Register FCM token
+app.post('/api/notifications/register', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { token } = req.body;
+    const userEmail = req.session.user.email;
+    
+    if (!token) {
+      return res.status(400).json({ success: false, error: 'FCM token required' });
+    }
+    
+    await UserService.updateFCMToken(userEmail, token);
+    
+    res.json({ success: true, message: 'FCM token registered' });
+  } catch (error) {
+    console.error('FCM token registration error:', error);
+    res.status(500).json({ success: false, error: 'Failed to register token' });
+  }
 });
 
 // Send friend request by user ID (for search results)

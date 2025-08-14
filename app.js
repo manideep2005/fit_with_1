@@ -3655,6 +3655,85 @@ app.post('/api/health/generate-booking-link', isAuthenticated, async (req, res) 
   }
 });
 
+// Notification API Routes
+
+// Register FCM token
+app.post('/api/notifications/register-token', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { fcmToken } = req.body;
+    const userEmail = req.session.user.email;
+    
+    if (!fcmToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'FCM token is required'
+      });
+    }
+    
+    // Update user's FCM token in database
+    const User = require('./models/User');
+    await User.updateOne(
+      { email: userEmail },
+      { fcmToken: fcmToken },
+      { upsert: false }
+    );
+    
+    console.log('✅ FCM token registered for user:', userEmail);
+    
+    res.json({
+      success: true,
+      message: 'FCM token registered successfully'
+    });
+    
+  } catch (error) {
+    console.error('❌ Error registering FCM token:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to register FCM token'
+    });
+  }
+});
+
+// Send push notification (for testing)
+app.post('/api/notifications/send-test', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const User = require('./models/User');
+    const user = await User.findOne({ email: userEmail });
+    
+    if (!user || !user.fcmToken) {
+      return res.status(400).json({
+        success: false,
+        error: 'No FCM token found for user'
+      });
+    }
+    
+    const notificationService = require('./services/notificationService');
+    const result = await notificationService.sendNotification(
+      user.fcmToken,
+      'Test Notification',
+      'This is a test push notification from Fit-With-AI!',
+      {
+        type: 'test',
+        timestamp: new Date().toISOString()
+      }
+    );
+    
+    res.json({
+      success: result.success,
+      message: result.success ? 'Test notification sent' : 'Failed to send notification',
+      error: result.error
+    });
+    
+  } catch (error) {
+    console.error('❌ Error sending test notification:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to send test notification'
+    });
+  }
+});
+
 // Chat API Routes
 
 // Get user's conversations
@@ -4107,6 +4186,26 @@ app.get('/api/chat/unread-count', isAuthenticated, ensureDbConnection, async (re
       success: false,
       error: 'Failed to get unread count'
     });
+  }
+});
+
+// Mark message as read
+app.post('/api/chat/messages/:messageId/read', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { messageId } = req.params;
+    
+    const Message = require('./models/Message');
+    await Message.updateOne(
+      { _id: messageId, receiver: userId },
+      { status: 'read', readAt: new Date() }
+    );
+    
+    res.json({ success: true });
+    
+  } catch (error) {
+    console.error('Mark message as read error:', error);
+    res.status(500).json({ success: false, error: 'Failed to mark as read' });
   }
 });
 

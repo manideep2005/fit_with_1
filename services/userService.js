@@ -947,6 +947,29 @@ class UserService {
       throw error;
     }
   }
+  
+  // Update FCM token
+  static async updateFCMToken(email, fcmToken) {
+    try {
+      const mongoose = require('mongoose');
+      const db = mongoose.connection.db;
+      const collection = db.collection('users');
+      
+      const result = await collection.updateOne(
+        { email: email.toLowerCase().trim() },
+        { $set: { fcmToken: fcmToken } }
+      );
+      
+      if (result.matchedCount === 0) {
+        throw new Error('User not found');
+      }
+      
+      return { success: true };
+    } catch (error) {
+      console.error('Error updating FCM token:', error);
+      throw error;
+    }
+  }
 }
 
 module.exports = UserService;

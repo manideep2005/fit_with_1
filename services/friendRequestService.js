@@ -33,6 +33,31 @@ class FriendRequestService {
       await friendRequest.populate('sender', 'fullName email');
       await friendRequest.populate('receiver', 'fullName email');
       
+      // Send push notification to receiver
+      try {
+        if (receiver.fcmToken) {
+          const notificationService = require('./notificationService');
+          const sender = await User.findById(senderId);
+          
+          await notificationService.sendNotification(
+            receiver.fcmToken,
+            'New Friend Request',
+            `${sender.fullName} sent you a friend request`,
+            {
+              type: 'friend_request',
+              senderId: senderId.toString(),
+              senderName: sender.fullName,
+              senderAvatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(sender.fullName)}&background=6C63FF&color=fff`,
+              timestamp: new Date().toISOString()
+            }
+          );
+          
+          console.log('✅ Friend request notification sent to:', receiver.email);
+        }
+      } catch (notificationError) {
+        console.error('❌ Friend request notification failed:', notificationError.message);
+      }
+      
       return friendRequest;
     } catch (error) {
       console.error('Send friend request error:', error);
