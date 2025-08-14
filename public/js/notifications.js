@@ -31,6 +31,9 @@ class ChatNotificationManager {
     }
 
     try {
+      // Register service worker first
+      await this.registerServiceWorker();
+      
       // Load Firebase SDK dynamically
       await this.loadFirebaseSDK();
       
@@ -55,6 +58,19 @@ class ChatNotificationManager {
     } catch (error) {
       console.error('❌ Firebase initialization failed:', error);
       this.fallbackToBrowserNotifications();
+    }
+  }
+  
+  async registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+        console.log('✅ Service Worker registered:', registration);
+        return registration;
+      } catch (error) {
+        console.error('❌ Service Worker registration failed:', error);
+        throw error;
+      }
     }
   }
 
