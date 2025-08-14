@@ -8,14 +8,14 @@ class ChatNotificationManager {
     this.soundEnabled = true;
     this.unreadCount = 0;
     
-    // Firebase config from your .env.firebase
+    // Firebase config with correct values
     this.firebaseConfig = {
       apiKey: "AIzaSyA2EJ2UwHchs7YxO9f2-94c2uQyTXTUToY",
       authDomain: "fit-with-ai-b005e.firebaseapp.com",
       projectId: "fit-with-ai-b005e",
       storageBucket: "fit-with-ai-b005e.appspot.com",
-      messagingSenderId: "123456789", // You'll need to add this to your Firebase config
-      appId: "1:123456789:web:abcdef123456" // You'll need to add this to your Firebase config
+      messagingSenderId: "281180252594",
+      appId: "1:281180252594:web:dc920906daec0c5bd4dcab"
     };
     
     this.vapidKey = "BCIhj5YLSmS_PCD3oO7KVmI3MGGoS34tg9X6AAPS9RWVZH-rM-niTiM1Ryf5WCnsxLEUdps0WDP-KKS_d2bMlbA";
