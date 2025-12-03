@@ -11,8 +11,7 @@ module.exports = async (req, res) => {
         array: [1, 2, 3]
       }
     };
-    
-    // Test different JSON response methods
+
     if (req.query.method === 'send') {
       res.setHeader('Content-Type', 'application/json');
       return res.send(JSON.stringify(testObject));
@@ -20,7 +19,7 @@ module.exports = async (req, res) => {
       res.setHeader('Content-Type', 'application/json');
       return res.end(JSON.stringify(testObject));
     } else {
-      // Default Express json method
+
       return res.json(testObject);
     }
     

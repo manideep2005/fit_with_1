@@ -50,17 +50,41 @@ class UserService {
         throw new Error('Invalid email or password');
       }
       
+      // Fix corrupted array data before proceeding
+      ['workouts', 'biometrics', 'nutritionLogs', 'mealPlans', 'friends', 'challenges'].forEach(field => {
+        if (user[field] && typeof user[field] === 'string') {
+          try {
+            user[field] = JSON.parse(user[field]);
+            console.log(`Fixed corrupted ${field} during authentication for user ${user.email}`);
+          } catch (e) {
+            user[field] = [];
+            console.log(`Reset corrupted ${field} during authentication for user ${user.email}`);
+          }
+        }
+      });
+      
       // Verify password using bcrypt directly
       const isValidPassword = await bcrypt.compare(password, user.password);
       if (!isValidPassword) {
         throw new Error('Invalid email or password');
       }
       
-      // Update last login using direct MongoDB operations
+      // Update last login and fix any corrupted data
+      const setUpdates = {
+        lastLogin: new Date()
+      };
+      
+      // Add fixed array data to updates
+      ['workouts', 'biometrics', 'nutritionLogs', 'mealPlans', 'friends', 'challenges'].forEach(field => {
+        if (Array.isArray(user[field])) {
+          setUpdates[field] = user[field];
+        }
+      });
+      
       await collection.updateOne(
         { email: email.toLowerCase().trim() },
         { 
-          $set: { lastLogin: new Date() },
+          $set: setUpdates,
           $inc: { loginCount: 1 }
         }
       );
@@ -73,6 +97,7 @@ class UserService {
         fitnessId: user.fitnessId, // Add fitnessId
         isActive: user.isActive !== false, // Default to true if undefined
         isVerified: user.isVerified || false,
+        emailVerified: user.emailVerified || false,
         onboardingCompleted: user.onboardingCompleted || false,
         personalInfo: user.personalInfo || {},
         fitnessGoals: user.fitnessGoals || {},
@@ -85,6 +110,7 @@ class UserService {
         mealPlans: Array.isArray(user.mealPlans) ? user.mealPlans : [],
         friends: Array.isArray(user.friends) ? user.friends : [],
         challenges: Array.isArray(user.challenges) ? user.challenges : [],
+        gamification: user.gamification || {},
         lastLogin: new Date(),
         loginCount: (user.loginCount || 0) + 1,
         createdAt: user.createdAt,
@@ -103,42 +129,88 @@ class UserService {
     try {
       const mongoose = require('mongoose');
       
-      // Use direct MongoDB operations to avoid schema issues
-      const db = mongoose.connection.db;
-      const collection = db.collection('users');
-      
-      const user = await collection.findOne({ email: email.toLowerCase().trim() });
-      if (!user) {
-        return null;
+      // First try with Mongoose (with pre-init hook to fix corruption)
+      try {
+        const user = await User.findOne({ email: email.toLowerCase().trim() });
+        if (user) {
+          const userObject = user.toObject();
+          delete userObject.password;
+          return userObject;
+        }
+      } catch (mongooseError) {
+        console.log('Mongoose query failed, falling back to direct MongoDB:', mongooseError.message);
+        
+        // If Mongoose fails due to validation, use direct MongoDB operations
+        const db = mongoose.connection.db;
+        const collection = db.collection('users');
+        
+        const user = await collection.findOne({ email: email.toLowerCase().trim() });
+        if (!user) {
+          return null;
+        }
+        
+        // Fix corrupted array data
+        ['workouts', 'biometrics', 'nutritionLogs', 'mealPlans', 'friends', 'challenges'].forEach(field => {
+          if (user[field] && typeof user[field] === 'string') {
+            try {
+              user[field] = JSON.parse(user[field]);
+              console.log(`Fixed corrupted ${field} for user ${user.email}`);
+            } catch (e) {
+              user[field] = [];
+              console.log(`Reset corrupted ${field} for user ${user.email}`);
+            }
+          }
+        });
+        
+        // Update the document in database with fixed data
+        const updates = {};
+        ['workouts', 'biometrics', 'nutritionLogs', 'mealPlans', 'friends', 'challenges'].forEach(field => {
+          if (Array.isArray(user[field])) {
+            updates[field] = user[field];
+          }
+        });
+        
+        if (Object.keys(updates).length > 0) {
+          await collection.updateOne(
+            { _id: user._id },
+            { $set: updates }
+          );
+          console.log(`Updated corrupted data for user ${user.email}`);
+        }
+        
+        // Return user without password, ensuring arrays are properly formatted
+        const userObject = {
+          _id: user._id,
+          email: user.email,
+          fullName: user.fullName,
+          profilePhoto: user.profilePhoto || null,
+          fitnessId: user.fitnessId,
+          isActive: user.isActive !== false,
+          isVerified: user.isVerified || false,
+          emailVerified: user.emailVerified || false,
+          onboardingCompleted: user.onboardingCompleted || false,
+          personalInfo: user.personalInfo || {},
+          fitnessGoals: user.fitnessGoals || {},
+          healthInfo: user.healthInfo || {},
+          preferences: user.preferences || {},
+          subscription: user.subscription || { plan: 'free', status: 'active' },
+          workouts: Array.isArray(user.workouts) ? user.workouts : [],
+          biometrics: Array.isArray(user.biometrics) ? user.biometrics : [],
+          nutritionLogs: Array.isArray(user.nutritionLogs) ? user.nutritionLogs : [],
+          mealPlans: Array.isArray(user.mealPlans) ? user.mealPlans : [],
+          friends: Array.isArray(user.friends) ? user.friends : [],
+          challenges: Array.isArray(user.challenges) ? user.challenges : [],
+          gamification: user.gamification || {},
+          lastLogin: user.lastLogin,
+          loginCount: user.loginCount || 0,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt
+        };
+        
+        return userObject;
       }
       
-      // Return user without password, ensuring arrays are properly formatted
-      const userObject = {
-        _id: user._id,
-        email: user.email,
-        fullName: user.fullName,
-        profilePhoto: user.profilePhoto || null,
-        isActive: user.isActive !== false,
-        isVerified: user.isVerified || false,
-        onboardingCompleted: user.onboardingCompleted || false,
-        personalInfo: user.personalInfo || {},
-        fitnessGoals: user.fitnessGoals || {},
-        healthInfo: user.healthInfo || {},
-        preferences: user.preferences || {},
-        subscription: user.subscription || { plan: 'free', status: 'active' },
-        workouts: Array.isArray(user.workouts) ? user.workouts : [],
-        biometrics: Array.isArray(user.biometrics) ? user.biometrics : [],
-        nutritionLogs: Array.isArray(user.nutritionLogs) ? user.nutritionLogs : [],
-        mealPlans: Array.isArray(user.mealPlans) ? user.mealPlans : [],
-        friends: Array.isArray(user.friends) ? user.friends : [],
-        challenges: Array.isArray(user.challenges) ? user.challenges : [],
-        lastLogin: user.lastLogin,
-        loginCount: user.loginCount || 0,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt
-      };
-      
-      return userObject;
+      return null;
     } catch (error) {
       console.error('Error getting user by email:', error);
       throw error;
@@ -181,6 +253,20 @@ class UserService {
       
       console.log('Found user for onboarding completion:', existingUser.email);
       
+      // Fix any corrupted array data before updating
+      const fixedData = {};
+      ['workouts', 'biometrics', 'nutritionLogs', 'mealPlans', 'friends', 'challenges'].forEach(field => {
+        if (existingUser[field] && typeof existingUser[field] === 'string') {
+          try {
+            fixedData[field] = JSON.parse(existingUser[field]);
+            console.log(`Fixed corrupted ${field} during onboarding for user ${existingUser.email}`);
+          } catch (e) {
+            fixedData[field] = [];
+            console.log(`Reset corrupted ${field} during onboarding for user ${existingUser.email}`);
+          }
+        }
+      });
+      
       // Prepare update data with proper validation
       const updateData = {
         onboardingCompleted: true,
@@ -188,7 +274,8 @@ class UserService {
         fitnessGoals: onboardingData.fitnessGoals || {},
         healthInfo: onboardingData.healthInfo || {},
         preferences: onboardingData.preferences || {},
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        ...fixedData // Include any fixed array data
       };
       
       console.log('Updating user with data:', JSON.stringify(updateData, null, 2));
@@ -294,7 +381,8 @@ class UserService {
   // Get user workouts
   static async getUserWorkouts(email, limit = 10) {
     try {
-      const user = await User.findOne({ email: email.toLowerCase().trim() });
+      // Use the safe getUserByEmail method that handles corruption
+      const user = await this.getUserByEmail(email);
       if (!user) {
         throw new Error('User not found');
       }
@@ -343,7 +431,8 @@ class UserService {
   // Get user biometrics
   static async getUserBiometrics(email, limit = 10) {
     try {
-      const user = await User.findOne({ email: email.toLowerCase().trim() });
+      // Use the safe getUserByEmail method that handles corruption
+      const user = await this.getUserByEmail(email);
       if (!user) {
         throw new Error('User not found');
       }
@@ -392,7 +481,8 @@ class UserService {
   // Get user nutrition logs
   static async getUserNutritionLogs(email, limit = 7) {
     try {
-      const user = await User.findOne({ email: email.toLowerCase().trim() });
+      // Use the safe getUserByEmail method that handles corruption
+      const user = await this.getUserByEmail(email);
       if (!user) {
         throw new Error('User not found');
       }
@@ -563,7 +653,8 @@ class UserService {
   // Get user statistics
   static async getUserStats(email) {
     try {
-      const user = await User.findOne({ email: email.toLowerCase().trim() });
+      // Use the safe getUserByEmail method that handles corruption
+      const user = await this.getUserByEmail(email);
       if (!user) {
         throw new Error('User not found');
       }

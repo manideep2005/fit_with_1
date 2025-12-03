@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Challenges & Achievements - Fit-With-AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6C63FF;
-            --secondary: #4D44DB;
-            --accent: #FF6584;
-            --light: #F8F9FA;
-            --dark: #343A40;
-            --success: #28A745;
-            --warning: #FFC107;
-            --danger: #DC3545;
-            --gray: #6C757D;
-            --light-gray: #E9ECEF;
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #f59e0b;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray: #64748b;
+            --light-gray: #e2e8f0;
             --gold: #FFD700;
             --silver: #C0C0C0;
             --bronze: #CD7F32;
@@ -29,26 +29,11 @@
         }
         
         body {
-            font-family: 'Poppins', sans-serif;
-            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            color: #1e293b;
             overflow-x: hidden;
             min-height: 100vh;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
         }
         
         .dashboard-container {
@@ -59,117 +44,7 @@
             padding: 20px;
         }
         
-        .sidebar {
-            background: transparent;
-            border: none;
-            padding: 30px 20px;
-            position: sticky;
-            top: 20px;
-            height: fit-content;
-        }
-        
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding: 0 1rem;
-        }
-        
-        .sidebar-header img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-        
-        .user-name {
-            font-weight: 600;
-            margin: 0;
-            color: white;
-        }
-        
-        .user-plan {
-            font-size: 0.8rem;
-            color: var(--primary);
-            background: rgba(108, 99, 255, 0.1);
-            padding: 2px 8px;
-            border-radius: 20px;
-            margin-top: 5px;
-        }
-        
-        .nav-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .nav-item {
-            margin-bottom: 5px;
-        }
-        
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            border-radius: 15px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .nav-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s;
-        }
-        
-        .nav-link:hover::before {
-            left: 100%;
-        }
-        
-        .nav-link:hover, .nav-link.active {
-            background: rgba(108, 99, 255, 0.2);
-            color: #ffffff;
-            transform: translateX(5px);
-        }
-        
-        .nav-link i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }        
-        .logout-section {
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--light-gray);
-        }
-        
-        .logout-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 1rem;
-            color: var(--danger);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        
-        .logout-link:hover {
-            background: rgba(220, 53, 69, 0.1);
-            color: var(--danger);
-        }
-        
-        .logout-link i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
+        /* Sidebar styles now handled by shared-sidebar.css */
         
         .main-content {
             display: flex;
@@ -187,10 +62,7 @@
         .page-title {
             font-size: 2rem;
             font-weight: 600;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--dark);
         }
         
         .stats-overview {
@@ -201,31 +73,18 @@
         }
         
         .stat-card {
-            background: transparent;
-            border: none;
+            background: #ffffff;
+            border: 1px solid var(--light-gray);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
             text-align: center;
-            position: relative;
             transition: transform 0.3s ease;
         }
         
         .stat-card:hover {
             transform: translateY(-5px);
-        }
-        
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            border-radius: 12px;
-            z-index: -1;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
         
         .stat-icon {
@@ -264,25 +123,11 @@
         }
         
         .challenges-section {
-            background: transparent;
-            border: none;
-            padding: 1.5rem;
-            position: relative;
-        }
-        
-        .challenges-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
+            background: #ffffff;
+            border: 1px solid var(--light-gray);
             border-radius: 12px;
-            z-index: -1;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
         }
         
         .section-header {
@@ -296,7 +141,7 @@
             font-size: 1.3rem;
             font-weight: 600;
             margin: 0;
-            color: white;
+            color: var(--dark);
         }
         
         .challenge-tabs {
@@ -307,49 +152,39 @@
         
         .tab-btn {
             padding: 8px 16px;
-            border: none;
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid var(--light-gray);
+            background: #ffffff;
+            color: var(--gray);
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
         }
         
         .tab-btn.active {
             background: var(--primary);
             color: white;
+            border-color: var(--primary);
+        }
+        
+        .tab-btn:hover {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
         }
         
         .challenge-card {
-            background: transparent;
-            border: none;
+            background: #ffffff;
+            border: 1px solid var(--light-gray);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
             margin-bottom: 1rem;
             transition: all 0.3s ease;
-            position: relative;
         }
         
-        .challenge-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(255, 255, 255, 0.05) 0%,
-                rgba(108, 99, 255, 0.08) 50%,
-                rgba(255, 255, 255, 0.03) 100%);
-            border-radius: 12px;
-            z-index: -1;
-            transition: all 0.3s ease;
-        }
-        
-        .challenge-card:hover::before {
-            background: linear-gradient(135deg, 
-                rgba(255, 255, 255, 0.1) 0%,
-                rgba(108, 99, 255, 0.15) 50%,
-                rgba(255, 255, 255, 0.08) 100%);
+        .challenge-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
         
         .challenge-header {
@@ -363,14 +198,14 @@
             margin: 0 0 0.5rem 0;
             font-size: 1.1rem;
             font-weight: 600;
-            color: white;
+            color: var(--dark);
         }
         
         .challenge-meta {
             display: flex;
             gap: 15px;
             font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--gray);
         }
         
         .challenge-badge {
@@ -497,26 +332,12 @@
         }
         
         .achievements-sidebar {
-            background: transparent;
-            border: none;
+            background: #ffffff;
+            border: 1px solid var(--light-gray);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
             height: fit-content;
-            position: relative;
-        }
-        
-        .achievements-sidebar::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            border-radius: 12px;
-            z-index: -1;
         }
         
         .btn {
@@ -882,6 +703,7 @@
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/shared-sidebar.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 </head>

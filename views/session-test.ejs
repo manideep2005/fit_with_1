@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session Management Test - Fit-With-AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <h1 class="text-2xl font-bold text-gray-900 mb-2">Session Management Test</h1>
+                <p class="text-gray-600">Test the session management functionality</p>
+                <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                    <p class="text-sm text-blue-700">
+                        <strong>Current User:</strong> <%= user.fullName %> (<%= user.email %>)<br>
+                        <strong>Session ID:</strong> <code class="bg-blue-100 px-2 py-1 rounded"><%= user._id %></code>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Session Management Section -->
+            <%- include('partials/session-management') %>
+
+            <!-- Test Actions -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Test Actions</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <button onclick="testSessionConflict()" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Simulate Session Conflict
+                    </button>
+                    <button onclick="checkSessionStatus()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Check Session Status
+                    </button>
+                    <button onclick="testMultipleLogins()" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-users mr-2"></i>
+                        Test Multiple Logins
+                    </button>
+                    <button onclick="viewSessionDetails()" class="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-3 rounded-lg font-medium transition-colors">
+                        <i class="fas fa-info mr-2"></i>
+                        View Session Details
+                    </button>
+                </div>
+            </div>
+
+            <!-- Back to Dashboard -->
+            <div class="mt-6 text-center">
+                <a href="/dashboard" class="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium">
+                    <i class="fas fa-arrow-left mr-2"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testSessionConflict() {
+            try {
+                const response = await fetch('/api/sessions/conflict-status');
+                const result = await response.json();
+                
+                if (result.hasConflict) {
+                    alert('Session conflict detected! Check the modal that should appear.');
+                } else {
+                    alert('No session conflict detected. Try logging in from another device/browser.');
+                }
+            } catch (error) {
+                console.error('Test session conflict error:', error);
+                alert('Failed to test session conflict');
+            }
+        }
+
+        async function checkSessionStatus() {
+            try {
+                const response = await fetch('/api/sessions');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const sessionCount = result.sessions.length;
+                    const currentSession = result.sessions.find(s => s.isCurrent);
+                    
+                    alert(`Session Status:
+- Total active sessions: ${sessionCount}
+- Current session: ${currentSession ? currentSession.deviceInfo.type + ' (' + currentSession.deviceInfo.browser + ')' : 'Unknown'}
+- Session ID: ${result.currentSessionId}`);
+                } else {
+                    alert('Failed to get session status: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Check session status error:', error);
+                alert('Failed to check session status');
+            }
+        }
+
+        function testMultipleLogins() {
+            alert(`To test multiple logins:
+1. Open this app in another browser (Chrome, Firefox, Safari, etc.)
+2. Login with the same account
+3. Return to this page and refresh sessions
+4. You should see multiple active sessions`);
+        }
+
+        function viewSessionDetails() {
+            const sessions = window.sessionManager?.sessions || [];
+            if (sessions.length === 0) {
+                alert('No sessions loaded. Click "Refresh" first.');
+                return;
+            }
+
+            const details = sessions.map(session => 
+                `${session.deviceInfo.type} (${session.deviceInfo.browser}) - ${session.isCurrent ? 'CURRENT' : 'OTHER'}`
+            ).join('\n');
+
+            alert(`Session Details:\n${details}`);
+        }
+    </script>
+</body>
+</html>

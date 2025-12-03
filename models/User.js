@@ -108,6 +108,9 @@ const userSchema = new mongoose.Schema({
   // Account Status
   isActive: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
+  emailVerified: { type: Boolean, default: false },
+  emailVerificationToken: { type: String },
+  emailVerificationExpires: { type: Date },
   onboardingCompleted: { type: Boolean, default: false },
   selectedService: { 
     type: String, 
@@ -395,11 +398,86 @@ userSchema.virtual('subscriptionDisplayName').get(function() {
   return planNames[this.subscription?.plan || 'free'] || 'Free Plan';
 });
 
+// Pre-init middleware to fix corrupted data BEFORE Mongoose validation
+userSchema.pre('init', function(doc) {
+  try {
+    // Fix corrupted array data that got stored as strings
+    ['workouts', 'biometrics', 'nutritionLogs', 'mealPlans', 'friends', 'challenges'].forEach(field => {
+      if (doc[field]) {
+        if (typeof doc[field] === 'string') {
+          try {
+            doc[field] = JSON.parse(doc[field]);
+            console.log(`Fixed corrupted ${field} field for user ${doc.email}`);
+          } catch (e) {
+            doc[field] = [];
+            console.log(`Reset corrupted ${field} field for user ${doc.email}`);
+          }
+        } else if (Array.isArray(doc[field])) {
+          // Check if array elements are strings that should be objects
+          doc[field] = doc[field].map(item => {
+            if (typeof item === 'string') {
+              try {
+                return JSON.parse(item);
+              } catch (e) {
+                return null;
+              }
+            }
+            return item;
+          }).filter(item => item !== null);
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error in pre-init middleware:', error);
+    // Reset problematic fields to prevent validation errors
+    ['workouts', 'biometrics', 'nutritionLogs', 'mealPlans'].forEach(field => {
+      if (doc[field] && (typeof doc[field] === 'string' || !Array.isArray(doc[field]))) {
+        doc[field] = [];
+      }
+    });
+  }
+});
+
 // Pre-save middleware to hash password and generate fitness ID
 userSchema.pre('save', async function(next) {
   // Generate fitness ID if not exists (for new users or existing users without fitnessId)
   if (!this.fitnessId) {
     this.fitnessId = 'FIT' + Date.now().toString().slice(-6) + Math.random().toString(36).substr(2, 3).toUpperCase();
+  }
+  
+  // Fix corrupted array data that got stored as strings
+  try {
+    ['workouts', 'biometrics', 'nutritionLogs', 'mealPlans'].forEach(field => {
+      if (this[field]) {
+        if (typeof this[field] === 'string') {
+          try {
+            this[field] = JSON.parse(this[field]);
+          } catch (e) {
+            this[field] = [];
+          }
+        } else if (Array.isArray(this[field])) {
+          // Check if array elements are strings that should be objects
+          this[field] = this[field].map(item => {
+            if (typeof item === 'string') {
+              try {
+                return JSON.parse(item);
+              } catch (e) {
+                return null;
+              }
+            }
+            return item;
+          }).filter(item => item !== null);
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error in pre-save data fixing:', error);
+    // Reset problematic fields
+    ['workouts', 'biometrics', 'nutritionLogs', 'mealPlans'].forEach(field => {
+      if (this[field] && (typeof this[field] === 'string' || !Array.isArray(this[field]))) {
+        this[field] = [];
+      }
+    });
   }
   
   // Only hash password if it's modified
@@ -429,6 +507,21 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 userSchema.methods.updateLastLogin = function() {
   this.lastLogin = new Date();
   this.loginCount += 1;
+  return this.save();
+};
+
+// Method to generate email verification token
+userSchema.methods.generateEmailVerificationToken = function() {
+  this.emailVerificationToken = crypto.randomBytes(32).toString('hex');
+  this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+  return this.emailVerificationToken;
+};
+
+// Method to verify email
+userSchema.methods.verifyEmail = function() {
+  this.emailVerified = true;
+  this.emailVerificationToken = undefined;
+  this.emailVerificationExpires = undefined;
   return this.save();
 };
 

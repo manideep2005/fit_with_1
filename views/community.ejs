@@ -4,19 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Community - Fit-With-AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6C63FF;
-            --secondary: #4D44DB;
-            --accent: #FF6584;
-            --light: #F8F9FA;
-            --dark: #343A40;
-            --success: #28A745;
-            --warning: #FFC107;
-            --danger: #DC3545;
-            --gray: #6C757D;
-            --light-gray: #E9ECEF;
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #f59e0b;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray: #64748b;
+            --light-gray: #e2e8f0;
         }
         
         * {
@@ -26,26 +26,11 @@
         }
         
         body {
-            font-family: 'Poppins', sans-serif;
-            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            color: #1e293b;
             overflow-x: hidden;
             min-height: 100vh;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
         }
         
         .dashboard-container {
@@ -56,113 +41,7 @@
             padding: 20px;
         }
         
-        .sidebar {
-            background: transparent;
-            border: none;
-            padding: 30px 20px;
-            position: sticky;
-            top: 20px;
-            height: fit-content;
-        }
-        
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding: 0 1rem;
-        }
-        
-
-        
-        .user-name {
-            font-weight: 600;
-            margin: 0;
-            color: white;
-        }
-        
-        .user-plan {
-            font-size: 0.8rem;
-            color: var(--primary);
-            background: rgba(108, 99, 255, 0.1);
-            padding: 2px 8px;
-            border-radius: 20px;
-            margin-top: 5px;
-        }
-        
-        .nav-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .nav-item {
-            margin-bottom: 5px;
-        }
-        
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            border-radius: 15px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-            margin: 5px 0;
-        }
-        
-        .nav-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s;
-        }
-        
-        .nav-link:hover::before {
-            left: 100%;
-        }
-        
-        .nav-link:hover, .nav-link.active {
-            background: rgba(108, 99, 255, 0.2);
-            color: #ffffff;
-            transform: translateX(5px);
-        }
-        
-        .nav-link i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }        
-        .logout-section {
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--light-gray);
-        }
-        
-        .logout-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 1rem;
-            color: var(--danger);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        
-        .logout-link:hover {
-            background: rgba(220, 53, 69, 0.1);
-            color: var(--danger);
-        }
-        
-        .logout-link i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
+        /* Sidebar styles handled by shared-sidebar.css */
         
         .main-content {
             display: flex;
@@ -180,10 +59,7 @@
         .page-title {
             font-size: 2rem;
             font-weight: 600;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--dark);
         }
         
         .search-bar {
@@ -195,27 +71,27 @@
         .search-bar input {
             flex: 1;
             padding: 12px 20px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.2);
+            background: #ffffff;
+            border: 1px solid var(--light-gray);
             border-radius: 25px;
-            font-family: 'Poppins', sans-serif;
-            color: white;
+            font-family: 'Inter', sans-serif;
+            color: var(--dark);
             transition: all 0.3s ease;
         }
         
         .search-bar input::placeholder {
-            color: rgba(255,255,255,0.5);
+            color: var(--gray);
         }
         
         .search-bar input:focus {
             outline: none;
             border-color: var(--primary);
-            background: rgba(255,255,255,0.1);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
         
         .search-bar button {
             padding: 12px 24px;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: var(--primary);
             color: white;
             border: none;
             border-radius: 25px;
@@ -225,8 +101,7 @@
         }
         
         .search-bar button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+            background: var(--secondary);
         }
         
         .community-grid {
@@ -235,34 +110,21 @@
             gap: 2rem;
             margin-bottom: 3rem;
             padding: 0 1rem;
+            overflow: visible;
         }
         
         .community-card {
-            background: transparent;
-            border: none;
-            overflow: hidden;
-            position: relative;
+            background: #ffffff;
+            border: 1px solid var(--light-gray);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
-            border-radius: 16px;
+            position: relative;
         }
         
         .community-card:hover {
-            transform: translateY(-8px);
-        }
-        
-        .community-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            border-radius: 12px;
-            z-index: -1;
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         }
         
         .community-banner {
@@ -281,11 +143,11 @@
             font-size: 1.2rem;
             font-weight: 600;
             margin: 0 0 5px;
-            color: white;
+            color: var(--dark);
         }
         
         .community-meta {
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--gray);
             font-size: 0.9rem;
             margin-bottom: 15px;
         }
@@ -294,20 +156,20 @@
             font-size: 0.9rem;
             margin-bottom: 15px;
             line-height: 1.5;
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--gray);
         }
         
         .community-stats {
             display: flex;
             justify-content: space-between;
             font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--gray);
         }
         
         .btn {
             padding: 12px 24px;
-            border-radius: 25px;
-            font-family: 'Poppins', sans-serif;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
             cursor: pointer;
             transition: all 0.3s ease;
             font-weight: 500;
@@ -315,48 +177,32 @@
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: var(--primary);
             color: white;
-            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
         }
         
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(108, 99, 255, 0.4);
+            background: var(--secondary);
         }
         
         .btn-outline {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.3);
+            background: #ffffff;
+            color: var(--primary);
+            border: 1px solid var(--primary);
         }
         
         .btn-outline:hover {
-            background: rgba(255,255,255,0.2);
-            border-color: rgba(255,255,255,0.5);
+            background: var(--primary);
+            color: white;
         }
         
         .discussion-list {
-            background: transparent;
-            border: none;
+            background: #ffffff;
+            border: 1px solid var(--light-gray);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             padding: 2.5rem;
             margin-bottom: 3rem;
-            position: relative;
-        }
-        
-        .discussion-list::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            border-radius: 12px;
-            z-index: -1;
         }
         
         .discussion-item {
@@ -366,7 +212,7 @@
         }
         
         .discussion-item:hover {
-            background: rgba(255,255,255,0.02);
+            background: var(--light);
             border-radius: 12px;
             padding: 20px 16px;
             margin: 0 -16px;
@@ -387,22 +233,22 @@
         .discussion-author {
             font-weight: 600;
             margin-right: 10px;
-            color: white;
+            color: var(--dark);
         }
         
         .discussion-time {
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--gray);
             font-size: 0.8rem;
         }
         
         .discussion-title {
             font-weight: 500;
             margin-bottom: 5px;
-            color: white;
+            color: var(--dark);
         }
         
         .discussion-excerpt {
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--gray);
             font-size: 0.9rem;
             margin-bottom: 10px;
         }
@@ -410,7 +256,7 @@
         .discussion-stats {
             display: flex;
             font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--gray);
         }
         
         .discussion-stats span {
@@ -443,6 +289,7 @@
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/shared-sidebar.css">
     <link rel="stylesheet" href="/css/voice-assistant.css">
 </head>
 <body>
@@ -663,6 +510,30 @@
         </div>
     </div>
     
+    <!-- Chat Options Modal -->
+    <div id="chatOptionsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="chatOptionsTitle">Chat Options</h3>
+                <span class="close" onclick="closeModal('chatOptionsModal')">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding: 1rem;">
+                    <button class="btn btn-primary" onclick="openGroupChat()" style="padding: 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                        <i class="fas fa-users" style="font-size: 2rem;"></i>
+                        <span>Group Chat</span>
+                        <small style="opacity: 0.8;">Chat with all group members</small>
+                    </button>
+                    <button class="btn btn-outline" onclick="showMembersList()" style="padding: 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem;">
+                        <i class="fas fa-user" style="font-size: 2rem;"></i>
+                        <span>Direct Message</span>
+                        <small style="opacity: 0.8;">Chat with a specific member</small>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script>
         let currentTab = 'feed';
         let feedSkip = 0;
@@ -803,14 +674,14 @@
                             <button class="btn btn-primary btn-sm" onclick="viewGroupMembers('${group._id}', '${group.name}')">
                                 <i class="fas fa-users"></i> Members
                             </button>
-                            <button class="btn btn-outline btn-sm" onclick="openGroupChat('${group._id}')">
+                            <button class="btn btn-outline btn-sm" onclick="showChatOptions('${group._id}', '${group.name}')">
                                 <i class="fas fa-comments"></i> Chat
                             </button>
-                            <div class="dropdown">
-                                <button class="btn btn-outline btn-sm" onclick="toggleGroupActions(event, '${group._id}')" type="button">
+                            <div class="dropdown" style="position: relative;">
+                                <button class="btn btn-outline btn-sm dropdown-toggle" onclick="event.stopPropagation(); toggleGroupActions(event, '${group._id}')" type="button" style="position: relative; z-index: 1;">
                                     <i class="fas fa-ellipsis-v"></i>
                                 </button>
-                                <div class="dropdown-menu" id="actions-${group._id}">
+                                <div class="dropdown-menu" id="actions-${group._id}" style="display: none;">
                                     <a href="#" onclick="event.preventDefault(); showCreatePostModal('${group._id}'); closeDropdown('${group._id}');">
                                         <i class="fas fa-plus"></i> Create Post
                                     </a>
@@ -1262,12 +1133,9 @@
             event.preventDefault();
             
             const dropdown = document.getElementById(`actions-${groupId}`);
-            if (!dropdown) {
-                console.error('Dropdown not found for group:', groupId);
-                return;
-            }
+            if (!dropdown) return;
             
-            // Close all other dropdowns first
+            // Close all other dropdowns
             document.querySelectorAll('.dropdown-menu').forEach(menu => {
                 if (menu.id !== `actions-${groupId}`) {
                     menu.style.display = 'none';
@@ -1275,19 +1143,33 @@
             });
             
             // Toggle current dropdown
-            if (dropdown.style.display === 'block') {
-                dropdown.style.display = 'none';
-            } else {
-                dropdown.style.display = 'block';
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+        
+        function viewGroupMembers(groupId, groupName, isForChat = false) {
+            showMembersModal(groupId, groupName, isForChat);
+        }
+        
+        let currentChatGroupId = null;
+        
+        function showChatOptions(groupId, groupName) {
+            currentChatGroupId = groupId;
+            document.getElementById('chatOptionsTitle').textContent = `${groupName} - Chat Options`;
+            document.getElementById('chatOptionsModal').style.display = 'block';
+        }
+        
+        function openGroupChat() {
+            if (currentChatGroupId) {
+                window.location.href = `/chat?nav=<%= navId %>&groupId=${currentChatGroupId}`;
             }
+            closeModal('chatOptionsModal');
         }
         
-        function viewGroupMembers(groupId, groupName) {
-            showMembersModal(groupId, groupName);
-        }
-        
-        function openGroupChat(groupId) {
-            window.location.href = `/chat?token=<%= navToken %>&groupId=${groupId}`;
+        function showMembersList() {
+            if (currentChatGroupId) {
+                closeModal('chatOptionsModal');
+                viewGroupMembers(currentChatGroupId, 'Select Member to Chat', true);
+            }
         }
         
         async function editGroup(groupId) {
@@ -1357,7 +1239,15 @@
         });
         
         async function deleteGroup(groupId) {
-            if (!confirm('Are you sure you want to delete this group? This action cannot be undone. All posts and members will be removed.')) {
+            showNotification('Are you sure? Click again within 3 seconds to confirm deletion', 'warning');
+            
+            if (window.deleteConfirmTimeout) {
+                clearTimeout(window.deleteConfirmTimeout);
+                window.deleteConfirmTimeout = null;
+            } else {
+                window.deleteConfirmTimeout = setTimeout(() => {
+                    window.deleteConfirmTimeout = null;
+                }, 3000);
                 return;
             }
             
@@ -1390,7 +1280,17 @@
         }
 
         async function leaveGroup(groupId) {
-            if (!confirm('Are you sure you want to leave this group?')) return;
+            showNotification('Are you sure? Click again within 3 seconds to confirm leaving', 'warning');
+            
+            if (window.leaveConfirmTimeout) {
+                clearTimeout(window.leaveConfirmTimeout);
+                window.leaveConfirmTimeout = null;
+            } else {
+                window.leaveConfirmTimeout = setTimeout(() => {
+                    window.leaveConfirmTimeout = null;
+                }, 3000);
+                return;
+            }
 
             try {
                 const response = await fetch(`/api/community/groups/${groupId}/leave`, {
@@ -1438,14 +1338,14 @@
         });
         
         // Show members modal
-        function showMembersModal(groupId, groupName) {
+        function showMembersModal(groupId, groupName, isForChat = false) {
             document.getElementById('membersModal').style.display = 'block';
-            document.getElementById('membersModalTitle').textContent = `${groupName} Members`;
-            loadGroupMembers(groupId);
+            document.getElementById('membersModalTitle').textContent = isForChat ? `${groupName} - Select Member` : `${groupName} Members`;
+            loadGroupMembers(groupId, isForChat);
         }
         
         // Load group members
-        async function loadGroupMembers(groupId) {
+        async function loadGroupMembers(groupId, isForChat = false) {
             const container = document.getElementById('membersList');
             container.innerHTML = '<div class="loading">Loading members...</div>';
             
@@ -1454,7 +1354,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    displayGroupMembers(data.members);
+                    displayGroupMembers(data.members, isForChat);
                 } else {
                     container.innerHTML = '<p>Failed to load members</p>';
                 }
@@ -1465,7 +1365,7 @@
         }
         
         // Display group members
-        function displayGroupMembers(members) {
+        function displayGroupMembers(members, isForChat = false) {
             const container = document.getElementById('membersList');
             
             if (members.length === 0) {
@@ -1481,23 +1381,28 @@
                         <div class="member-joined">Joined ${formatTimeAgo(member.joinedAt)}</div>
                     </div>
                     <div class="member-actions">
-                        <button class="btn btn-outline btn-sm" onclick="viewMemberProfile('${member._id}')">
-                            <i class="fas fa-user"></i> Profile
-                        </button>
-                        <button class="btn btn-outline btn-sm" onclick="startDirectMessage('${member._id}')">
-                            <i class="fas fa-message"></i> Message
-                        </button>
+                        ${isForChat ? 
+                            `<button class="btn btn-primary btn-sm" onclick="startDirectMessage('${member._id}')">
+                                <i class="fas fa-comments"></i> Start Chat
+                            </button>` :
+                            `<button class="btn btn-outline btn-sm" onclick="viewMemberProfile('${member._id}')">
+                                <i class="fas fa-user"></i> Profile
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="startDirectMessage('${member._id}')">
+                                <i class="fas fa-message"></i> Message
+                            </button>`
+                        }
                     </div>
                 </div>
             `).join('');
         }
         
         function viewMemberProfile(memberId) {
-            window.location.href = `/profile/${memberId}?token=<%= navToken %>`;
+            window.location.href = `/profile/${memberId}?nav=<%= navId %>`;
         }
         
         function startDirectMessage(memberId) {
-            window.location.href = `/chat?token=<%= navToken %>&userId=${memberId}`;
+            window.location.href = `/chat?nav=<%= navId %>&userId=${memberId}`;
         }
         
         // Filter groups
@@ -1560,32 +1465,31 @@
         .tab-navigation {
             display: flex;
             margin-bottom: 3rem;
-            border-bottom: 2px solid rgba(255,255,255,0.1);
+            border-bottom: 2px solid var(--light-gray);
             gap: 10px;
         }
         
         .tab-btn {
             padding: 12px 24px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: #ffffff;
+            border: 1px solid var(--light-gray);
             border-radius: 25px;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Inter', sans-serif;
             font-weight: 500;
-            color: rgba(255,255,255,0.7);
+            color: var(--gray);
             cursor: pointer;
             transition: all 0.3s ease;
         }
         
         .tab-btn:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
         }
         
         .tab-btn.active {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            background: var(--primary);
             color: white;
             border-color: var(--primary);
-            box-shadow: 0 4px 15px rgba(108, 99, 255, 0.3);
         }
         
         .tab-content {
@@ -1775,22 +1679,26 @@
             position: absolute;
             top: 100%;
             right: 0;
-            background: linear-gradient(135deg, rgba(26, 26, 46, 0.95) 0%, rgba(22, 33, 62, 0.95) 100%);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px;
-            padding: 8px 0;
-            min-width: 180px;
-            z-index: 99999;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            background: #ffffff;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            padding: 5px 0;
+            min-width: 160px;
+            z-index: 1000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
             display: none;
-            margin-top: 5px;
+        }
+        
+        .dropdown-menu.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
         }
         
         .dropdown-menu a {
             display: block;
             padding: 12px 20px;
-            color: rgba(255,255,255,0.9);
+            color: var(--dark);
             text-decoration: none;
             transition: all 0.3s ease;
             font-size: 0.9rem;
@@ -1799,8 +1707,8 @@
         }
         
         .dropdown-menu a:hover {
-            background: linear-gradient(135deg, rgba(108, 99, 255, 0.2), rgba(255, 255, 255, 0.05));
-            color: white;
+            background: var(--light);
+            color: var(--primary);
             border-left-color: var(--primary);
             transform: translateX(3px);
         }
@@ -1860,6 +1768,29 @@
             display: flex;
             gap: 8px;
         }
+        
+        /* Fix for missing styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            z-index: 10000;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .notification.success { background-color: #28A745; }
+        .notification.error { background-color: #DC3545; }
+        .notification.warning { background-color: #FFC107; color: #000; }
+        .notification.info { background-color: #17A2B8; }
     </style>
     
     <!-- Enhanced Fit-With-AI Voice Assistant -->

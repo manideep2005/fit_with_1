@@ -1,0 +1,4621 @@
+{
+  "constipation": {
+    "name": "Constipation",
+    "description": "Difficulty in bowel movements or infrequent bowel movements",
+    "symptoms": ["Hard stools", "Straining", "Feeling of incomplete evacuation", "Abdominal pain"],
+    "foods": {
+      "recommended": [
+        "High-fiber fruits (apples, pears, berries)",
+        "Vegetables (broccoli, spinach, carrots)",
+        "Whole grains (oats, brown rice, quinoa)",
+        "Legumes (beans, lentils, chickpeas)",
+        "Prunes and dried fruits",
+        "Water (8-10 glasses daily)"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Red meat",
+        "Dairy products (if sensitive)",
+        "Refined grains",
+        "Fried foods"
+      ]
+    },
+    "medications": [
+      "Psyllium husk (Metamucil)",
+      "Docusate sodium (Colace)",
+      "Polyethylene glycol (Miralax)",
+      "Senna (Senokot)",
+      "Bisacodyl (Dulcolax)"
+    ],
+    "homeRemedies": [
+      "Drink warm water with lemon in morning",
+      "Regular exercise (walking, yoga)",
+      "Abdominal massage",
+      "Establish regular toilet routine",
+      "Increase physical activity"
+    ],
+    "whenToSeeDoctor": "If constipation persists for more than 3 weeks, severe abdominal pain, or blood in stool"
+  },
+  "headache": {
+    "name": "Headache",
+    "description": "Pain in the head or upper neck area",
+    "symptoms": ["Throbbing pain", "Pressure sensation", "Sensitivity to light", "Nausea"],
+    "foods": {
+      "recommended": [
+        "Water (stay hydrated)",
+        "Ginger tea",
+        "Magnesium-rich foods (almonds, spinach)",
+        "Fatty fish (salmon, mackerel)",
+        "Leafy greens",
+        "Whole grains"
+      ],
+      "avoid": [
+        "Alcohol",
+        "Caffeine (if sensitive)",
+        "Processed meats",
+        "Aged cheeses",
+        "Artificial sweeteners",
+        "MSG-containing foods"
+      ]
+    },
+    "medications": [
+      "Acetaminophen (Tylenol)",
+      "Ibuprofen (Advil, Motrin)",
+      "Aspirin",
+      "Naproxen (Aleve)",
+      "Sumatriptan (for migraines)"
+    ],
+    "homeRemedies": [
+      "Apply cold or warm compress",
+      "Rest in dark, quiet room",
+      "Gentle head and neck massage",
+      "Stay hydrated",
+      "Practice relaxation techniques",
+      "Maintain regular sleep schedule"
+    ],
+    "whenToSeeDoctor": "Sudden severe headache, headache with fever, vision changes, or persistent headaches"
+  },
+  "fever": {
+    "name": "Fever",
+    "description": "Elevated body temperature above normal range",
+    "symptoms": ["High temperature", "Chills", "Sweating", "Fatigue", "Body aches"],
+    "foods": {
+      "recommended": [
+        "Clear fluids (water, broth)",
+        "Electrolyte solutions",
+        "Herbal teas",
+        "Fresh fruits (oranges, berries)",
+        "Light soups",
+        "Coconut water"
+      ],
+      "avoid": [
+        "Heavy, greasy foods",
+        "Dairy products (may increase mucus)",
+        "Alcohol",
+        "Caffeine",
+        "Spicy foods"
+      ]
+    },
+    "medications": [
+      "Acetaminophen (Tylenol)",
+      "Ibuprofen (Advil, Motrin)",
+      "Aspirin (not for children)",
+      "Naproxen (Aleve)"
+    ],
+    "homeRemedies": [
+      "Rest and sleep",
+      "Stay hydrated",
+      "Cool compress on forehead",
+      "Lukewarm bath",
+      "Light clothing",
+      "Monitor temperature regularly"
+    ],
+    "whenToSeeDoctor": "Fever above 103°F (39.4°C), persistent fever for more than 3 days, or severe symptoms"
+  },
+  "nausea": {
+    "name": "Nausea",
+    "description": "Feeling of sickness with urge to vomit",
+    "symptoms": ["Queasy stomach", "Loss of appetite", "Dizziness", "Sweating"],
+    "foods": {
+      "recommended": [
+        "Ginger (tea, candies, fresh)",
+        "Plain crackers",
+        "Toast",
+        "Bananas",
+        "Rice",
+        "Clear broths",
+        "Peppermint tea"
+      ],
+      "avoid": [
+        "Greasy, fried foods",
+        "Spicy foods",
+        "Strong odors",
+        "Large meals",
+        "Dairy products",
+        "Citrus fruits"
+      ]
+    },
+    "medications": [
+      "Dramamine (Dimenhydrinate)",
+      "Pepto-Bismol (Bismuth subsalicylate)",
+      "Ondansetron (Zofran)",
+      "Meclizine (Antivert)"
+    ],
+    "homeRemedies": [
+      "Sip clear fluids slowly",
+      "Eat small, frequent meals",
+      "Fresh air",
+      "Acupressure on wrist",
+      "Deep breathing exercises",
+      "Avoid strong smells"
+    ],
+    "whenToSeeDoctor": "Persistent vomiting, signs of dehydration, severe abdominal pain, or blood in vomit"
+  },
+  "cough": {
+    "name": "Cough",
+    "description": "Reflex action to clear airways of irritants",
+    "symptoms": ["Persistent coughing", "Throat irritation", "Mucus production", "Chest discomfort"],
+    "foods": {
+      "recommended": [
+        "Honey (natural cough suppressant)",
+        "Warm liquids (tea, broth)",
+        "Ginger tea",
+        "Garlic",
+        "Turmeric milk",
+        "Throat lozenges"
+      ],
+      "avoid": [
+        "Dairy products (may increase mucus)",
+        "Cold drinks",
+        "Spicy foods",
+        "Alcohol",
+        "Smoking"
+      ]
+    },
+    "medications": [
+      "Dextromethorphan (Robitussin DM)",
+      "Guaifenesin (Mucinex)",
+      "Codeine cough syrup",
+      "Throat lozenges",
+      "Cough drops"
+    ],
+    "homeRemedies": [
+      "Honey and warm water",
+      "Steam inhalation",
+      "Salt water gargle",
+      "Humidifier use",
+      "Elevate head while sleeping",
+      "Stay hydrated"
+    ],
+    "whenToSeeDoctor": "Cough lasting more than 3 weeks, blood in cough, high fever, or difficulty breathing"
+  },
+  "stomach-pain": {
+    "name": "Stomach Pain",
+    "description": "Discomfort or pain in the abdominal area",
+    "symptoms": ["Abdominal cramping", "Bloating", "Burning sensation", "Nausea"],
+    "foods": {
+      "recommended": [
+        "BRAT diet (Bananas, Rice, Applesauce, Toast)",
+        "Ginger tea",
+        "Chamomile tea",
+        "Plain crackers",
+        "Boiled potatoes",
+        "Clear broths"
+      ],
+      "avoid": [
+        "Spicy foods",
+        "Fatty, greasy foods",
+        "Alcohol",
+        "Caffeine",
+        "Citrus fruits",
+        "Raw vegetables"
+      ]
+    },
+    "medications": [
+      "Antacids (Tums, Rolaids)",
+      "Simethicone (Gas-X)",
+      "Pepto-Bismol",
+      "Omeprazole (Prilosec)",
+      "Ranitidine (Zantac)"
+    ],
+    "homeRemedies": [
+      "Apply heat pad to stomach",
+      "Gentle abdominal massage",
+      "Stay hydrated",
+      "Rest and avoid stress",
+      "Eat smaller, frequent meals",
+      "Avoid lying down after eating"
+    ],
+    "whenToSeeDoctor": "Severe pain, persistent pain for more than 24 hours, fever, or signs of appendicitis"
+  },
+  "diarrhea": {
+    "name": "Diarrhea",
+    "description": "Loose, watery bowel movements",
+    "symptoms": ["Frequent loose stools", "Abdominal cramping", "Dehydration", "Urgency"],
+    "foods": {
+      "recommended": [
+        "BRAT diet (Bananas, Rice, Applesauce, Toast)",
+        "Clear broths",
+        "Electrolyte solutions",
+        "Boiled potatoes",
+        "Plain crackers",
+        "Probiotics (yogurt with live cultures)"
+      ],
+      "avoid": [
+        "Dairy products",
+        "Fatty, greasy foods",
+        "High-fiber foods",
+        "Spicy foods",
+        "Alcohol",
+        "Caffeine"
+      ]
+    },
+    "medications": [
+      "Loperamide (Imodium)",
+      "Bismuth subsalicylate (Pepto-Bismol)",
+      "Oral rehydration salts",
+      "Probiotics"
+    ],
+    "homeRemedies": [
+      "Stay well hydrated",
+      "Rest",
+      "Eat small, frequent meals",
+      "Avoid dairy temporarily",
+      "Zinc supplements",
+      "Monitor for dehydration"
+    ],
+    "whenToSeeDoctor": "Severe dehydration, blood in stool, high fever, or diarrhea lasting more than 3 days"
+  },
+  "fatigue": {
+    "name": "Fatigue",
+    "description": "Extreme tiredness and lack of energy",
+    "symptoms": ["Persistent tiredness", "Weakness", "Difficulty concentrating", "Sleepiness"],
+    "foods": {
+      "recommended": [
+        "Iron-rich foods (spinach, red meat, beans)",
+        "Complex carbohydrates (oats, quinoa)",
+        "Protein sources (eggs, fish, nuts)",
+        "B-vitamin rich foods (whole grains)",
+        "Fresh fruits and vegetables",
+        "Adequate water intake"
+      ],
+      "avoid": [
+        "Excessive caffeine",
+        "Sugary snacks",
+        "Processed foods",
+        "Alcohol",
+        "Large heavy meals"
+      ]
+    },
+    "medications": [
+      "Iron supplements (if deficient)",
+      "Vitamin B12 supplements",
+      "Vitamin D supplements",
+      "Multivitamins"
+    ],
+    "homeRemedies": [
+      "Regular sleep schedule (7-9 hours)",
+      "Regular exercise",
+      "Stress management",
+      "Limit screen time before bed",
+      "Stay hydrated",
+      "Take short power naps (20-30 min)"
+    ],
+    "whenToSeeDoctor": "Persistent fatigue for more than 2 weeks, accompanied by other symptoms, or interfering with daily life"
+  },
+  "sore-throat": {
+    "name": "Sore Throat",
+    "description": "Pain or irritation in the throat",
+    "symptoms": ["Throat pain", "Difficulty swallowing", "Scratchy feeling", "Swollen glands"],
+    "foods": {
+      "recommended": [
+        "Warm liquids (tea, broth, warm water)",
+        "Honey",
+        "Soft foods (yogurt, pudding)",
+        "Ice cream or popsicles",
+        "Throat lozenges",
+        "Garlic"
+      ],
+      "avoid": [
+        "Spicy foods",
+        "Acidic foods (citrus, tomatoes)",
+        "Rough, scratchy foods",
+        "Alcohol",
+        "Very hot foods"
+      ]
+    },
+    "medications": [
+      "Throat lozenges",
+      "Pain relievers (acetaminophen, ibuprofen)",
+      "Throat sprays (Chloraseptic)",
+      "Antibiotics (if bacterial infection)"
+    ],
+    "homeRemedies": [
+      "Salt water gargle",
+      "Honey and warm water",
+      "Steam inhalation",
+      "Humidifier use",
+      "Rest voice",
+      "Stay hydrated"
+    ],
+    "whenToSeeDoctor": "Severe pain, difficulty swallowing, high fever, or symptoms lasting more than a week"
+  },
+  "runny-nose": {
+    "name": "Runny Nose",
+    "description": "Excess nasal discharge",
+    "symptoms": ["Nasal congestion", "Sneezing", "Watery discharge", "Postnasal drip"],
+    "foods": {
+      "recommended": [
+        "Spicy foods (to clear sinuses)",
+        "Hot liquids (tea, soup)",
+        "Ginger tea",
+        "Garlic and onions",
+        "Citrus fruits (vitamin C)",
+        "Warm broths"
+      ],
+      "avoid": [
+        "Dairy products (may increase mucus)",
+        "Cold foods and drinks",
+        "Alcohol",
+        "Known allergens"
+      ]
+    },
+    "medications": [
+      "Decongestants (Sudafed)",
+      "Antihistamines (Benadryl, Claritin)",
+      "Nasal sprays (Flonase, Afrin)",
+      "Saline nasal rinse"
+    ],
+    "homeRemedies": [
+      "Steam inhalation",
+      "Saline nasal rinse",
+      "Humidifier use",
+      "Stay hydrated",
+      "Elevate head while sleeping",
+      "Avoid irritants"
+    ],
+    "whenToSeeDoctor": "Symptoms lasting more than 10 days, green/yellow discharge, or severe sinus pain"
+  },
+  "shortness-breath": {
+    "name": "Shortness of Breath",
+    "description": "Difficulty breathing or feeling breathless",
+    "symptoms": ["Difficulty breathing", "Chest tightness", "Wheezing", "Rapid breathing"],
+    "foods": {
+      "recommended": [
+        "Anti-inflammatory foods (berries, leafy greens)",
+        "Omega-3 rich fish",
+        "Magnesium-rich foods (nuts, seeds)",
+        "Warm liquids",
+        "Ginger tea"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Excessive salt",
+        "Carbonated drinks",
+        "Foods causing allergies",
+        "Large meals"
+      ]
+    },
+    "medications": [
+      "Bronchodilators (Albuterol)",
+      "Corticosteroids",
+      "Oxygen therapy (if prescribed)",
+      "Antihistamines (if allergic)"
+    ],
+    "homeRemedies": [
+      "Pursed lip breathing",
+      "Diaphragmatic breathing",
+      "Stay calm and relaxed",
+      "Sit upright",
+      "Use fan for air circulation",
+      "Avoid triggers"
+    ],
+    "whenToSeeDoctor": "Severe difficulty breathing, chest pain, blue lips/fingernails - SEEK IMMEDIATE MEDICAL ATTENTION"
+  },
+  "dizziness": {
+    "name": "Dizziness",
+    "description": "Feeling lightheaded or unsteady",
+    "symptoms": ["Lightheadedness", "Unsteadiness", "Spinning sensation", "Nausea"],
+    "foods": {
+      "recommended": [
+        "Ginger (tea, candies)",
+        "Hydrating foods (watermelon, cucumber)",
+        "Iron-rich foods (if anemic)",
+        "Complex carbohydrates",
+        "Electrolyte-rich foods",
+        "Small frequent meals"
+      ],
+      "avoid": [
+        "Alcohol",
+        "Excessive caffeine",
+        "High sodium foods",
+        "Skipping meals",
+        "Dehydrating foods"
+      ]
+    },
+    "medications": [
+      "Meclizine (Antivert)",
+      "Dimenhydrinate (Dramamine)",
+      "Betahistine (for vertigo)",
+      "Iron supplements (if deficient)"
+    ],
+    "homeRemedies": [
+      "Stay hydrated",
+      "Move slowly when changing positions",
+      "Sit or lie down when dizzy",
+      "Avoid sudden movements",
+      "Ginger tea",
+      "Deep breathing exercises"
+    ],
+    "whenToSeeDoctor": "Frequent episodes, severe dizziness with other symptoms, or dizziness after head injury"
+  },
+  "heartburn": {
+    "name": "Heartburn",
+    "description": "Burning sensation in chest from acid reflux",
+    "symptoms": ["Burning chest pain", "Acid taste in mouth", "Bloating", "Worse when lying down"],
+    "foods": {
+      "recommended": [
+        "Oatmeal",
+        "Ginger tea",
+        "Non-citrus fruits",
+        "Vegetables",
+        "Lean proteins",
+        "Whole grains"
+      ],
+      "avoid": [
+        "Spicy foods",
+        "Citrus fruits",
+        "Tomatoes",
+        "Chocolate",
+        "Caffeine",
+        "Alcohol"
+      ]
+    },
+    "medications": [
+      "Antacids (Tums, Rolaids)",
+      "H2 blockers (Pepcid, Zantac)",
+      "PPIs (Prilosec, Nexium)",
+      "Alginic acid (Gaviscon)"
+    ],
+    "homeRemedies": [
+      "Eat smaller meals",
+      "Avoid lying down after eating",
+      "Elevate head of bed",
+      "Chew gum",
+      "Wear loose clothing",
+      "Maintain healthy weight"
+    ],
+    "whenToSeeDoctor": "Frequent heartburn, difficulty swallowing, weight loss, or persistent symptoms"
+  },
+  "insomnia": {
+    "name": "Insomnia",
+    "description": "Difficulty falling or staying asleep",
+    "symptoms": ["Difficulty falling asleep", "Waking up often", "Daytime fatigue", "Irritability"],
+    "foods": {
+      "recommended": [
+        "Cherries",
+        "Kiwi",
+        "Warm milk",
+        "Bananas",
+        "Almonds",
+        "Herbal teas (chamomile, valerian)"
+      ],
+      "avoid": [
+        "Caffeine",
+        "Alcohol",
+        "Heavy meals before bed",
+        "Spicy foods",
+        "High-sugar foods"
+      ]
+    },
+    "medications": [
+      "Melatonin",
+      "Diphenhydramine (Benadryl)",
+      "Doxylamine (Unisom)",
+      "Prescription sleep aids"
+    ],
+    "homeRemedies": [
+      "Establish sleep routine",
+      "Create comfortable sleep environment",
+      "Limit screen time before bed",
+      "Relaxation techniques",
+      "Regular exercise",
+      "Avoid naps late in day"
+    ],
+    "whenToSeeDoctor": "Chronic insomnia affecting daily life, lasting more than 3 weeks"
+  },
+  "back-pain": {
+    "name": "Back Pain",
+    "description": "Pain in lower or upper back region",
+    "symptoms": ["Muscle ache", "Stabbing pain", "Limited flexibility", "Radiating pain"],
+    "foods": {
+      "recommended": [
+        "Anti-inflammatory foods",
+        "Fatty fish",
+        "Leafy greens",
+        "Nuts and seeds",
+        "Turmeric",
+        "Ginger"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Sugar",
+        "Alcohol",
+        "Excess caffeine",
+        "Fried foods"
+      ]
+    },
+    "medications": [
+      "NSAIDs (ibuprofen, naproxen)",
+      "Acetaminophen",
+      "Muscle relaxants",
+      "Topical pain relievers"
+    ],
+    "homeRemedies": [
+      "Heat/ice therapy",
+      "Gentle stretching",
+      "Proper posture",
+      "Supportive mattress",
+      "Low-impact exercise",
+      "Massage"
+    ],
+    "whenToSeeDoctor": "Severe pain, pain after injury, numbness/tingling, or lasting more than 2 weeks"
+  },
+  "allergies": {
+    "name": "Allergies",
+    "description": "Immune system reaction to substances",
+    "symptoms": ["Sneezing", "Runny nose", "Itchy eyes", "Rash", "Swelling"],
+    "foods": {
+      "recommended": [
+        "Local honey",
+        "Quercetin-rich foods (apples, onions)",
+        "Omega-3 foods",
+        "Probiotics",
+        "Vitamin C foods",
+        "Turmeric"
+      ],
+      "avoid": [
+        "Known allergens",
+        "Dairy (may increase mucus)",
+        "Processed foods",
+        "Alcohol",
+        "Artificial additives"
+      ]
+    },
+    "medications": [
+      "Antihistamines (Benadryl, Claritin)",
+      "Decongestants",
+      "Nasal sprays",
+      "Allergy shots"
+    ],
+    "homeRemedies": [
+      "Saline nasal rinse",
+      "Air purifiers",
+      "Keep windows closed",
+      "Shower after outdoor exposure",
+      "Wash bedding frequently",
+      "Stay hydrated"
+    ],
+    "whenToSeeDoctor": "Severe reactions, difficulty breathing, or symptoms affecting quality of life"
+  },
+  "anxiety": {
+    "name": "Anxiety",
+    "description": "Feelings of worry, nervousness or unease",
+    "symptoms": ["Excessive worry", "Restlessness", "Fatigue", "Difficulty concentrating", "Sleep problems"],
+    "foods": {
+      "recommended": [
+        "Complex carbohydrates",
+        "Magnesium-rich foods",
+        "Omega-3 fatty acids",
+        "Probiotics",
+        "Protein-rich foods",
+        "Herbal teas"
+      ],
+      "avoid": [
+        "Caffeine",
+        "Alcohol",
+        "Sugar",
+        "Processed foods",
+        "Artificial sweeteners"
+      ]
+    },
+    "medications": [
+      "SSRIs (Prozac, Zoloft)",
+      "Benzodiazepines (short-term)",
+      "Beta-blockers",
+      "Buspirone"
+    ],
+    "homeRemedies": [
+      "Deep breathing exercises",
+      "Regular exercise",
+      "Meditation",
+      "Limit news/social media",
+      "Establish routine",
+      "Aromatherapy"
+    ],
+    "whenToSeeDoctor": "Persistent anxiety affecting daily life, panic attacks, or thoughts of self-harm"
+  },
+  "arthritis": {
+    "name": "Arthritis",
+    "description": "Joint inflammation causing pain and stiffness",
+    "symptoms": ["Joint pain", "Stiffness", "Swelling", "Reduced range of motion"],
+    "foods": {
+      "recommended": [
+        "Fatty fish",
+        "Turmeric",
+        "Ginger",
+        "Walnuts",
+        "Leafy greens",
+        "Berries"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Fried foods",
+        "Sugar",
+        "Refined carbs",
+        "Alcohol"
+      ]
+    },
+    "medications": [
+      "NSAIDs (ibuprofen, naproxen)",
+      "DMARDs",
+      "Corticosteroids",
+      "Biologics"
+    ],
+    "homeRemedies": [
+      "Heat/cold therapy",
+      "Gentle exercise",
+      "Weight management",
+      "Assistive devices",
+      "Massage",
+      "Tai chi/yoga"
+    ],
+    "whenToSeeDoctor": "Persistent joint pain, swelling, or stiffness affecting daily activities"
+  },
+  "asthma": {
+    "name": "Asthma",
+    "description": "Chronic inflammatory airway disease",
+    "symptoms": ["Wheezing", "Shortness of breath", "Chest tightness", "Coughing"],
+    "foods": {
+      "recommended": [
+        "Vitamin D foods",
+        "Magnesium-rich foods",
+        "Apples",
+        "Flaxseeds",
+        "Ginger",
+        "Turmeric"
+      ],
+      "avoid": [
+        "Sulfites (dried fruits, wine)",
+        "Gas-producing foods",
+        "Processed foods",
+        "Known allergens"
+      ]
+    },
+    "medications": [
+      "Inhaled corticosteroids",
+      "Bronchodilators",
+      "Leukotriene modifiers",
+      "Biologics"
+    ],
+    "homeRemedies": [
+      "Identify/avoid triggers",
+      "Breathing exercises",
+      "Maintain healthy weight",
+      "Air purifiers",
+      "Stay hydrated",
+      "Monitor air quality"
+    ],
+    "whenToSeeDoctor": "Severe attacks, symptoms not controlled by medication, or frequent flare-ups"
+  },
+  "bloating": {
+    "name": "Bloating",
+    "description": "Feeling of fullness or swelling in abdomen",
+    "symptoms": ["Abdominal distension", "Discomfort", "Gas", "Burping"],
+    "foods": {
+      "recommended": [
+        "Ginger",
+        "Peppermint tea",
+        "Pineapple",
+        "Papaya",
+        "Cucumber",
+        "Probiotic foods"
+      ],
+      "avoid": [
+        "Carbonated drinks",
+        "Beans/lentils",
+        "Cruciferous vegetables",
+        "Dairy (if intolerant)",
+        "Artificial sweeteners"
+      ]
+    },
+    "medications": [
+      "Simethicone (Gas-X)",
+      "Probiotics",
+      "Digestive enzymes",
+      "Peppermint oil capsules"
+    ],
+    "homeRemedies": [
+      "Eat slowly",
+      "Avoid chewing gum",
+      "Walk after meals",
+      "Warm compress",
+      "Stay hydrated",
+      "Identify food triggers"
+    ],
+    "whenToSeeDoctor": "Persistent bloating, severe pain, weight loss, or blood in stool"
+  },
+  "bruises": {
+    "name": "Bruises",
+    "description": "Discoloration under skin from broken blood vessels",
+    "symptoms": ["Purple/blue marks", "Tenderness", "Swelling", "Color changes over time"],
+    "foods": {
+      "recommended": [
+        "Vitamin C foods",
+        "Vitamin K foods",
+        "Pineapple (bromelain)",
+        "Leafy greens",
+        "Citrus fruits",
+        "Protein-rich foods"
+      ],
+      "avoid": [
+        "Alcohol (can increase bruising)",
+        "Blood-thinning foods (if on medications)",
+        "Excess salt",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Pain relievers (acetaminophen)",
+      "Topical arnica",
+      "Vitamin K cream",
+      "Avoid NSAIDs (can worsen bruising)"
+    ],
+    "homeRemedies": [
+      "Ice pack",
+      "Elevation",
+      "Compression",
+      "Arnica montana",
+      "Warm compress (after 48 hours)",
+      "Protect area"
+    ],
+    "whenToSeeDoctor": "Frequent unexplained bruising, large bruises, or bruises that don't heal"
+  },
+  "burns": {
+    "name": "Burns",
+    "description": "Tissue damage from heat, chemicals or radiation",
+    "symptoms": ["Redness", "Pain", "Blisters", "Swelling", "Peeling skin"],
+    "foods": {
+      "recommended": [
+        "Protein-rich foods",
+        "Vitamin C foods",
+        "Zinc-rich foods",
+        "Hydrating foods",
+        "Healthy fats",
+        "Antioxidant-rich foods"
+      ],
+      "avoid": [
+        "Alcohol",
+        "Excess salt",
+        "Processed foods",
+        "Sugary foods"
+      ]
+    },
+    "medications": [
+      "Pain relievers",
+      "Topical antibiotics",
+      "Burn creams",
+      "Aloe vera gel"
+    ],
+    "homeRemedies": [
+      "Cool running water (not ice)",
+      "Clean dressing",
+      "Aloe vera",
+      "Honey (for minor burns)",
+      "Don't pop blisters",
+      "Protect from sun"
+    ],
+    "whenToSeeDoctor": "Large burns, burns on face/hands/genitals, chemical/electrical burns, or signs of infection"
+  },
+  "chickenpox": {
+    "name": "Chickenpox",
+    "description": "Viral infection causing itchy rash and blisters",
+    "symptoms": ["Itchy rash", "Fever", "Fatigue", "Blisters that crust over"],
+    "foods": {
+      "recommended": [
+        "Cool fluids",
+        "Soft foods",
+        "Vitamin C foods",
+        "Zinc-rich foods",
+        "Oatmeal baths",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Spicy/acidic foods (if mouth sores)",
+        "Salty foods",
+        "Hard/crunchy foods",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Acetaminophen (not aspirin)",
+      "Antihistamines",
+      "Calamine lotion",
+      "Antiviral drugs (for severe cases)"
+    ],
+    "homeRemedies": [
+      "Oatmeal baths",
+      "Cool compresses",
+      "Keep nails short",
+      "Loose clothing",
+      "Stay hydrated",
+      "Rest"
+    ],
+    "whenToSeeDoctor": "High fever, infected blisters, difficulty breathing, or severe symptoms"
+  },
+  "cold-sores": {
+    "name": "Cold Sores",
+    "description": "Small blisters around mouth caused by herpes virus",
+    "symptoms": ["Tingling sensation", "Small blisters", "Crusting", "Pain"],
+    "foods": {
+      "recommended": [
+        "Lysine-rich foods",
+        "Zinc-rich foods",
+        "Vitamin C foods",
+        "Antioxidant-rich foods",
+        "Hydrating foods",
+        "Soft foods"
+      ],
+      "avoid": [
+        "Arginine-rich foods (nuts, chocolate)",
+        "Acidic foods",
+        "Spicy foods",
+        "Salty foods"
+      ]
+    },
+    "medications": [
+      "Antiviral creams",
+      "Oral antivirals",
+      "Pain relievers",
+      "Topical anesthetics"
+    ],
+    "homeRemedies": [
+      "Ice pack",
+      "Lemon balm",
+      "Aloe vera",
+      "Tea tree oil",
+      "Protect from sun",
+      "Avoid touching"
+    ],
+    "whenToSeeDoctor": "Frequent outbreaks, severe symptoms, or sores near eyes"
+  },
+  "common-cold": {
+    "name": "Common Cold",
+    "description": "Viral infection of upper respiratory tract",
+    "symptoms": ["Runny nose", "Sore throat", "Cough", "Sneezing", "Mild fever"],
+    "foods": {
+      "recommended": [
+        "Chicken soup",
+        "Garlic",
+        "Ginger tea",
+        "Honey",
+        "Citrus fruits",
+        "Warm fluids"
+      ],
+      "avoid": [
+        "Dairy (may increase mucus)",
+        "Sugary foods",
+        "Alcohol",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Decongestants",
+      "Pain relievers",
+      "Cough suppressants",
+      "Antihistamines"
+    ],
+    "homeRemedies": [
+      "Rest",
+      "Stay hydrated",
+      "Saltwater gargle",
+      "Humidifier",
+      "Steam inhalation",
+      "Elevate head"
+    ],
+    "whenToSeeDoctor": "High fever, symptoms lasting >10 days, difficulty breathing"
+  },
+  "conjunctivitis": {
+    "name": "Conjunctivitis (Pink Eye)",
+    "description": "Inflammation or infection of outer eyelid membrane",
+    "symptoms": ["Redness", "Itching", "Discharge", "Tearing", "Gritty feeling"],
+    "foods": {
+      "recommended": [
+        "Vitamin A foods",
+        "Vitamin C foods",
+        "Zinc-rich foods",
+        "Omega-3 foods",
+        "Probiotics",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Allergenic foods (if allergic)",
+        "Processed foods",
+        "Alcohol",
+        "Excess sugar"
+      ]
+    },
+    "medications": [
+      "Antibiotic drops (if bacterial)",
+      "Antihistamine drops (if allergic)",
+      "Artificial tears",
+      "Cold compresses"
+    ],
+    "homeRemedies": [
+      "Warm compress",
+      "Clean with boiled water",
+      "Avoid touching eyes",
+      "Change pillowcases",
+      "Discard eye makeup",
+      "Don't share towels"
+    ],
+    "whenToSeeDoctor": "Severe pain, vision changes, symptoms worsening, or lasting >2 days"
+  },
+  "dehydration": {
+    "name": "Dehydration",
+    "description": "Excessive loss of body water",
+    "symptoms": ["Thirst", "Dry mouth", "Fatigue", "Dark urine", "Dizziness"],
+    "foods": {
+      "recommended": [
+        "Water",
+        "Electrolyte solutions",
+        "Coconut water",
+        "Watermelon",
+        "Cucumber",
+        "Broths"
+      ],
+      "avoid": [
+        "Alcohol",
+        "Caffeine",
+        "Sugary drinks",
+        "Salty foods"
+      ]
+    },
+    "medications": [
+      "Oral rehydration salts",
+      "Electrolyte solutions",
+      "IV fluids (severe cases)"
+    ],
+    "homeRemedies": [
+      "Sip fluids frequently",
+      "Eat water-rich foods",
+      "Rest in cool place",
+      "Monitor urine color",
+      "Avoid strenuous activity",
+      "Wear light clothing"
+    ],
+    "whenToSeeDoctor": "Severe dehydration, confusion, no urination >8 hours, or inability to keep fluids down"
+  },
+  "depression": {
+    "name": "Depression",
+    "description": "Mood disorder causing persistent sadness",
+    "symptoms": ["Persistent sadness", "Loss of interest", "Fatigue", "Sleep changes", "Appetite changes"],
+    "foods": {
+      "recommended": [
+        "Omega-3 foods",
+        "Complex carbs",
+        "Lean proteins",
+        "Leafy greens",
+        "Probiotics",
+        "Dark chocolate (in moderation)"
+      ],
+      "avoid": [
+        "Alcohol",
+        "Processed foods",
+        "Excess caffeine",
+        "Sugary foods"
+      ]
+    },
+    "medications": [
+      "SSRIs",
+      "SNRIs",
+      "Atypical antidepressants",
+      "Psychotherapy"
+    ],
+    "homeRemedies": [
+      "Regular exercise",
+      "Sunlight exposure",
+      "Social connection",
+      "Establish routine",
+      "Mindfulness/meditation",
+      "Creative outlets"
+    ],
+    "whenToSeeDoctor": "Persistent symptoms, thoughts of self-harm, or interference with daily life"
+  },
+  "earache": {
+    "name": "Earache",
+    "description": "Pain in inner, middle or outer ear",
+    "symptoms": ["Ear pain", "Fullness", "Hearing loss", "Drainage", "Fever"],
+    "foods": {
+      "recommended": [
+        "Anti-inflammatory foods",
+        "Vitamin C foods",
+        "Zinc-rich foods",
+        "Garlic",
+        "Ginger",
+        "Warm fluids"
+      ],
+      "avoid": [
+        "Dairy (may increase mucus)",
+        "Processed foods",
+        "Sugary foods",
+        "Allergenic foods"
+      ]
+    },
+    "medications": [
+      "Pain relievers",
+      "Antibiotics (if bacterial)",
+      "Ear drops",
+      "Decongestants"
+    ],
+    "homeRemedies": [
+      "Warm compress",
+      "Garlic oil drops",
+      "Stay upright",
+      "Chew gum (for pressure)",
+      "Hydration",
+      "Rest"
+    ],
+    "whenToSeeDoctor": "Severe pain, high fever, hearing loss, or symptoms lasting >2 days"
+  },
+  "eczema": {
+    "name": "Eczema",
+    "description": "Inflammatory skin condition causing itchiness",
+    "symptoms": ["Dry skin", "Itching", "Redness", "Rash", "Cracking"],
+    "foods": {
+      "recommended": [
+        "Omega-3 foods",
+        "Probiotics",
+        "Quercetin foods",
+        "Vitamin D foods",
+        "Zinc-rich foods",
+        "Antioxidant-rich foods"
+      ],
+      "avoid": [
+        "Common allergens (dairy, eggs, nuts)",
+        "Processed foods",
+        "Sugar",
+        "Artificial additives"
+      ]
+    },
+    "medications": [
+      "Topical steroids",
+      "Antihistamines",
+      "Moisturizers",
+      "Immunosuppressants"
+    ],
+    "homeRemedies": [
+      "Oatmeal baths",
+      "Coconut oil",
+      "Aloe vera",
+      "Humidifier",
+      "Cotton clothing",
+      "Identify triggers"
+    ],
+    "whenToSeeDoctor": "Severe symptoms, infected skin, or no improvement with home care"
+  },
+  "food-poisoning": {
+    "name": "Food Poisoning",
+    "description": "Illness from consuming contaminated food",
+    "symptoms": ["Nausea", "Vomiting", "Diarrhea", "Abdominal pain", "Fever"],
+    "foods": {
+      "recommended": [
+        "Clear fluids",
+        "BRAT diet",
+        "Ginger",
+        "Probiotics",
+        "Electrolyte solutions",
+        "Bland foods"
+      ],
+      "avoid": [
+        "Dairy",
+        "Fatty foods",
+        "Spicy foods",
+        "Caffeine",
+        "Alcohol"
+      ]
+    },
+    "medications": [
+      "Oral rehydration salts",
+      "Anti-diarrheals (if not bacterial)",
+      "Bismuth subsalicylate",
+      "Probiotics"
+    ],
+    "homeRemedies": [
+      "Stay hydrated",
+      "Rest",
+      "Avoid solid foods initially",
+      "Gradual reintroduction of foods",
+      "Avoid anti-diarrheals if fever/blood in stool",
+      "Monitor for dehydration"
+    ],
+    "whenToSeeDoctor": "Severe dehydration, blood in stool, high fever, or symptoms lasting >3 days"
+  },
+  "gout": {
+    "name": "Gout",
+    "description": "Form of arthritis from uric acid crystals",
+    "symptoms": ["Sudden joint pain", "Swelling", "Redness", "Tenderness"],
+    "foods": {
+      "recommended": [
+        "Water",
+        "Cherries",
+        "Low-fat dairy",
+        "Complex carbs",
+        "Vegetables",
+        "Coffee"
+      ],
+      "avoid": [
+        "Organ meats",
+        "Red meat",
+        "Shellfish",
+        "Alcohol",
+        "Sugary drinks"
+      ]
+    },
+    "medications": [
+      "NSAIDs",
+      "Colchicine",
+      "Corticosteroids",
+      "Uric acid reducers"
+    ],
+    "homeRemedies": [
+      "Ice packs",
+      "Elevation",
+      "Rest joint",
+      "Limit alcohol",
+      "Maintain healthy weight",
+      "Stay hydrated"
+    ],
+    "whenToSeeDoctor": "Severe pain, fever, or first gout attack"
+  },
+  "hair-loss": {
+    "name": "Hair Loss",
+    "description": "Excessive shedding or thinning of hair",
+    "symptoms": ["Thinning hair", "Bald patches", "Excessive shedding", "Scalp visibility"],
+    "foods": {
+      "recommended": [
+        "Protein-rich foods",
+        "Iron-rich foods",
+        "Omega-3 foods",
+        "Zinc-rich foods",
+        "Biotin foods",
+        "Vitamin E foods"
+      ],
+      "avoid": [
+        "Crash diets",
+        "High-mercury fish",
+        "Excess vitamin A",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Minoxidil",
+      "Finasteride",
+      "Iron supplements (if deficient)",
+      "Biotin supplements"
+    ],
+    "homeRemedies": [
+      "Gentle hair care",
+      "Scalp massage",
+      "Avoid tight hairstyles",
+      "Reduce heat styling",
+      "Manage stress",
+      "Protect from sun"
+    ],
+    "whenToSeeDoctor": "Sudden hair loss, bald patches, or accompanying symptoms"
+  },
+  "hives": {
+    "name": "Hives",
+    "description": "Itchy welts from allergic reaction",
+    "symptoms": ["Raised welts", "Itching", "Redness", "Swelling"],
+    "foods": {
+      "recommended": [
+        "Quercetin foods",
+        "Omega-3 foods",
+        "Probiotics",
+        "Vitamin C foods",
+        "Anti-inflammatory foods",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Known allergens",
+        "Histamine-rich foods",
+        "Artificial additives",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Antihistamines",
+      "Corticosteroids (severe cases)",
+      "Epinephrine (for anaphylaxis)",
+      "Topical creams"
+    ],
+    "homeRemedies": [
+      "Cool compresses",
+      "Oatmeal baths",
+      "Aloe vera",
+      "Loose clothing",
+      "Identify triggers",
+      "Stay hydrated"
+    ],
+    "whenToSeeDoctor": "Difficulty breathing, swelling of face/throat, or persistent hives"
+  },
+  "indigestion": {
+    "name": "Indigestion",
+    "description": "Discomfort in upper abdomen during/after eating",
+    "symptoms": ["Bloating", "Burning", "Nausea", "Fullness"],
+    "foods": {
+      "recommended": [
+        "Ginger",
+        "Chamomile tea",
+        "Fennel",
+        "Pineapple",
+        "Papaya",
+        "Small frequent meals"
+      ],
+      "avoid": [
+        "Spicy foods",
+        "Fatty foods",
+        "Carbonated drinks",
+        "Alcohol",
+        "Caffeine"
+      ]
+    },
+    "medications": [
+      "Antacids",
+      "H2 blockers",
+      "PPIs",
+      "Prokinetics"
+    ],
+    "homeRemedies": [
+      "Eat slowly",
+      "Avoid lying down after eating",
+      "Loose clothing",
+      "Manage stress",
+      "Maintain healthy weight",
+      "Chew fennel seeds"
+    ],
+    "whenToSeeDoctor": "Persistent symptoms, weight loss, or severe pain"
+  },
+  "influenza": {
+    "name": "Influenza (Flu)",
+    "description": "Viral respiratory illness",
+    "symptoms": ["Fever", "Body aches", "Fatigue", "Cough", "Sore throat"],
+    "foods": {
+      "recommended": [
+        "Chicken soup",
+        "Garlic",
+        "Ginger tea",
+        "Honey",
+        "Citrus fruits",
+        "Electrolyte solutions"
+      ],
+      "avoid": [
+        "Dairy (may increase mucus)",
+        "Processed foods",
+        "Alcohol",
+        "Sugary foods"
+      ]
+    },
+    "medications": [
+      "Antivirals (if early)",
+      "Pain relievers",
+      "Decongestants",
+      "Cough suppressants"
+    ],
+    "homeRemedies": [
+      "Rest",
+      "Stay hydrated",
+      "Humidifier",
+      "Warm saltwater gargle",
+      "Steam inhalation",
+      "Monitor symptoms"
+    ],
+    "whenToSeeDoctor": "Difficulty breathing, persistent fever, or worsening symptoms"
+  },
+  "irritable-bowel-syndrome": {
+    "name": "Irritable Bowel Syndrome (IBS)",
+    "description": "Chronic digestive disorder affecting colon",
+    "symptoms": ["Abdominal pain", "Bloating", "Diarrhea/constipation", "Gas"],
+    "foods": {
+      "recommended": [
+        "Low-FODMAP foods",
+        "Soluble fiber",
+        "Probiotics",
+        "Ginger tea",
+        "Peppermint tea",
+        "Small frequent meals"
+      ],
+      "avoid": [
+        "High-FODMAP foods",
+        "Dairy (if intolerant)",
+        "Caffeine",
+        "Artificial sweeteners",
+        "Fried foods"
+      ]
+    },
+    "medications": [
+      "Fiber supplements",
+      "Antispasmodics",
+      "Laxatives (if constipated)",
+      "Anti-diarrheals"
+    ],
+    "homeRemedies": [
+      "Food diary",
+      "Stress management",
+      "Regular exercise",
+      "Adequate sleep",
+      "Peppermint oil capsules",
+      "Chew food thoroughly"
+    ],
+    "whenToSeeDoctor": "New symptoms, weight loss, or blood in stool"
+  },
+  "kidney-stones": {
+    "name": "Kidney Stones",
+    "description": "Hard deposits of minerals in kidneys",
+    "symptoms": ["Severe flank pain", "Blood in urine", "Nausea", "Urinary urgency"],
+    "foods": {
+      "recommended": [
+        "Water",
+        "Lemon water",
+        "Magnesium-rich foods",
+        "Calcium-rich foods",
+        "Fruits/vegetables",
+        "Plant-based proteins"
+      ],
+      "avoid": [
+        "Oxalate-rich foods (if calcium oxalate stones)",
+        "Excess salt",
+        "Animal protein",
+        "Sugary drinks"
+      ]
+    },
+    "medications": [
+      "Pain relievers",
+      "Alpha blockers",
+      "Potassium citrate",
+      "Diuretics"
+    ],
+    "homeRemedies": [
+      "Stay hydrated",
+      "Lemon juice",
+      "Heat therapy",
+      "Movement",
+      "Limit salt",
+      "Monitor urine output"
+    ],
+    "whenToSeeDoctor": "Severe pain, fever, inability to urinate, or persistent symptoms"
+  },
+  "low-blood-pressure": {
+    "name": "Low Blood Pressure (Hypotension)",
+    "description": "Abnormally low blood pressure readings",
+    "symptoms": ["Dizziness", "Fainting", "Blurred vision", "Fatigue", "Nausea"],
+    "foods": {
+      "recommended": [
+        "Salty foods (in moderation)",
+        "Water",
+        "Small frequent meals",
+        "Caffeine (temporarily)",
+        "Licorice tea",
+        "Iron-rich foods (if anemic)"
+      ],
+      "avoid": [
+        "Large carb-heavy meals",
+        "Alcohol",
+        "High-potassium foods (if advised)",
+        "Dehydrating foods"
+      ]
+    },
+    "medications": [
+      "Fludrocortisone",
+      "Midodrine",
+      "Iron supplements (if anemic)",
+      "Vitamin B12 (if deficient)"
+    ],
+    "homeRemedies": [
+      "Increase salt intake (if advised)",
+      "Stay hydrated",
+      "Compression stockings",
+      "Rise slowly",
+      "Avoid standing long periods",
+      "Cross legs while sitting"
+    ],
+    "whenToSeeDoctor": "Frequent fainting, shock symptoms, or affecting daily life"
+  },
+  "menstrual-cramps": {
+    "name": "Menstrual Cramps",
+    "description": "Painful contractions during menstruation",
+    "symptoms": ["Lower abdominal pain", "Back pain", "Headache", "Nausea"],
+    "foods": {
+      "recommended": [
+        "Magnesium-rich foods",
+        "Omega-3 foods",
+        "Ginger tea",
+        "Chamomile tea",
+        "Dark chocolate",
+        "Leafy greens"
+      ],
+      "avoid": [
+        "Caffeine",
+        "Alcohol",
+        "Salty foods",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "NSAIDs (ibuprofen, naproxen)",
+      "Heat patches",
+      "Oral contraceptives",
+      "Magnesium supplements"
+    ],
+    "homeRemedies": [
+      "Heat therapy",
+      "Gentle exercise",
+      "Abdominal massage",
+      "Relaxation techniques",
+      "Stay hydrated",
+      "Epsom salt bath"
+    ],
+    "whenToSeeDoctor": "Severe pain, heavy bleeding, or symptoms interfering with daily life"
+  },
+  "migraine": {
+    "name": "Migraine",
+    "description": "Severe recurring headache often with other symptoms",
+    "symptoms": ["Throbbing pain", "Sensitivity to light/sound", "Nausea", "Aura"],
+    "foods": {
+      "recommended": [
+        "Magnesium-rich foods",
+        "Omega-3 foods",
+        "Ginger",
+        "Peppermint tea",
+        "Hydrating foods",
+        "Regular meals"
+      ],
+      "avoid": [
+        "Aged cheeses",
+        "Processed meats",
+        "Alcohol (especially red wine)",
+        "Caffeine (or sudden withdrawal)",
+        "Artificial sweeteners"
+      ]
+    },
+    "medications": [
+      "Triptans",
+      "NSAIDs",
+      "Anti-nausea drugs",
+      "Preventive medications"
+    ],
+    "homeRemedies": [
+      "Rest in dark room",
+      "Cold compress",
+      "Hydration",
+      "Regular sleep",
+      "Stress management",
+      "Identify triggers"
+    ],
+    "whenToSeeDoctor": "Sudden severe headache, worsening pattern, or neurological symptoms"
+  },
+  "muscle-cramps": {
+    "name": "Muscle Cramps",
+    "description": "Sudden involuntary muscle contractions",
+    "symptoms": ["Painful tightness", "Hard lump in muscle", "Temporary paralysis", "Soreness"],
+    "foods": {
+      "recommended": [
+        "Bananas",
+        "Sweet potatoes",
+        "Avocados",
+        "Nuts/seeds",
+        "Leafy greens",
+        "Water"
+      ],
+      "avoid": [
+        "Dehydrating drinks",
+        "Excess caffeine",
+        "Alcohol",
+        "High-sodium processed foods"
+      ]
+    },
+    "medications": [
+      "Magnesium supplements",
+      "Potassium supplements",
+      "Calcium supplements",
+      "Muscle relaxants (severe cases)"
+    ],
+    "homeRemedies": [
+      "Gentle stretching",
+      "Massage",
+      "Heat/cold therapy",
+      "Hydration",
+      "Electrolyte replacement",
+      "Proper warm-up before exercise"
+    ],
+    "whenToSeeDoctor": "Frequent cramps, severe pain, or associated with weakness"
+  },
+  "nasal-congestion": {
+    "name": "Nasal Congestion",
+    "description": "Blockage of nasal passages",
+    "symptoms": ["Stuffy nose", "Difficulty breathing", "Postnasal drip", "Sinus pressure"],
+    "foods": {
+      "recommended": [
+        "Spicy foods",
+        "Warm fluids",
+        "Garlic",
+        "Ginger tea",
+        "Vitamin C foods",
+        "Honey"
+      ],
+      "avoid": [
+        "Dairy (may thicken mucus)",
+        "Processed foods",
+        "Alcohol",
+        "Dehydrating foods"
+      ]
+    },
+    "medications": [
+      "Decongestants",
+      "Antihistamines",
+      "Nasal sprays",
+      "Expectorants"
+    ],
+    "homeRemedies": [
+      "Steam inhalation",
+      "Saline rinse",
+      "Humidifier",
+      "Elevate head",
+      "Stay hydrated",
+      "Warm compresses"
+    ],
+    "whenToSeeDoctor": "Lasting >10 days, high fever, or severe sinus pain"
+  },
+  "pink-eye": {
+    "name": "Pink Eye (Conjunctivitis)",
+    "description": "Inflammation of eye's outer membrane",
+    "symptoms": ["Redness", "Itching", "Discharge", "Tearing", "Gritty feeling"],
+    "foods": {
+      "recommended": [
+        "Vitamin A foods",
+        "Vitamin C foods",
+        "Zinc-rich foods",
+        "Omega-3 foods",
+        "Probiotics",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Allergenic foods (if allergic)",
+        "Processed foods",
+        "Alcohol",
+        "Excess sugar"
+      ]
+    },
+    "medications": [
+      "Antibiotic drops (if bacterial)",
+      "Antihistamine drops (if allergic)",
+      "Artificial tears",
+      "Cold compresses"
+    ],
+    "homeRemedies": [
+      "Warm compress",
+      "Clean with boiled water",
+      "Avoid touching eyes",
+      "Change pillowcases",
+      "Discard eye makeup",
+      "Don't share towels"
+    ],
+    "whenToSeeDoctor": "Severe pain, vision changes, symptoms worsening, or lasting >2 days"
+  },
+  "poison-ivy": {
+    "name": "Poison Ivy Rash",
+    "description": "Allergic reaction to urushiol oil",
+    "symptoms": ["Redness", "Itching", "Blisters", "Swelling"],
+    "foods": {
+      "recommended": [
+        "Anti-inflammatory foods",
+        "Vitamin C foods",
+        "Zinc-rich foods",
+        "Hydrating foods",
+        "Probiotics",
+        "Quercetin-rich foods"
+      ],
+      "avoid": [
+        "Potential allergens",
+        "Processed foods",
+        "Alcohol",
+        "Dehydrating foods"
+      ]
+    },
+    "medications": [
+      "Calamine lotion",
+      "Hydrocortisone cream",
+      "Oral antihistamines",
+      "Oatmeal baths"
+    ],
+    "homeRemedies": [
+      "Cool compresses",
+      "Baking soda paste",
+      "Aloe vera",
+      "Wash affected area",
+      "Avoid scratching",
+      "Wear protective clothing"
+    ],
+    "whenToSeeDoctor": "Severe reaction, face/genital involvement, or signs of infection"
+  },
+  "sinusitis": {
+    "name": "Sinusitis",
+    "description": "Inflammation of sinus cavities",
+    "symptoms": ["Facial pain", "Congestion", "Thick nasal discharge", "Reduced smell"],
+    "foods": {
+      "recommended": [
+        "Warm fluids",
+        "Spicy foods",
+        "Garlic",
+        "Ginger",
+        "Vitamin C foods",
+        "Probiotics"
+      ],
+      "avoid": [
+        "Dairy (may thicken mucus)",
+        "Processed foods",
+        "Alcohol",
+        "Dehydrating foods"
+      ]
+    },
+    "medications": [
+      "Decongestants",
+      "Nasal corticosteroids",
+      "Pain relievers",
+      "Antibiotics (if bacterial)"
+    ],
+    "homeRemedies": [
+      "Steam inhalation",
+      "Saline rinse",
+      "Humidifier",
+      "Warm compresses",
+      "Stay hydrated",
+      "Elevate head"
+    ],
+    "whenToSeeDoctor": "Symptoms >10 days, high fever, severe pain, or recurrent infections"
+  },
+  "sunburn": {
+    "name": "Sunburn",
+    "description": "Skin damage from UV radiation",
+    "symptoms": ["Redness", "Pain", "Swelling", "Blisters", "Peeling"],
+    "foods": {
+      "recommended": [
+        "Water",
+        "Antioxidant-rich foods",
+        "Omega-3 foods",
+        "Vitamin E foods",
+        "Hydrating foods",
+        "Green tea"
+      ],
+      "avoid": [
+        "Alcohol",
+        "Dehydrating foods",
+        "Processed foods",
+        "Excess salt"
+      ]
+    },
+    "medications": [
+      "Aloe vera gel",
+      "Pain relievers",
+      "Hydrocortisone cream",
+      "Antihistamines"
+    ],
+    "homeRemedies": [
+      "Cool compresses",
+      "Aloe vera",
+      "Oatmeal baths",
+      "Stay hydrated",
+      "Moisturize",
+      "Avoid further sun exposure"
+    ],
+    "whenToSeeDoctor": "Severe blisters, fever, or covering large area"
+  },
+  "toothache": {
+    "name": "Toothache",
+    "description": "Pain in or around a tooth",
+    "symptoms": ["Sharp/throbbing pain", "Sensitivity", "Swelling", "Pain with chewing"],
+    "foods": {
+      "recommended": [
+        "Soft foods",
+        "Cool foods",
+        "Garlic",
+        "Clove",
+        "Saltwater rinses",
+        "Peppermint tea"
+      ],
+      "avoid": [
+        "Hot/cold foods",
+        "Sugary foods",
+        "Hard/crunchy foods",
+        "Acidic foods"
+      ]
+    },
+    "medications": [
+      "Pain relievers",
+      "Topical anesthetics",
+      "Antibiotics (if infected)",
+      "Clove oil"
+    ],
+    "homeRemedies": [
+      "Saltwater rinse",
+      "Cold compress",
+      "Elevate head",
+      "Clove oil",
+      "Garlic paste",
+      "Hydrogen peroxide rinse"
+    ],
+    "whenToSeeDoctor": "Severe pain, swelling, fever, or lasting >1-2 days"
+  },
+  "urinary-tract-infection": {
+    "name": "Urinary Tract Infection (UTI)",
+    "description": "Infection in urinary system",
+    "symptoms": ["Burning urination", "Frequent urination", "Cloudy urine", "Pelvic pain"],
+    "foods": {
+      "recommended": [
+        "Water",
+        "Cranberry juice",
+        "Probiotics",
+        "Vitamin C foods",
+        "Garlic",
+        "Parsley tea"
+      ],
+      "avoid": [
+        "Caffeine",
+        "Alcohol",
+        "Spicy foods",
+        "Artificial sweeteners"
+      ]
+    },
+    "medications": [
+      "Antibiotics",
+      "Pain relievers",
+      "Phenazopyridine (for pain)",
+      "Probiotics"
+    ],
+    "homeRemedies": [
+      "Stay hydrated",
+      "Urinate frequently",
+      "Warm compress",
+      "Wipe front to back",
+      "Avoid irritating products",
+      "Cranberry supplements"
+    ],
+    "whenToSeeDoctor": "Symptoms present, fever, or back pain (possible kidney infection)"
+  },
+  "varicose-veins": {
+    "name": "Varicose Veins",
+    "description": "Enlarged, twisted veins near skin surface",
+    "symptoms": ["Dark purple/blue veins", "Aching", "Heaviness", "Swelling", "Itching"],
+    "foods": {
+      "recommended": [
+        "Flavonoid-rich foods",
+        "Fiber-rich foods",
+        "Potassium-rich foods",
+        "Rutin foods",
+        "Hydrating foods",
+        "Anti-inflammatory foods"
+      ],
+      "avoid": [
+        "Salty foods",
+        "Processed foods",
+        "Alcohol",
+        "Excess sugar"
+      ]
+    },
+    "medications": [
+      "Compression stockings",
+      "Pain relievers",
+      "Topical creams",
+      "Sclerotherapy"
+    ],
+    "homeRemedies": [
+      "Exercise",
+      "Elevate legs",
+      "Avoid long standing/sitting",
+      "Maintain healthy weight",
+      "Move frequently",
+      "Massage"
+    ],
+    "whenToSeeDoctor": "Severe pain, ulcers, or bleeding veins"
+  },
+  "yeast-infection": {
+    "name": "Yeast Infection",
+    "description": "Fungal infection caused by Candida",
+    "symptoms": ["Itching", "Burning", "Discharge", "Redness", "Swelling"],
+    "foods": {
+      "recommended": [
+        "Probiotics",
+        "Garlic",
+        "Coconut oil",
+        "Non-starchy vegetables",
+        "Lean proteins",
+        "Apple cider vinegar"
+      ],
+      "avoid": [
+        "Sugar",
+        "Refined carbs",
+        "Alcohol",
+        "Dairy (if sensitive)",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Antifungal creams",
+      "Oral antifungals",
+      "Probiotics",
+      "Boric acid suppositories"
+    ],
+    "homeRemedies": [
+      "Yogurt application",
+      "Tea tree oil (diluted)",
+      "Cotton underwear",
+      "Avoid douching",
+      "Garlic supplements",
+      "Reduce moisture"
+    ],
+    "whenToSeeDoctor": "First occurrence, severe symptoms, or no improvement with treatment"
+  },
+  "acne": {
+    "name": "Acne",
+    "description": "Skin condition with pimples and blemishes",
+    "symptoms": ["Pimples", "Blackheads", "Whiteheads", "Cysts", "Redness"],
+    "foods": {
+      "recommended": [
+        "Zinc-rich foods",
+        "Omega-3 foods",
+        "Antioxidant-rich foods",
+        "Probiotics",
+        "Vitamin A foods",
+        "Green tea"
+      ],
+      "avoid": [
+        "Dairy (for some)",
+        "High-glycemic foods",
+        "Processed foods",
+        "Chocolate (for some)"
+      ]
+    },
+    "medications": [
+      "Benzoyl peroxide",
+      "Salicylic acid",
+      "Retinoids",
+      "Antibiotics"
+    ],
+    "homeRemedies": [
+      "Gentle cleansing",
+      "Tea tree oil",
+      "Aloe vera",
+      "Honey masks",
+      "Avoid picking",
+      "Change pillowcases"
+    ],
+    "whenToSeeDoctor": "Severe acne, scarring, or no improvement with OTC treatments"
+  },
+  "athletes-foot": {
+    "name": "Athlete's Foot",
+    "description": "Fungal infection of the foot",
+    "symptoms": ["Itching", "Burning", "Cracking", "Blisters", "Odor"],
+    "foods": {
+      "recommended": [
+        "Probiotics",
+        "Garlic",
+        "Coconut oil",
+        "Antifungal foods",
+        "Zinc-rich foods",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Sugar",
+        "Refined carbs",
+        "Alcohol",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Antifungal creams",
+      "Powders",
+      "Oral antifungals (severe cases)",
+      "Tea tree oil"
+    ],
+    "homeRemedies": [
+      "Keep feet dry",
+      "Change socks frequently",
+      "Baking soda soak",
+      "Vinegar soak",
+      "Wear breathable shoes",
+      "Avoid walking barefoot"
+    ],
+    "whenToSeeDoctor": "Severe infection, spreading, or no improvement with OTC treatments"
+  },
+  "bad-breath": {
+    "name": "Bad Breath (Halitosis)",
+    "description": "Unpleasant odor from mouth",
+    "symptoms": ["Foul odor", "Bad taste", "Dry mouth", "Coated tongue"],
+    "foods": {
+      "recommended": [
+        "Water",
+        "Crunchy fruits/vegetables",
+        "Parsley",
+        "Green tea",
+        "Probiotics",
+        "Fennel seeds"
+      ],
+      "avoid": [
+        "Garlic/onions",
+        "Coffee",
+        "Alcohol",
+        "Sugary foods",
+        "Dairy (for some)"
+      ]
+    },
+    "medications": [
+      "Mouthwashes",
+      "Tongue scrapers",
+      "Saliva substitutes",
+      "Antibiotics (if bacterial)"
+    ],
+    "homeRemedies": [
+      "Proper oral hygiene",
+      "Stay hydrated",
+      "Chew sugarless gum",
+      "Clean tongue",
+      "Baking soda rinse",
+      "Regular dental checkups"
+    ],
+    "whenToSeeDoctor": "Persistent despite good hygiene, or with other symptoms"
+  },
+  "bed-sores": {
+    "name": "Bed Sores (Pressure Ulcers)",
+    "description": "Skin damage from prolonged pressure",
+    "symptoms": ["Discolored skin", "Pain", "Open wounds", "Infection signs"],
+    "foods": {
+      "recommended": [
+        "Protein-rich foods",
+        "Vitamin C foods",
+        "Zinc-rich foods",
+        "Hydrating foods",
+        "Healthy fats",
+        "Iron-rich foods"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Excess salt",
+        "Alcohol",
+        "Dehydrating foods"
+      ]
+    },
+    "medications": [
+      "Wound cleansers",
+      "Antibiotics (if infected)",
+      "Pain relievers",
+      "Special dressings"
+    ],
+    "homeRemedies": [
+      "Frequent position changes",
+      "Special mattresses",
+      "Gentle cleansing",
+      "Avoid friction",
+      "Proper nutrition",
+      "Keep skin dry"
+    ],
+    "whenToSeeDoctor": "Any stage of pressure ulcer for proper treatment"
+  },
+  "belching": {
+    "name": "Belching (Burping)",
+    "description": "Release of gas from digestive tract through mouth",
+    "symptoms": ["Gas expulsion", "Abdominal discomfort", "Fullness", "Relief after burping"],
+    "foods": {
+      "recommended": [
+        "Ginger tea",
+        "Chamomile tea",
+        "Fennel seeds",
+        "Small frequent meals",
+        "Non-carbonated drinks",
+        "Probiotics"
+      ],
+      "avoid": [
+        "Carbonated drinks",
+        "Chewing gum",
+        "Hard candies",
+        "Gas-producing foods",
+        "Eating quickly"
+      ]
+    },
+    "medications": [
+      "Simethicone",
+      "Antacids",
+      "Digestive enzymes",
+      "Probiotics"
+    ],
+    "homeRemedies": [
+      "Eat slowly",
+      "Avoid straws",
+      "Don't talk while eating",
+      "Walk after meals",
+      "Identify trigger foods",
+      "Manage stress"
+    ],
+    "whenToSeeDoctor": "Persistent/excessive belching with pain, weight loss, or other symptoms"
+  },
+  "body-odor": {
+    "name": "Body Odor",
+    "description": "Unpleasant smell from bacterial breakdown of sweat",
+    "symptoms": ["Strong odor", "Increased sweating", "Clothing stains", "Social discomfort"],
+    "foods": {
+      "recommended": [
+        "Chlorophyll-rich foods",
+        "Water",
+        "Citrus fruits",
+        "Green tea",
+        "Probiotics",
+        "Leafy greens"
+      ],
+      "avoid": [
+        "Strong-smelling foods (garlic, onions)",
+        "Red meat",
+        "Alcohol",
+        "Caffeine",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Antiperspirants",
+      "Antibacterial soaps",
+      "Prescription antiperspirants",
+      "Botox injections (severe cases)"
+    ],
+    "homeRemedies": [
+      "Daily bathing",
+      "Natural deodorants",
+      "Wear breathable fabrics",
+      "Baking soda paste",
+      "Apple cider vinegar",
+      "Stay hydrated"
+    ],
+    "whenToSeeDoctor": "Sudden change in body odor, or associated with other symptoms"
+  },
+  "boils": {
+    "name": "Boils",
+    "description": "Painful pus-filled bumps under skin",
+    "symptoms": ["Red bump", "Pain", "Swelling", "Pus formation", "Fever"],
+    "foods": {
+      "recommended": [
+        "Vitamin C foods",
+        "Zinc-rich foods",
+        "Probiotics",
+        "Turmeric",
+        "Garlic",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Sugar",
+        "Processed foods",
+        "Alcohol",
+        "Dairy (if sensitive)"
+      ]
+    },
+    "medications": [
+      "Antibiotics",
+      "Pain relievers",
+      "Antibacterial ointments",
+      "Warm compresses"
+    ],
+    "homeRemedies": [
+      "Warm compress",
+      "Tea tree oil",
+      "Turmeric paste",
+      "Keep clean",
+      "Don't squeeze",
+      "Cover with bandage"
+    ],
+    "whenToSeeDoctor": "Large boil, face location, fever, or spreading redness"
+  },
+  "brittle-nails": {
+    "name": "Brittle Nails",
+    "description": "Nails that easily split or break",
+    "symptoms": ["Splitting", "Peeling", "Weakness", "Ridges", "Dryness"],
+    "foods": {
+      "recommended": [
+        "Biotin-rich foods",
+        "Protein-rich foods",
+        "Omega-3 foods",
+        "Iron-rich foods",
+        "Zinc-rich foods",
+        "Vitamin E foods"
+      ],
+      "avoid": [
+        "Excess alcohol",
+        "Processed foods",
+        "Crash diets",
+        "Dehydrating foods"
+      ]
+    },
+    "medications": [
+      "Biotin supplements",
+      "Nail hardeners",
+      "Moisturizers",
+      "Iron supplements (if deficient)"
+    ],
+    "homeRemedies": [
+      "Moisturize nails",
+      "Wear gloves for wet work",
+      "Limit polish remover use",
+      "File gently",
+      "Stay hydrated",
+      "Protect from chemicals"
+    ],
+    "whenToSeeDoctor": "Persistent problems despite care, or with other symptoms"
+  },
+  "calluses": {
+    "name": "Calluses",
+    "description": "Thickened skin from repeated friction",
+    "symptoms": ["Thick skin", "Hard area", "Rough texture", "Discomfort"],
+    "foods": {
+      "recommended": [
+        "Vitamin E foods",
+        "Omega-3 foods",
+        "Hydrating foods",
+        "Antioxidant-rich foods",
+        "Protein-rich foods",
+        "Zinc-rich foods"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Excess sugar",
+        "Alcohol",
+        "Dehydrating foods"
+      ]
+    },
+    "medications": [
+      "Salicylic acid pads",
+      "Urea creams",
+      "Pumice stones",
+      "Padding"
+    ],
+    "homeRemedies": [
+      "Soak in warm water",
+      "Pumice stone gently",
+      "Moisturize",
+      "Proper footwear",
+      "Padding",
+      "Reduce friction"
+    ],
+    "whenToSeeDoctor": "Painful, infected, or diabetic with foot calluses"
+  },
+  "canker-sores": {
+    "name": "Canker Sores",
+    "description": "Small painful ulcers inside mouth",
+    "symptoms": ["Round white sores", "Pain", "Burning", "Difficulty eating"],
+    "foods": {
+      "recommended": [
+        "Yogurt",
+        "Honey",
+        "Vitamin B12 foods",
+        "Zinc-rich foods",
+        "Soft bland foods",
+        "Cool foods"
+      ],
+      "avoid": [
+        "Acidic foods",
+        "Spicy foods",
+        "Crunchy foods",
+        "Hot foods",
+        "Citrus"
+      ]
+    },
+    "medications": [
+      "Topical anesthetics",
+      "Corticosteroid ointments",
+      "Antimicrobial mouthwashes",
+      "Pain relievers"
+    ],
+    "homeRemedies": [
+      "Saltwater rinse",
+      "Baking soda paste",
+      "Milk of magnesia dab",
+      "Ice chips",
+      "Aloe vera",
+      "Avoid irritation"
+    ],
+    "whenToSeeDoctor": "Large sores, lasting >2 weeks, fever, or difficulty eating/drinking"
+  },
+  "carpal-tunnel": {
+    "name": "Carpal Tunnel Syndrome",
+    "description": "Nerve compression in wrist causing hand symptoms",
+    "symptoms": ["Hand numbness", "Tingling", "Weakness", "Pain", "Night symptoms"],
+    "foods": {
+      "recommended": [
+        "Anti-inflammatory foods",
+        "Vitamin B6 foods",
+        "Omega-3 foods",
+        "Magnesium-rich foods",
+        "Hydrating foods",
+        "Turmeric"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Excess salt",
+        "Alcohol",
+        "Inflammatory foods"
+      ]
+    },
+    "medications": [
+      "NSAIDs",
+      "Corticosteroid injections",
+      "Wrist splints",
+      "Vitamin B6 supplements"
+    ],
+    "homeRemedies": [
+      "Wrist exercises",
+      "Ergonomic adjustments",
+      "Take breaks",
+      "Cold packs",
+      "Elevation",
+      "Yoga/stretching"
+    ],
+    "whenToSeeDoctor": "Persistent symptoms, weakness, or affecting daily activities"
+  },
+  "chapped-lips": {
+    "name": "Chapped Lips",
+    "description": "Dry, cracked lips from moisture loss",
+    "symptoms": ["Dryness", "Cracking", "Flaking", "Pain", "Bleeding"],
+    "foods": {
+      "recommended": [
+        "Water",
+        "Vitamin E foods",
+        "Omega-3 foods",
+        "Zinc-rich foods",
+        "Hydrating foods",
+        "Healthy fats"
+      ],
+      "avoid": [
+        "Dehydrating drinks",
+        "Salty foods",
+        "Spicy foods (if irritated)",
+        "Citrus (if irritated)"
+      ]
+    },
+    "medications": [
+      "Lip balms",
+      "Petroleum jelly",
+      "Lanolin",
+      "Hydrocortisone cream (severe)"
+    ],
+    "homeRemedies": [
+      "Frequent moisturizing",
+      "Humidifier",
+      "Avoid licking lips",
+      "Protect from wind/cold",
+      "Coconut oil",
+      "Stay hydrated"
+    ],
+    "whenToSeeDoctor": "Persistent cracking, bleeding, or signs of infection"
+  },
+  "cold-hands": {
+    "name": "Cold Hands",
+    "description": "Persistent coldness in hands",
+    "symptoms": ["Cold sensation", "Color changes", "Numbness", "Tingling"],
+    "foods": {
+      "recommended": [
+        "Iron-rich foods",
+        "Omega-3 foods",
+        "Vitamin B12 foods",
+        "Ginger tea",
+        "Cayenne pepper",
+        "Warm fluids"
+      ],
+      "avoid": [
+        "Caffeine",
+        "Nicotine",
+        "Alcohol",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Calcium channel blockers",
+      "Vasodilators",
+      "Iron supplements (if anemic)",
+      "Blood thinners (if circulatory)"
+    ],
+    "homeRemedies": [
+      "Layer gloves",
+      "Hand warmers",
+      "Exercise hands",
+      "Avoid tight clothing",
+      "Warm water soak",
+      "Massage"
+    ],
+    "whenToSeeDoctor": "Persistent symptoms, color changes, or with other concerning symptoms"
+  },
+  "colic": {
+    "name": "Colic (Infant)",
+    "description": "Frequent prolonged crying in healthy baby",
+    "symptoms": ["Intense crying", "Clenched fists", "Arched back", "Difficulty consoling"],
+    "foods": {
+      "recommended": [
+        "Breastfeeding (mother avoids gas-producing foods)",
+        "Probiotic drops",
+        "Gripe water",
+        "Small frequent feedings",
+        "Burping frequently"
+      ],
+      "avoid": [
+        "Cow's milk (if formula intolerance)",
+        "Gas-producing foods in breastfeeding mother",
+        "Overfeeding"
+      ]
+    },
+    "medications": [
+      "Simethicone drops",
+      "Probiotic drops",
+      "Gripe water",
+      "Avoid unnecessary medications"
+    ],
+    "homeRemedies": [
+      "Swaddling",
+      "White noise",
+      "Rocking",
+      "Warm bath",
+      "Bicycle legs",
+      "Pacifier"
+    ],
+    "whenToSeeDoctor": "Fever, vomiting, poor weight gain, or concerns about baby's health"
+  },
+  "corn": {
+    "name": "Corns",
+    "description": "Thickened skin areas from pressure/friction",
+    "symptoms": ["Thick skin", "Hard bump", "Pain", "Rough texture"],
+    "foods": {
+      "recommended": [
+        "Vitamin E foods",
+        "Omega-3 foods",
+        "Hydrating foods",
+        "Antioxidant-rich foods",
+        "Protein-rich foods",
+        "Zinc-rich foods"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Excess sugar",
+        "Alcohol",
+        "Dehydrating foods"
+      ]
+    },
+    "medications": [
+      "Salicylic acid pads",
+      "Urea creams",
+      "Pumice stones",
+      "Padding"
+    ],
+    "homeRemedies": [
+      "Soak in warm water",
+      "Pumice stone gently",
+      "Moisturize",
+      "Proper footwear",
+      "Padding",
+      "Reduce friction"
+    ],
+    "whenToSeeDoctor": "Painful, infected, or diabetic with foot corns"
+  },
+  "dandruff": {
+    "name": "Dandruff",
+    "description": "Flaking of scalp skin",
+    "symptoms": ["White flakes", "Itching", "Dryness", "Scalp irritation"],
+    "foods": {
+      "recommended": [
+        "Omega-3 foods",
+        "Zinc-rich foods",
+        "B-vitamin foods",
+        "Probiotics",
+        "Healthy fats",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Sugar",
+        "Processed foods",
+        "Excess alcohol",
+        "Fried foods"
+      ]
+    },
+    "medications": [
+      "Medicated shampoos",
+      "Zinc pyrithione",
+      "Ketoconazole",
+      "Selenium sulfide"
+    ],
+    "homeRemedies": [
+      "Regular shampooing",
+      "Tea tree oil",
+      "Apple cider vinegar rinse",
+      "Coconut oil massage",
+      "Aloe vera",
+      "Reduce stress"
+    ],
+    "whenToSeeDoctor": "Severe flaking, redness, or no improvement with OTC treatments"
+  },
+  "dry-eyes": {
+    "name": "Dry Eyes",
+    "description": "Insufficient tear production or quality",
+    "symptoms": ["Burning", "Itching", "Redness", "Blurred vision", "Light sensitivity"],
+    "foods": {
+      "recommended": [
+        "Omega-3 foods",
+        "Vitamin A foods",
+        "Hydrating foods",
+        "Flaxseeds",
+        "Chia seeds",
+        "Water"
+      ],
+      "avoid": [
+        "Dehydrating drinks",
+        "Alcohol",
+        "High-sodium foods",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Artificial tears",
+      "Prescription eye drops",
+      "Punctal plugs",
+      "Omega-3 supplements"
+    ],
+    "homeRemedies": [
+      "Humidifier",
+      "Warm compresses",
+      "Blink regularly",
+      "Limit screen time",
+      "Wear sunglasses",
+      "Stay hydrated"
+    ],
+    "whenToSeeDoctor": "Persistent symptoms, pain, or vision changes"
+  },
+  "dry-mouth": {
+    "name": "Dry Mouth (Xerostomia)",
+    "description": "Reduced saliva production",
+    "symptoms": ["Sticky mouth", "Thirst", "Dry throat", "Bad breath", "Difficulty swallowing"],
+    "foods": {
+      "recommended": [
+        "Water",
+        "Sugarless gum",
+        "Hydrating foods",
+        "Sugar-free candies",
+        "Herbal teas",
+        "Bland moist foods"
+      ],
+      "avoid": [
+        "Caffeine",
+        "Alcohol",
+        "Tobacco",
+        "Spicy/salty foods",
+        "Dry foods"
+      ]
+    },
+    "medications": [
+      "Artificial saliva",
+      "Saliva stimulants",
+      "Mouthwashes",
+      "Humidifier"
+    ],
+    "homeRemedies": [
+      "Sip water frequently",
+      "Humidifier",
+      "Breathe through nose",
+      "Sugar-free lemon drops",
+      "Avoid dehydrating substances",
+      "Good oral hygiene"
+    ],
+    "whenToSeeDoctor": "Persistent symptoms or affecting nutrition/speech"
+  },
+  "dry-skin": {
+    "name": "Dry Skin",
+    "description": "Lack of moisture in skin",
+    "symptoms": ["Tightness", "Flaking", "Itching", "Rough texture", "Cracks"],
+    "foods": {
+      "recommended": [
+        "Omega-3 foods",
+        "Vitamin E foods",
+        "Healthy fats",
+        "Hydrating foods",
+        "Zinc-rich foods",
+        "Antioxidant-rich foods"
+      ],
+      "avoid": [
+        "Alcohol",
+        "Dehydrating foods",
+        "Processed foods",
+        "Excess caffeine"
+      ]
+    },
+    "medications": [
+      "Moisturizers",
+      "Humectants",
+      "Ointments",
+      "Hydrocortisone cream (itchy)"
+    ],
+    "homeRemedies": [
+      "Short lukewarm showers",
+      "Moisturize after bathing",
+      "Humidifier",
+      "Gentle cleansers",
+      "Wear soft fabrics",
+      "Stay hydrated"
+    ],
+    "whenToSeeDoctor": "Severe cracking/bleeding, infection signs, or no improvement"
+  },
+  "earwax": {
+    "name": "Earwax Buildup",
+    "description": "Excessive accumulation of earwax",
+    "symptoms": ["Ear fullness", "Hearing loss", "Tinnitus", "Itching", "Pain"],
+    "foods": {
+      "recommended": [
+        "Hydrating foods",
+        "Omega-3 foods",
+        "Zinc-rich foods",
+        "Vitamin E foods",
+        "Healthy fats",
+        "Water"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Excess sugar",
+        "Alcohol",
+        "Dehydrating foods"
+      ]
+    },
+    "medications": [
+      "Ear drops",
+      "Mineral oil",
+      "Hydrogen peroxide",
+      "Glycerin"
+    ],
+    "homeRemedies": [
+      "Warm oil drops",
+      "Bulb syringe irrigation",
+      "Don't use cotton swabs",
+      "Warm washcloth",
+      "Stay hydrated",
+      "Avoid ear candles"
+    ],
+    "whenToSeeDoctor": "Severe pain, hearing loss, or persistent blockage"
+  },
+  "edema": {
+    "name": "Edema (Swelling)",
+    "description": "Fluid accumulation in tissues",
+    "symptoms": ["Swelling", "Puffiness", "Skin tightness", "Weight gain", "Decreased flexibility"],
+    "foods": {
+      "recommended": [
+        "Potassium-rich foods",
+        "Diuretic foods",
+        "Hydrating foods",
+        "Magnesium-rich foods",
+        "Protein-rich foods",
+        "Water"
+      ],
+      "avoid": [
+        "Salty foods",
+        "Processed foods",
+        "Alcohol",
+        "Dehydrating foods"
+      ]
+    },
+    "medications": [
+      "Diuretics",
+      "Compression garments",
+      "Elevation",
+      "Treat underlying cause"
+    ],
+    "homeRemedies": [
+      "Limit salt",
+      "Elevate affected area",
+      "Movement",
+      "Massage",
+      "Stay hydrated",
+      "Supportive clothing"
+    ],
+    "whenToSeeDoctor": "Sudden swelling, shortness of breath, or one-sided swelling"
+  },
+  "excessive-sweating": {
+    "name": "Excessive Sweating (Hyperhidrosis)",
+    "description": "Abnormally increased sweating",
+    "symptoms": ["Clammy hands", "Sweat stains", "Frequent sweating", "Social discomfort"],
+    "foods": {
+      "recommended": [
+        "Water",
+        "Magnesium-rich foods",
+        "Calcium-rich foods",
+        "Hydrating foods",
+        "Sage tea",
+        "Cooling foods"
+      ],
+      "avoid": [
+        "Spicy foods",
+        "Caffeine",
+        "Alcohol",
+        "Hot foods/drinks"
+      ]
+    },
+    "medications": [
+      "Antiperspirants",
+      "Anticholinergics",
+      "Botox injections",
+      "Iontophoresis"
+    ],
+    "homeRemedies": [
+      "Breathable clothing",
+      "Frequent showers",
+      "Baking soda paste",
+      "Apple cider vinegar",
+      "Stay hydrated",
+      "Manage stress"
+    ],
+    "whenToSeeDoctor": "Affecting daily life, night sweats, or sudden onset"
+  },
+  "eye-strain": {
+    "name": "Eye Strain",
+    "description": "Eye discomfort from prolonged use",
+    "symptoms": ["Tired eyes", "Burning", "Blurred vision", "Headache", "Light sensitivity"],
+    "foods": {
+      "recommended": [
+        "Vitamin A foods",
+        "Omega-3 foods",
+        "Lutein/zeaxanthin foods",
+        "Hydrating foods",
+        "Antioxidant-rich foods",
+        "Water"
+      ],
+      "avoid": [
+        "Dehydrating drinks",
+        "Alcohol",
+        "Processed foods",
+        "Excess caffeine"
+      ]
+    },
+    "medications": [
+      "Artificial tears",
+      "Eye drops",
+      "Blue light glasses",
+      "Computer glasses"
+    ],
+    "homeRemedies": [
+      "20-20-20 rule",
+      "Proper lighting",
+      "Screen distance",
+      "Blink frequently",
+      "Warm compresses",
+      "Adjust screen settings"
+    ],
+    "whenToSeeDoctor": "Persistent symptoms, pain, or vision changes"
+  },
+  "flatulence": {
+    "name": "Flatulence (Gas)",
+    "description": "Excess gas in digestive tract",
+    "symptoms": ["Passing gas", "Bloating", "Abdominal discomfort", "Belching"],
+    "foods": {
+      "recommended": [
+        "Ginger tea",
+        "Peppermint tea",
+        "Fennel seeds",
+        "Probiotics",
+        "Small frequent meals",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Gas-producing foods",
+        "Carbonated drinks",
+        "Chewing gum",
+        "Eating quickly",
+        "Artificial sweeteners"
+      ]
+    },
+    "medications": [
+      "Simethicone",
+      "Charcoal tablets",
+      "Digestive enzymes",
+      "Probiotics"
+    ],
+    "homeRemedies": [
+      "Eat slowly",
+      "Exercise",
+      "Abdominal massage",
+      "Identify trigger foods",
+      "Stay hydrated",
+      "Chew thoroughly"
+    ],
+    "whenToSeeDoctor": "Persistent with pain, weight loss, or other symptoms"
+  },
+  "flu": {
+    "name": "Influenza (Flu)",
+    "description": "Viral respiratory illness",
+    "symptoms": ["Fever", "Body aches", "Fatigue", "Cough", "Sore throat"],
+    "foods": {
+      "recommended": [
+        "Chicken soup",
+        "Garlic",
+        "Ginger tea",
+        "Honey",
+        "Citrus fruits",
+        "Electrolyte solutions"
+      ],
+      "avoid": [
+        "Dairy (may increase mucus)",
+        "Processed foods",
+        "Alcohol",
+        "Sugary foods"
+      ]
+    },
+    "medications": [
+      "Antivirals (if early)",
+      "Pain relievers",
+      "Decongestants",
+      "Cough suppressants"
+    ],
+    "homeRemedies": [
+      "Rest",
+      "Stay hydrated",
+      "Humidifier",
+      "Warm saltwater gargle",
+      "Steam inhalation",
+      "Monitor symptoms"
+    ],
+    "whenToSeeDoctor": "Difficulty breathing, persistent fever, or worsening symptoms"
+  },
+  "food-allergies": {
+    "name": "Food Allergies",
+    "description": "Immune system reaction to specific foods",
+    "symptoms": ["Hives", "Swelling", "Digestive issues", "Anaphylaxis", "Itching"],
+    "foods": {
+      "recommended": [
+        "Non-allergenic foods",
+        "Anti-inflammatory foods",
+        "Quercetin-rich foods",
+        "Probiotics",
+        "Omega-3 foods",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Known allergens",
+        "Cross-reactive foods",
+        "Processed foods (may contain allergens)",
+        "High-histamine foods"
+      ]
+    },
+    "medications": [
+      "Antihistamines",
+      "Epinephrine auto-injector",
+      "Corticosteroids",
+      "Mast cell stabilizers"
+    ],
+    "homeRemedies": [
+      "Read labels carefully",
+      "Carry emergency medication",
+      "Wear medical alert ID",
+      "Cook at home",
+      "Clean surfaces thoroughly",
+      "Educate friends/family"
+    ],
+    "whenToSeeDoctor": "First allergic reaction, severe symptoms, or need for testing"
+  },
+  "gastritis": {
+    "name": "Gastritis",
+    "description": "Inflammation of stomach lining",
+    "symptoms": ["Upper abdominal pain", "Nausea", "Vomiting", "Indigestion", "Loss of appetite"],
+    "foods": {
+      "recommended": [
+        "Bland foods",
+        "Probiotics",
+        "Ginger tea",
+        "Small frequent meals",
+        "Cooked vegetables",
+        "Lean proteins"
+      ],
+      "avoid": [
+        "Spicy foods",
+        "Acidic foods",
+        "Alcohol",
+        "Caffeine",
+        "Fried foods"
+      ]
+    },
+    "medications": [
+      "Antacids",
+      "H2 blockers",
+      "PPIs",
+      "Antibiotics (if H. pylori)"
+    ],
+    "homeRemedies": [
+      "Eat slowly",
+      "Avoid lying down after eating",
+      "Manage stress",
+      "Stay hydrated",
+      "Avoid NSAIDs",
+      "Cold compress for pain"
+    ],
+    "whenToSeeDoctor": "Persistent symptoms, vomiting blood, or black stools"
+  },
+  "gingivitis": {
+    "name": "Gingivitis",
+    "description": "Early stage of gum disease",
+    "symptoms": ["Red/swollen gums", "Bleeding gums", "Bad breath", "Tender gums"],
+    "foods": {
+      "recommended": [
+        "Vitamin C foods",
+        "Crunchy fruits/vegetables",
+        "Green tea",
+        "Probiotics",
+        "Anti-inflammatory foods",
+        "Water"
+      ],
+      "avoid": [
+        "Sugary foods",
+        "Sticky foods",
+        "Acidic foods",
+        "Alcohol",
+        "Tobacco"
+      ]
+    },
+    "medications": [
+      "Antibacterial mouthwash",
+      "Antiseptic chips",
+      "Antibiotic microspheres",
+      "Pain relievers"
+    ],
+    "homeRemedies": [
+      "Proper oral hygiene",
+      "Saltwater rinse",
+      "Turmeric paste",
+      "Oil pulling",
+      "Aloe vera gel",
+      "Regular dental cleanings"
+    ],
+    "whenToSeeDoctor": "Persistent symptoms or progression to periodontitis"
+  },
+  "glaucoma": {
+    "name": "Glaucoma",
+    "description": "Eye condition damaging optic nerve",
+    "symptoms": ["Vision loss", "Eye pain", "Halos around lights", "Redness", "Nausea"],
+    "foods": {
+      "recommended": [
+        "Antioxidant-rich foods",
+        "Omega-3 foods",
+        "Leafy greens",
+        "Vitamin A foods",
+        "Hydrating foods",
+        "Bilberry"
+      ],
+      "avoid": [
+        "Excess caffeine",
+        "Alcohol",
+        "Processed foods",
+        "High-sodium foods"
+      ]
+    },
+    "medications": [
+      "Eye drops",
+      "Oral medications",
+      "Laser therapy",
+      "Surgery"
+    ],
+    "homeRemedies": [
+      "Regular eye exams",
+      "Eye protection",
+      "Manage blood pressure",
+      "Stay hydrated",
+      "Limit screen time",
+      "Don't smoke"
+    ],
+    "whenToSeeDoctor": "Regular monitoring required, or sudden vision changes"
+  },
+  "gout1": {
+    "name": "Gout",
+    "description": "Form of arthritis from uric acid crystals",
+    "symptoms": ["Sudden joint pain", "Swelling", "Redness", "Tenderness"],
+    "foods": {
+      "recommended": [
+        "Water",
+        "Cherries",
+        "Low-fat dairy",
+        "Complex carbs",
+        "Vegetables",
+        "Coffee"
+      ],
+      "avoid": [
+        "Organ meats",
+        "Red meat",
+        "Shellfish",
+        "Alcohol",
+        "Sugary drinks"
+      ]
+    },
+    "medications": [
+      "NSAIDs",
+      "Colchicine",
+      "Corticosteroids",
+      "Uric acid reducers"
+    ],
+    "homeRemedies": [
+      "Ice packs",
+      "Elevation",
+      "Rest joint",
+      "Limit alcohol",
+      "Maintain healthy weight",
+      "Stay hydrated"
+    ],
+    "whenToSeeDoctor": "Severe pain, fever, or first gout attack"
+  },
+  "hair-loss1": {
+    "name": "Hair Loss",
+    "description": "Excessive shedding or thinning of hair",
+    "symptoms": ["Thinning hair", "Bald patches", "Excessive shedding", "Scalp visibility"],
+    "foods": {
+      "recommended": [
+        "Protein-rich foods",
+        "Iron-rich foods",
+        "Omega-3 foods",
+        "Zinc-rich foods",
+        "Biotin foods",
+        "Vitamin E foods"
+      ],
+      "avoid": [
+        "Crash diets",
+        "High-mercury fish",
+        "Excess vitamin A",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Minoxidil",
+      "Finasteride",
+      "Iron supplements (if deficient)",
+      "Biotin supplements"
+    ],
+    "homeRemedies": [
+      "Gentle hair care",
+      "Scalp massage",
+      "Avoid tight hairstyles",
+      "Reduce heat styling",
+      "Manage stress",
+      "Protect from sun"
+    ],
+    "whenToSeeDoctor": "Sudden hair loss, bald patches, or accompanying symptoms"
+  },
+  "hangover": {
+    "name": "Hangover",
+    "description": "Unpleasant symptoms after excessive alcohol",
+    "symptoms": ["Headache", "Nausea", "Fatigue", "Thirst", "Sensitivity to light"],
+    "foods": {
+      "recommended": [
+        "Water",
+        "Electrolyte solutions",
+        "Bananas",
+        "Toast",
+        "Ginger tea",
+        "Coconut water"
+      ],
+      "avoid": [
+        "More alcohol",
+        "Caffeine",
+        "Greasy foods",
+        "Sugary drinks"
+      ]
+    },
+    "medications": [
+      "Pain relievers",
+      "Antacids",
+      "B vitamins",
+      "Electrolyte replacements"
+    ],
+    "homeRemedies": [
+      "Rest",
+      "Hydration",
+      "Cool compress",
+      "Light meal",
+      "Fresh air",
+      "Time"
+    ],
+    "whenToSeeDoctor": "Severe symptoms, confusion, or vomiting blood"
+  },
+  "heart-palpitations": {
+    "name": "Heart Palpitations",
+    "description": "Awareness of irregular or forceful heartbeat",
+    "symptoms": ["Fluttering", "Pounding", "Skipped beats", "Chest discomfort", "Anxiety"],
+    "foods": {
+      "recommended": [
+        "Magnesium-rich foods",
+        "Potassium-rich foods",
+        "Omega-3 foods",
+        "Hydrating foods",
+        "Small frequent meals",
+        "Herbal teas"
+      ],
+      "avoid": [
+        "Caffeine",
+        "Alcohol",
+        "Nicotine",
+        "High-sodium foods",
+        "Large meals"
+      ]
+    },
+    "medications": [
+      "Beta-blockers",
+      "Calcium channel blockers",
+      "Anti-arrhythmics",
+      "Electrolyte replacements"
+    ],
+    "homeRemedies": [
+      "Vagal maneuvers",
+      "Deep breathing",
+      "Stay hydrated",
+      "Manage stress",
+      "Regular exercise",
+      "Monitor triggers"
+    ],
+    "whenToSeeDoctor": "Frequent palpitations, chest pain, or fainting"
+  },
+  "heat-rash": {
+    "name": "Heat Rash (Prickly Heat)",
+    "description": "Blocked sweat ducts causing skin irritation",
+    "symptoms": ["Small red bumps", "Itching", "Prickling sensation", "Mild swelling"],
+    "foods": {
+      "recommended": [
+        "Water",
+        "Hydrating foods",
+        "Cooling foods",
+        "Cucumber",
+        "Watermelon",
+        "Coconut water"
+      ],
+      "avoid": [
+        "Spicy foods",
+        "Alcohol",
+        "Caffeine",
+        "Dehydrating foods"
+      ]
+    },
+    "medications": [
+      "Calamine lotion",
+      "Hydrocortisone cream",
+      "Antihistamines",
+      "Cooling powders"
+    ],
+    "homeRemedies": [
+      "Cool baths",
+      "Loose clothing",
+      "Stay in cool places",
+      "Aloe vera",
+      "Cornstarch",
+      "Avoid scratching"
+    ],
+    "whenToSeeDoctor": "Severe itching, infection signs, or no improvement"
+  },
+  "hemorrhoids": {
+    "name": "Hemorrhoids",
+    "description": "Swollen veins in rectum/anus",
+    "symptoms": ["Rectal pain", "Itching", "Bleeding", "Swelling", "Discomfort"],
+    "foods": {
+      "recommended": [
+        "High-fiber foods",
+        "Water",
+        "Prunes",
+        "Flaxseeds",
+        "Probiotics",
+        "Rutin-rich foods"
+      ],
+      "avoid": [
+        "Spicy foods",
+        "Alcohol",
+        "Caffeine",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Fiber supplements",
+      "Topical creams",
+      "Pain relievers",
+      "Stool softeners"
+    ],
+    "homeRemedies": [
+      "Sitz baths",
+      "Witch hazel",
+      "Ice packs",
+      "Don't strain",
+      "Exercise",
+      "Proper hygiene"
+    ],
+    "whenToSeeDoctor": "Severe pain, persistent bleeding, or prolapsed hemorrhoids"
+  },
+  "hiccups": {
+    "name": "Hiccups",
+    "description": "Involuntary diaphragm contractions",
+    "symptoms": ["Repetitive  sounds", "Mild abdominal tightening", "Brief duration"],
+    "foods": {
+      "recommended": [
+        "Water",
+        "Sugar",
+        "Lemon wedge",
+        "Peanut butter",
+        "Small sips of water",
+        "Honey"
+      ],
+      "avoid": [
+        "Carbonated drinks",
+        "Spicy foods",
+        "Large meals",
+        "Alcohol"
+      ]
+    },
+    "medications": [
+      "Chlorpromazine (severe cases)",
+      "Metoclopramide",
+      "Baclofen",
+      "Anticonvulsants (chronic)"
+    ],
+    "homeRemedies": [
+      "Hold breath",
+      "Drink cold water",
+      "Pull on tongue",
+      "Breathe into paper bag",
+      "Knees to chest",
+      "Distraction"
+    ],
+    "whenToSeeDoctor": "Lasting >48 hours, severe discomfort, or interfering with eating/sleeping"
+  },
+  "high-blood-pressure": {
+    "name": "High Blood Pressure (Hypertension)",
+    "description": "Elevated force of blood against artery walls",
+    "symptoms": ["Often asymptomatic", "Headaches", "Shortness of breath", "Nosebleeds"],
+    "foods": {
+      "recommended": [
+        "Potassium-rich foods",
+        "Magnesium-rich foods",
+        "Calcium-rich foods",
+        "Omega-3 foods",
+        "Garlic",
+        "Hibiscus tea"
+      ],
+      "avoid": [
+        "Salty foods",
+        "Processed foods",
+        "Alcohol",
+        "Caffeine",
+        "Sugary foods"
+      ]
+    },
+    "medications": [
+      "Diuretics",
+      "ACE inhibitors",
+      "Beta-blockers",
+      "Calcium channel blockers"
+    ],
+    "homeRemedies": [
+      "Regular exercise",
+      "Weight management",
+      "Stress reduction",
+      "Limit alcohol",
+      "Don't smoke",
+      "Monitor at home"
+    ],
+    "whenToSeeDoctor": "Regular monitoring, severe readings, or symptoms"
+  },
+  "high-cholesterol": {
+    "name": "High Cholesterol",
+    "description": "Excess cholesterol in blood",
+    "symptoms": ["Typically none", "Xanthomas (fatty deposits)", "Arcus senilis (eye ring)"],
+    "foods": {
+      "recommended": [
+        "Oats",
+        "Fatty fish",
+        "Nuts",
+        "Olive oil",
+        "Avocados",
+        "Soluble fiber"
+      ],
+      "avoid": [
+        "Trans fats",
+        "Saturated fats",
+        "Processed meats",
+        "Fried foods",
+        "Excess sugar"
+      ]
+    },
+    "medications": [
+      "Statins",
+      "Bile acid sequestrants",
+      "PCSK9 inhibitors",
+      "Fibrates"
+    ],
+    "homeRemedies": [
+      "Regular exercise",
+      "Weight management",
+      "Plant sterols",
+      "Green tea",
+      "Garlic",
+      "Don't smoke"
+    ],
+    "whenToSeeDoctor": "Regular monitoring or family history"
+  },
+  "hypothyroidism": {
+    "name": "Hypothyroidism",
+    "description": "Underactive thyroid gland",
+    "symptoms": ["Fatigue", "Weight gain", "Cold intolerance", "Dry skin", "Constipation"],
+    "foods": {
+      "recommended": [
+        "Iodine-rich foods",
+        "Selenium-rich foods",
+        "Zinc-rich foods",
+        "Lean proteins",
+        "Fiber-rich foods",
+        "Omega-3 foods"
+      ],
+      "avoid": [
+        "Soy (in excess)",
+        "Cruciferous vegetables (raw in large amounts)",
+        "Processed foods",
+        "Excess fiber with medication"
+      ]
+    },
+    "medications": [
+      "Levothyroxine",
+      "Liothyronine",
+      "Natural desiccated thyroid",
+      "Regular blood tests"
+    ],
+    "homeRemedies": [
+      "Take medication properly",
+      "Regular exercise",
+      "Stress management",
+      "Adequate sleep",
+      "Stay hydrated",
+      "Monitor symptoms"
+    ],
+    "whenToSeeDoctor": "Regular monitoring or symptom changes"
+  },
+  "impetigo": {
+    "name": "Impetigo",
+    "description": "Contagious bacterial skin infection",
+    "symptoms": ["Red sores", "Honey-colored crusts", "Itching", "Blisters"],
+    "foods": {
+      "recommended": [
+        "Vitamin C foods",
+        "Zinc-rich foods",
+        "Probiotics",
+        "Protein-rich foods",
+        "Hydrating foods",
+        "Anti-inflammatory foods"
+      ],
+      "avoid": [
+        "Sugar",
+        "Processed foods",
+        "Alcohol",
+        "Dairy (if sensitive)"
+      ]
+    },
+    "medications": [
+      "Topical antibiotics",
+      "Oral antibiotics",
+      "Antiseptic washes",
+      "Pain relievers"
+    ],
+    "homeRemedies": [
+      "Keep clean",
+      "Warm compresses",
+      "Don't scratch",
+      "Cover sores",
+      "Wash bedding",
+      "Good hygiene"
+    ],
+    "whenToSeeDoctor": "Spreading rash, fever, or no improvement"
+  },
+  "insect-bites": {
+    "name": "Insect Bites",
+    "description": "Skin reaction to insect saliva/venom",
+    "symptoms": ["Redness", "Swelling", "Itching", "Pain", "Localized warmth"],
+    "foods": {
+      "recommended": [
+        "Anti-inflammatory foods",
+        "Vitamin C foods",
+        "Zinc-rich foods",
+        "Hydrating foods",
+        "Quercetin-rich foods",
+        "Probiotics"
+      ],
+      "avoid": [
+        "Potential allergens",
+        "Processed foods",
+        "Alcohol",
+        "Dehydrating foods"
+      ]
+    },
+    "medications": [
+      "Antihistamines",
+      "Hydrocortisone cream",
+      "Pain relievers",
+      "Antibiotics (if infected)"
+    ],
+    "homeRemedies": [
+      "Ice pack",
+      "Baking soda paste",
+      "Aloe vera",
+      "Honey",
+      "Tea tree oil",
+      "Avoid scratching"
+    ],
+    "whenToSeeDoctor": "Severe reaction, infection signs, or spreading redness"
+  },
+  "iron-deficiency": {
+    "name": "Iron Deficiency",
+    "description": "Insufficient iron for hemoglobin production",
+    "symptoms": ["Fatigue", "Pale skin", "Weakness", "Shortness of breath", "Dizziness"],
+    "foods": {
+      "recommended": [
+        "Red meat",
+        "Poultry",
+        "Seafood",
+        "Beans",
+        "Dark leafy greens",
+        "Iron-fortified foods"
+      ],
+      "avoid": [
+        "Calcium-rich foods with iron",
+        "Coffee/tea with meals",
+        "High-fiber foods with iron",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Iron supplements",
+      "Vitamin C with iron",
+      "IV iron (severe cases)",
+      "Treat underlying cause"
+    ],
+    "homeRemedies": [
+      "Cook in cast iron",
+      "Pair iron with vitamin C",
+      "Space calcium intake",
+      "Monitor menstrual loss",
+      "Regular blood tests",
+      "Address dietary causes"
+    ],
+    "whenToSeeDoctor": "Persistent symptoms or abnormal blood work"
+  },
+  "jock-itch": {
+    "name": "Jock Itch",
+    "description": "Fungal infection in groin area",
+    "symptoms": ["Red rash", "Itching", "Burning", "Flaking", "Cracking"],
+    "foods": {
+      "recommended": [
+        "Probiotics",
+        "Garlic",
+        "Coconut oil",
+        "Antifungal foods",
+        "Zinc-rich foods",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Sugar",
+        "Refined carbs",
+        "Alcohol",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Antifungal creams",
+      "Powders",
+      "Oral antifungals (severe cases)",
+      "Tea tree oil"
+    ],
+    "homeRemedies": [
+      "Keep area dry",
+      "Wear loose clothing",
+      "Change underwear frequently",
+      "Baking soda paste",
+      "Apple cider vinegar",
+      "Good hygiene"
+    ],
+    "whenToSeeDoctor": "Severe infection, spreading, or no improvement with OTC treatments"
+  },
+  "lactose-intolerance": {
+    "name": "Lactose Intolerance",
+    "description": "Inability to digest milk sugar",
+    "symptoms": ["Bloating", "Diarrhea", "Gas", "Abdominal cramps", "Nausea"],
+    "foods": {
+      "recommended": [
+        "Lactose-free dairy",
+        "Plant milks",
+        "Calcium-rich non-dairy foods",
+        "Probiotics",
+        "Hard cheeses",
+        "Yogurt with live cultures"
+      ],
+      "avoid": [
+        "Milk",
+        "Soft cheeses",
+        "Ice cream",
+        "Cream-based foods",
+        "Hidden lactose"
+      ]
+    },
+    "medications": [
+      "Lactase supplements",
+      "Calcium supplements",
+      "Vitamin D supplements",
+      "Probiotics"
+    ],
+    "homeRemedies": [
+      "Read labels",
+      "Start with small amounts",
+      "Pair with other foods",
+      "Try fermented dairy",
+      "Maintain calcium intake",
+      "Experiment with tolerance"
+    ],
+    "whenToSeeDoctor": "Severe symptoms or concerns about nutrition"
+  },
+  "laryngitis": {
+    "name": "Laryngitis",
+    "description": "Inflammation of voice box",
+    "symptoms": ["Hoarseness", "Voice loss", "Dry throat", "Tickling sensation", "Cough"],
+    "foods": {
+      "recommended": [
+        "Warm fluids",
+        "Honey",
+        "Ginger tea",
+        "Throat lozenges",
+        "Soft foods",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Spicy foods",
+        "Alcohol",
+        "Caffeine",
+        "Dairy (if increases mucus)",
+        "Acidic foods"
+      ]
+    },
+    "medications": [
+      "Pain relievers",
+      "Throat lozenges",
+      "Cough suppressants",
+      "Steroids (severe cases)"
+    ],
+    "homeRemedies": [
+      "Voice rest",
+      "Humidifier",
+      "Saltwater gargle",
+      "Stay hydrated",
+      "Avoid whispering",
+      "Steam inhalation"
+    ],
+    "whenToSeeDoctor": "Lasting >2 weeks, difficulty breathing, or severe pain"
+  },
+  "low-blood-sugar": {
+    "name": "Low Blood Sugar (Hypoglycemia)",
+    "description": "Abnormally low glucose levels",
+    "symptoms": ["Shakiness", "Sweating", "Hunger", "Dizziness", "Confusion", "Irritability"],
+    "foods": {
+      "recommended": [
+        "Fast-acting carbs (juice, candy)",
+        "Complex carbs after",
+        "Protein with carbs",
+        "Small frequent meals",
+        "Fiber-rich foods",
+        "Balanced diet"
+      ],
+      "avoid": [
+        "Alcohol on empty stomach",
+        "Skipping meals",
+        "Large carb loads without protein",
+        "Processed sugars alone"
+      ]
+    },
+    "medications": [
+      "Glucose tablets",
+      "Glucagon injection",
+      "Adjust diabetes meds",
+      "Treat underlying cause"
+    ],
+    "homeRemedies": [
+      "15-15 rule (15g carbs, wait 15 min)",
+      "Carry snacks",
+      "Monitor blood sugar",
+      "Wear medical ID",
+      "Educate family/friends",
+      "Regular meal schedule"
+    ],
+    "whenToSeeDoctor": "Frequent episodes, unconsciousness, or not diabetic"
+  },
+  "motion-sickness": {
+    "name": "Motion Sickness",
+    "description": "Nausea from movement",
+    "symptoms": ["Nausea", "Vomiting", "Dizziness", "Sweating", "Fatigue"],
+    "foods": {
+      "recommended": [
+        "Ginger",
+        "Plain crackers",
+        "Peppermint",
+        "Small light meals",
+        "Hydrating foods",
+        "Carbonated drinks"
+      ],
+      "avoid": [
+        "Heavy meals",
+        "Greasy foods",
+        "Alcohol",
+        "Strong odors"
+      ]
+    },
+    "medications": [
+      "Antihistamines",
+      "Scopolamine",
+      "Antiemetics",
+      "Ginger supplements"
+    ],
+    "homeRemedies": [
+      "Look at horizon",
+      "Fresh air",
+      "Acupressure bands",
+      "Sit in front/middle",
+      "Avoid reading",
+      "Stay hydrated"
+    ],
+    "whenToSeeDoctor": "Severe symptoms or frequent episodes"
+  },
+  "mouth-ulcers": {
+    "name": "Mouth Ulcers (Canker Sores)",
+    "description": "Small painful ulcers inside mouth",
+    "symptoms": ["Round white sores", "Pain", "Burning", "Difficulty eating"],
+    "foods": {
+      "recommended": [
+        "Yogurt",
+        "Honey",
+        "Vitamin B12 foods",
+        "Zinc-rich foods",
+        "Soft bland foods",
+        "Cool foods"
+      ],
+      "avoid": [
+        "Acidic foods",
+        "Spicy foods",
+        "Crunchy foods",
+        "Hot foods",
+        "Citrus"
+      ]
+    },
+    "medications": [
+      "Topical anesthetics",
+      "Corticosteroid ointments",
+      "Antimicrobial mouthwashes",
+      "Pain relievers"
+    ],
+    "homeRemedies": [
+      "Saltwater rinse",
+      "Baking soda paste",
+      "Milk of magnesia dab",
+      "Ice chips",
+      "Aloe vera",
+      "Avoid irritation"
+    ],
+    "whenToSeeDoctor": "Large sores, lasting >2 weeks, fever, or difficulty eating/drinking"
+  },
+  "nosebleed": {
+    "name": "Nosebleed",
+    "description": "Bleeding from nasal passages",
+    "symptoms": ["Blood from nose", "Dripping", "Taste of blood", "Nasal dryness"],
+    "foods": {
+      "recommended": [
+        "Vitamin K foods",
+        "Iron-rich foods",
+        "Hydrating foods",
+        "Citrus fruits",
+        "Healthy fats",
+        "Water"
+      ],
+      "avoid": [
+        "Alcohol",
+        "Dehydrating foods",
+        "Hot/spicy foods",
+        "Blood-thinning foods (if on meds)"
+      ]
+    },
+    "medications": [
+      "Saline nasal spray",
+      "Antibiotic ointment",
+      "Nasal cautery",
+      "Humidifier"
+    ],
+    "homeRemedies": [
+      "Pinch nose",
+      "Lean forward",
+      "Cold compress",
+      "Don't tilt head back",
+      "Avoid nose picking",
+      "Humidifier"
+    ],
+    "whenToSeeDoctor": "Lasting >20 minutes, frequent episodes, or heavy bleeding"
+  },
+  "pink-eye1": {
+    "name": "Pink Eye (Conjunctivitis)",
+    "description": "Inflammation of eye's outer membrane",
+    "symptoms": ["Redness", "Itching", "Discharge", "Tearing", "Gritty feeling"],
+    "foods": {
+      "recommended": [
+        "Vitamin A foods",
+        "Vitamin C foods",
+        "Zinc-rich foods",
+        "Omega-3 foods",
+        "Probiotics",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Allergenic foods (if allergic)",
+        "Processed foods",
+        "Alcohol",
+        "Excess sugar"
+      ]
+    },
+    "medications": [
+      "Antibiotic drops (if bacterial)",
+      "Antihistamine drops (if allergic)",
+      "Artificial tears",
+      "Cold compresses"
+    ],
+    "homeRemedies": [
+      "Warm compress",
+      "Clean with boiled water",
+      "Avoid touching eyes",
+      "Change pillowcases",
+      "Discard eye makeup",
+      "Don't share towels"
+    ],
+    "whenToSeeDoctor": "Severe pain, vision changes, symptoms worsening, or lasting >2 days"
+  },
+  "plantar-fasciitis": {
+    "name": "Plantar Fasciitis",
+    "description": "Heel pain from inflamed foot tissue",
+    "symptoms": ["Heel pain", "Worst with first steps", "Stiffness", "Arch pain"],
+    "foods": {
+      "recommended": [
+        "Anti-inflammatory foods",
+        "Omega-3 foods",
+        "Turmeric",
+        "Ginger",
+        "Hydrating foods",
+        "Magnesium-rich foods"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Sugar",
+        "Alcohol",
+        "Inflammatory foods"
+      ]
+    },
+    "medications": [
+      "NSAIDs",
+      "Pain relievers",
+      "Corticosteroid injections",
+      "Night splints"
+    ],
+    "homeRemedies": [
+      "Stretching",
+      "Ice massage",
+      "Supportive shoes",
+      "Arch supports",
+      "Rest",
+      "Massage"
+    ],
+    "whenToSeeDoctor": "Persistent pain or difficulty walking"
+  },
+  "pneumonia": {
+    "name": "Pneumonia",
+    "description": "Lung infection causing inflammation",
+    "symptoms": ["Cough", "Fever", "Difficulty breathing", "Chest pain", "Fatigue"],
+    "foods": {
+      "recommended": [
+        "Chicken soup",
+        "Garlic",
+        "Ginger tea",
+        "Honey",
+        "Hydrating foods",
+        "Vitamin C foods"
+      ],
+      "avoid": [
+        "Dairy (if increases mucus)",
+        "Processed foods",
+        "Alcohol",
+        "Sugary foods"
+      ]
+    },
+    "medications": [
+      "Antibiotics (if bacterial)",
+      "Antivirals (if viral)",
+      "Cough medicine",
+      "Pain relievers"
+    ],
+    "homeRemedies": [
+      "Rest",
+      "Stay hydrated",
+      "Humidifier",
+      "Elevate head",
+      "Warm fluids",
+      "Monitor symptoms"
+    ],
+    "whenToSeeDoctor": "Difficulty breathing, high fever, or worsening symptoms"
+  },
+  "psoriasis": {
+    "name": "Psoriasis",
+    "description": "Chronic autoimmune skin condition",
+    "symptoms": ["Red patches", "Silvery scales", "Itching", "Dryness", "Cracking"],
+    "foods": {
+      "recommended": [
+        "Omega-3 foods",
+        "Antioxidant-rich foods",
+        "Zinc-rich foods",
+        "Probiotics",
+        "Turmeric",
+        "Leafy greens"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Red meat",
+        "Dairy (if sensitive)",
+        "Alcohol",
+        "Nightshades (for some)"
+      ]
+    },
+    "medications": [
+      "Topical steroids",
+      "Vitamin D analogs",
+      "Retinoids",
+      "Biologics"
+    ],
+    "homeRemedies": [
+      "Sunlight exposure",
+      "Moisturize",
+      "Oatmeal baths",
+      "Aloe vera",
+      "Stress management",
+      "Avoid triggers"
+    ],
+    "whenToSeeDoctor": "Widespread patches, joint pain, or no improvement"
+  },
+  "restless-legs": {
+    "name": "Restless Legs Syndrome",
+    "description": "Urge to move legs with uncomfortable sensations",
+    "symptoms": ["Uncomfortable leg sensations", "Urge to move", "Worse at night", "Sleep disruption"],
+    "foods": {
+      "recommended": [
+        "Iron-rich foods",
+        "Magnesium-rich foods",
+        "Folate-rich foods",
+        "Hydrating foods",
+        "Balanced diet",
+        "Herbal teas"
+      ],
+      "avoid": [
+        "Caffeine",
+        "Alcohol",
+        "Sugar",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Dopamine agonists",
+      "Iron supplements (if deficient)",
+      "Alpha-2 delta ligands",
+      "Pain relievers"
+    ],
+    "homeRemedies": [
+      "Regular exercise",
+      "Warm baths",
+      "Massage",
+      "Establish sleep routine",
+      "Compression wraps",
+      "Stress reduction"
+    ],
+    "whenToSeeDoctor": "Disrupting sleep or daily life"
+  },
+  "ringworm": {
+    "name": "Ringworm",
+    "description": "Fungal skin infection",
+    "symptoms": ["Circular rash", "Redness", "Itching", "Scaling", "Raised edges"],
+    "foods": {
+      "recommended": [
+        "Probiotics",
+        "Garlic",
+        "Coconut oil",
+        "Antifungal foods",
+        "Zinc-rich foods",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Sugar",
+        "Refined carbs",
+        "Alcohol",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Antifungal creams",
+      "Oral antifungals (severe cases)",
+      "Antifungal powders",
+      "Tea tree oil"
+    ],
+    "homeRemedies": [
+      "Keep area dry",
+      "Change clothes frequently",
+      "Apple cider vinegar",
+      "Aloe vera",
+      "Turmeric paste",
+      "Good hygiene"
+    ],
+    "whenToSeeDoctor": "Widespread, no improvement with OTC treatments, or infected"
+  },
+  "rosacea": {
+    "name": "Rosacea",
+    "description": "Chronic facial skin condition",
+    "symptoms": ["Facial redness", "Visible blood vessels", "Bumps", "Eye irritation"],
+    "foods": {
+      "recommended": [
+        "Omega-3 foods",
+        "Anti-inflammatory foods",
+        "Probiotics",
+        "Green tea",
+        "Hydrating foods",
+        "Antioxidant-rich foods"
+      ],
+      "avoid": [
+        "Spicy foods",
+        "Alcohol",
+        "Hot drinks",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Topical antibiotics",
+      "Oral antibiotics",
+      "Brimonidine gel",
+      "Laser therapy"
+    ],
+    "homeRemedies": [
+      "Gentle skincare",
+      "Sun protection",
+      "Cool compresses",
+      "Identify triggers",
+      "Green tea compresses",
+      "Aloe vera"
+    ],
+    "whenToSeeDoctor": "Persistent symptoms or eye involvement"
+  },
+  "scabies": {
+    "name": "Scabies",
+    "description": "Contagious skin infestation by mites",
+    "symptoms": ["Intense itching", "Rash", "Tiny burrows", "Worse at night"],
+    "foods": {
+      "recommended": [
+        "Anti-inflammatory foods",
+        "Vitamin C foods",
+        "Zinc-rich foods",
+        "Probiotics",
+        "Hydrating foods",
+        "Healthy fats"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Sugar",
+        "Alcohol",
+        "Potential allergens"
+      ]
+    },
+    "medications": [
+      "Permethrin cream",
+      "Ivermectin",
+      "Antihistamines",
+      "Antibiotics (if infected)"
+    ],
+    "homeRemedies": [
+      "Wash bedding/clothes",
+      "Cool baths",
+      "Tea tree oil",
+      "Neem oil",
+      "Avoid scratching",
+      "Treat all contacts"
+    ],
+    "whenToSeeDoctor": "For diagnosis and prescription treatment"
+  },
+  "sciatica": {
+    "name": "Sciatica",
+    "description": "Pain along sciatic nerve path",
+    "symptoms": ["Radiating leg pain", "Numbness", "Tingling", "Weakness"],
+    "foods": {
+      "recommended": [
+        "Anti-inflammatory foods",
+        "Magnesium-rich foods",
+        "Turmeric",
+        "Ginger",
+        "Hydrating foods",
+        "Omega-3 foods"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Sugar",
+        "Alcohol",
+        "Inflammatory foods"
+      ]
+    },
+    "medications": [
+      "NSAIDs",
+      "Muscle relaxants",
+      "Steroid injections",
+      "Pain relievers"
+    ],
+    "homeRemedies": [
+      "Heat/ice therapy",
+      "Gentle stretching",
+      "Proper posture",
+      "Yoga",
+      "Massage",
+      "Activity modification"
+    ],
+    "whenToSeeDoctor": "Severe pain, weakness, or bowel/bladder changes"
+  },
+  "seasonal-affective-disorder": {
+    "name": "Seasonal Affective Disorder (SAD)",
+    "description": "Depression related to seasonal changes",
+    "symptoms": ["Depressed mood", "Low energy", "Sleep changes", "Appetite changes", "Social withdrawal"],
+    "foods": {
+      "recommended": [
+        "Omega-3 foods",
+        "Vitamin D foods",
+        "Complex carbs",
+        "Lean proteins",
+        "B-vitamin foods",
+        "Dark chocolate"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Excess sugar",
+        "Alcohol",
+        "Excess caffeine"
+      ]
+    },
+    "medications": [
+      "Antidepressants",
+      "Vitamin D supplements",
+      "Light therapy",
+      "Melatonin"
+    ],
+    "homeRemedies": [
+      "Maximize sunlight",
+      "Regular exercise",
+      "Social connection",
+      "Establish routine",
+      "Mindfulness",
+      "Plan enjoyable activities"
+    ],
+    "whenToSeeDoctor": "Affecting daily life or with suicidal thoughts"
+  },
+  "shingles": {
+    "name": "Shingles",
+    "description": "Painful rash from varicella-zoster virus",
+    "symptoms": ["Painful rash", "Blisters", "Itching", "Burning", "Fever"],
+    "foods": {
+      "recommended": [
+        "Lysine-rich foods",
+        "Vitamin C foods",
+        "Zinc-rich foods",
+        "Anti-inflammatory foods",
+        "Probiotics",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Arginine-rich foods",
+        "Processed foods",
+        "Alcohol",
+        "Sugar"
+      ]
+    },
+    "medications": [
+      "Antivirals",
+      "Pain relievers",
+      "Anticonvulsants",
+      "Topical creams"
+    ],
+    "homeRemedies": [
+      "Cool compresses",
+      "Oatmeal baths",
+      "Calamine lotion",
+      "Loose clothing",
+      "Stress reduction",
+      "Don't scratch"
+    ],
+    "whenToSeeDoctor": "Rash near eyes, severe pain, or weakened immune system"
+  },
+  "sinus-infection": {
+    "name": "Sinus Infection",
+    "description": "Inflammation of sinus cavities",
+    "symptoms": ["Facial pain", "Congestion", "Thick nasal discharge", "Reduced smell"],
+    "foods": {
+      "recommended": [
+        "Warm fluids",
+        "Spicy foods",
+        "Garlic",
+        "Ginger",
+        "Vitamin C foods",
+        "Probiotics"
+      ],
+      "avoid": [
+        "Dairy (may thicken mucus)",
+        "Processed foods",
+        "Alcohol",
+        "Dehydrating foods"
+      ]
+    },
+    "medications": [
+      "Decongestants",
+      "Nasal corticosteroids",
+      "Pain relievers",
+      "Antibiotics (if bacterial)"
+    ],
+    "homeRemedies": [
+      "Steam inhalation",
+      "Saline rinse",
+      "Humidifier",
+      "Warm compresses",
+      "Stay hydrated",
+      "Elevate head"
+    ],
+    "whenToSeeDoctor": "Symptoms >10 days, high fever, severe pain, or recurrent infections"
+  },
+  "sleep-apnea": {
+    "name": "Sleep Apnea",
+    "description": "Breathing interruptions during sleep",
+    "symptoms": ["Loud snoring", "Gasping for air", "Daytime sleepiness", "Morning headache"],
+    "foods": {
+      "recommended": [
+        "Magnesium-rich foods",
+        "Tryptophan-rich foods",
+        "Anti-inflammatory foods",
+        "Hydrating foods",
+        "Healthy fats",
+        "Whole grains"
+      ],
+      "avoid": [
+        "Alcohol",
+        "Heavy meals before bed",
+        "Caffeine late day",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "CPAP machine",
+      "Oral appliances",
+      "Nasal dilators",
+      "Surgery (severe cases)"
+    ],
+    "homeRemedies": [
+      "Sleep on side",
+      "Elevate head",
+      "Weight management",
+      "Avoid alcohol/sedatives",
+      "Nasal strips",
+      "Establish sleep routine"
+    ],
+    "whenToSeeDoctor": "For diagnosis and treatment"
+  },
+  "strep-throat": {
+    "name": "Strep Throat",
+    "description": "Bacterial throat infection",
+    "symptoms": ["Severe sore throat", "Fever", "Swollen lymph nodes", "White patches", "Painful swallowing"],
+    "foods": {
+      "recommended": [
+        "Warm liquids",
+        "Soft foods",
+        "Honey",
+        "Popsicles",
+        "Broths",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Acidic foods",
+        "Spicy foods",
+        "Crunchy foods",
+        "Hot foods"
+      ]
+    },
+    "medications": [
+      "Antibiotics",
+      "Pain relievers",
+      "Throat lozenges",
+      "Anti-inflammatory drugs"
+    ],
+    "homeRemedies": [
+      "Saltwater gargle",
+      "Humidifier",
+      "Rest",
+      "Stay hydrated",
+      "Warm compresses",
+      "Honey and lemon"
+    ],
+    "whenToSeeDoctor": "For diagnosis and antibiotics if bacterial"
+  },
+  "stress": {
+    "name": "Stress",
+    "description": "Physical/emotional tension response",
+    "symptoms": ["Anxiety", "Irritability", "Fatigue", "Muscle tension", "Sleep problems"],
+    "foods": {
+      "recommended": [
+        "Complex carbs",
+        "Magnesium-rich foods",
+        "Omega-3 foods",
+        "Vitamin C foods",
+        "Herbal teas",
+        "Dark chocolate"
+      ],
+      "avoid": [
+        "Caffeine",
+        "Alcohol",
+        "Sugar",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Short-term anxiolytics",
+      "Adaptogens",
+      "Magnesium supplements",
+      "Sleep aids (if needed)"
+    ],
+    "homeRemedies": [
+      "Regular exercise",
+      "Meditation",
+      "Deep breathing",
+      "Time management",
+      "Social connection",
+      "Hobbies"
+    ],
+    "whenToSeeDoctor": "Chronic stress affecting health or daily life"
+  },
+  "stroke": {
+    "name": "Stroke",
+    "description": "Brain damage from interrupted blood flow",
+    "symptoms": ["Facial drooping", "Arm weakness", "Speech difficulty", "Sudden confusion", "Vision problems"],
+    "foods": {
+      "recommended": [
+        "Fruits/vegetables",
+        "Whole grains",
+        "Lean proteins",
+        "Healthy fats",
+        "Low-sodium foods",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Excess salt",
+        "Trans fats",
+        "Alcohol",
+        "Sugary drinks"
+      ]
+    },
+    "medications": [
+      "Clot-busters (if ischemic)",
+      "Blood pressure meds",
+      "Statins",
+      "Anticoagulants"
+    ],
+    "homeRemedies": [
+      "Rehabilitation exercises",
+      "Smoking cessation",
+      "Weight management",
+      "Regular checkups",
+      "Monitor blood pressure",
+      "Healthy lifestyle"
+    ],
+    "whenToSeeDoctor": "EMERGENCY - seek immediate help for stroke symptoms"
+  },
+  "sunburn1": {
+    "name": "Sunburn",
+    "description": "Skin damage from UV radiation",
+    "symptoms": ["Redness", "Pain", "Swelling", "Blisters", "Peeling"],
+    "foods": {
+      "recommended": [
+        "Water",
+        "Antioxidant-rich foods",
+        "Omega-3 foods",
+        "Vitamin E foods",
+        "Hydrating foods",
+        "Green tea"
+      ],
+      "avoid": [
+        "Alcohol",
+        "Dehydrating foods",
+        "Processed foods",
+        "Excess salt"
+      ]
+    },
+    "medications": [
+      "Aloe vera gel",
+      "Pain relievers",
+      "Hydrocortisone cream",
+      "Antihistamines"
+    ],
+    "homeRemedies": [
+      "Cool compresses",
+      "Aloe vera",
+      "Oatmeal baths",
+      "Stay hydrated",
+      "Moisturize",
+      "Avoid further sun exposure"
+    ],
+    "whenToSeeDoctor": "Severe blisters, fever, or covering large area"
+  },
+  "swimmers-ear": {
+    "name": "Swimmer's Ear",
+    "description": "Outer ear canal infection",
+    "symptoms": ["Ear pain", "Itching", "Redness", "Drainage", "Hearing loss"],
+    "foods": {
+      "recommended": [
+        "Anti-inflammatory foods",
+        "Vitamin C foods",
+        "Zinc-rich foods",
+        "Probiotics",
+        "Hydrating foods",
+        "Healthy fats"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Sugar",
+        "Alcohol",
+        "Potential allergens"
+      ]
+    },
+    "medications": [
+      "Ear drops",
+      "Antibiotics",
+      "Pain relievers",
+      "Acetic acid solutions"
+    ],
+    "homeRemedies": [
+      "Keep ear dry",
+      "Warm compress",
+      "White vinegar/alcohol drops",
+      "Don't insert objects",
+      "Wear ear plugs",
+      "Avoid swimming"
+    ],
+    "whenToSeeDoctor": "Severe pain, fever, or no improvement"
+  },
+  "tendinitis": {
+    "name": "Tendinitis",
+    "description": "Tendon inflammation",
+    "symptoms": ["Pain", "Tenderness", "Mild swelling", "Stiffness"],
+    "foods": {
+      "recommended": [
+        "Anti-inflammatory foods",
+        "Omega-3 foods",
+        "Turmeric",
+        "Ginger",
+        "Hydrating foods",
+        "Protein-rich foods"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Sugar",
+        "Alcohol",
+        "Inflammatory foods"
+      ]
+    },
+    "medications": [
+      "NSAIDs",
+      "Pain relievers",
+      "Corticosteroid injections",
+      "Physical therapy"
+    ],
+    "homeRemedies": [
+      "Rest",
+      "Ice",
+      "Compression",
+      "Elevation",
+      "Gentle stretching",
+      "Supportive braces"
+    ],
+    "whenToSeeDoctor": "Severe pain, limited movement, or no improvement"
+  },
+  "tinnitus": {
+    "name": "Tinnitus",
+    "description": "Perception of noise/ringing in ears",
+    "symptoms": ["Ringing", "Buzzing", "Hissing", "Roaring", "Clicking"],
+    "foods": {
+      "recommended": [
+        "Magnesium-rich foods",
+        "Zinc-rich foods",
+        "B-vitamin foods",
+        "Anti-inflammatory foods",
+        "Hydrating foods",
+        "Healthy fats"
+      ],
+      "avoid": [
+        "Caffeine",
+        "Alcohol",
+        "High-sodium foods",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Treat underlying cause",
+      "Sound therapy",
+      "Cognitive behavioral therapy",
+      "Masking devices"
+    ],
+    "homeRemedies": [
+      "White noise",
+      "Stress management",
+      "Limit loud noise exposure",
+      "Regular exercise",
+      "Proper sleep",
+      "Monitor blood pressure"
+    ],
+    "whenToSeeDoctor": "Persistent, worsening, or with hearing loss/dizziness"
+  },
+  "tooth-abscess": {
+    "name": "Tooth Abscess",
+    "description": "Pocket of pus from bacterial infection",
+    "symptoms": ["Severe toothache", "Sensitivity", "Fever", "Swelling", "Bad taste"],
+    "foods": {
+      "recommended": [
+        "Soft foods",
+        "Cool foods",
+        "Saltwater rinses",
+        "Hydrating foods",
+        "Probiotics",
+        "Anti-inflammatory foods"
+      ],
+      "avoid": [
+        "Hot/cold foods",
+        "Sugary foods",
+        "Hard foods",
+        "Acidic foods"
+      ]
+    },
+    "medications": [
+      "Antibiotics",
+      "Pain relievers",
+      "Saltwater rinses",
+      "Dental treatment"
+    ],
+    "homeRemedies": [
+      "Cold compress",
+      "Elevate head",
+      "Saltwater rinse",
+      "Clove oil",
+      "Avoid pressure on area",
+      "Stay hydrated"
+    ],
+    "whenToSeeDoctor": "DENTAL EMERGENCY - requires prompt treatment"
+  },
+  "ulcerative-colitis": {
+    "name": "Ulcerative Colitis",
+    "description": "Chronic inflammatory bowel disease",
+    "symptoms": ["Diarrhea", "Abdominal pain", "Rectal bleeding", "Weight loss", "Fatigue"],
+    "foods": {
+      "recommended": [
+        "Low-fiber during flares",
+        "Probiotics",
+        "Lean proteins",
+        "Cooked vegetables",
+        "Hydrating foods",
+        "Small frequent meals"
+      ],
+      "avoid": [
+        "High-fiber foods during flares",
+        "Dairy (if intolerant)",
+        "Spicy foods",
+        "Alcohol",
+        "Caffeine"
+      ]
+    },
+    "medications": [
+      "Aminosalicylates",
+      "Corticosteroids",
+      "Immunomodulators",
+      "Biologics"
+    ],
+    "homeRemedies": [
+      "Food diary",
+      "Stress management",
+      "Stay hydrated",
+      "Vitamin/mineral supplements",
+      "Regular exercise",
+      "Small frequent meals"
+    ],
+    "whenToSeeDoctor": "Flare-ups, severe symptoms, or signs of complications"
+  },
+  "vertigo": {
+    "name": "Vertigo",
+    "description": "Sensation of spinning or movement",
+    "symptoms": ["Dizziness", "Balance problems", "Nausea", "Vomiting", "Nystagmus"],
+    "foods": {
+      "recommended": [
+        "Ginger",
+        "Small frequent meals",
+        "Hydrating foods",
+        "Electrolyte-rich foods",
+        "Bland foods",
+        "Herbal teas"
+      ],
+      "avoid": [
+        "Caffeine",
+        "Alcohol",
+        "High-sodium foods",
+        "Processed foods"
+      ]
+    },
+    "medications": [
+      "Antihistamines",
+      "Anticholinergics",
+      "Benzodiazepines",
+      "Anti-emetics"
+    ],
+    "homeRemedies": [
+      "Epley maneuver (for BPPV)",
+      "Sit during episodes",
+      "Move slowly",
+      "Stay hydrated",
+      "Avoid sudden movements",
+      "Ginger tea"
+    ],
+    "whenToSeeDoctor": "Persistent, severe, or with other neurological symptoms"
+  },
+  "warts": {
+    "name": "Warts",
+    "description": "Small skin growths from HPV",
+    "symptoms": ["Small rough bumps", "Flesh-colored", "Black pinpoints", "Pain (if on pressure points)"],
+    "foods": {
+      "recommended": [
+        "Immune-boosting foods",
+        "Vitamin C foods",
+        "Zinc-rich foods",
+        "Probiotics",
+        "Antioxidant-rich foods",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Processed foods",
+        "Sugar",
+        "Alcohol",
+        "Immune-suppressing foods"
+      ]
+    },
+    "medications": [
+      "Salicylic acid",
+      "Cryotherapy",
+      "Duct tape method",
+      "Immunotherapy"
+    ],
+    "homeRemedies": [
+      "Garlic application",
+      "Apple cider vinegar",
+      "Tea tree oil",
+      "Don't pick",
+      "Cover warts",
+      "Boost immunity"
+    ],
+    "whenToSeeDoctor": "Painful, spreading, or facial/genital warts"
+  },
+  "wheezing": {
+    "name": "Wheezing",
+    "description": "High-pitched whistling sound while breathing",
+    "symptoms": ["Whistling sound", "Shortness of breath", "Chest tightness", "Coughing"],
+    "foods": {
+      "recommended": [
+        "Anti-inflammatory foods",
+        "Omega-3 foods",
+        "Magnesium-rich foods",
+        "Warm fluids",
+        "Ginger tea",
+        "Hydrating foods"
+      ],
+      "avoid": [
+        "Known allergens",
+        "Processed foods",
+        "Sulfites",
+        "Cold drinks"
+      ]
+    },
+    "medications": [
+      "Bronchodilators",
+      "Inhaled steroids",
+      "Antihistamines",
+      "Leukotriene modifiers"
+    ],
+    "homeRemedies": [
+      "Steam inhalation",
+      "Pursed lip breathing",
+      "Stay hydrated",
+      "Avoid triggers",
+      "Elevate head",
+      "Humidifier"
+    ],
+    "whenToSeeDoctor": "Severe difficulty breathing, first episode, or persistent wheezing"
+  },
+  "yellow-fever": {
+    "name": "Yellow Fever",
+    "description": "Viral hemorrhagic disease from mosquitoes",
+    "symptoms": ["Fever", "Headache", "Jaundice", "Muscle pain", "Nausea", "Vomiting"],
+    "foods": {
+      "recommended": [
+        "Electrolyte solutions",
+        "Clear fluids",
+        "Bland foods",
+        "Hydrating foods",
+        "Small frequent meals",
+        "Broths"
+      ],
+      "avoid": [
+        "Alcohol",
+        "Caffeine",
+        "Fatty foods",
+        "Spicy foods"
+      ]
+    },
+    "medications": [
+      "Pain relievers (avoid aspirin)",
+      "Hospitalization (severe cases)",
+      "Vaccination (prevention)",
+      "Supportive care"
+    ],
+    "homeRemedies": [
+      "Rest",
+      "Stay hydrated",
+      "Mosquito protection",
+      "Cool compresses",
+      "Monitor symptoms",
+      "Prevent spread"
+    ],
+    "whenToSeeDoctor": "MEDICAL EMERGENCY - requires immediate care"
+  },
+  "zika-virus": {
+    "name": "Zika Virus",
+    "description": "Mosquito-borne viral infection",
+    "symptoms": ["Mild fever", "Rash", "Joint pain", "Conjunctivitis", "Muscle pain"],
+    "foods": {
+      "recommended": [
+        "Hydrating foods",
+        "Electrolyte solutions",
+        "Anti-inflammatory foods",
+        "Vitamin C foods",
+        "Small frequent meals",
+        "Bland foods"
+      ],
+      "avoid": [
+        "Alcohol",
+        "Caffeine",
+        "Processed foods",
+        "Dehydrating foods"
+      ]
+    },
+    "medications": [
+      "Pain relievers (avoid aspirin)",
+      "Antihistamines",
+      "Supportive care",
+      "Mosquito repellent"
+    ],
+    "homeRemedies": [
+      "Rest",
+      "Stay hydrated",
+      "Mosquito protection",
+      "Cool compresses",
+      "Monitor symptoms",
+      "Prevent spread"
+    ],
+    "whenToSeeDoctor": "Pregnant women exposed or concerning symptoms"
+  }
+}

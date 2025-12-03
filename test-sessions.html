@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Sessions API</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Sessions API Test</h1>
+    
+    <div>
+        <button onclick="testSessionsAPI()">Test Sessions API</button>
+        <button onclick="testAuth()">Test Authentication</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function testAuth() {
+            try {
+                addResult('Testing authentication...', 'info');
+                
+                const response = await fetch('/api/dashboard-data');
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    addResult('✅ Authentication working - User is logged in', 'success');
+                    addResult(`<pre>${JSON.stringify(result.data.user, null, 2)}</pre>`, 'info');
+                } else {
+                    addResult(`❌ Authentication failed: ${result.error || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Authentication test failed: ${error.message}`, 'error');
+            }
+        }
+
+        async function testSessionsAPI() {
+            try {
+                addResult('Testing sessions API...', 'info');
+                
+                const response = await fetch('/api/sessions');
+                addResult(`Response status: ${response.status} ${response.statusText}`, 'info');
+                
+                const result = await response.json();
+                addResult(`<pre>${JSON.stringify(result, null, 2)}</pre>`, 'info');
+                
+                if (result.success) {
+                    addResult(`✅ Sessions API working - Found ${result.sessions.length} sessions`, 'success');
+                } else {
+                    addResult(`❌ Sessions API error: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                addResult(`❌ Sessions API test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            addResult('Page loaded - Ready to test', 'info');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "name": "fitwith-admin",
+  "builds": [
+    {
+      "src": "api/admin.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/api/admin.js"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+<!-- Session Management Section -->
+<div class="bg-white rounded-lg shadow-md p-6 mb-6">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h2 class="text-xl font-semibold text-gray-900">Active Sessions</h2>
+            <p class="text-sm text-gray-600 mt-1">Manage your active sessions across different devices</p>
+        </div>
+        <div class="flex space-x-2">
+            <button id="refreshSessions" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                <i class="fas fa-sync-alt mr-2"></i>Refresh
+            </button>
+            <button id="revokeAllSessions" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                <i class="fas fa-sign-out-alt mr-2"></i>Revoke Others
+            </button>
+            <button id="logoutAllDevices" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                <i class="fas fa-power-off mr-2"></i>Logout All
+            </button>
+        </div>
+    </div>
+
+    <!-- Sessions Container -->
+    <div id="sessionsContainer">
+        <div class="text-center py-8">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+            <p class="text-gray-500">Loading sessions...</p>
+        </div>
+    </div>
+
+    <!-- Session Security Info -->
+    <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+        <div class="flex items-start">
+            <i class="fas fa-info-circle text-blue-500 mt-1 mr-3"></i>
+            <div>
+                <h3 class="font-medium text-blue-900">Session Security</h3>
+                <p class="text-sm text-blue-700 mt-1">
+                    For your security, only one active session is allowed per device type. 
+                    If you notice any suspicious activity, revoke all sessions immediately and change your password.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include Session Manager Script -->
+<script src="/js/session-manager.js"></script>

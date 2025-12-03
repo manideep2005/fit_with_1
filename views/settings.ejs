@@ -4,52 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Settings - Fit-With-AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6C63FF;
-            --secondary: #4D44DB;
-            --accent: #FF6584;
-            --light: #F8F9FA;
-            --dark: #343A40;
-            --success: #28A745;
-            --warning: #FFC107;
-            --danger: #DC3545;
-            --gray: #6C757D;
-            --light-gray: #E9ECEF;
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
         }
         
         body {
-            font-family: 'Poppins', sans-serif;
-            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: white;
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: var(--gray-700);
+            line-height: 1.6;
+            min-height: 100vh;
             margin: 0;
             padding: 0;
-            min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.2) 0%, transparent 50%);
-            animation: float 20s ease-in-out infinite;
-            pointer-events: none;
-            z-index: -1;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(30px, -30px) rotate(120deg); }
-            66% { transform: translate(-20px, 20px) rotate(240deg); }
         }
         
         .dashboard-container {
@@ -58,102 +40,10 @@
             min-height: 100vh;
             gap: 20px;
             padding: 20px;
+            background: var(--gray-100);
         }
         
-        .sidebar {
-            background: transparent;
-            border: none;
-            padding: 30px 20px;
-            position: sticky;
-            top: 20px;
-            height: fit-content;
-        }
-        
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding: 0 1rem;
-        }
-        
-        .sidebar-header img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-        
-        .user-name {
-            font-weight: 600;
-            margin: 0;
-        }
-        
-        .user-plan {
-            font-size: 0.8rem;
-            color: var(--primary);
-            background: rgba(108, 99, 255, 0.1);
-            padding: 2px 8px;
-            border-radius: 20px;
-            margin-top: 5px;
-        }
-        
-        .nav-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .nav-item {
-            margin-bottom: 5px;
-        }
-        
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 1rem;
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-        
-        .nav-link:hover, .nav-link.active {
-            background: rgba(108, 99, 255, 0.2);
-            color: white;
-            transform: translateX(5px);
-        }
-        
-        .nav-link i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }        
-        
-        .logout-section {
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--light-gray);
-        }
-        
-        .logout-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 1rem;
-            color: var(--danger);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        
-        .logout-link:hover {
-            background: rgba(220, 53, 69, 0.1);
-            color: var(--danger);
-        }
-        
-        .logout-link i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
+        /* Sidebar styles now handled by shared-sidebar.css */
         
         .main-content {
             flex: 1;
@@ -169,41 +59,50 @@
         
         .page-title {
             font-size: 2rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-weight: 700;
+            color: var(--gray-800);
         }
         
         .settings-tabs {
             display: flex;
-            border-bottom: 1px solid var(--light-gray);
+            border-bottom: 1px solid var(--gray-200);
             margin-bottom: 2rem;
+            background: white;
+            border-radius: 12px 12px 0 0;
+            padding: 0 20px;
         }
         
         .tab {
             padding: 12px 20px;
             cursor: pointer;
             font-weight: 500;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--gray-600);
             border-bottom: 3px solid transparent;
             transition: all 0.3s ease;
         }
         
         .tab.active {
-            color: white;
+            color: var(--primary);
             border-bottom: 3px solid var(--primary);
         }
         
+        .tab:hover:not(.active) {
+            color: var(--gray-800);
+        }
+        
         .settings-card {
-            background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(108, 99, 255, 0.08) 100%);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             padding: 2rem;
             margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .settings-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
         
         .card-header {
@@ -217,7 +116,7 @@
             font-size: 1.2rem;
             font-weight: 600;
             margin: 0;
-            color: white;
+            color: var(--gray-800);
         }
         
         .form-group {
@@ -228,58 +127,61 @@
             display: block;
             margin-bottom: 8px;
             font-weight: 500;
-            color: white;
+            color: var(--gray-700);
         }
         
         .form-control {
             width: 100%;
             padding: 12px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            font-family: 'Poppins', sans-serif;
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
             transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
+            background: white;
+            color: var(--gray-700);
         }
         
         .form-control:focus {
             border-color: var(--primary);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.2);
-            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
         
         .form-control::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: var(--gray-600);
         }
         
         .btn {
             padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 500;
+            border-radius: 50px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             border: none;
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Inter', sans-serif;
         }
         
         .btn-primary {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
         }
         
         .btn-primary:hover {
-            background: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
         }
         
         .btn-outline {
-            background: transparent;
-            border: 1px solid var(--primary);
+            background: white;
+            border: 2px solid var(--primary);
             color: var(--primary);
         }
         
         .btn-outline:hover {
-            background: rgba(108, 99, 255, 0.1);
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
         }
         
         .toggle-switch {
@@ -336,17 +238,17 @@
         }
         
         .badge-success {
-            background: rgba(40, 167, 69, 0.1);
+            background: rgba(16, 185, 129, 0.1);
             color: var(--success);
         }
         
         .badge-warning {
-            background: rgba(255, 193, 7, 0.1);
+            background: rgba(245, 158, 11, 0.1);
             color: var(--warning);
         }
         
         .badge-danger {
-            background: rgba(220, 53, 69, 0.1);
+            background: rgba(239, 68, 68, 0.1);
             color: var(--danger);
         }
         
@@ -355,10 +257,10 @@
             align-items: center;
             justify-content: space-between;
             padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
+            border: 1px solid var(--gray-200);
+            border-radius: 12px;
             margin-bottom: 12px;
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--gray-100);
         }
         
         .account-info {
@@ -370,7 +272,7 @@
             width: 40px;
             height: 40px;
             border-radius: 8px;
-            background: var(--light);
+            background: var(--gray-100);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -565,6 +467,7 @@
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/shared-sidebar.css">
 </head>
 <body>
     <div class="dashboard-container">
@@ -722,7 +625,7 @@
                             <h4 style="margin: 0;">Active Sessions</h4>
                             <small style="color: var(--gray);" id="activeSessionsCount">Loading...</small>
                         </div>
-                        <button class="btn btn-outline" onclick="viewActiveSessions()">View All</button>
+                        <button class="btn btn-outline" onclick="viewActiveSessions()">Manage Sessions</button>
                     </div>
                 </div>
             </div>
@@ -1009,6 +912,32 @@
             
             <!-- Security Content -->
             <div class="security-content" style="display: none;">
+                <!-- Security Alerts -->
+                <div class="settings-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Security Alerts</h2>
+                        <span class="badge badge-success" id="securityStatus">Secure</span>
+                    </div>
+                    
+                    <div id="securityAlertsList">
+                        <div class="alert-item" style="display: flex; align-items: center; padding: 12px; border-left: 4px solid var(--success); background: rgba(16, 185, 129, 0.1); border-radius: 8px; margin-bottom: 10px;">
+                            <i class="fas fa-shield-alt" style="color: var(--success); margin-right: 12px; font-size: 1.2rem;"></i>
+                            <div>
+                                <h4 style="margin: 0; color: var(--success);">Account Secure</h4>
+                                <small style="color: var(--gray);">No security issues detected</small>
+                            </div>
+                        </div>
+                        
+                        <div class="alert-item" style="display: flex; align-items: center; padding: 12px; border-left: 4px solid var(--warning); background: rgba(245, 158, 11, 0.1); border-radius: 8px; margin-bottom: 10px;">
+                            <i class="fas fa-exclamation-triangle" style="color: var(--warning); margin-right: 12px; font-size: 1.2rem;"></i>
+                            <div>
+                                <h4 style="margin: 0; color: var(--warning);">Password Age</h4>
+                                <small style="color: var(--gray);">Password is 3 months old - consider updating</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Account Security -->
                 <div class="settings-card">
                     <div class="card-header">
@@ -1022,7 +951,7 @@
                                 <small style="color: var(--gray);">Add an extra layer of security</small>
                             </div>
                             <label class="toggle-switch">
-                                <input type="checkbox">
+                                <input type="checkbox" id="twoFactorToggleSec" <%= user.security?.twoFactorEnabled ? 'checked' : '' %> onchange="toggleTwoFactor(this.checked)">
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -1032,9 +961,9 @@
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <h4 style="margin: 0;">Password</h4>
-                                <small style="color: var(--gray);">Last changed 3 months ago</small>
+                                <small style="color: var(--gray);" id="passwordLastChangedSec">Last changed <%= user.security?.passwordLastChanged ? new Date(user.security.passwordLastChanged).toLocaleDateString() : 'Never' %></small>
                             </div>
-                            <button class="btn btn-outline">Change</button>
+                            <button class="btn btn-outline" onclick="changePassword()">Change</button>
                         </div>
                     </div>
                     
@@ -1045,7 +974,7 @@
                                 <small style="color: var(--gray);">Get notified of new login attempts</small>
                             </div>
                             <label class="toggle-switch">
-                                <input type="checkbox" checked>
+                                <input type="checkbox" <%= (user.notifications?.securityAlerts !== false) ? 'checked' : '' %> onchange="updateNotification('securityAlerts', this.checked)">
                                 <span class="slider"></span>
                             </label>
                         </div>
@@ -1056,25 +985,26 @@
                 <div class="settings-card">
                     <div class="card-header">
                         <h2 class="card-title">Active Sessions</h2>
+                        <button class="btn btn-outline" onclick="loadActiveSessions()" style="padding: 6px 12px; font-size: 0.8rem;">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
                     </div>
                     
-                    <div class="session-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; margin-bottom: 10px;">
-                        <div>
-                            <h4 style="margin: 0;">Current Session</h4>
-                            <small style="color: var(--gray);">Chrome on macOS • Active now</small>
+                    <div id="activeSessionsList">
+                        <div style="text-align: center; padding: 2rem; color: var(--gray);">
+                            <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i>
+                            <p>Loading active sessions...</p>
                         </div>
-                        <span class="badge badge-success">Current</span>
                     </div>
                     
-                    <div class="session-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; margin-bottom: 10px;">
-                        <div>
-                            <h4 style="margin: 0;">Mobile App</h4>
-                            <small style="color: var(--gray);">iPhone • Last active 2 hours ago</small>
-                        </div>
-                        <button class="btn btn-outline" style="font-size: 0.8rem; padding: 6px 12px;">Revoke</button>
+                    <div style="display: flex; gap: 10px; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--gray-200);">
+                        <button class="btn btn-outline" onclick="revokeAllOtherSessions()" style="color: var(--danger); border-color: var(--danger); flex: 1;">
+                            <i class="fas fa-sign-out-alt"></i> Revoke All Others
+                        </button>
+                        <button class="btn btn-outline" onclick="viewActiveSessions()" style="flex: 1;">
+                            <i class="fas fa-eye"></i> Manage All Sessions
+                        </button>
                     </div>
-                    
-                    <button class="btn btn-outline" style="margin-top: 10px;">Revoke All Other Sessions</button>
                 </div>
                 
                 <!-- Privacy Settings -->
@@ -2087,7 +2017,7 @@
         // View active sessions
         async function viewActiveSessions() {
             try {
-                const response = await fetch('/api/settings/active-sessions');
+                const response = await fetch('/api/sessions');
                 const result = await response.json();
                 
                 if (result.success) {
@@ -2123,7 +2053,7 @@
                 border: 1px solid rgba(255, 255, 255, 0.1);
                 padding: 2rem;
                 border-radius: 12px;
-                min-width: 500px;
+                min-width: 600px;
                 max-width: 90vw;
                 max-height: 80vh;
                 overflow-y: auto;
@@ -2131,25 +2061,46 @@
             `;
             
             content.innerHTML = `
-                <h3 style="margin-bottom: 1.5rem; color: white;">Active Sessions</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 style="margin: 0; color: white;">Session Management</h3>
+                    <button onclick="closeModal()" style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">&times;</button>
+                </div>
+                <p style="color: rgba(255,255,255,0.7); margin-bottom: 1.5rem;">Manage your active sessions across different devices. For security, you can revoke access from devices you no longer use.</p>
                 <div id="sessionsList">
                     ${sessions.map(session => `
-                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; margin-bottom: 10px; background: rgba(255,255,255,0.05);">
-                            <div>
-                                <h4 style="margin: 0; color: white;">${session.device || 'Unknown Device'}</h4>
-                                <small style="color: rgba(255,255,255,0.7);">${session.browser || 'Unknown Browser'} • ${session.location || 'Unknown Location'}</small><br>
-                                <small style="color: rgba(255,255,255,0.5);">Last active: ${new Date(session.lastActive).toLocaleString()}</small>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; margin-bottom: 12px; background: rgba(255,255,255,0.05);">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                                    <i class="fas ${getDeviceIcon(session.deviceInfo.type)}" style="color: var(--primary);"></i>
+                                    <h4 style="margin: 0; color: white;">${session.deviceInfo.type.charAt(0).toUpperCase() + session.deviceInfo.type.slice(1)} Device</h4>
+                                    ${session.isCurrent ? '<span style="background: var(--success); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; margin-left: 8px;">CURRENT</span>' : ''}
+                                </div>
+                                <small style="color: rgba(255,255,255,0.7); display: block;">
+                                    <i class="fas fa-globe"></i> ${session.deviceInfo.browser} on ${session.deviceInfo.os}
+                                </small>
+                                <small style="color: rgba(255,255,255,0.5); display: block;">
+                                    <i class="fas fa-clock"></i> Last active: ${new Date(session.lastActivity).toLocaleString()}
+                                </small>
+                                <small style="color: rgba(255,255,255,0.5); display: block;">
+                                    <i class="fas fa-map-marker-alt"></i> Location: ${session.deviceInfo.location}
+                                </small>
                             </div>
-                            ${session.current ? 
-                                '<span style="background: var(--success); color: white; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem;">Current</span>' : 
-                                `<button onclick="revokeSession('${session.id}')" style="background: var(--danger); color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Revoke</button>`
-                            }
+                            <div style="margin-left: 20px;">
+                                ${!session.isCurrent ? 
+                                    `<button onclick="revokeSession('${session.sessionId}')" style="background: var(--danger); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500;"><i class="fas fa-times"></i> Revoke</button>` : 
+                                    '<span style="color: var(--success); font-size: 0.9rem;"><i class="fas fa-check-circle"></i> Active</span>'
+                                }
+                            </div>
                         </div>
                     `).join('')}
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button onclick="revokeAllSessions()" class="btn btn-outline" style="color: var(--danger); border-color: var(--danger);">Revoke All Others</button>
-                    <button onclick="closeModal()" class="btn btn-outline">Close</button>
+                <div style="display: flex; gap: 10px; margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <button onclick="revokeAllOtherSessions()" class="btn btn-outline" style="color: var(--danger); border-color: var(--danger); flex: 1;">
+                        <i class="fas fa-sign-out-alt"></i> Revoke All Other Sessions
+                    </button>
+                    <button onclick="logoutAllDevices()" class="btn btn-outline" style="color: var(--warning); border-color: var(--warning); flex: 1;">
+                        <i class="fas fa-power-off"></i> Logout All Devices
+                    </button>
                 </div>
             `;
             
@@ -2161,10 +2112,26 @@
             };
         }
         
+        // Get device icon based on type
+        function getDeviceIcon(deviceType) {
+            switch(deviceType) {
+                case 'mobile': return 'fa-mobile-alt';
+                case 'tablet': return 'fa-tablet-alt';
+                case 'desktop': return 'fa-desktop';
+                default: return 'fa-laptop';
+            }
+        }
+        
         // Revoke session
         async function revokeSession(sessionId) {
+            if (!confirm('Are you sure you want to revoke this session? The device will be logged out immediately.')) {
+                return;
+            }
+            
             try {
-                const response = await fetch('/api/settings/revoke-session', {
+                showToast('Revoking session...', 'info');
+                
+                const response = await fetch('/api/sessions/revoke', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ sessionId })
@@ -2172,48 +2139,78 @@
                 
                 const result = await response.json();
                 if (result.success) {
-                    showToast('Session revoked', 'success');
-                    viewActiveSessions();
+                    showToast('Session revoked successfully', 'success');
+                    viewActiveSessions(); // Refresh the modal
+                    loadActiveSessionsCount(); // Update count
                 } else {
-                    showToast('Failed to revoke session', 'error');
+                    showToast('Failed to revoke session: ' + result.error, 'error');
                 }
             } catch (error) {
-                showToast('Failed to revoke session', 'error');
+                showToast('Network error. Please try again.', 'error');
             }
         }
         
         // Revoke all other sessions
-        async function revokeAllSessions() {
-            if (!confirm('Revoke all other sessions? You will need to log in again on other devices.')) {
+        async function revokeAllOtherSessions() {
+            if (!confirm('This will log you out from all other devices. You will need to log in again on those devices. Continue?')) {
                 return;
             }
             
             try {
-                const response = await fetch('/api/settings/revoke-all-sessions', {
+                showToast('Revoking all other sessions...', 'info');
+                
+                const response = await fetch('/api/sessions/revoke-all', {
                     method: 'POST'
                 });
                 
                 const result = await response.json();
                 if (result.success) {
-                    showToast('All other sessions revoked', 'success');
+                    showToast(`${result.revokedCount} session(s) revoked successfully`, 'success');
                     closeModal();
                     loadActiveSessionsCount();
                 } else {
-                    showToast('Failed to revoke sessions', 'error');
+                    showToast('Failed to revoke sessions: ' + result.error, 'error');
                 }
             } catch (error) {
-                showToast('Failed to revoke sessions', 'error');
+                showToast('Network error. Please try again.', 'error');
+            }
+        }
+        
+        // Logout from all devices including current
+        async function logoutAllDevices() {
+            if (!confirm('This will log you out from ALL devices including this one. You will be redirected to the login page. Continue?')) {
+                return;
+            }
+            
+            try {
+                showToast('Logging out from all devices...', 'info');
+                
+                const response = await fetch('/api/sessions/logout-all', {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    showToast('Logged out from all devices', 'success');
+                    setTimeout(() => {
+                        window.location.href = result.redirectUrl || '/';
+                    }, 1500);
+                } else {
+                    showToast('Failed to logout: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showToast('Network error. Please try again.', 'error');
             }
         }
         
         // Load active sessions count
         async function loadActiveSessionsCount() {
             try {
-                const response = await fetch('/api/settings/sessions-count');
+                const response = await fetch('/api/sessions');
                 const result = await response.json();
                 
                 if (result.success) {
-                    const count = result.count;
+                    const count = result.sessions.length;
                     document.getElementById('activeSessionsCount').textContent = `${count} active session${count !== 1 ? 's' : ''}`;
                 } else {
                     document.getElementById('activeSessionsCount').textContent = 'Unable to load';
@@ -2223,10 +2220,112 @@
             }
         }
         
+        // Load active sessions for security tab
+        async function loadActiveSessions() {
+            const container = document.getElementById('activeSessionsList');
+            container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--gray);"><i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 1rem;"></i><p>Loading sessions...</p></div>';
+            
+            try {
+                const response = await fetch('/api/sessions');
+                const result = await response.json();
+                
+                if (result.success && result.sessions.length > 0) {
+                    container.innerHTML = result.sessions.slice(0, 3).map(session => `
+                        <div class="session-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border: 1px solid var(--gray-200); border-radius: 8px; margin-bottom: 10px; background: ${session.isCurrent ? 'rgba(16, 185, 129, 0.1)' : 'var(--light)'}; border-left: 4px solid ${session.isCurrent ? 'var(--success)' : 'var(--gray-300)'};">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                    <i class="fas ${getDeviceIcon(session.deviceInfo.type)}" style="color: var(--primary);"></i>
+                                    <h4 style="margin: 0; font-size: 0.95rem;">${session.deviceInfo.type.charAt(0).toUpperCase() + session.deviceInfo.type.slice(1)} Device</h4>
+                                    ${session.isCurrent ? '<span class="badge badge-success" style="font-size: 0.7rem;">CURRENT</span>' : ''}
+                                </div>
+                                <small style="color: var(--gray); display: block;">${session.deviceInfo.browser} on ${session.deviceInfo.os}</small>
+                                <small style="color: var(--gray); display: block;">Last active: ${new Date(session.lastActivity).toLocaleString()}</small>
+                            </div>
+                            <div>
+                                ${!session.isCurrent ? 
+                                    `<button onclick="revokeSession('${session.sessionId}')" class="btn btn-outline" style="font-size: 0.8rem; padding: 6px 12px; color: var(--danger); border-color: var(--danger);"><i class="fas fa-times"></i> Revoke</button>` : 
+                                    '<span style="color: var(--success); font-size: 0.8rem;"><i class="fas fa-check-circle"></i> Active</span>'
+                                }
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    if (result.sessions.length > 3) {
+                        container.innerHTML += `<p style="text-align: center; color: var(--gray); margin-top: 10px;"><small>+${result.sessions.length - 3} more sessions. <a href="#" onclick="viewActiveSessions()" style="color: var(--primary);">View all</a></small></p>`;
+                    }
+                } else {
+                    container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--gray);"><i class="fas fa-desktop" style="font-size: 1.5rem; margin-bottom: 1rem;"></i><p>Only current session active</p></div>';
+                }
+            } catch (error) {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: var(--danger);"><i class="fas fa-exclamation-triangle" style="font-size: 1.5rem; margin-bottom: 1rem;"></i><p>Failed to load sessions</p></div>';
+            }
+        }
+        
         // Load active sessions count on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadActiveSessionsCount();
+            loadActiveSessions();
+            loadSecurityAlerts();
         });
+        
+        // Load security alerts
+        async function loadSecurityAlerts() {
+            try {
+                const response = await fetch('/api/security/alerts');
+                const result = await response.json();
+                
+                if (result.success) {
+                    displaySecurityAlerts(result.alerts);
+                }
+            } catch (error) {
+                console.log('Security alerts not available');
+            }
+        }
+        
+        // Display security alerts
+        function displaySecurityAlerts(alerts) {
+            const container = document.getElementById('securityAlertsList');
+            const statusBadge = document.getElementById('securityStatus');
+            
+            if (alerts.length === 0) {
+                statusBadge.className = 'badge badge-success';
+                statusBadge.textContent = 'Secure';
+                return;
+            }
+            
+            const hasHighRisk = alerts.some(alert => alert.severity === 'high');
+            const hasMediumRisk = alerts.some(alert => alert.severity === 'medium');
+            
+            if (hasHighRisk) {
+                statusBadge.className = 'badge badge-danger';
+                statusBadge.textContent = 'Action Required';
+            } else if (hasMediumRisk) {
+                statusBadge.className = 'badge badge-warning';
+                statusBadge.textContent = 'Review Needed';
+            }
+            
+            container.innerHTML = alerts.map(alert => {
+                const colors = {
+                    low: { border: 'var(--success)', bg: 'rgba(16, 185, 129, 0.1)', icon: 'fa-info-circle', color: 'var(--success)' },
+                    medium: { border: 'var(--warning)', bg: 'rgba(245, 158, 11, 0.1)', icon: 'fa-exclamation-triangle', color: 'var(--warning)' },
+                    high: { border: 'var(--danger)', bg: 'rgba(239, 68, 68, 0.1)', icon: 'fa-exclamation-circle', color: 'var(--danger)' }
+                };
+                
+                const style = colors[alert.severity] || colors.low;
+                
+                return `
+                    <div class="alert-item" style="display: flex; align-items: center; padding: 12px; border-left: 4px solid ${style.border}; background: ${style.bg}; border-radius: 8px; margin-bottom: 10px;">
+                        <i class="fas ${style.icon}" style="color: ${style.color}; margin-right: 12px; font-size: 1.2rem;"></i>
+                        <div style="flex: 1;">
+                            <h4 style="margin: 0; color: ${style.color};">${alert.title}</h4>
+                            <small style="color: var(--gray);">${alert.description}</small>
+                            <small style="display: block; color: var(--gray); margin-top: 4px;">${new Date(alert.timestamp).toLocaleString()}</small>
+                        </div>
+                        ${alert.actionUrl ? `<button onclick="window.open('${alert.actionUrl}', '_blank')" class="btn btn-outline" style="font-size: 0.8rem; padding: 6px 12px;">Fix</button>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
     </script>
 
     <!-- Photo Options Modal Styles -->

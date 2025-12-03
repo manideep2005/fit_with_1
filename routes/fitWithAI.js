@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const UserService = require('../services/userService');
 const { ensureFitnessAuth } = require('../middleware/fitnessAuth');
+const { generateNavId, storeNavData, createNavUrl } = require('../utils/slugify');
 
 // Apply fitness authentication to all routes
 router.use(ensureFitnessAuth);
@@ -10,41 +11,44 @@ router.use(ensureFitnessAuth);
 
 // Fitness Dashboard
 router.get('/dashboard', (req, res) => {
-  const navToken = Buffer.from(JSON.stringify({
+  const navId = generateNavId(req.session.user.email, '/dashboard');
+  
+  // Store navigation data with short ID
+  storeNavData(navId, {
     email: req.session.user.email || 'unknown',
     fullName: req.session.user.fullName || 'User',
     firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-    timestamp: Date.now(),
     sessionId: req.sessionID || 'no-session',
     route: '/dashboard',
     onboardingData: req.session.user.onboardingData || null
-  })).toString('base64');
+  });
 
   res.render('dashboard', {
     user: req.session.user,
     currentPath: '/dashboard',
-    navToken: navToken,
+    navId: navId, // Short navigation ID instead of long token
     currentPage: 'dashboard'
   });
 });
 
 // Workouts
 router.get('/workouts', (req, res) => {
-  const navToken = Buffer.from(JSON.stringify({
+  const navId = generateNavId(req.session.user.email, '/fitness/workouts');
+  
+  storeNavData(navId, {
     email: req.session.user.email || 'unknown',
     fullName: req.session.user.fullName || 'User',
     firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-    timestamp: Date.now(),
     sessionId: req.sessionID || 'no-session',
     route: '/fitness/workouts',
     service: 'fitness',
     onboardingData: req.session.user.onboardingData || null
-  })).toString('base64');
+  });
 
   res.render('workouts', {
     user: req.session.user,
     currentPath: '/fitness/workouts',
-    navToken: navToken,
+    navId: navId,
     currentPage: 'workouts',
     service: 'fitness'
   });
@@ -52,21 +56,22 @@ router.get('/workouts', (req, res) => {
 
 // Progress Tracking
 router.get('/progress', (req, res) => {
-  const navToken = Buffer.from(JSON.stringify({
+  const navId = generateNavId(req.session.user.email, '/fitness/progress');
+  
+  storeNavData(navId, {
     email: req.session.user.email || 'unknown',
     fullName: req.session.user.fullName || 'User',
     firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-    timestamp: Date.now(),
     sessionId: req.sessionID || 'no-session',
     route: '/fitness/progress',
     service: 'fitness',
     onboardingData: req.session.user.onboardingData || null
-  })).toString('base64');
+  });
 
   res.render('progress', {
     user: req.session.user,
     currentPath: '/fitness/progress',
-    navToken: navToken,
+    navId: navId,
     currentPage: 'progress',
     service: 'fitness'
   });
@@ -74,21 +79,22 @@ router.get('/progress', (req, res) => {
 
 // Meal Planner
 router.get('/meal-planner', (req, res) => {
-  const navToken = Buffer.from(JSON.stringify({
+  const navId = generateNavId(req.session.user.email, '/fitness/meal-planner');
+  
+  storeNavData(navId, {
     email: req.session.user.email || 'unknown',
     fullName: req.session.user.fullName || 'User',
     firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-    timestamp: Date.now(),
     sessionId: req.sessionID || 'no-session',
     route: '/fitness/meal-planner',
     service: 'fitness',
     onboardingData: req.session.user.onboardingData || null
-  })).toString('base64');
+  });
 
   res.render('meal-planner', {
     user: req.session.user,
     currentPath: '/fitness/meal-planner',
-    navToken: navToken,
+    navId: navId,
     currentPage: 'meal-planner',
     service: 'fitness'
   });
@@ -96,21 +102,22 @@ router.get('/meal-planner', (req, res) => {
 
 // Nutrition Tracking
 router.get('/nutrition', (req, res) => {
-  const navToken = Buffer.from(JSON.stringify({
+  const navId = generateNavId(req.session.user.email, '/fitness/nutrition');
+  
+  storeNavData(navId, {
     email: req.session.user.email || 'unknown',
     fullName: req.session.user.fullName || 'User',
     firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-    timestamp: Date.now(),
     sessionId: req.sessionID || 'no-session',
     route: '/fitness/nutrition',
     service: 'fitness',
     onboardingData: req.session.user.onboardingData || null
-  })).toString('base64');
+  });
 
   res.render('nutrition', {
     user: req.session.user,
     currentPath: '/fitness/nutrition',
-    navToken: navToken,
+    navId: navId,
     currentPage: 'nutrition',
     service: 'fitness'
   });
@@ -118,21 +125,22 @@ router.get('/nutrition', (req, res) => {
 
 // NutriScan
 router.get('/nutriscan', (req, res) => {
-  const navToken = Buffer.from(JSON.stringify({
+  const navId = generateNavId(req.session.user.email, '/fitness/nutriscan');
+  
+  storeNavData(navId, {
     email: req.session.user.email || 'unknown',
     fullName: req.session.user.fullName || 'User',
     firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-    timestamp: Date.now(),
     sessionId: req.sessionID || 'no-session',
     route: '/fitness/nutriscan',
     service: 'fitness',
     onboardingData: req.session.user.onboardingData || null
-  })).toString('base64');
+  });
 
   res.render('nutriscan', {
     user: req.session.user,
     currentPath: '/fitness/nutriscan',
-    navToken: navToken,
+    navId: navId,
     currentPage: 'nutriscan',
     service: 'fitness'
   });
@@ -140,21 +148,22 @@ router.get('/nutriscan', (req, res) => {
 
 // Challenges
 router.get('/challenges', (req, res) => {
-  const navToken = Buffer.from(JSON.stringify({
+  const navId = generateNavId(req.session.user.email, '/fitness/challenges');
+  
+  storeNavData(navId, {
     email: req.session.user.email || 'unknown',
     fullName: req.session.user.fullName || 'User',
     firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-    timestamp: Date.now(),
     sessionId: req.sessionID || 'no-session',
     route: '/fitness/challenges',
     service: 'fitness',
     onboardingData: req.session.user.onboardingData || null
-  })).toString('base64');
+  });
 
   res.render('challenges', {
     user: req.session.user,
     currentPath: '/fitness/challenges',
-    navToken: navToken,
+    navId: navId,
     currentPage: 'challenges',
     service: 'fitness'
   });
@@ -184,21 +193,22 @@ router.get('/biometrics', (req, res) => {
 
 // Schedule
 router.get('/schedule', (req, res) => {
-  const navToken = Buffer.from(JSON.stringify({
+  const navId = generateNavId(req.session.user.email, '/fitness/schedule');
+  
+  storeNavData(navId, {
     email: req.session.user.email || 'unknown',
     fullName: req.session.user.fullName || 'User',
     firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-    timestamp: Date.now(),
     sessionId: req.sessionID || 'no-session',
     route: '/fitness/schedule',
     service: 'fitness',
     onboardingData: req.session.user.onboardingData || null
-  })).toString('base64');
+  });
 
   res.render('schedule', {
     user: req.session.user,
     currentPath: '/fitness/schedule',
-    navToken: navToken,
+    navId: navId,
     currentPage: 'schedule',
     service: 'fitness'
   });
@@ -206,21 +216,22 @@ router.get('/schedule', (req, res) => {
 
 // Community
 router.get('/community', (req, res) => {
-  const navToken = Buffer.from(JSON.stringify({
+  const navId = generateNavId(req.session.user.email, '/fitness/community');
+  
+  storeNavData(navId, {
     email: req.session.user.email || 'unknown',
     fullName: req.session.user.fullName || 'User',
     firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-    timestamp: Date.now(),
     sessionId: req.sessionID || 'no-session',
     route: '/fitness/community',
     service: 'fitness',
     onboardingData: req.session.user.onboardingData || null
-  })).toString('base64');
+  });
 
   res.render('community', {
     user: req.session.user,
     currentPath: '/fitness/community',
-    navToken: navToken,
+    navId: navId,
     currentPage: 'community',
     service: 'fitness'
   });
@@ -228,21 +239,22 @@ router.get('/community', (req, res) => {
 
 // AI Coach
 router.get('/ai-coach', (req, res) => {
-  const navToken = Buffer.from(JSON.stringify({
+  const navId = generateNavId(req.session.user.email, '/fitness/ai-coach');
+  
+  storeNavData(navId, {
     email: req.session.user.email || 'unknown',
     fullName: req.session.user.fullName || 'User',
     firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-    timestamp: Date.now(),
     sessionId: req.sessionID || 'no-session',
     route: '/fitness/ai-coach',
     service: 'fitness',
     onboardingData: req.session.user.onboardingData || null
-  })).toString('base64');
+  });
 
   res.render('ai-coach', {
     user: req.session.user,
     currentPath: '/fitness/ai-coach',
-    navToken: navToken,
+    navId: navId,
     currentPage: 'ai-coach',
     service: 'fitness'
   });
@@ -272,21 +284,22 @@ router.get('/chat', (req, res) => {
 
 // Settings
 router.get('/settings', (req, res) => {
-  const navToken = Buffer.from(JSON.stringify({
+  const navId = generateNavId(req.session.user.email, '/fitness/settings');
+  
+  storeNavData(navId, {
     email: req.session.user.email || 'unknown',
     fullName: req.session.user.fullName || 'User',
     firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-    timestamp: Date.now(),
     sessionId: req.sessionID || 'no-session',
     route: '/fitness/settings',
     service: 'fitness',
     onboardingData: req.session.user.onboardingData || null
-  })).toString('base64');
+  });
 
   res.render('settings', {
     user: req.session.user,
     currentPath: '/fitness/settings',
-    navToken: navToken,
+    navId: navId,
     currentPage: 'settings',
     service: 'fitness'
   });
@@ -294,21 +307,22 @@ router.get('/settings', (req, res) => {
 
 // Subscription
 router.get('/subscription', (req, res) => {
-  const navToken = Buffer.from(JSON.stringify({
+  const navId = generateNavId(req.session.user.email, '/fitness/subscription');
+  
+  storeNavData(navId, {
     email: req.session.user.email || 'unknown',
     fullName: req.session.user.fullName || 'User',
     firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-    timestamp: Date.now(),
     sessionId: req.sessionID || 'no-session',
     route: '/fitness/subscription',
     service: 'fitness',
     onboardingData: req.session.user.onboardingData || null
-  })).toString('base64');
+  });
 
   res.render('subscription', {
     user: req.session.user,
     currentPath: '/fitness/subscription',
-    navToken: navToken,
+    navId: navId,
     currentPage: 'subscription',
     service: 'fitness'
   });
@@ -339,6 +353,53 @@ router.get('/health', (req, res) => {
 // Payment success route
 router.get('/payment-success', (req, res) => {
   res.render('payment-success');
+});
+
+// Virtual Doctor
+router.get('/virtual-doctor', (req, res) => {
+  const navId = generateNavId(req.session.user.email, '/fitness/virtual-doctor');
+  
+  storeNavData(navId, {
+    email: req.session.user.email || 'unknown',
+    fullName: req.session.user.fullName || 'User',
+    firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
+    sessionId: req.sessionID || 'no-session',
+    route: '/fitness/virtual-doctor',
+    service: 'fitness',
+    onboardingData: req.session.user.onboardingData || null
+  });
+
+  res.render('virtual-doctor', {
+    user: req.session.user,
+    currentPath: '/fitness/virtual-doctor',
+    navId: navId,
+    currentPage: 'virtual-doctor',
+    service: 'fitness'
+  });
+});
+
+// Virtual Doctor API - Test endpoint
+router.get('/api/virtual-doctor-test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Virtual doctor API is working',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Virtual Doctor API - AI Symptom Analysis
+router.post('/api/virtual-doctor-analyze', async (req, res) => {
+  try {
+    console.log('Virtual doctor API called with:', req.body);
+    const virtualDoctorAnalyze = require('../api/virtual-doctor-analyze');
+    await virtualDoctorAnalyze(req, res);
+  } catch (error) {
+    console.error('Virtual doctor API error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to process request: ' + error.message
+    });
+  }
 });
 
 // API Routes are now handled by separate API files

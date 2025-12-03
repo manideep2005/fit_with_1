@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: #f5f5f5; }
+        .admin-container { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+        }
+        .sidebar h2 { text-align: center; margin-bottom: 30px; }
+        .sidebar ul { list-style: none; }
+        .sidebar li a {
+            display: block;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        .sidebar li a:hover { background: rgba(255,255,255,0.1); }
+        .main-content { flex: 1; padding: 20px; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .settings-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5a6fd8; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        .alert { padding: 10px; border-radius: 5px; margin-bottom: 15px; }
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="sidebar">
+            <h2><i class="fas fa-tachometer-alt"></i> Admin</h2>
+            <ul>
+                <li><a href="/admin/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="/admin/users"><i class="fas fa-users"></i> Users</a></li>
+                <li><a href="/admin/messages"><i class="fas fa-envelope"></i> Messages</a></li>
+                <li><a href="/admin/analytics"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                <li><a href="/admin/monitoring"><i class="fas fa-desktop"></i> Monitoring</a></li>
+                <li><a href="/admin/logs"><i class="fas fa-file-alt"></i> Logs</a></li>
+                <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <h1>Admin Settings</h1>
+                <p>Manage platform configuration and admin account</p>
+            </div>
+            <div class="settings-grid">
+                <div class="settings-card">
+                    <h3><i class="fas fa-user"></i> Profile Settings</h3>
+                    <div id="profileAlert"></div>
+                    <form id="profileForm">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" id="username" value="<%= admin.username %>" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="email" value="<%= admin.email %>" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="fullName" value="<%= admin.fullName || '' %>">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </form>
+                </div>
+                
+                <div class="settings-card">
+                    <h3><i class="fas fa-lock"></i> Change Password</h3>
+                    <div id="passwordAlert"></div>
+                    <form id="passwordForm">
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" id="currentPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" id="newPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" id="confirmPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Change Password</button>
+                    </form>
+                </div>
+                
+                <div class="settings-card">
+                    <h3><i class="fas fa-cogs"></i> Platform Settings</h3>
+                    <div id="platformAlert"></div>
+                    <form id="platformForm">
+                        <div class="form-group">
+                            <label>Maintenance Mode</label>
+                            <select id="maintenanceMode">
+                                <option value="false">Disabled</option>
+                                <option value="true">Enabled</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Max Users Per Day</label>
+                            <input type="number" id="maxUsersPerDay" value="100">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Notifications</label>
+                            <select id="emailNotifications">
+                                <option value="true">Enabled</option>
+                                <option value="false">Disabled</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                    </form>
+                </div>
+                
+                <div class="settings-card">
+                    <h3><i class="fas fa-database"></i> System Actions</h3>
+                    <div class="form-group">
+                        <button class="btn btn-primary" onclick="exportData()">
+                            <i class="fas fa-download"></i> Export User Data
+                        </button>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-primary" onclick="clearCache()">
+                            <i class="fas fa-trash"></i> Clear Cache
+                        </button>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-danger" onclick="confirmSystemReset()">
+                            <i class="fas fa-exclamation-triangle"></i> System Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Profile form handler
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                fullName: document.getElementById('fullName').value
+            };
+            
+            try {
+                const response = await fetch('/admin/api/profile', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                showAlert('profileAlert', result.success ? 'success' : 'error', result.message);
+            } catch (error) {
+                showAlert('profileAlert', 'error', 'Failed to update profile');
+            }
+        });
+        
+        // Password form handler
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                showAlert('passwordAlert', 'error', 'Passwords do not match');
+                return;
+            }
+            
+            const formData = {
+                currentPassword: document.getElementById('currentPassword').value,
+                newPassword: newPassword
+            };
+            
+            try {
+                const response = await fetch('/admin/api/password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                showAlert('passwordAlert', result.success ? 'success' : 'error', result.message);
+                
+                if (result.success) {
+                    document.getElementById('passwordForm').reset();
+                }
+            } catch (error) {
+                showAlert('passwordAlert', 'error', 'Failed to change password');
+            }
+        });
+        
+        // Platform settings form handler
+        document.getElementById('platformForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                maintenanceMode: document.getElementById('maintenanceMode').value === 'true',
+                maxUsersPerDay: parseInt(document.getElementById('maxUsersPerDay').value),
+                emailNotifications: document.getElementById('emailNotifications').value === 'true'
+            };
+            
+            try {
+                const response = await fetch('/admin/api/platform-settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                showAlert('platformAlert', result.success ? 'success' : 'error', result.message);
+            } catch (error) {
+                showAlert('platformAlert', 'error', 'Failed to save settings');
+            }
+        });
+        
+        function showAlert(containerId, type, message) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => container.innerHTML = '', 5000);
+        }
+        
+        async function exportData() {
+            try {
+                const response = await fetch('/admin/api/export-data');
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `user-data-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+            } catch (error) {
+                alert('Failed to export data');
+            }
+        }
+        
+        async function clearCache() {
+            if (confirm('Are you sure you want to clear the cache?')) {
+                try {
+                    const response = await fetch('/admin/api/clear-cache', { method: 'POST' });
+                    const result = await response.json();
+                    alert(result.message);
+                } catch (error) {
+                    alert('Failed to clear cache');
+                }
+            }
+        }
+        
+        function confirmSystemReset() {
+            if (confirm('WARNING: This will reset all system data. This action cannot be undone. Are you sure?')) {
+                if (confirm('This is your final warning. All data will be lost. Continue?')) {
+                    systemReset();
+                }
+            }
+        }
+        
+        async function systemReset() {
+            try {
+                const response = await fetch('/admin/api/system-reset', { method: 'POST' });
+                const result = await response.json();
+                alert(result.message);
+                if (result.success) {
+                    window.location.href = '/admin/login';
+                }
+            } catch (error) {
+                alert('Failed to reset system');
+            }
+        }
+        
+        async function logout() {
+            const response = await fetch('/admin/logout', { method: 'POST' });
+            if (response.ok) window.location.href = '/admin/login';
+        }
+    </script>
+</body>
+</html>

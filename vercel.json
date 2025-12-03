@@ -1,12 +1,26 @@
 {
   "version": 2,
-  "functions": {
-    "api/index.js": {
-      "maxDuration": 30
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "admin-ultimate.js",
+      "use": "@vercel/node"
     }
-  },
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/index.js" },
-    { "source": "/(.*)", "destination": "/api/index.js" }
-  ]
+  ],
+  "routes": [
+    {
+      "src": "/admin/(.*)",
+      "dest": "/admin-ultimate.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/server.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }

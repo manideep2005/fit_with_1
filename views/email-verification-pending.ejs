@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Your Email - Fit-With-AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .verification-container {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .email-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            color: white;
+            font-size: 3rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: none;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-outline-primary {
+            border: 2px solid #6366f1;
+            color: #6366f1;
+            padding: 0.75rem 2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-outline-primary:hover {
+            background: #6366f1;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+
+        .email-tips {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 2rem 0;
+            text-align: left;
+        }
+
+        .email-tips h6 {
+            color: #6366f1;
+            margin-bottom: 1rem;
+        }
+
+        .email-tips ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+
+        .email-tips li {
+            margin-bottom: 0.5rem;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <div class="verification-container">
+        <div class="email-icon">
+            <i class="fas fa-envelope"></i>
+        </div>
+        
+        <h2 class="mb-3">Check Your Email</h2>
+        <p class="text-muted mb-4">
+            We've sent a verification link to <strong><%= email %></strong>. 
+            Please check your email and click the verification link to activate your account.
+        </p>
+
+        <div class="email-tips">
+            <h6><i class="fas fa-lightbulb me-2"></i>Can't find the email?</h6>
+            <ul>
+                <li>Check your spam or junk folder</li>
+                <li>Make sure you entered the correct email address</li>
+                <li>Wait a few minutes for the email to arrive</li>
+                <li>Add fitwithai@gmail.com to your contacts</li>
+            </ul>
+        </div>
+
+        <div class="d-flex gap-3 justify-content-center flex-wrap">
+            <button onclick="resendVerification()" class="btn btn-primary" id="resendBtn">
+                <i class="fas fa-paper-plane me-2"></i>Resend Email
+            </button>
+            <a href="/" class="btn btn-outline-primary">
+                <i class="fas fa-home me-2"></i>Back to Home
+            </a>
+        </div>
+
+        <div class="mt-4">
+            <small class="text-muted">
+                Already verified? <a href="/" class="text-decoration-none">Sign in here</a>
+            </small>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed top-0 end-0 p-3">
+        <div id="toast" class="toast" role="alert">
+            <div class="toast-header">
+                <i class="fas fa-info-circle text-primary me-2"></i>
+                <strong class="me-auto">Fit-With-AI</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastBody">
+                <!-- Toast message will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let resendCooldown = false;
+
+        async function resendVerification() {
+            if (resendCooldown) {
+                showToast('Please wait before requesting another email.', 'warning');
+                return;
+            }
+
+            const resendBtn = document.getElementById('resendBtn');
+            const originalText = resendBtn.innerHTML;
+            
+            resendBtn.disabled = true;
+            resendBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+
+            try {
+                const response = await fetch('/api/resend-verification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email: '<%= email %>' })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Verification email sent successfully! Please check your inbox.', 'success');
+                    startCooldown();
+                } else {
+                    showToast(data.error || 'Failed to resend verification email', 'error');
+                }
+            } catch (error) {
+                console.error('Resend error:', error);
+                showToast('Network error. Please try again.', 'error');
+            } finally {
+                resendBtn.disabled = false;
+                resendBtn.innerHTML = originalText;
+            }
+        }
+
+        function startCooldown() {
+            resendCooldown = true;
+            const resendBtn = document.getElementById('resendBtn');
+            let countdown = 60;
+            
+            const interval = setInterval(() => {
+                resendBtn.innerHTML = `<i class="fas fa-clock me-2"></i>Resend in ${countdown}s`;
+                resendBtn.disabled = true;
+                countdown--;
+                
+                if (countdown < 0) {
+                    clearInterval(interval);
+                    resendBtn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Resend Email';
+                    resendBtn.disabled = false;
+                    resendCooldown = false;
+                }
+            }, 1000);
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastBody = document.getElementById('toastBody');
+            const toastHeader = toast.querySelector('.toast-header i');
+            
+            // Update icon and color based on type
+            toastHeader.className = `fas me-2 ${
+                type === 'success' ? 'fa-check-circle text-success' :
+                type === 'error' ? 'fa-exclamation-circle text-danger' :
+                type === 'warning' ? 'fa-exclamation-triangle text-warning' :
+                'fa-info-circle text-primary'
+            }`;
+            
+            toastBody.textContent = message;
+            
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+
+        // Auto-refresh page every 30 seconds to check if email was verified
+        setInterval(async () => {
+            try {
+                const response = await fetch('/api/check-verification-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email: '<%= email %>' })
+                });
+
+                const data = await response.json();
+                
+                if (data.verified) {
+                    window.location.href = '/dashboard';
+                }
+            } catch (error) {
+                // Silently fail - don't show error for background check
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

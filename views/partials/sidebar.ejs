@@ -25,67 +25,77 @@
     
     <ul class="nav-menu">
         <li class="nav-item">
-            <a href="/dashboard?token=<%= navToken %>" class="nav-link <%= currentPage === 'dashboard' ? 'active' : '' %>">
+            <a href="/dashboard?nav=<%= navId %>" class="nav-link <%= currentPage === 'dashboard' ? 'active' : '' %>">
                 <i class="fas fa-home"></i> Dashboard
             </a>
         </li>
         <li class="nav-item">
-            <a href="/workouts?token=<%= navToken %>" class="nav-link <%= currentPage === 'workouts' ? 'active' : '' %>">
+            <a href="/workouts?nav=<%= navId %>" class="nav-link <%= currentPage === 'workouts' ? 'active' : '' %>">
                 <i class="fas fa-dumbbell"></i> Workouts
             </a>
         </li>
         <li class="nav-item">
-            <a href="/progress?token=<%= navToken %>" class="nav-link <%= currentPage === 'progress' ? 'active' : '' %>">
+            <a href="/progress?nav=<%= navId %>" class="nav-link <%= currentPage === 'progress' ? 'active' : '' %>">
                 <i class="fas fa-chart-line"></i> Progress
             </a>
         </li>
         <li class="nav-item">
-            <a href="/nutrition?token=<%= navToken %>" class="nav-link <%= currentPage === 'nutrition' ? 'active' : '' %>">
+            <a href="/nutrition?nav=<%= navId %>" class="nav-link <%= currentPage === 'nutrition' ? 'active' : '' %>">
                 <i class="fas fa-utensils"></i> Nutrition
             </a>
         </li>
         <li class="nav-item">
-            <a href="/nutriscan?token=<%= navToken %>" class="nav-link <%= currentPage === 'nutriscan' ? 'active' : '' %>">
+            <a href="/nutriscan?nav=<%= navId %>" class="nav-link <%= currentPage === 'nutriscan' ? 'active' : '' %>">
                 <i class="fas fa-qrcode"></i> NutriScan
             </a>
         </li>
         <li class="nav-item">
-            <a href="/meal-planner?token=<%= navToken %>" class="nav-link <%= currentPage === 'meal-planner' ? 'active' : '' %>">
+            <a href="/meal-planner?nav=<%= navId %>" class="nav-link <%= currentPage === 'meal-planner' ? 'active' : '' %>">
                 <i class="fas fa-calendar-check"></i> meal palnner
             </a>
         </li>
         <li class="nav-item">
-            <a href="/challenges?token=<%= navToken %>" class="nav-link <%= currentPage === 'challenges' ? 'active' : '' %>">
+            <a href="/challenges?nav=<%= navId %>" class="nav-link <%= currentPage === 'challenges' ? 'active' : '' %>">
                 <i class="fas fa-trophy"></i> Challenges
             </a>
         </li>
         <li class="nav-item">
-            <a href="/schedule?token=<%= navToken %>" class="nav-link <%= currentPage === 'schedule' ? 'active' : '' %>">
+            <a href="/schedule?nav=<%= navId %>" class="nav-link <%= currentPage === 'schedule' ? 'active' : '' %>">
                 <i class="fas fa-calendar-alt"></i> Schedule
             </a>
         </li>
         <li class="nav-item">
-            <a href="/community?token=<%= navToken %>" class="nav-link <%= currentPage === 'community' ? 'active' : '' %>">
+            <a href="/community?nav=<%= navId %>" class="nav-link <%= currentPage === 'community' ? 'active' : '' %>">
                 <i class="fas fa-users"></i> Community
             </a>
         </li>
         <li class="nav-item">
-            <a href="/chat?token=<%= navToken %>" class="nav-link <%= currentPage === 'chat' ? 'active' : '' %>">
+            <a href="/chat?nav=<%= navId %>" class="nav-link <%= currentPage === 'chat' ? 'active' : '' %>">
                 <i class="fas fa-comments"></i> Chat
             </a>
         </li>
         <li class="nav-item">
-            <a href="/ai-coach?token=<%= navToken %>" class="nav-link <%= currentPage === 'ai-coach' ? 'active' : '' %>">
+            <a href="/ai-coach?nav=<%= navId %>" class="nav-link <%= currentPage === 'ai-coach' ? 'active' : '' %>">
                 <i class="fas fa-robot"></i> AI Coach
             </a>
         </li>
         <li class="nav-item">
-            <a href="/subscription?token=<%= navToken %>" class="nav-link <%= currentPage === 'subscription' ? 'active' : '' %>">
+            <a href="/gamification?nav=<%= navId %>" class="nav-link <%= currentPage === 'gamification' ? 'active' : '' %>">
+                <i class="fas fa-trophy"></i> Rewards & Streaks
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/virtual-doctor?nav=<%= navId %>" class="nav-link <%= currentPage === 'virtual-doctor' ? 'active' : '' %>">
+                <i class="fas fa-user-md"></i> Virtual Doctor
+            </a>
+        </li>
+        <li class="nav-item">
+            <a href="/subscription?nav=<%= navId %>" class="nav-link <%= currentPage === 'subscription' ? 'active' : '' %>">
                 <i class="fas fa-crown"></i> Subscription
             </a>
         </li>
         <li class="nav-item">
-            <a href="/settings?token=<%= navToken %>" class="nav-link <%= currentPage === 'settings' ? 'active' : '' %>">
+            <a href="/settings?nav=<%= navId %>" class="nav-link <%= currentPage === 'settings' ? 'active' : '' %>">
                 <i class="fas fa-cog"></i> Settings
             </a>
         </li>

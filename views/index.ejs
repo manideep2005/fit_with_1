@@ -3,207 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fit-With-AI - Creative Solutions</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    <title>Fit-With-AI - Your AI Fitness Companion</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
         :root {
-            --primary: #6C63FF;
-            --secondary: #4D44DB;
-            --accent: #FF6584;
-            --light: #F8F9FA;
-            --dark: #343A40;
-            --success: #28A745;
-            --warning: #FFC107;
-            --danger: #DC3545;
-            --gray: #6C757D;
-            --light-gray: #E9ECEF;
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
         }
 
         body {
-            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: #ffffff;
-            overflow-x: hidden;
-            position: relative;
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--gray-700);
+            background-color: #ffffff;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
+        /* Navbar */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1rem 0;
+            transition: all 0.3s ease;
         }
 
-        .container {
-            width: 100%;
-            min-height: 100vh;
-            position: relative;
+        .navbar.scrolled {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
         }
 
-        /* Header */
-        header {
-            padding: 1.5rem 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 10;
-            background: rgba(26, 26, 46, 0.8);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary) !important;
         }
 
-        .logo {
-            font-size: 2rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: 1px;
-            position: relative;
-        }
-
-        .logo::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 8px;
-            opacity: 0.1;
-            z-index: -1;
-            transform: scale(1.2);
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-        }
-
-        .nav-links a {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
+        .nav-link {
             font-weight: 500;
-            position: relative;
-            padding: 0.5rem 1rem;
-            transition: all 0.3s ease;
-            border-radius: 8px;
+            color: var(--gray-700) !important;
+            margin: 0 0.5rem;
+            transition: color 0.3s ease;
         }
 
-        .nav-links a:hover {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            transform: translateY(-2px);
+        .nav-link:hover {
+            color: var(--primary) !important;
         }
 
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--primary);
-            transition: width 0.3s ease;
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        .auth-buttons {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .auth-btn {
-            padding: 0.7rem 1.5rem;
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             border: none;
-            border-radius: 30px;
+            padding: 0.75rem 1.5rem;
             font-weight: 600;
-            cursor: pointer;
+            border-radius: 50px;
             transition: all 0.3s ease;
         }
 
-        .signin-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: #ffffff;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
         }
 
-        .signin-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.1);
+        .btn-outline-primary {
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: 50px;
+            transition: all 0.3s ease;
         }
 
-        .signup-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            position: relative;
-            overflow: hidden;
+        .btn-outline-primary:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
         }
 
-        .signup-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .signup-btn:hover::before {
-            left: 100%;
-        }
-
-        .signup-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
-        }
-
+        /* Hero Section */
         .hero {
-            height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             display: flex;
             align-items: center;
-            justify-content: center;
             position: relative;
             overflow: hidden;
-            background: radial-gradient(ellipse at center, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
-            color: white;
         }
 
         .hero::before {
@@ -211,637 +113,111 @@
             position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 25% 25%, #667eea 0%, transparent 50%),
-                radial-gradient(circle at 75% 75%, #764ba2 0%, transparent 50%);
-            opacity: 0.1;
-            z-index: -1;
-            animation: pulse 4s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.1; }
-            50% { opacity: 0.2; }
-        }
-
-        .floating-elements {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
-
-        /* Glass morphism photo cards */
-        .fitness-glass-card {
-            position: absolute;
-            border-radius: 20px;
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            overflow: hidden;
-            animation: float-card 8s ease-in-out infinite;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        .fitness-glass-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
             right: 0;
             bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.1)" points="0,1000 1000,0 1000,1000"/></svg>');
             background-size: cover;
-            background-position: center;
-            opacity: 0.4;
-            z-index: -2;
-            transition: all 0.4s ease;
-        }
-        
-        .fitness-glass-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            z-index: -1;
-        }
-        
-        .fitness-glass-card:hover {
-            transform: translateY(-10px) rotateX(5deg) rotateY(5deg) scale(1.05);
-            box-shadow: 0 25px 50px rgba(108, 99, 255, 0.3);
-            border-color: rgba(108, 99, 255, 0.4);
-        }
-        
-        .fitness-glass-card:hover::before {
-            opacity: 0.6;
-            transform: scale(1.1);
-        }
-
-        .fitness-glass-card.workout::before {
-            background-image: url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=400&h=300');
-        }
-
-        .fitness-glass-card.nutrition::before {
-            background-image: url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=400&h=300');
-        }
-
-        .fitness-glass-card.yoga::before {
-            background-image: url('https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=400&h=300');
-        }
-
-        .fitness-glass-card.running::before {
-            background-image: url('https://images.unsplash.com/photo-1571008887538-b36bb32f4571?auto=format&fit=crop&w=400&h=300');
-        }
-
-        .fitness-glass-card.nature::before {
-            background-image: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=400&h=300');
-        }
-
-        @keyframes float-card {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-20px) scale(1.05); }
-        }
-        
-        /* Edge-cutting morphism shapes */
-        .edge-cut-shape {
-            position: absolute;
-            clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
-            background: rgba(255, 255, 255, 0.06);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            transition: all 0.5s ease;
-            overflow: hidden;
-            animation: float-edge 10s ease-in-out infinite;
-        }
-        
-        .edge-cut-shape::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: var(--bg-image);
-            background-size: cover;
-            background-position: center;
-            opacity: 0.5;
-            transition: all 0.5s ease;
-        }
-        
-        .edge-cut-shape::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.15) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.1) 100%);
-            z-index: 1;
-        }
-        
-        .edge-cut-shape:hover {
-            clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
-            transform: scale(1.1) rotate(5deg);
-            box-shadow: 0 20px 40px rgba(108, 99, 255, 0.3);
-        }
-        
-        .edge-cut-shape:hover::before {
-            opacity: 0.7;
-            transform: scale(1.1) rotate(-2deg);
-        }
-        
-        @keyframes float-edge {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            33% { transform: translateY(-15px) rotate(3deg); }
-            66% { transform: translateY(10px) rotate(-2deg); }
-        }
-        
-        /* Advanced glass morphism elements */
-        .glass-morphism-element {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(35px);
-            -webkit-backdrop-filter: blur(35px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 50%;
-            animation: float-advanced 8s ease-in-out infinite;
-            box-shadow: 0 8px 32px rgba(108, 99, 255, 0.1);
-        }
-        
-        .glass-morphism-element::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 60%;
-            height: 60%;
-            background: radial-gradient(circle, rgba(108, 99, 255, 0.2), transparent);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            animation: pulse-inner 4s ease-in-out infinite;
-        }
-        
-        .glass-morphism-element.large {
-            width: 180px;
-            height: 180px;
-            top: 12%;
-            right: 12%;
-            animation-delay: -2s;
-        }
-        
-        .glass-morphism-element.medium {
-            width: 100px;
-            height: 100px;
-            top: 65%;
-            left: 8%;
-            animation-delay: -4s;
-        }
-        
-        .glass-morphism-element.small {
-            width: 60px;
-            height: 60px;
-            top: 35%;
-            right: 35%;
-            animation-delay: -1s;
-        }
-        
-        @keyframes float-advanced {
-            0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
-            33% { transform: translateY(-25px) rotate(8deg) scale(1.1); }
-            66% { transform: translateY(15px) rotate(-5deg) scale(0.95); }
-        }
-        
-        @keyframes pulse-inner {
-            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.2); }
         }
 
         .hero-content {
-            max-width: 800px;
-            padding: 0 2rem;
-            text-align: center;
-            z-index: 1;
-        }
-
-        .hero-title {
-            font-size: 4.5rem;
-            margin-bottom: 1.5rem;
-            line-height: 1.1;
-            background: linear-gradient(135deg, #ffffff 0%, #667eea 50%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
             position: relative;
             z-index: 2;
         }
 
-        .hero-title::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            z-index: -1;
-            transform: translate(2px, 2px);
-            filter: blur(1px);
-        }
-
-        .hero-title span {
-            position: relative;
-            display: inline-block;
-        }
-
-        .changing-text {
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
             color: white;
-            position: relative;
-            text-decoration: underline;
-            text-decoration-color: var(--accent);
-            text-underline-offset: 10px;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
         }
 
-        .hero-subtitle {
-            font-size: 1.2rem;
+        .hero p {
+            font-size: 1.25rem;
+            color: rgba(255, 255, 255, 0.9);
             margin-bottom: 2rem;
-            opacity: 0.9;
-            line-height: 1.6;
         }
 
-        .hero-buttons {
-            display: flex;
-            gap: 1.5rem;
-            justify-content: center;
-        }
-
-        .hero-btn {
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .primary-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
+        .hero-image {
             position: relative;
-            overflow: hidden;
-            border: none;
+            z-index: 2;
         }
 
-        .primary-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.6s;
-        }
-
-        .primary-btn:hover::before {
-            left: 100%;
-        }
-
-        .primary-btn:hover {
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
-        }
-
-        .secondary-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(10px);
-        }
-
-        .secondary-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-5px) scale(1.05);
-            box-shadow: 0 20px 40px rgba(255, 255, 255, 0.1);
+        .hero-image img {
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
         /* Features Section */
         .features {
-            padding: 120px 20px;
-            background: rgba(26, 26, 46, 0.5);
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
+            padding: 5rem 0;
+            background: var(--gray-100);
         }
 
-        .features::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 80% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 20% 80%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
-            z-index: -1;
-        }
-
-        .features .section-title {
-            text-align: center;
-            font-size: 3.5rem;
-            font-weight: 800;
-            color: #ffffff;
-            margin-bottom: 80px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .features .section-title span {
-            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            position: relative;
-        }
-
-        .features .section-title span::after {
-            content: '';
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 2px;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 40px;
-            max-width: 1400px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 2;
-        }
-
-        /* Glass morphism feature cards */
         .feature-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 40px 30px;
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
             text-align: center;
-            position: relative;
-            overflow: hidden;
-            transform: translateY(50px);
-            opacity: 0;
-            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-        }
-        
-        .feature-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.05) 0%,
-                rgba(255, 255, 255, 0.02) 50%,
-                rgba(108, 99, 255, 0.03) 100%);
-            border-radius: 24px;
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-        
-        .feature-card:hover::after {
-            opacity: 1;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            border: 1px solid var(--gray-200);
+            height: 100%;
         }
 
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            border-radius: 24px;
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
-
-        .feature-card:hover::before {
-            opacity: 1;
-        }
-
-        .feature-card.stagger-animate {
-            animation: slideUp 0.8s ease-out forwards;
-        }
-
-        .feature-card:nth-child(1) { animation-delay: 0.1s; }
-        .feature-card:nth-child(2) { animation-delay: 0.2s; }
-        .feature-card:nth-child(3) { animation-delay: 0.3s; }
-        .feature-card:nth-child(4) { animation-delay: 0.4s; }
-        .feature-card:nth-child(5) { animation-delay: 0.5s; }
-        .feature-card:nth-child(6) { animation-delay: 0.6s; }
 
         .feature-icon {
             width: 80px;
             height: 80px;
-            margin: 0 auto 30px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             border-radius: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .feature-icon::after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 22px;
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .feature-card:hover .feature-icon::after {
-            opacity: 1;
-        }
-
-        .feature-icon i {
+            margin: 0 auto 1.5rem;
+            color: white;
             font-size: 2rem;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .feature-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
+        .feature-card h3 {
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 1rem;
         }
 
-        .feature-desc {
-            font-size: 1rem;
-            color: rgba(255, 255, 255, 0.7);
-            line-height: 1.7;
-            transition: all 0.3s ease;
-        }
-
-        .feature-card:hover .feature-title {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .feature-card:hover .feature-desc {
-            color: rgba(255, 255, 255, 0.9);
-        }
-
-        .feature-card:hover {
-            transform: translateY(-20px) scale(1.03) rotateY(5deg);
-            border-color: rgba(102, 126, 234, 0.6);
-            box-shadow: 0 30px 70px rgba(102, 126, 234, 0.4);
-            background: rgba(255, 255, 255, 0.12);
-            backdrop-filter: blur(30px);
-        }
-
-        .feature-card:hover .feature-icon {
-            transform: scale(1.1) rotateY(15deg);
-            background: rgba(108, 99, 255, 0.2);
-            box-shadow: 0 15px 30px rgba(108, 99, 255, 0.1);
-        }
-
-        .feature-card:hover .feature-icon i {
-            transform: scale(1.1);
-        }
-
-        .feature-card:hover .feature-title {
-            color: var(--primary);
-        }
-
-        .feature-card:hover .feature-desc {
-            color: var(--dark);
-        }
-
-        @keyframes slideUp {
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+        .feature-card p {
+            color: var(--gray-600);
+            line-height: 1.6;
         }
 
         /* About Section */
         .about {
-            padding: 6rem 5%;
-            background: rgba(22, 33, 62, 0.8);
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-        }
-
-        .about::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 30% 70%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 70% 30%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
-            z-index: -1;
-        }
-
-        .about-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 4rem;
-            align-items: center;
-        }
-
-        .about-image-container {
-            position: relative;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
-
-        .about-image {
-            width: 100%;
-            height: auto;
-            display: block;
-            transition: transform 0.5s ease;
-        }
-
-        .about-image-container:hover .about-image {
-            transform: scale(1.05);
+            padding: 5rem 0;
         }
 
         .about-content h2 {
             font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--gray-800);
             margin-bottom: 1.5rem;
-            color: #ffffff;
-        }
-
-        .about-content h2 span {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .about-content p {
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 1.5rem;
-            line-height: 1.7;
             font-size: 1.1rem;
+            color: var(--gray-600);
+            margin-bottom: 1.5rem;
         }
 
         .stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1.5rem;
-            margin-top: 2.5rem;
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--gray-200);
         }
 
         .stat-item {
@@ -851,1437 +227,977 @@
         .stat-number {
             font-size: 2.5rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--primary);
             margin-bottom: 0.5rem;
         }
 
         .stat-label {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9rem;
+            color: var(--gray-600);
+            font-weight: 500;
         }
 
-        /* Gallery Section */
-        .gallery {
-            padding: 80px 20px;
-            background: rgba(15, 52, 96, 0.8);
-            min-height: 100vh;
-            position: relative;
-            overflow: hidden;
-            backdrop-filter: blur(10px);
-        }
-
-        .gallery::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 60% 40%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 60%, rgba(118, 75, 162, 0.1) 0%, transparent 50%);
-            z-index: -1;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 3.5rem;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 60px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .section-title span {
-            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            position: relative;
-        }
-
-        .section-title span::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 4px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border-radius: 2px;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
-        }
-
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-            max-width: 1400px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 2;
-        }
-
-        /* Edge cutting morphism gallery items */
-        .gallery-item {
-            position: relative;
-            clip-path: polygon(0 0, calc(100% - 25px) 0, 100% 25px, 100% 100%, 25px 100%, 0 calc(100% - 25px));
-            aspect-ratio: 1;
-            background: rgba(255, 255, 255, 0.05);
-            cursor: pointer;
-            transform: translateY(50px);
-            opacity: 0;
-            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-        }
-        
-        .gallery-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.03) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            z-index: 1;
-        }
-
-        .gallery-item.stagger-animate {
-            animation: slideUp 0.6s ease-out forwards;
-        }
-
-        .gallery-item:nth-child(1) { animation-delay: 0.1s; }
-        .gallery-item:nth-child(2) { animation-delay: 0.2s; }
-        .gallery-item:nth-child(3) { animation-delay: 0.3s; }
-        .gallery-item:nth-child(4) { animation-delay: 0.4s; }
-        .gallery-item:nth-child(5) { animation-delay: 0.5s; }
-        .gallery-item:nth-child(6) { animation-delay: 0.6s; }
-        .gallery-item:nth-child(7) { animation-delay: 0.7s; }
-        .gallery-item:nth-child(8) { animation-delay: 0.8s; }
-
-        .gallery-image {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .gallery-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9));
-            backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 30px;
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .gallery-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 15px;
-            transform: translateY(20px);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.1s;
-        }
-
-        .gallery-desc {
-            font-size: 1rem;
-            color: #ffffff;
-            line-height: 1.6;
-            opacity: 0.9;
-            transform: translateY(20px);
-            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
-        }
-
-        .gallery-item:hover {
-            clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px));
-            transform: translateY(-15px) scale(1.05) rotateX(5deg);
-            box-shadow: 0 25px 60px rgba(102, 126, 234, 0.4);
-            border-color: rgba(102, 126, 234, 0.6);
-        }
-
-        .gallery-item:hover .gallery-image {
-            transform: scale(1.1);
-        }
-
-        .gallery-item:hover .gallery-overlay {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .gallery-item:hover .gallery-title,
-        .gallery-item:hover .gallery-desc {
-            transform: translateY(0);
-        }
-
-        /* Auth Modal */
-        .auth-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(26, 26, 46, 0.9);
-            backdrop-filter: blur(20px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .auth-modal.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-container {
-            width: 400px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-            overflow: hidden;
-            transform: translateY(-50px);
-            transition: all 0.3s ease;
-        }
-
-        .auth-modal.active .modal-container {
-            transform: translateY(0);
-        }
-
-        .modal-tabs {
-            display: flex;
-        }
-
-        .modal-tab {
-            flex: 1;
-            padding: 1.5rem;
-            text-align: center;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.05);
-            color: rgba(255, 255, 255, 0.7);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .modal-tab.active {
-            background: rgba(102, 126, 234, 0.2);
-            color: #ffffff;
-            border-bottom: 2px solid #667eea;
-        }
-
-        .modal-content {
-            padding: 2rem;
-        }
-
-        .auth-form {
-            display: none;
-        }
-
-        .auth-form.active {
-            display: block;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 0.9rem;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 1rem;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            color: #ffffff;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .form-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
-        }
-
-        .form-input:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.15);
-            border-color: #667eea;
-            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3);
-        }
-
-        .form-btn {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border: none;
-            border-radius: 8px;
+        /* CTA Section */
+        .cta {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 5rem 0;
             color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .form-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .form-btn:hover::before {
-            left: 100%;
-        }
-
-        .form-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.4);
-        }
-
-        .form-footer {
-            margin-top: 1.5rem;
             text-align: center;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9rem;
         }
 
-        .form-footer a {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            text-decoration: none;
+        .cta h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .cta p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .btn-light {
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 1rem 2rem;
+            font-weight: 600;
+            border-radius: 50px;
             transition: all 0.3s ease;
         }
 
-        .form-footer a:hover {
-            text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            color: rgba(255, 255, 255, 0.7);
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            width: 35px;
-            height: 35px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-        }
-
-        .modal-close:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: #ffffff;
-            transform: scale(1.1);
+        .btn-light:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
         }
 
         /* Footer */
-        footer {
-            background: rgba(26, 26, 46, 0.9);
-            padding: 5rem 5% 2rem;
-            position: relative;
-            backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.3);
+        .footer {
+            background: var(--gray-900);
+            color: white;
+            padding: 3rem 0 1rem;
         }
 
-        .footer-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 3rem;
-            margin-bottom: 3rem;
+        .footer h5 {
+            font-weight: 600;
+            margin-bottom: 1rem;
         }
 
-        .footer-col h3 {
-            color: #ffffff;
-            font-size: 1.5rem;
-            margin-bottom: 1.5rem;
-            position: relative;
-        }
-
-        .footer-col h3::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 50px;
-            height: 2px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
-        }
-
-        .footer-col p {
-            color: rgba(255, 255, 255, 0.7);
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-        }
-
-        .footer-col ul {
-            list-style: none;
-        }
-
-        .footer-col ul li {
-            margin-bottom: 0.8rem;
-        }
-
-        .footer-col ul li a {
-            color: rgba(255, 255, 255, 0.7);
+        .footer a {
+            color: #d1d5db;
             text-decoration: none;
-            transition: all 0.3s ease;
-            display: inline-block;
+            transition: color 0.3s ease;
         }
 
-        .footer-col ul li a:hover {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            transform: translateX(5px);
+        .footer a:hover {
+            color: white;
         }
 
-        .social-links {
-            display: flex;
-            gap: 1rem;
+        .footer .text-muted {
+            color: #9ca3af !important;
         }
 
-        .social-link {
-            width: 40px;
-            height: 40px;
-            display: flex;
+        .footer ul li {
+            color: #d1d5db;
+        }
+
+        .social-links a {
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            background: rgba(255, 255, 255, 0.1);
+            width: 40px;
+            height: 40px;
+            background: var(--gray-800);
             border-radius: 50%;
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
+            margin-right: 0.5rem;
             transition: all 0.3s ease;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .social-link:hover {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            transform: translateY(-5px) scale(1.1);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        .social-links a:hover {
+            background: var(--primary);
+            transform: translateY(-2px);
         }
 
-        .footer-bottom {
-            text-align: center;
-            padding-top: 2rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.9rem;
+        /* Modal */
+        .modal-content {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
-        /* Responsive Design */
-        @media (max-width: 992px) {
-            .hero-title {
-                font-size: 3rem;
-            }
-
-            .nav-links {
-                display: none;
-            }
-
-            .about-grid {
-                grid-template-columns: 1fr;
-                gap: 3rem;
-            }
-
-            .about-image-container {
-                order: -1;
-            }
+        .modal-header {
+            border-bottom: 1px solid var(--gray-200);
+            padding: 1.5rem;
         }
 
-        @media (max-width: 768px) {
-            .hero-title {
-                font-size: 2.5rem;
-            }
-
-            .hero-subtitle {
-                font-size: 1rem;
-            }
-
-            .hero-buttons {
-                flex-direction: column;
-                gap: 1rem;
-            }
-
-            .feature-card {
-                padding: 1.5rem;
-            }
-
-            .modal-container {
-                width: 90%;
-            }
+        .modal-body {
+            padding: 2rem;
         }
 
-        /* Animation Classes */
+        .form-control {
+            border: 2px solid var(--gray-200);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25);
+        }
+
+        /* Animations */
         .fade-in {
             opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
         }
 
-        .fade-in.active {
+        .fade-in.visible {
             opacity: 1;
             transform: translateY(0);
         }
 
-        .stagger-animate {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-
-        /* Enhanced animations */
-        @keyframes float {
-            0% { transform: translateY(0px) rotate(0deg); }
-            33% { transform: translateY(-20px) rotate(2deg); }
-            66% { transform: translateY(-10px) rotate(-1deg); }
-            100% { transform: translateY(0px) rotate(0deg); }
-        }
-
-        @keyframes float-random {
-            0%, 100% { transform: translateY(0px) translateX(0px); }
-            25% { transform: translateY(-30px) translateX(10px); }
-            50% { transform: translateY(-60px) translateX(-5px); }
-            75% { transform: translateY(-20px) translateX(15px); }
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(108, 99, 255, 0.3); }
-            50% { box-shadow: 0 0 40px rgba(108, 99, 255, 0.6); }
-        }
-
-        .float {
-            animation: float 8s ease-in-out infinite;
-        }
-
-        .glow-effect {
-            animation: pulse-glow 3s ease-in-out infinite;
-        }
-
-        /* Preloader */
-        .preloader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            transition: opacity 0.6s ease, visibility 0.6s ease;
-        }
-
-        .preloader.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .loader {
-            width: 80px;
-            height: 80px;
-            border: 4px solid var(--primary);
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            100% {
-                transform: rotate(360deg);
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .hero p {
+                font-size: 1.1rem;
+            }
+            
+            .about-content h2 {
+                font-size: 2rem;
+            }
+            
+            .cta h2 {
+                font-size: 2rem;
             }
         }
 
-        /* Toast Notifications */
+        /* Toast */
         .toast-container {
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            z-index: 1055;
         }
 
         .toast {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 16px 24px;
+            background: white;
+            border: none;
             border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-            transform: translateX(400px);
-            opacity: 0;
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            min-width: 300px;
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
         }
 
-        .toast.show {
-            transform: translateX(0);
-            opacity: 1;
+        .toast.success {
+            border-left: 4px solid var(--success);
         }
 
-        .toast::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            animation: shimmer 2s infinite;
+        .toast.error {
+            border-left: 4px solid var(--danger);
         }
 
-        @keyframes shimmer {
-            0% { left: -100%; }
-            100% { left: 100%; }
+        .toast.info {
+            border-left: 4px solid var(--primary);
         }
-
-        .toast.success { background: linear-gradient(135deg, #4CAF50, #45a049); }
-        .toast.error { background: linear-gradient(135deg, #f44336, #d32f2f); }
-        .toast.warning { background: linear-gradient(135deg, #ff9800, #f57c00); }
-
-        /* Typewriter Effect */
-        .typewriter {
-            overflow: hidden;
-            border-right: 3px solid rgba(255,255,255,0.75);
-            white-space: nowrap;
-            animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
-        }
-
-        @keyframes typing {
-            from { width: 0; }
-            to { width: 100%; }
-        }
-
-        @keyframes blink-caret {
-            from, to { border-color: transparent; }
-            50% { border-color: rgba(255,255,255,0.75); }
-        }
-
-        /* Smooth Text Effect */
-        .smooth-text {
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .smooth-text::before {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            z-index: -1;
-            transform: translate(1px, 1px);
-            opacity: 0.6;
-        }
-
-        /* Particle Background */
-        #particles-js {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: 0;
-        }
-
-        /* Subtle Glow Text */
-        .neon-text {
-            color: #fff;
-            text-shadow: 
-                0 0 3px rgba(255, 255, 255, 0.3),
-                0 0 8px rgba(102, 126, 234, 0.4),
-                0 0 15px rgba(102, 126, 234, 0.2);
-            animation: subtle-glow 3s ease-in-out infinite;
-        }
-
-        @keyframes subtle-glow {
-            0%, 100% {
-                text-shadow: 
-                    0 0 3px rgba(255, 255, 255, 0.3),
-                    0 0 8px rgba(102, 126, 234, 0.4),
-                    0 0 15px rgba(102, 126, 234, 0.2);
-            }
-            50% {
-                text-shadow: 
-                    0 0 5px rgba(255, 255, 255, 0.4),
-                    0 0 12px rgba(102, 126, 234, 0.5),
-                    0 0 20px rgba(102, 126, 234, 0.3);
-            }
-        }
-
-        /* Matrix Rain Effect */
-        .matrix-rain {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-            opacity: 0.1;
-        }
-
-        /* Morphing Shapes */
-        .morphing-shape {
-            position: absolute;
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            border-radius: 50%;
-            animation: morph 4s ease-in-out infinite;
-        }
-
-        @keyframes morph {
-            0%, 100% {
-                border-radius: 50%;
-                transform: rotate(0deg) scale(1);
-            }
-            25% {
-                border-radius: 25%;
-                transform: rotate(90deg) scale(1.2);
-            }
-            50% {
-                border-radius: 0%;
-                transform: rotate(180deg) scale(0.8);
-            }
-            75% {
-                border-radius: 75%;
-                transform: rotate(270deg) scale(1.1);
-            }
-        }
-  </style>
+    </style>
 </head>
 <body>
-    <!-- Preloader -->
-    <div class="preloader">
-        <div class="loader"></div>
-    </div>
-
-    <!-- Header -->
-    <header>
-        <div class="logo">Fit-With-AI</div>
-        <div class="nav-links">
-            <a href="#home">Home</a>
-            <a href="#features">Features</a>
-            <a href="#about">About</a>
-            <a href="#gallery">Gallery</a>
-            <a href="#contact">Contact</a>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="fas fa-dumbbell me-2"></i>Fit-With-AI</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto me-4">
+                    <li class="nav-item"><a class="nav-link" href="#home">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#pricing">Pricing</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#faq">FAQ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                </ul>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#authModal" data-tab="signin">Sign In</button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#authModal" data-tab="signup">Get Started</button>
+                </div>
+            </div>
         </div>
-        <div class="auth-buttons">
-            <button class="auth-btn signin-btn" onclick="openModal('signin')">Sign In</button>
-            <button class="auth-btn signup-btn" onclick="openModal('signup')">Sign Up</button>
-        </div>
-    </header>
-
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
+    </nav>
 
     <!-- Hero Section -->
     <section id="home" class="hero">
-        <div class="floating-elements">
-            <!-- Glass morphism photo cards -->
-            <div class="fitness-glass-card workout" style="top: 10%; left: 5%; width: 120px; height: 80px; animation-delay: 0s;"></div>
-            <div class="fitness-glass-card nutrition" style="top: 70%; left: 80%; width: 100px; height: 70px; animation-delay: 1s;"></div>
-            <div class="fitness-glass-card yoga" style="top: 20%; right: 8%; width: 140px; height: 90px; animation-delay: 2s;"></div>
-            <div class="fitness-glass-card running" style="top: 60%; left: 10%; width: 110px; height: 75px; animation-delay: 3s;"></div>
-            <div class="fitness-glass-card nature" style="top: 40%; right: 15%; width: 130px; height: 85px; animation-delay: 4s;"></div>
-            
-            <!-- Edge-cutting morphism shapes -->
-            <div class="edge-cut-shape" style="--bg-image: url('https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=200&h=150'); top: 15%; left: 75%; width: 90px; height: 60px; animation-delay: 1.5s;"></div>
-            <div class="edge-cut-shape" style="--bg-image: url('https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&w=200&h=150'); top: 65%; right: 20%; width: 110px; height: 70px; animation-delay: 2.5s;"></div>
-            <div class="edge-cut-shape" style="--bg-image: url('https://images.unsplash.com/photo-1490645935967-10de6ba17061?auto=format&fit=crop&w=200&h=150'); top: 35%; left: 15%; width: 80px; height: 55px; animation-delay: 3.5s;"></div>
-        </div>
-        <div class="hero-content">
-            <h1 class="hero-title neon-text">Discover the Power of <span class="changing-text smooth-text" data-text="AI Fitness">AI Fitness</span></h1>
-            <p class="hero-subtitle typewriter">Join our community of fitness enthusiasts and transform your health with personalized AI-powered workout and nutrition plans.</p>
-            <div class="hero-buttons">
-                <button class="hero-btn primary-btn glow-effect" onclick="openModal('signup')">Get Started</button>
-                <button class="hero-btn secondary-btn" onclick="scrollToFeatures()">Learn More</button>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 hero-content">
+                    <h1 class="fade-in">Transform Your Fitness Journey with AI</h1>
+                    <p class="fade-in">Get personalized workout plans, nutrition guidance, and real-time form correction powered by artificial intelligence.</p>
+                    <div class="d-flex gap-3 fade-in">
+                        <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#authModal" data-tab="signup">Start Free Trial</button>
+                        <button class="btn btn-outline-light btn-lg">Watch Demo</button>
+                    </div>
+                </div>
+                <div class="col-lg-6 hero-image fade-in">
+                    <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=600&h=400" alt="AI Fitness Training" class="img-fluid">
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Features Section -->
     <section id="features" class="features">
-        <h2 class="section-title">Why Choose <span>Fit-With-AI</span></h2>
-        <div class="features-grid">
-            <div class="feature-card stagger-animate">
-                <div class="feature-icon">
-                    <i class="fas fa-dumbbell"></i>
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="display-5 fw-bold mb-3 fade-in">Powerful Features for Your Success</h2>
+                    <p class="lead text-muted fade-in">Everything you need to achieve your fitness goals in one intelligent platform</p>
                 </div>
-                <h3 class="feature-title">Personalized Workouts</h3>
-                <p class="feature-desc">AI-generated workout plans tailored to your fitness level, goals, and available equipment that adapt as you progress.</p>
             </div>
-            <div class="feature-card stagger-animate">
-                <div class="feature-icon">
-                    <i class="fas fa-utensils"></i>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4 fade-in">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3>AI-Powered Plans</h3>
+                        <p>Personalized workout and nutrition plans that adapt to your progress and preferences using advanced AI algorithms.</p>
+                    </div>
                 </div>
-                <h3 class="feature-title">Nutrition Guidance</h3>
-                <p class="feature-desc">Custom meal plans and nutritional advice based on your dietary preferences, restrictions, and fitness objectives.</p>
-            </div>
-            <div class="feature-card stagger-animate">
-                <div class="feature-icon">
-                    <i class="fas fa-heart-rate"></i>
+                <div class="col-md-6 col-lg-4 fade-in">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <h3>Form Analysis</h3>
+                        <p>Real-time exercise form correction using computer vision to prevent injuries and maximize effectiveness.</p>
+                    </div>
                 </div>
-                <h3 class="feature-title">Real-time Feedback</h3>
-                <p class="feature-desc">Advanced pose detection technology analyzes your form during exercises and provides instant corrections to prevent injuries.</p>
-            </div>
-            <div class="feature-card stagger-animate">
-                <div class="feature-icon">
-                    <i class="fas fa-chart-line"></i>
+                <div class="col-md-6 col-lg-4 fade-in">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Progress Tracking</h3>
+                        <p>Comprehensive analytics and insights to monitor your fitness journey and celebrate achievements.</p>
+                    </div>
                 </div>
-                <h3 class="feature-title">Progress Tracking</h3>
-                <p class="feature-desc">Comprehensive analytics that monitor your improvements, celebrate milestones, and adjust your plan for optimal results.</p>
-            </div>
-            <div class="feature-card stagger-animate">
-                <div class="feature-icon">
-                    <i class="fas fa-users"></i>
+                <div class="col-md-6 col-lg-4 fade-in">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <h3>Nutrition Guidance</h3>
+                        <p>Smart meal planning with macro tracking and dietary preference customization for optimal results.</p>
+                    </div>
                 </div>
-                <h3 class="feature-title">Supportive Community</h3>
-                <p class="feature-desc">Connect with fellow fitness enthusiasts, participate in challenges, and stay motivated with our thriving community.</p>
-            </div>
-            <div class="feature-card stagger-animate">
-                <div class="feature-icon">
-                    <i class="fas fa-mobile-alt"></i>
+                <div class="col-md-6 col-lg-4 fade-in">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>Community Support</h3>
+                        <p>Connect with like-minded individuals, share progress, and stay motivated with our supportive community.</p>
+                    </div>
                 </div>
-                <h3 class="feature-title">Train Anywhere</h3>
-                <p class="feature-desc">Access your workouts anywhere, anytime. Our platform works seamlessly across all devices with online and offline options.</p>
+                <div class="col-md-6 col-lg-4 fade-in">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h3>Mobile Ready</h3>
+                        <p>Access your workouts anywhere with our responsive design and offline capability for uninterrupted training.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- About Section -->
     <section id="about" class="about">
-        <div class="about-grid">
-            <div class="about-content">
-                <h2 class="section-title">About <span>Fit-With-AI</span></h2>
-                <p>Fit-With-AI was founded with a simple yet powerful vision: to revolutionize fitness through artificial intelligence. Our team of passionate fitness experts and AI specialists is dedicated to providing you with the most personalized fitness experience possible.</p>
-                <p>What started as a small project has now evolved into a global community of fitness enthusiasts who are transforming their health with our AI-powered platform. We believe in the power of technology to make fitness accessible, effective, and enjoyable for everyone.</p>
-                <div class="stats">
-                    <div class="stat-item">
-                        <div class="stat-number">2M+</div>
-                        <div class="stat-label">Active Users</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">50M+</div>
-                        <div class="stat-label">Workouts Completed</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">120+</div>
-                        <div class="stat-label">Countries</div>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6 fade-in">
+                    <div class="about-content">
+                        <h2>Why Choose Fit-With-AI?</h2>
+                        <p>We combine cutting-edge artificial intelligence with proven fitness science to deliver personalized experiences that adapt to your unique needs and goals.</p>
+                        <p>Our platform has helped thousands of users achieve their fitness objectives through intelligent coaching, precise form analysis, and data-driven insights.</p>
+                        <div class="d-flex gap-4 mt-4">
+                            <div>
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <span>Scientifically Proven Methods</span>
+                            </div>
+                            <div>
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <span>24/7 AI Support</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="about-image-container float">
-                <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=600&h=600" alt="About Us - AI Fitness Training" class="about-image">
+                <div class="col-lg-6 fade-in">
+                    <div class="stats">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="stat-item">
+                                    <div class="stat-number">50K+</div>
+                                    <div class="stat-label">Active Users</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-item">
+                                    <div class="stat-number">1M+</div>
+                                    <div class="stat-label">Workouts Completed</div>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="stat-item">
+                                    <div class="stat-number">95%</div>
+                                    <div class="stat-label">Success Rate</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Gallery Section -->
-    <section id="gallery" class="gallery">
-        <h2 class="section-title">Our <span>Gallery</span></h2>
-        <div class="gallery-grid">
-            <div class="gallery-item stagger-animate">
-                <img src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=600&h=600" alt="Personal Training" class="gallery-image">
-                <div class="gallery-overlay">
-                    <h3 class="gallery-title">Personal Training</h3>
-                    <p class="gallery-desc">Expert guidance for your fitness journey.</p>
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="display-5 fw-bold mb-3 fade-in">Choose Your Plan</h2>
+                    <p class="lead text-muted fade-in">Start free and upgrade as you grow</p>
                 </div>
             </div>
-            <div class="gallery-item stagger-animate">
-                <img src="https://images.unsplash.com/photo-1532384748853-8f54a8f476e2?auto=format&fit=crop&w=600&h=600" alt="Nutrition Planning" class="gallery-image">
-                <div class="gallery-overlay">
-                    <h3 class="gallery-title">Nutrition Planning</h3>
-                    <p class="gallery-desc">Customized meal plans for optimal health.</p>
+            <div class="row g-4">
+                <div class="col-lg-4 fade-in">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <h5 class="card-title">Free</h5>
+                            <div class="display-4 fw-bold text-primary mb-3">$0<small class="fs-6 text-muted">/month</small></div>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Basic workout plans</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Progress tracking</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Community access</li>
+                                <li class="mb-2 text-muted"><i class="fas fa-times me-2"></i>AI form analysis</li>
+                                <li class="mb-2 text-muted"><i class="fas fa-times me-2"></i>Nutrition plans</li>
+                            </ul>
+                            <button class="btn btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#authModal" data-tab="signup">Get Started</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 fade-in">
+                    <div class="card h-100 border-primary shadow">
+                        <div class="card-header bg-primary text-white text-center py-3">
+                            <span class="badge bg-light text-primary">Most Popular</span>
+                        </div>
+                        <div class="card-body p-4 text-center">
+                            <h5 class="card-title">Pro</h5>
+                            <div class="display-4 fw-bold text-primary mb-3">$19<small class="fs-6 text-muted">/month</small></div>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Everything in Free</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>AI form analysis</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Custom nutrition plans</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Priority support</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Advanced analytics</li>
+                            </ul>
+                            <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#authModal" data-tab="signup">Start Free Trial</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 fade-in">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4 text-center">
+                            <h5 class="card-title">Enterprise</h5>
+                            <div class="display-4 fw-bold text-primary mb-3">$49<small class="fs-6 text-muted">/month</small></div>
+                            <ul class="list-unstyled mb-4">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Everything in Pro</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Personal AI coach</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Team management</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>API access</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i>White-label options</li>
+                            </ul>
+                            <button class="btn btn-outline-primary w-100">Contact Sales</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="gallery-item stagger-animate">
-                <img src="https://images.unsplash.com/photo-1518310383802-640c2de311b2?auto=format&fit=crop&w=600&h=600" alt="Strength Training" class="gallery-image">
-                <div class="gallery-overlay">
-                    <h3 class="gallery-title">Strength Training</h3>
-                    <p class="gallery-desc">Build strength and muscle effectively.</p>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="display-5 fw-bold mb-3 fade-in">What Our Users Say</h2>
+                    <p class="lead text-muted fade-in">Join thousands of satisfied users transforming their fitness</p>
                 </div>
             </div>
-            <div class="gallery-item stagger-animate">
-                <img src="https://images.unsplash.com/photo-1599058917765-a780eda07a3e?auto=format&fit=crop&w=600&h=600" alt="Yoga & Flexibility" class="gallery-image">
-                <div class="gallery-overlay">
-                    <h3 class="gallery-title">Yoga & Flexibility</h3>
-                    <p class="gallery-desc">Improve flexibility and mental wellness.</p>
+            <div class="row g-4">
+                <div class="col-lg-4 fade-in">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex mb-3">
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                            </div>
+                            <p class="mb-3">"The AI form correction has completely transformed my workouts. I've seen better results in 3 months than I did in years of training alone."</p>
+                            <div class="d-flex align-items-center">
+                                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100" alt="User" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h6 class="mb-0">Mike Johnson</h6>
+                                    <small class="text-muted">Fitness Enthusiast</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 fade-in">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex mb-3">
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                            </div>
+                            <p class="mb-3">"The personalized nutrition plans are amazing! I've lost 25 pounds and feel more energetic than ever. The AI really understands my needs."</p>
+                            <div class="d-flex align-items-center">
+                                <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?auto=format&fit=crop&w=100&h=100" alt="User" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h6 class="mb-0">Sarah Davis</h6>
+                                    <small class="text-muted">Working Professional</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 fade-in">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4">
+                            <div class="d-flex mb-3">
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                                <i class="fas fa-star text-warning"></i>
+                            </div>
+                            <p class="mb-3">"As a busy parent, having AI-powered workouts that adapt to my schedule is a game-changer. The community support is incredible too!"</p>
+                            <div class="d-flex align-items-center">
+                                <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&h=100" alt="User" class="rounded-circle me-3" width="50" height="50">
+                                <div>
+                                    <h6 class="mb-0">Emily Chen</h6>
+                                    <small class="text-muted">Mother of Two</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="gallery-item stagger-animate">
-                <img src="https://images.unsplash.com/photo-1538805060514-97d9cc17730c?auto=format&fit=crop&w=600&h=600" alt="Cardio Workouts" class="gallery-image">
-                <div class="gallery-overlay">
-                    <h3 class="gallery-title">Cardio Workouts</h3>
-                    <p class="gallery-desc">Effective cardio routines for endurance.</p>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="py-5">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="display-5 fw-bold mb-3 fade-in">Frequently Asked Questions</h2>
+                    <p class="lead text-muted fade-in">Everything you need to know about Fit-With-AI</p>
                 </div>
             </div>
-            <div class="gallery-item stagger-animate">
-                <img src="https://images.unsplash.com/photo-1579126038374-6064e9370f0f?auto=format&fit=crop&w=600&h=600" alt="Progress Tracking" class="gallery-image">
-                <div class="gallery-overlay">
-                    <h3 class="gallery-title">Progress Tracking</h3>
-                    <p class="gallery-desc">Monitor your fitness journey.</p>
-                </div>
-            </div>
-            <div class="gallery-item stagger-animate">
-                <img src="https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=600&h=600" alt="Healthy Lifestyle" class="gallery-image">
-                <div class="gallery-overlay">
-                    <h3 class="gallery-title">Healthy Lifestyle</h3>
-                    <p class="gallery-desc">Transform your life with healthy habits.</p>
-                </div>
-            </div>
-            <div class="gallery-item stagger-animate">
-                <img src="https://images.unsplash.com/photo-1576678927484-cc907957088c?auto=format&fit=crop&w=600&h=600" alt="Community Support" class="gallery-image">
-                <div class="gallery-overlay">
-                    <h3 class="gallery-title">Community Support</h3>
-                    <p class="gallery-desc">Join our supportive fitness community.</p>
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item border-0 shadow-sm mb-3 fade-in">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    How does the AI form analysis work?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Our AI uses computer vision technology to analyze your exercise form in real-time through your device's camera. It provides instant feedback and corrections to help prevent injuries and maximize workout effectiveness.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 shadow-sm mb-3 fade-in">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    Can I use the app without equipment?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Absolutely! Our AI creates personalized bodyweight workouts that require no equipment. You can also specify what equipment you have available, and the AI will adapt your workouts accordingly.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 shadow-sm mb-3 fade-in">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                    Is my data secure and private?
+                                </button>
+                            </h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes, we take data security seriously. All your personal information and workout data are encrypted and stored securely. We never share your data with third parties without your explicit consent.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 shadow-sm mb-3 fade-in">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                    Can I cancel my subscription anytime?
+                                </button>
+                            </h2>
+                            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes, you can cancel your subscription at any time. There are no long-term contracts or cancellation fees. You'll continue to have access to premium features until the end of your billing period.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border-0 shadow-sm mb-3 fade-in">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                                    Do you offer a mobile app?
+                                </button>
+                            </h2>
+                            <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes! Our platform is fully responsive and works great on mobile devices. We also have dedicated iOS and Android apps available for download with additional features like offline workout access.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Contact Section -->
-    <section id="contact" class="about">
-         <div class="about-grid">
-            <div class="about-content">
-                <h2 class="section-title">Get in <span>Touch</span></h2>
-                <p>Have questions about Fit-With-AI or ready to start your fitness journey? Our team is here to help you every step of the way.</p>
-                <p>Fill out the form below and we'll get back to you within 24 hours. Alternatively, you can reach us directly through our social media channels.</p>
-                <form id="contactForm" class="contact-form">
-                    <div class="form-group">
-                        <label for="name" class="form-label">Your Name</label>
-                        <input type="text" id="name" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email" class="form-label">Email Address</label>
-                        <input type="email" id="email" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="message" class="form-label">Your Message</label>
-                        <textarea id="message" class="form-input" rows="4" required></textarea>
-                    </div>
-                    <button type="submit" class="form-btn">Send Message</button>
-                </form>
+    <section id="contact" class="py-5 bg-light">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h2 class="display-5 fw-bold mb-3 fade-in">Get in Touch</h2>
+                    <p class="lead text-muted fade-in">Have questions? We'd love to hear from you</p>
+                </div>
             </div>
-            <div class="about-image-container float">
-                <img src="https://images.unsplash.com/photo-1571902943202-507ec2618e8f?auto=format&fit=crop&w=600&h=600" alt="Contact Us" class="about-image">
+            <div class="row g-5">
+                <div class="col-lg-8 fade-in">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <form id="contactForm">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="contactName" class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="contactName" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="contactEmail" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="contactEmail" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="contactPhone" class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="contactPhone">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="contactSubject" class="form-label">Subject</label>
+                                        <select class="form-select" id="contactSubject" required>
+                                            <option value="">Choose a subject</option>
+                                            <option value="general">General Inquiry</option>
+                                            <option value="support">Technical Support</option>
+                                            <option value="billing">Billing Question</option>
+                                            <option value="partnership">Partnership</option>
+                                            <option value="feedback">Feedback</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12">
+                                        <label for="contactMessage" class="form-label">Message</label>
+                                        <textarea class="form-control" id="contactMessage" rows="5" required></textarea>
+                                    </div>
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary btn-lg">Send Message</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 fade-in">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body p-4 text-center">
+                            <div class="feature-icon mb-3">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <h5>Email Us</h5>
+                            <p class="text-muted mb-3">We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
+                            <a href="mailto:fitwithai@gmail.com" class="btn btn-outline-primary">fitwithai@gmail.com</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto text-center fade-in">
+                    <h2>Ready to Transform Your Fitness?</h2>
+                    <p>Join thousands of users who have already started their AI-powered fitness journey</p>
+                    <button class="btn btn-light btn-lg" data-bs-toggle="modal" data-bs-target="#authModal" data-tab="signup">Start Your Free Trial</button>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer>
-        <div class="footer-grid">
-            <div class="footer-col">
-                <h3>Fit-With-AI</h3>
-                <p>Revolutionizing fitness through artificial intelligence. Personalized workout and nutrition plans tailored just for you.</p>
-                <div class="social-links">
-                    <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+    <footer id="contact" class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h5><i class="fas fa-dumbbell me-2"></i>Fit-With-AI</h5>
+                    <p class="text-muted">Revolutionizing fitness through artificial intelligence. Your personal AI fitness companion for a healthier lifestyle.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5>Product</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#">Features</a></li>
+                        <li><a href="#">Pricing</a></li>
+                        <li><a href="#">Mobile App</a></li>
+                        <li><a href="#">API</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5>Company</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Press</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5>Support</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-6 mb-4">
+                    <h5>Connect</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#">Community</a></li>
+                        <li><a href="#">Newsletter</a></li>
+                        <li><a href="#">Events</a></li>
+                        <li><a href="#">Partners</a></li>
+                    </ul>
                 </div>
             </div>
-            <div class="footer-col">
-                <h3>Quick Links</h3>
-                <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#about">About Us</a></li>
-                    <li><a href="#gallery">Gallery</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
+            <hr class="my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="text-muted mb-0">&copy; 2024 Fit-With-AI. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p class="text-muted mb-0">Made with <i class="fas fa-heart text-danger"></i> for fitness enthusiasts</p>
+                </div>
             </div>
-            <div class="footer-col">
-                <h3>Features</h3>
-                <ul>
-                    <li><a href="#">Personalized Workouts</a></li>
-                    <li><a href="#">Nutrition Guidance</a></li>
-                    <li><a href="#">Progress Tracking</a></li>
-                    <li><a href="#">Community Support</a></li>
-                    <li><a href="#">Mobile App</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h3>Contact Info</h3>
-                <ul>
-                    <li><i class="fas fa-map-marker-alt"></i> 123 Fitness Street, AI City</li>
-                    <li><i class="fas fa-phone"></i> +1 (555) 123-4567</li>
-                    <li><i class="fas fa-envelope"></i> info@fitwithai.com</li> </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            <p>&copy; 2023 Fit-With-AI. All Rights Reserved.</p>
         </div>
     </footer>
 
     <!-- Auth Modal -->
-    <div class="auth-modal" id="authModal">
-        <div class="modal-container">
-            <div class="modal-tabs">
-                <div class="modal-tab active" data-tab="signin">Sign In</div>
-                <div class="modal-tab" data-tab="signup">Sign Up</div>
-            </div>
+    <div class="modal fade" id="authModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
-                <form class="auth-form active" id="signinForm">
-                    <div class="form-group">
-                        <label for="signinEmail" class="form-label">Email Address</label>
-                        <input type="email" id="signinEmail" class="form-input" required>
+                <div class="modal-header">
+                    <ul class="nav nav-pills w-100 justify-content-center" id="authTabs">
+                        <li class="nav-item">
+                            <button class="nav-link active" id="signin-tab" data-bs-toggle="pill" data-bs-target="#signin" type="button">Sign In</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" id="signup-tab" data-bs-toggle="pill" data-bs-target="#signup" type="button">Sign Up</button>
+                        </li>
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="tab-content" id="authTabContent">
+                        <!-- Sign In Form -->
+                        <div class="tab-pane fade show active" id="signin">
+                            <form id="signinForm">
+                                <div class="mb-3">
+                                    <label for="signinEmail" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="signinEmail" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="signinPassword" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="signinPassword" required>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="rememberMe">
+                                    <label class="form-check-label" for="rememberMe">Remember me</label>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 mb-3">Sign In</button>
+                                <div class="text-center">
+                                    <a href="/forgot-password" class="text-decoration-none">Forgot your password?</a>
+                                </div>
+                            </form>
+                        </div>
+                        <!-- Sign Up Form -->
+                        <div class="tab-pane fade" id="signup">
+                            <form id="signupForm">
+                                <div class="mb-3">
+                                    <label for="signupName" class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="signupName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="signupEmail" class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="signupEmail" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="signupPassword" class="form-label">Password</label>
+                                    <input type="password" class="form-control" id="signupPassword" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="signupConfirmPassword" class="form-label">Confirm Password</label>
+                                    <input type="password" class="form-control" id="signupConfirmPassword" required>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                                    <label class="form-check-label" for="agreeTerms">
+                                        I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and <a href="#" class="text-decoration-none">Privacy Policy</a>
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Create Account</button>
+                            </form>
+                        </div>
                     </div>
-                              <div class="form-group">
-                        <label for="signinPassword" class="form-label">Password</label>
-                        <input type="password" id="signinPassword" class="form-input" required>
-                    </div>
-                    <button type="submit" class="form-btn">Sign In</button>
-                    <div class="form-footer">
-                        <a href="/forgot-password" style="display: block; margin-bottom: 10px;">Forgot your password?</a>
-                        Don't have an account? <a href="#" onclick="switchTab('signup')">Sign up</a>
-                    </div>
-                </form>
-                <form class="auth-form" id="signupForm">
-                    <div class="form-group">
-                        <label for="signupName" class="form-label">Full Name</label>
-                        <input type="text" id="signupName" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signupEmail" class="form-label">Email Address</label>
-                        <input type="email" id="signupEmail" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signupPassword" class="form-label">Password</label>
-                        <input type="password" id="signupPassword" class="form-input" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signupConfirmPassword" class="form-label">Confirm Password</label>
-                        <input type="password" id="signupConfirmPassword" class="form-input" required>
-                    </div>
-                    <button type="submit" class="form-btn">Create Account</button>
-                    <div class="form-footer">
-                        Already have an account? <a href="#" onclick="switchTab('signin')">Sign in</a>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
-        <button class="modal-close" onclick="closeModal()">&times;</button>
     </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    // Preloader
-    window.addEventListener('load', function() {
-        const preloader = document.querySelector('.preloader');
-        preloader.classList.add('hidden');
-    });
-
-    // Spectacular modal functionality
-    function openModal(tab) {
-        const modal = document.getElementById('authModal');
-        modal.classList.add('active');
-        showToast('Welcome! Please sign in or create an account.', 'info');
-        gsap.fromTo('.modal-container', 
-            { scale: 0.3, opacity: 0, rotationY: 180, z: -1000 },
-            { scale: 1, opacity: 1, rotationY: 0, z: 0, duration: 0.8, ease: "back.out(1.7)" }
-        );
-        switchTab(tab);
-    }
-
-    function closeModal() {
-        const modal = document.getElementById('authModal');
-        gsap.to('.modal-container', {
-            scale: 0.3,
-            opacity: 0,
-            rotationY: -180,
-            z: -1000,
-            duration: 0.5,
-            ease: "power2.in",
-            onComplete: () => modal.classList.remove('active')
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
         });
-    }
 
-    function switchTab(tab) {
-        const tabs = document.querySelectorAll('.modal-tab');
-        const forms = document.querySelectorAll('.auth-form');
-        
-        tabs.forEach(t => t.classList.remove('active'));
-        forms.forEach(f => f.classList.remove('active'));
-        
-        document.querySelector(`.modal-tab[data-tab="${tab}"]`).classList.add('active');
-        document.getElementById(`${tab}Form`).classList.add('active');
-    }
+        // Fade in animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
 
-    // Form submission for signup that redirects to CustomerOnboarding.ejs
-    document.getElementById('signupForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        // Get form values
-        const name = document.getElementById('signupName').value;
-        const email = document.getElementById('signupEmail').value;
-        const password = document.getElementById('signupPassword').value;
-        const confirmPassword = document.getElementById('signupConfirmPassword').value;
-
-        // Simple validation
-        if (password !== confirmPassword) {
-            showToast('Passwords do not match!', 'error');
-            return;
-        }
-
-        try {
-            // Send the signup data to the server
-            const response = await fetch('/signup', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    fullName: name,
-                    email: email,
-                    password: password
-                })
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
             });
+        }, observerOptions);
 
-            const data = await response.json();
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
 
-            if (data.success) {
-                showToast('Account created successfully! Welcome to Fit-With-AI!', 'success');
-                closeModal();
-                setTimeout(() => {
-                    window.location.href = data.redirectUrl;
-                }, 1500);
-            } else {
-                showToast(data.error || 'Signup failed. Please try again.', 'error');
+        // Modal tab switching
+        document.getElementById('authModal').addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const tab = button.getAttribute('data-tab');
+            if (tab) {
+                const tabButton = document.getElementById(tab + '-tab');
+                const tabPane = document.getElementById(tab);
+                
+                // Remove active classes
+                document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.classList.remove('show', 'active');
+                });
+                
+                // Add active classes
+                tabButton.classList.add('active');
+                tabPane.classList.add('show', 'active');
             }
-        } catch (error) {
-            console.error('Error during signup:', error);
-            showToast('Network error. Please check your connection and try again.', 'error');
+        });
+
+        // Toast function
+        function showToast(message, type = 'info') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastId = 'toast-' + Date.now();
+            
+            const toastHTML = `
+                <div id="${toastId}" class="toast ${type}" role="alert">
+                    <div class="toast-header">
+                        <i class="fas ${type === 'success' ? 'fa-check-circle text-success' : type === 'error' ? 'fa-exclamation-circle text-danger' : 'fa-info-circle text-primary'} me-2"></i>
+                        <strong class="me-auto">${type === 'success' ? 'Success' : type === 'error' ? 'Error' : 'Info'}</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+                    </div>
+                    <div class="toast-body">${message}</div>
+                </div>
+            `;
+            
+            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+            const toast = new bootstrap.Toast(document.getElementById(toastId));
+            toast.show();
         }
-    });
 
-    // Form submission for signin
-    document.getElementById('signinForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const email = document.getElementById('signinEmail').value;
-        const password = document.getElementById('signinPassword').value;
+        // Contact form submission
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('contactName').value;
+            const email = document.getElementById('contactEmail').value;
+            const subject = document.getElementById('contactSubject').value;
+            const message = document.getElementById('contactMessage').value;
+            
+            // Simulate form submission
+            showToast('Thank you for your message! We\'ll get back to you within 24 hours.', 'success');
+            document.getElementById('contactForm').reset();
+        });
 
-        try {
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email: email,
-                    password: password
-                })
-            });
+        // Form submissions
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const confirmPassword = document.getElementById('signupConfirmPassword').value;
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
 
-            const data = await response.json();
-
-            if (data.success) {
-                showToast('Welcome back! Redirecting to your dashboard...', 'success');
-                closeModal();
-                setTimeout(() => {
-                    window.location.href = data.redirectUrl;
-                }, 1500);
-            } else {
-                showToast(data.error || 'Login failed. Please try again.', 'error');
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match!', 'error');
+                return;
             }
-        } catch (error) {
-            console.error('Error during login:', error);
-            showToast('Network error. Please check your connection and try again.', 'error');
-        }
-    });
 
-    // Toast Notification System
-    function showToast(message, type = 'info', duration = 4000) {
-        const toast = document.createElement('div');
-        toast.className = `toast ${type}`;
-        toast.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle'}"></i>
-                <span>${message}</span>
-            </div>
-        `;
-        
-        document.getElementById('toastContainer').appendChild(toast);
-        
-        setTimeout(() => toast.classList.add('show'), 100);
-        
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 500);
-        }, duration);
-    }
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...';
 
-    // Scroll to features function
-    function scrollToFeatures() {
-        const featuresSection = document.getElementById('features');
-        if (featuresSection) {
-            gsap.to(window, {
-                scrollTo: { y: featuresSection.offsetTop - 80, autoKill: false },
-                duration: 1.5,
-                ease: "power2.inOut"
-            });
-        }
-    }
+            try {
+                const response = await fetch('/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        fullName: name,
+                        email: email,
+                        password: password
+                    })
+                });
 
-    // Enhanced form submission with toast
-    document.getElementById('contactForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        showToast('Message sent successfully! We\'ll get back to you within 24 hours.', 'success');
-        this.reset();
-    });
+                const data = await response.json();
 
-    // Enhanced animations and interactions
-    document.addEventListener('DOMContentLoaded', function() {
-        gsap.registerPlugin(ScrollTrigger);
-        
-        // Enhanced feature card animations
-        gsap.utils.toArray('.stagger-animate').forEach((el, i) => {
-            gsap.fromTo(el, 
-                { y: 80, opacity: 0, scale: 0.8, rotationY: 15 },
-                { 
-                    y: 0, 
-                    opacity: 1, 
-                    scale: 1,
-                    rotationY: 0,
-                    duration: 1.2, 
-                    delay: i * 0.15,
-                    ease: "back.out(1.7)",
-                    scrollTrigger: {
-                        trigger: el,
-                        start: "top 85%",
-                        toggleActions: "play none none none"
+                if (data.success) {
+                    showToast('Account created! Please check your email to verify your account.', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('authModal')).hide();
+                    setTimeout(() => {
+                        window.location.href = `/email-verification-otp?email=${encodeURIComponent(email)}`;
+                    }, 1500);
+                } else {
+                    showToast(data.error || 'Signup failed. Please try again.', 'error');
+                }
+            } catch (error) {
+                showToast('Network error. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        });
+
+        document.getElementById('signinForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('signinEmail').value;
+            const password = document.getElementById('signinPassword').value;
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Signing In...';
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showToast('Welcome back! Redirecting...', 'success');
+                    bootstrap.Modal.getInstance(document.getElementById('authModal')).hide();
+                    setTimeout(() => {
+                        window.location.href = data.redirectUrl;
+                    }, 1500);
+                } else {
+                    if (data.requiresVerification || data.redirectUrl) {
+                        showToast('Please verify your email address first.', 'warning');
+                        bootstrap.Modal.getInstance(document.getElementById('authModal')).hide();
+                        setTimeout(() => {
+                            window.location.href = data.redirectUrl || `/email-verification-otp?email=${encodeURIComponent(email)}`;
+                        }, 1500);
+                    } else {
+                        showToast(data.error || 'Login failed. Please try again.', 'error');
                     }
                 }
-            );
-        });
-        
-        // Smooth text animation
-        const words = ["AI Fitness", "Your Health", "Your Goals", "Your Journey", "The Future"];
-        let counter = 0;
-        const changingText = document.querySelector('.changing-text');
-        
-        setInterval(() => {
-            gsap.to(changingText, {
-                opacity: 0,
-                y: -10,
-                duration: 0.5,
-                ease: "power2.in",
-                onComplete: () => {
-                    changingText.textContent = words[counter];
-                    changingText.setAttribute('data-text', words[counter]);
-                    gsap.fromTo(changingText, 
-                        { opacity: 0, y: 10 },
-                        { 
-                            opacity: 1, 
-                            y: 0, 
-                            duration: 0.5, 
-                            ease: "power2.out"
-                        }
-                    );
-                    counter = (counter + 1) % words.length;
-                }
-            });
-        }, 3000);
-        
-        // Initialize particles
-        if (typeof particlesJS !== 'undefined') {
-            particlesJS('particles-js', {
-                particles: {
-                    number: { value: 80, density: { enable: true, value_area: 800 } },
-                    color: { value: '#ffffff' },
-                    shape: { type: 'circle' },
-                    opacity: { value: 0.5, random: false },
-                    size: { value: 3, random: true },
-                    line_linked: { enable: true, distance: 150, color: '#ffffff', opacity: 0.4, width: 1 },
-                    move: { enable: true, speed: 6, direction: 'none', random: false, straight: false, out_mode: 'out', bounce: false }
-                },
-                interactivity: {
-                    detect_on: 'canvas',
-                    events: { onhover: { enable: true, mode: 'repulse' }, onclick: { enable: true, mode: 'push' }, resize: true },
-                    modes: { grab: { distance: 400, line_linked: { opacity: 1 } }, bubble: { distance: 400, size: 40, duration: 2, opacity: 8, speed: 3 }, repulse: { distance: 200, duration: 0.4 }, push: { particles_nb: 4 }, remove: { particles_nb: 2 } }
-                },
-                retina_detect: true
-            });
-        }
-        
-        // Random toast notifications for engagement
-        const welcomeMessages = [
-            'Welcome to the future of fitness! 🚀',
-            'Your AI fitness journey starts here! 💪',
-            'Ready to transform your health? 🌟',
-            'Join thousands of satisfied users! 🎯'
-        ];
-        
-        setTimeout(() => {
-            const randomMsg = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
-            showToast(randomMsg, 'info', 5000);
-        }, 3000);
-        
-        // Parallax effect for hero background
-        gsap.to('.hero::before', {
-            yPercent: -50,
-            ease: "none",
-            scrollTrigger: {
-                trigger: '.hero',
-                start: "top bottom",
-                end: "bottom top",
-                scrub: true
+            } catch (error) {
+                showToast('Network error. Please try again.', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
             }
         });
-        
-        // Enhanced interactive cursor with trail effect
-        const cursor = document.createElement('div');
-        cursor.className = 'custom-cursor';
-        cursor.style.cssText = `
-            position: fixed;
-            width: 20px;
-            height: 20px;
-            background: radial-gradient(circle, rgba(108, 99, 255, 0.8), rgba(108, 99, 255, 0.2));
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 9999;
-            transition: transform 0.1s ease;
-            box-shadow: 0 0 20px rgba(108, 99, 255, 0.5);
-        `;
-        document.body.appendChild(cursor);
-        
-        const trail = [];
-        for (let i = 0; i < 10; i++) {
-            const dot = document.createElement('div');
-            dot.style.cssText = `
-                position: fixed;
-                width: ${15 - i}px;
-                height: ${15 - i}px;
-                background: rgba(108, 99, 255, ${0.8 - i * 0.08});
-                border-radius: 50%;
-                pointer-events: none;
-                z-index: ${9998 - i};
-            `;
-            document.body.appendChild(dot);
-            trail.push(dot);
-        }
-        
-        document.addEventListener('mousemove', (e) => {
-            gsap.to(cursor, {
-                x: e.clientX - 10,
-                y: e.clientY - 10,
-                duration: 0.1
-            });
-            
-            trail.forEach((dot, index) => {
-                gsap.to(dot, {
-                    x: e.clientX - (7.5 - index * 0.5),
-                    y: e.clientY - (7.5 - index * 0.5),
-                    duration: 0.3 + index * 0.02
-                });
-            });
-        });
-        
-        // Add click ripple effect
-        document.addEventListener('click', (e) => {
-            const ripple = document.createElement('div');
-            ripple.style.cssText = `
-                position: fixed;
-                width: 0;
-                height: 0;
-                border-radius: 50%;
-                background: rgba(108, 99, 255, 0.3);
-                pointer-events: none;
-                z-index: 9997;
-                left: ${e.clientX}px;
-                top: ${e.clientY}px;
-                transform: translate(-50%, -50%);
-            `;
-            document.body.appendChild(ripple);
-            
-            gsap.to(ripple, {
-                width: 100,
-                height: 100,
-                opacity: 0,
-                duration: 0.6,
-                ease: "power2.out",
-                onComplete: () => ripple.remove()
-            });
-        });
-        
-        // Smooth scrolling with easing
+
+        // Smooth scrolling
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
-                    gsap.to(window, {
-                        scrollTo: { y: target.offsetTop - 80, autoKill: false },
-                        duration: 1.5,
-                        ease: "power2.inOut"
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
                     });
                 }
             });
         });
-    });
-</script>
+    </script>
 </body>
 </html>

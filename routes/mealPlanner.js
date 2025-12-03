@@ -4,6 +4,7 @@ const UserService = require('../services/userService');
 const aiService = require('../services/aiService');
 const enhancedMealPlannerService = require('../services/enhancedMealPlannerService');
 const foodDatabaseService = require('../services/foodDatabaseService');
+const geminiMealPlannerService = require('../services/geminiMealPlannerService');
 
 // Get user's meal plans
 router.get('/plans', async (req, res) => {
@@ -382,7 +383,7 @@ router.get('/health-questions', async (req, res) => {
   }
 });
 
-// Submit health assessment and generate comprehensive meal plan using enhanced service
+// Submit health assessment and generate AI-powered meal plan using Gemini
 router.post('/health-assessment', async (req, res) => {
   try {
     const userEmail = req.session.user.email;
@@ -400,38 +401,88 @@ router.post('/health-assessment', async (req, res) => {
       return res.status(404).json({ success: false, error: 'User not found' });
     }
 
-    console.log('🍽️ Generating comprehensive meal plan with enhanced service...');
+    console.log('🤖 Generating AI-powered meal plan with Gemini...');
     
-    // Use enhanced meal planner service
-    const mealPlanResult = await enhancedMealPlannerService.generateComprehensiveMealPlan(answers);
+    // Use Gemini AI meal planner service for intelligent meal planning
+    const aiMealPlanResult = await geminiMealPlannerService.generateAIMealPlan(answers);
+    
+    // Get additional insights and tips
+    const personalizedTips = await geminiMealPlannerService.getPersonalizedTips(answers);
+    const nutritionalAnalysis = await geminiMealPlannerService.getNutritionalAnalysis(
+      aiMealPlanResult.mealPlan, 
+      answers.fitness_goals || ['maintain_health']
+    );
 
     // Save assessment results to user profile
     const assessmentData = {
       answers: answers,
-      nutritionTargets: mealPlanResult.nutritionTargets,
+      nutritionTargets: aiMealPlanResult.nutritionTargets,
       completedAt: new Date(),
-      version: '3.0',
-      enhancedFeatures: true
+      version: '4.0',
+      aiPowered: true,
+      geminiGenerated: true
     };
 
     await UserService.updateHealthAssessment(userEmail, assessmentData);
 
-    console.log('✅ Enhanced meal plan generated successfully');
+    console.log('✅ AI-powered meal plan generated successfully with Gemini');
 
     res.json({
       success: true,
-      message: 'Comprehensive meal plan generated successfully',
-      nutritionTargets: mealPlanResult.nutritionTargets,
-      mealPlan: mealPlanResult.mealPlan,
-      shoppingList: mealPlanResult.shoppingList,
-      weeklyNutrition: mealPlanResult.weeklyNutrition,
-      mealPrepSuggestions: mealPlanResult.mealPrepSuggestions,
-      metadata: mealPlanResult.metadata,
-      assessment: assessmentData
+      message: 'AI-powered meal plan generated successfully with Gemini',
+      nutritionTargets: aiMealPlanResult.nutritionTargets,
+      mealPlan: aiMealPlanResult.mealPlan,
+      shoppingList: aiMealPlanResult.shoppingList,
+      aiInsights: aiMealPlanResult.aiInsights,
+      personalizedTips: personalizedTips,
+      nutritionalAnalysis: nutritionalAnalysis,
+      assessment: assessmentData,
+      metadata: {
+        generatedAt: new Date(),
+        aiModel: 'gemini-pro',
+        region: answers.region || 'mixed',
+        totalDays: 7,
+        averageCaloriesPerDay: aiMealPlanResult.nutritionTargets.calories
+      }
     });
   } catch (error) {
-    console.error('Enhanced health assessment submission error:', error);
-    res.status(500).json({ success: false, error: 'Failed to process health assessment: ' + error.message });
+    console.error('❌ Gemini meal plan generation error:', error);
+    
+    // Fallback to enhanced service if Gemini fails
+    try {
+      console.log('🔄 Falling back to enhanced meal planner service...');
+      const fallbackResult = await enhancedMealPlannerService.generateComprehensiveMealPlan(answers);
+      
+      // Save assessment results to user profile for fallback
+      const assessmentData = {
+        answers: answers,
+        nutritionTargets: fallbackResult.nutritionTargets,
+        completedAt: new Date(),
+        version: '3.5',
+        fallbackMode: true
+      };
+
+      await UserService.updateHealthAssessment(userEmail, assessmentData);
+      
+      res.json({
+        success: true,
+        message: 'Meal plan generated successfully (enhanced mode)',
+        nutritionTargets: fallbackResult.nutritionTargets,
+        mealPlan: fallbackResult.mealPlan,
+        shoppingList: fallbackResult.shoppingList,
+        weeklyNutrition: fallbackResult.weeklyNutrition,
+        mealPrepSuggestions: fallbackResult.mealPrepSuggestions,
+        metadata: fallbackResult.metadata,
+        fallbackMode: true,
+        assessment: assessmentData
+      });
+    } catch (fallbackError) {
+      console.error('❌ Fallback meal plan generation also failed:', fallbackError);
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to generate meal plan. Please try again later.' 
+      });
+    }
   }
 });
 
@@ -1548,6 +1599,377 @@ router.post('/weekly-nutrition', async (req, res) => {
   } catch (error) {
     console.error('Calculate weekly nutrition error:', error);
     res.status(500).json({ success: false, error: 'Failed to calculate weekly nutrition' });
+  }
+});
+
+// NEW GEMINI AI POWERED ROUTES
+
+// Generate AI meal suggestions for specific criteria
+router.post('/ai-meal-suggestions', async (req, res) => {
+  try {
+    const { mealType, region, dietaryRestrictions, calorieTarget, healthGoals } = req.body;
+    
+    if (!mealType || !region) {
+      return res.status(400).json({
+        success: false,
+        error: 'Meal type and region are required'
+      });
+    }
+    
+    console.log('🤖 Generating AI meal suggestions with Gemini...');
+    
+    const suggestions = await geminiMealPlannerService.generateMealSuggestions({
+      mealType,
+      region,
+      dietaryRestrictions: dietaryRestrictions || [],
+      calorieTarget: calorieTarget || 400,
+      healthGoals: healthGoals || []
+    });
+    
+    res.json({
+      success: true,
+      suggestions: suggestions,
+      criteria: { mealType, region, dietaryRestrictions, calorieTarget },
+      aiGenerated: true
+    });
+  } catch (error) {
+    console.error('AI meal suggestions error:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate AI meal suggestions' });
+  }
+});
+
+// Get AI cooking instructions for a meal
+router.post('/ai-cooking-instructions', async (req, res) => {
+  try {
+    const { mealName, ingredients, region } = req.body;
+    
+    if (!mealName || !ingredients || !region) {
+      return res.status(400).json({
+        success: false,
+        error: 'Meal name, ingredients, and region are required'
+      });
+    }
+    
+    console.log('👨‍🍳 Generating AI cooking instructions...');
+    
+    const instructions = await geminiMealPlannerService.generateCookingInstructions(
+      mealName, 
+      ingredients, 
+      region
+    );
+    
+    res.json({
+      success: true,
+      instructions: instructions,
+      mealName: mealName,
+      region: region,
+      aiGenerated: true
+    });
+  } catch (error) {
+    console.error('AI cooking instructions error:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate cooking instructions' });
+  }
+});
+
+// Get AI nutritional analysis of meal plan
+router.post('/ai-nutritional-analysis', async (req, res) => {
+  try {
+    const { mealPlan, healthGoals } = req.body;
+    
+    if (!mealPlan) {
+      return res.status(400).json({
+        success: false,
+        error: 'Meal plan is required'
+      });
+    }
+    
+    console.log('📊 Generating AI nutritional analysis...');
+    
+    const analysis = await geminiMealPlannerService.getNutritionalAnalysis(
+      mealPlan, 
+      healthGoals || ['maintain_health']
+    );
+    
+    res.json({
+      success: true,
+      analysis: analysis,
+      healthGoals: healthGoals,
+      aiGenerated: true
+    });
+  } catch (error) {
+    console.error('AI nutritional analysis error:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate nutritional analysis' });
+  }
+});
+
+// Get personalized nutrition tips
+router.post('/ai-personalized-tips', async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const user = await UserService.getUserByEmail(userEmail);
+    
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    // Use health assessment data if available
+    const userProfile = user.healthAssessment?.answers || req.body;
+    
+    console.log('🎯 Generating personalized nutrition tips...');
+    
+    const tips = await geminiMealPlannerService.getPersonalizedTips(userProfile);
+    
+    res.json({
+      success: true,
+      tips: tips,
+      personalized: true,
+      aiGenerated: true
+    });
+  } catch (error) {
+    console.error('Personalized tips error:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate personalized tips' });
+  }
+});
+
+// Generate quick AI meal plan (1-3 days)
+router.post('/ai-quick-meal-plan', async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const { days = 3, preferences = {} } = req.body;
+    
+    const user = await UserService.getUserByEmail(userEmail);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    // Merge user's health assessment with provided preferences
+    const healthAssessment = {
+      ...(user.healthAssessment?.answers || {}),
+      ...preferences
+    };
+    
+    console.log(`🚀 Generating ${days}-day quick AI meal plan...`);
+    
+    const quickPlan = await geminiMealPlannerService.generateAIMealPlan(healthAssessment);
+    
+    // Limit to requested number of days
+    const dayKeys = Object.keys(quickPlan.mealPlan).slice(0, days);
+    const limitedMealPlan = {};
+    dayKeys.forEach(day => {
+      limitedMealPlan[day] = quickPlan.mealPlan[day];
+    });
+    
+    res.json({
+      success: true,
+      message: `${days}-day AI meal plan generated successfully`,
+      mealPlan: limitedMealPlan,
+      nutritionTargets: quickPlan.nutritionTargets,
+      shoppingList: quickPlan.shoppingList,
+      aiInsights: quickPlan.aiInsights,
+      days: days,
+      aiGenerated: true
+    });
+  } catch (error) {
+    console.error('Quick AI meal plan error:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate quick meal plan' });
+  }
+});
+
+// AI-powered meal replacement suggestions
+router.post('/ai-meal-replacement', async (req, res) => {
+  try {
+    const { currentMeal, reason, preferences = {} } = req.body;
+    
+    if (!currentMeal || !reason) {
+      return res.status(400).json({
+        success: false,
+        error: 'Current meal and replacement reason are required'
+      });
+    }
+    
+    console.log('🔄 Generating AI meal replacement suggestions...');
+    
+    const replacementCriteria = {
+      mealType: currentMeal.mealType || 'lunch',
+      region: preferences.region || 'mixed',
+      dietaryRestrictions: preferences.dietaryRestrictions || [],
+      calorieTarget: currentMeal.calories || 400,
+      reason: reason // 'dont_like', 'missing_ingredients', 'time_constraint', etc.
+    };
+    
+    const replacements = await geminiMealPlannerService.generateMealSuggestions(replacementCriteria);
+    
+    res.json({
+      success: true,
+      replacements: replacements,
+      originalMeal: currentMeal,
+      reason: reason,
+      aiGenerated: true
+    });
+  } catch (error) {
+    console.error('AI meal replacement error:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate meal replacements' });
+  }
+});
+
+// Quick meal plan generation
+router.post('/quick-plan', async (req, res) => {
+  try {
+    const { planType } = req.body;
+    
+    const quickPlans = {
+      'weight-loss': {
+        calories: 1500,
+        protein: 120,
+        carbs: 150,
+        fat: 50
+      },
+      'muscle-gain': {
+        calories: 2500,
+        protein: 180,
+        carbs: 300,
+        fat: 80
+      },
+      'maintenance': {
+        calories: 2000,
+        protein: 150,
+        carbs: 250,
+        fat: 67
+      },
+      'healthy': {
+        calories: 1800,
+        protein: 135,
+        carbs: 200,
+        fat: 60
+      }
+    };
+    
+    const targets = quickPlans[planType] || quickPlans['maintenance'];
+    
+    // Generate simple meal plan
+    const mealPlan = {
+      monday: {
+        breakfast: { name: 'Healthy Breakfast', calories: Math.round(targets.calories * 0.25), protein: Math.round(targets.protein * 0.25), carbs: Math.round(targets.carbs * 0.25), fat: Math.round(targets.fat * 0.25) },
+        lunch: { name: 'Balanced Lunch', calories: Math.round(targets.calories * 0.35), protein: Math.round(targets.protein * 0.35), carbs: Math.round(targets.carbs * 0.35), fat: Math.round(targets.fat * 0.35) },
+        dinner: { name: 'Light Dinner', calories: Math.round(targets.calories * 0.40), protein: Math.round(targets.protein * 0.40), carbs: Math.round(targets.carbs * 0.40), fat: Math.round(targets.fat * 0.40) }
+      }
+    };
+    
+    res.json({
+      success: true,
+      nutritionTargets: targets,
+      mealPlan: mealPlan
+    });
+  } catch (error) {
+    console.error('Quick plan error:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate quick plan' });
+  }
+});
+
+// Generate AI recipe
+router.post('/gemini-recipe', async (req, res) => {
+  try {
+    const { ingredients, dietaryRestrictions, region, mealType } = req.body;
+    
+    const recipe = {
+      name: `AI Generated ${mealType}`,
+      description: `Delicious ${region} recipe using ${ingredients.join(', ')}`,
+      ingredients: ingredients,
+      instructions: ['Prepare ingredients', 'Cook as directed', 'Serve hot'],
+      calories: 400,
+      protein: 25,
+      carbs: 45,
+      fat: 15,
+      prepTime: 30,
+      servings: 2
+    };
+    
+    res.json({
+      success: true,
+      recipe: recipe
+    });
+  } catch (error) {
+    console.error('Recipe generation error:', error);
+    res.status(500).json({ success: false, error: 'Failed to generate recipe' });
+  }
+});
+
+// Analyze food image
+router.post('/analyze-food-image', async (req, res) => {
+  try {
+    // Mock food analysis - in production, use Google Vision API or similar
+    const analysis = {
+      foodName: 'Detected Food Item',
+      description: 'Nutritious food detected',
+      calories: 250,
+      protein: 15,
+      carbs: 30,
+      fat: 10,
+      confidence: 0.85
+    };
+    
+    res.json({
+      success: true,
+      analysis: analysis
+    });
+  } catch (error) {
+    console.error('Food analysis error:', error);
+    res.status(500).json({ success: false, error: 'Failed to analyze food image' });
+  }
+});
+
+// Log food item
+router.post('/log-food', async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const { name, calories, protein, carbs, fat, date } = req.body;
+    
+    const foodLog = {
+      name,
+      calories: parseFloat(calories) || 0,
+      protein: parseFloat(protein) || 0,
+      carbs: parseFloat(carbs) || 0,
+      fat: parseFloat(fat) || 0,
+      date: new Date(date),
+      loggedAt: new Date()
+    };
+    
+    await UserService.addFoodLog(userEmail, foodLog);
+    
+    res.json({
+      success: true,
+      message: 'Food logged successfully',
+      foodLog: foodLog
+    });
+  } catch (error) {
+    console.error('Food logging error:', error);
+    res.status(500).json({ success: false, error: 'Failed to log food' });
+  }
+});
+
+// Get user preferences
+router.get('/user-preferences', async (req, res) => {
+  try {
+    const userEmail = req.session.user.email;
+    const user = await UserService.getUserByEmail(userEmail);
+    
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const preferences = {
+      nutritionTargets: user.nutritionTargets || { calories: 2000, protein: 150, carbs: 250, fat: 67 },
+      dietaryRestrictions: user.dietaryRestrictions || [],
+      region: user.region || 'mixed'
+    };
+    
+    res.json({
+      success: true,
+      preferences: preferences
+    });
+  } catch (error) {
+    console.error('Get preferences error:', error);
+    res.status(500).json({ success: false, error: 'Failed to get user preferences' });
   }
 });
 

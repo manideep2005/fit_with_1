@@ -143,14 +143,16 @@ class CommunityService {
         throw new Error('Group not found');
       }
       
-      return group.members.map(member => ({
-        _id: member.user._id,
-        fullName: member.user.fullName,
-        email: member.user.email,
-        role: member.role,
-        joinedAt: member.joinedAt,
-        firstName: member.user.personalInfo?.firstName || member.user.fullName?.split(' ')[0] || 'User'
-      }));
+      return group.members
+        .filter(member => member.user && member.user._id) // Filter out invalid members
+        .map(member => ({
+          _id: member.user._id,
+          fullName: member.user.fullName || 'Unknown User',
+          email: member.user.email || '',
+          role: member.role || 'member',
+          joinedAt: member.joinedAt,
+          firstName: member.user.personalInfo?.firstName || member.user.fullName?.split(' ')[0] || 'User'
+        }));
     } catch (error) {
       throw new Error('Failed to get group members: ' + error.message);
     }

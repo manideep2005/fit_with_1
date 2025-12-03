@@ -357,6 +357,11 @@ if (process.env.NODE_ENV !== 'production') {
     res.sendFile(__dirname + '/test-session-flow.html');
   });
   
+  // Session management test page
+  app.get('/test-sessions', isAuthenticated, (req, res) => {
+    res.render('session-test', { user: req.session.user });
+  });
+  
   // Test session persistence
   app.get('/test-session-check', (req, res) => {
     console.log('🧪 SESSION CHECK TEST');
@@ -658,21 +663,22 @@ app.post('/login', ensureDbConnection, async (req, res) => {
     // Authenticate user against database
     const user = await UserService.authenticateUser(email.trim(), password);
     
-    // Create database session (our new approach)
-    console.log('🗄️ Creating database session...');
+    // Create database session with device tracking
+    console.log('🗄️ Creating database session with device tracking...');
     
     try {
       const UserSession = require('../models/UserSession');
-      // Clean up any existing session first
-      await UserSession.deleteSession(req.sessionID).catch(() => {});
-      await UserSession.createSession(req.sessionID, user);
+      
+      // Use session manager to create session with device info
+      await sessionManager.createSession(req.sessionID, user, req);
       
       // Set user data in session
       req.session.user = {
         _id: user._id.toString(),
         email: user.email,
         fullName: user.fullName,
-        fitnessId: user.fitnessId, // Add fitnessId to session
+        fitnessId: user.fitnessId,
+        profilePhoto: user.profilePhoto,
         onboardingCompleted: user.onboardingCompleted,
         personalInfo: user.personalInfo
       };
@@ -694,25 +700,10 @@ app.post('/login', ensureDbConnection, async (req, res) => {
       
     } catch (dbError) {
       console.error('❌ Database session creation failed:', dbError.message);
-      // Try one more time with a new session ID
-      try {
-        const newSessionId = require('crypto').randomBytes(24).toString('hex');
-        req.sessionID = newSessionId;
-        res.cookie('fit-with-ai-session', newSessionId, {
-          maxAge: 1000 * 60 * 60 * 24,
-          httpOnly: false,
-          secure: false,
-          sameSite: 'lax'
-        });
-        await UserSession.createSession(newSessionId, user);
-        console.log('✅ Database session created with new session ID');
-      } catch (finalError) {
-        console.error('❌ Final session creation attempt failed:', finalError.message);
-        return res.status(500).json({ 
-          success: false,
-          error: 'Login failed - session creation error' 
-        });
-      }
+      return res.status(500).json({ 
+        success: false,
+        error: 'Login failed - session creation error' 
+      });
     }
     
   } catch (error) {
@@ -1747,8 +1738,16 @@ try {
 // Import API routes
 const settingsRoutes = require('../routes/settings');
 
+// Session Management
+const { checkSessionConflict, sessionManager } = require('../middleware/sessionMiddleware');
+const UserSession = require('../models/UserSession');
+
+// Add session conflict checking middleware for authenticated routes
+app.use(checkSessionConflict);
+
 // Use API routes
 app.use('/api/settings', settingsRoutes);
+app.use('/api/sessions', require('./sessions'));
 
 // AI Chat endpoint
 app.post('/api/ai-chat', isAuthenticated, async (req, res) => {

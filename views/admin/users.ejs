@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users Management - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: #f5f5f5; }
+        .admin-container { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+        }
+        .sidebar h2 { text-align: center; margin-bottom: 30px; }
+        .sidebar ul { list-style: none; }
+        .sidebar li a {
+            display: block;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        .sidebar li a:hover { background: rgba(255,255,255,0.1); }
+        .main-content { flex: 1; padding: 20px; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .users-table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; font-weight: 600; }
+        .status-active { color: #28a745; }
+        .status-inactive { color: #dc3545; }
+        .btn { padding: 5px 10px; border: none; border-radius: 5px; cursor: pointer; font-size: 12px; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="sidebar">
+            <h2><i class="fas fa-tachometer-alt"></i> Admin</h2>
+            <ul>
+                <li><a href="/admin/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="/admin/users"><i class="fas fa-users"></i> Users</a></li>
+                <li><a href="/admin/messages"><i class="fas fa-envelope"></i> Messages</a></li>
+                <li><a href="/admin/analytics"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                <li><a href="/admin/monitoring"><i class="fas fa-desktop"></i> Monitoring</a></li>
+                <li><a href="/admin/logs"><i class="fas fa-file-alt"></i> Logs</a></li>
+                <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <h1>Users Management</h1>
+                <p>Total Users: <%= totalUsers %></p>
+            </div>
+            <div class="users-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Joined</th>
+                            <th>Status</th>
+                            <th>Subscription</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% users.forEach(user => { %>
+                        <tr>
+                            <td><%= user.fullName %></td>
+                            <td><%= user.email %></td>
+                            <td><%= new Date(user.createdAt).toLocaleDateString() %></td>
+                            <td class="<%= user.isActive ? 'status-active' : 'status-inactive' %>">
+                                <%= user.isActive ? 'Active' : 'Inactive' %>
+                            </td>
+                            <td><%= user.subscription?.plan || 'Free' %></td>
+                            <td>
+                                <button class="btn <%= user.isActive ? 'btn-danger' : 'btn-success' %>" 
+                                        onclick="toggleUserStatus('<%= user._id %>', '<%= user.isActive ? 'inactive' : 'active' %>')">
+                                    <%= user.isActive ? 'Deactivate' : 'Activate' %>
+                                </button>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script>
+        async function toggleUserStatus(userId, status) {
+            const response = await fetch(`/admin/api/users/${userId}/status`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            if (response.ok) location.reload();
+        }
+        async function logout() {
+            const response = await fetch('/admin/logout', { method: 'POST' });
+            if (response.ok) window.location.href = '/admin/login';
+        }
+    </script>
+</body>
+</html>

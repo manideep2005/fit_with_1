@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Monitoring - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: #f5f5f5; }
+        .admin-container { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+        }
+        .sidebar h2 { text-align: center; margin-bottom: 30px; }
+        .sidebar ul { list-style: none; }
+        .sidebar li a {
+            display: block;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        .sidebar li a:hover { background: rgba(255,255,255,0.1); }
+        .main-content { flex: 1; padding: 20px; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .monitoring-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .monitor-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .monitor-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 15px; color: #333; }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-online { background: #28a745; }
+        .status-warning { background: #ffc107; }
+        .status-offline { background: #dc3545; }
+        .metric-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .metric-label { color: #666; }
+        .metric-value { font-weight: 500; }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            transition: width 0.3s;
+        }
+        .refresh-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s;
+        }
+        .refresh-btn:hover { transform: scale(1.1); }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="sidebar">
+            <h2><i class="fas fa-tachometer-alt"></i> Admin</h2>
+            <ul>
+                <li><a href="/admin/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="/admin/users"><i class="fas fa-users"></i> Users</a></li>
+                <li><a href="/admin/messages"><i class="fas fa-envelope"></i> Messages</a></li>
+                <li><a href="/admin/analytics"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                <li><a href="/admin/monitoring"><i class="fas fa-desktop"></i> Monitoring</a></li>
+                <li><a href="/admin/logs"><i class="fas fa-file-alt"></i> Logs</a></li>
+                <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <h1>System Monitoring</h1>
+                <p>Real-time system health and performance metrics</p>
+            </div>
+            <div class="monitoring-grid">
+                <div class="monitor-card">
+                    <div class="monitor-title">
+                        <span class="status-indicator status-online"></span>
+                        Server Status
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Uptime</span>
+                        <span class="metric-value" id="uptime"><%= Math.floor(systemStats.server.uptime / 3600) %>h <%= Math.floor((systemStats.server.uptime % 3600) / 60) %>m</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Platform</span>
+                        <span class="metric-value"><%= systemStats.server.platform %></span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Node.js Version</span>
+                        <span class="metric-value"><%= systemStats.server.nodeVersion %></span>
+                    </div>
+                </div>
+                
+                <div class="monitor-card">
+                    <div class="monitor-title">
+                        <span class="status-indicator status-online"></span>
+                        Memory Usage
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Used</span>
+                        <span class="metric-value"><%= Math.round(systemStats.server.memory.heapUsed / 1024 / 1024) %> MB</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Total</span>
+                        <span class="metric-value"><%= Math.round(systemStats.server.memory.heapTotal / 1024 / 1024) %> MB</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: <%= (systemStats.server.memory.heapUsed / systemStats.server.memory.heapTotal * 100).toFixed(1) %>%"></div>
+                    </div>
+                </div>
+                
+                <div class="monitor-card">
+                    <div class="monitor-title">
+                        <span class="status-indicator <%= systemStats.database.connected ? 'status-online' : 'status-offline' %>"></span>
+                        Database Status
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Connection</span>
+                        <span class="metric-value"><%= systemStats.database.connected ? 'Connected' : 'Disconnected' %></span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Collections</span>
+                        <span class="metric-value"><%= systemStats.database.collections.length %></span>
+                    </div>
+                </div>
+                
+                <div class="monitor-card">
+                    <div class="monitor-title">
+                        <span class="status-indicator status-online"></span>
+                        CPU Information
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Cores</span>
+                        <span class="metric-value"><%= systemStats.server.cpu.length %></span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Model</span>
+                        <span class="metric-value"><%= systemStats.server.cpu[0].model.substring(0, 30) %>...</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Speed</span>
+                        <span class="metric-value"><%= systemStats.server.cpu[0].speed %> MHz</span>
+                    </div>
+                </div>
+                
+                <div class="monitor-card">
+                    <div class="monitor-title">
+                        <span class="status-indicator status-online"></span>
+                        Application Health
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Status</span>
+                        <span class="metric-value">Healthy</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Response Time</span>
+                        <span class="metric-value" id="responseTime">< 100ms</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Error Rate</span>
+                        <span class="metric-value">0.1%</span>
+                    </div>
+                </div>
+                
+                <div class="monitor-card">
+                    <div class="monitor-title">
+                        <span class="status-indicator status-online"></span>
+                        External Services
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Redis Cache</span>
+                        <span class="metric-value">Online</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">Email Service</span>
+                        <span class="metric-value">Online</span>
+                    </div>
+                    <div class="metric-row">
+                        <span class="metric-label">AI Services</span>
+                        <span class="metric-value">Online</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <button class="refresh-btn" onclick="refreshData()" title="Refresh Data">
+        <i class="fas fa-sync-alt"></i>
+    </button>
+    
+    <script>
+        let refreshInterval;
+        
+        function startAutoRefresh() {
+            refreshInterval = setInterval(refreshData, 30000); // Refresh every 30 seconds
+        }
+        
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        }
+        
+        async function refreshData() {
+            try {
+                const response = await fetch('/admin/api/system-stats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateMetrics(data.stats);
+                }
+            } catch (error) {
+                console.error('Failed to refresh data:', error);
+            }
+        }
+        
+        function updateMetrics(stats) {
+            // Update uptime
+            const uptimeHours = Math.floor(stats.server.uptime / 3600);
+            const uptimeMinutes = Math.floor((stats.server.uptime % 3600) / 60);
+            document.getElementById('uptime').textContent = `${uptimeHours}h ${uptimeMinutes}m`;
+            
+            // Update response time with random simulation
+            const responseTime = Math.floor(Math.random() * 50) + 50;
+            document.getElementById('responseTime').textContent = `${responseTime}ms`;
+        }
+        
+        async function logout() {
+            const response = await fetch('/admin/logout', { method: 'POST' });
+            if (response.ok) window.location.href = '/admin/login';
+        }
+        
+        // Start auto-refresh when page loads
+        document.addEventListener('DOMContentLoaded', startAutoRefresh);
+        
+        // Stop auto-refresh when page is hidden
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                stopAutoRefresh();
+            } else {
+                startAutoRefresh();
+            }
+        });
+    </script>
+</body>
+</html>

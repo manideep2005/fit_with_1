@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Features - Fit With AI</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/enhanced-features.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .demo-header {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+        }
+        
+        .demo-header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .demo-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .features-showcase {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px 40px;
+        }
+        
+        .feature-demo {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-demo-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .feature-demo-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .feature-demo-title i {
+            font-size: 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 50%;
+        }
+        
+        .feature-demo-title h2 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .feature-demo-content {
+            padding: 30px;
+            color: #333;
+        }
+        
+        .demo-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .demo-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .demo-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .demo-output {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .status-indicator.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-indicator.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .mini-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .mini-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .mini-card h4 {
+            margin: 0 0 10px 0;
+            color: #667eea;
+        }
+        
+        .mini-card p {
+            margin: 0;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-header">
+        <h1>🚀 Enhanced Features Demo</h1>
+        <p>Experience the next generation of fitness technology with AI-powered form checking, smart notifications, social challenges, progress predictions, voice commands, and buddy finding.</p>
+    </div>
+
+    <div class="features-showcase">
+        
+        <!-- 1. AI Form Checker Demo -->
+        <div class="feature-demo">
+            <div class="feature-demo-header">
+                <div class="feature-demo-title">
+                    <i class="fas fa-camera"></i>
+                    <div>
+                        <h2>AI Form Checker</h2>
+                        <p style="margin: 5px 0 0 0; opacity: 0.9;">Real-time exercise form analysis and correction</p>
+                    </div>
+                </div>
+                <span class="status-indicator inactive" id="formCheckerStatus">
+                    <i class="fas fa-circle"></i> Inactive
+                </span>
+            </div>
+            <div class="feature-demo-content">
+                <div class="demo-controls">
+                    <button class="demo-btn" onclick="demoFormChecker('start')">
+                        <i class="fas fa-play"></i> Start Analysis
+                    </button>
+                    <button class="demo-btn" onclick="demoFormChecker('simulate')">
+                        <i class="fas fa-robot"></i> Simulate Feedback
+                    </button>
+                    <button class="demo-btn" onclick="demoFormChecker('stop')">
+                        <i class="fas fa-stop"></i> Stop Analysis
+                    </button>
+                </div>
+                
+                <div class="feature-grid">
+                    <div class="mini-card">
+                        <h4><i class="fas fa-chart-line"></i> Form Score</h4>
+                        <div id="formScore" class="form-score grade-b">85% (B)</div>
+                    </div>
+                    <div class="mini-card">
+                        <h4><i class="fas fa-exclamation-triangle"></i> Corrections</h4>
+                        <div id="formCorrections">
+                            <div class="correction severity-medium">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <span>Keep your chest up and core engaged</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="demo-output" id="formCheckerOutput">
+                    <strong>AI Form Checker:</strong> Ready to analyze your exercise form. Click "Start Analysis" to begin.
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Smart Notifications Demo -->
+        <div class="feature-demo">
+            <div class="feature-demo-header">
+                <div class="feature-demo-title">
+                    <i class="fas fa-bell"></i>
+                    <div>
+                        <h2>Smart Notifications</h2>
+                        <p style="margin: 5px 0 0 0; opacity: 0.9;">AI-powered personalized fitness notifications</p>
+                    </div>
+                </div>
+                <span class="status-indicator active" id="notificationsStatus">
+                    <i class="fas fa-circle"></i> Active
+                </span>
+            </div>
+            <div class="feature-demo-content">
+                <div class="demo-controls">
+                    <button class="demo-btn" onclick="demoNotifications('workout')">
+                        <i class="fas fa-dumbbell"></i> Workout Reminder
+                    </button>
+                    <button class="demo-btn" onclick="demoNotifications('nutrition')">
+                        <i class="fas fa-apple-alt"></i> Nutrition Alert
+                    </button>
+                    <button class="demo-btn" onclick="demoNotifications('motivation')">
+                        <i class="fas fa-fire"></i> Motivation Boost
+                    </button>
+                    <button class="demo-btn" onclick="demoNotifications('progress')">
+                        <i class="fas fa-chart-bar"></i> Progress Update
+                    </button>
+                </div>
+                
+                <div id="notificationsList" class="notifications-container">
+                    <div class="notification-item workout">
+                        <div class="notification-header">
+                            <span class="notification-title">Ready for another great workout? 💪</span>
+                            <span class="notification-time">2 min ago</span>
+                        </div>
+                        <div class="notification-body">You crushed it yesterday! Let's keep the momentum going.</div>
+                    </div>
+                </div>
+                
+                <div class="demo-output" id="notificationsOutput">
+                    <strong>Smart Notifications:</strong> AI analyzes your patterns to send perfectly timed motivational messages.
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Social Challenges Demo -->
+        <div class="feature-demo">
+            <div class="feature-demo-header">
+                <div class="feature-demo-title">
+                    <i class="fas fa-trophy"></i>
+                    <div>
+                        <h2>Social Challenges</h2>
+                        <p style="margin: 5px 0 0 0; opacity: 0.9;">Community-driven fitness competitions</p>
+                    </div>
+                </div>
+                <span class="status-indicator active" id="challengesStatus">
+                    <i class="fas fa-circle"></i> 3 Active
+                </span>
+            </div>
+            <div class="feature-demo-content">
+                <div class="demo-controls">
+                    <button class="demo-btn" onclick="demoChallenges('create')">
+                        <i class="fas fa-plus"></i> Create Challenge
+                    </button>
+                    <button class="demo-btn" onclick="demoChallenges('join')">
+                        <i class="fas fa-users"></i> Join Challenge
+                    </button>
+                    <button class="demo-btn" onclick="demoChallenges('leaderboard')">
+                        <i class="fas fa-medal"></i> View Leaderboard
+                    </button>
+                </div>
+                
+                <div class="challenges-grid" id="challengesList">
+                    <div class="challenge-card">
+                        <div class="challenge-header">
+                            <h3>30-Day Fitness Challenge</h3>
+                            <span class="challenge-type">streak</span>
+                        </div>
+                        <p class="challenge-description">Complete workouts for 30 consecutive days</p>
+                        <div class="challenge-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 60%"></div>
+                            </div>
+                            <small>Day 18 of 30</small>
+                        </div>
+                        <div class="challenge-stats">
+                            <span class="participants">247 participants</span>
+                            <span class="duration">12 days left</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="demo-output" id="challengesOutput">
+                    <strong>Social Challenges:</strong> Compete with friends and community members to stay motivated!
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Progress Predictions Demo -->
+        <div class="feature-demo">
+            <div class="feature-demo-header">
+                <div class="feature-demo-title">
+                    <i class="fas fa-chart-line"></i>
+                    <div>
+                        <h2>Progress Predictions</h2>
+                        <p style="margin: 5px 0 0 0; opacity: 0.9;">AI-powered fitness outcome forecasting</p>
+                    </div>
+                </div>
+                <span class="status-indicator active" id="predictionsStatus">
+                    <i class="fas fa-circle"></i> ML Ready
+                </span>
+            </div>
+            <div class="feature-demo-content">
+                <div class="demo-controls">
+                    <button class="demo-btn" onclick="demoPredictions('weight')">
+                        <i class="fas fa-weight"></i> Weight Loss Prediction
+                    </button>
+                    <button class="demo-btn" onclick="demoPredictions('performance')">
+                        <i class="fas fa-chart-bar"></i> Performance Forecast
+                    </button>
+                    <button class="demo-btn" onclick="demoPredictions('goals')">
+                        <i class="fas fa-target"></i> Goal Achievement
+                    </button>
+                </div>
+                
+                <div id="predictionsContainer" class="predictions-container">
+                    <div class="prediction-card weight-loss">
+                        <h3>Weight Loss Prediction</h3>
+                        <div class="prediction-stats">
+                            <div class="stat">
+                                <span class="label">Current Weight</span>
+                                <span class="value">75 kg</span>
+                            </div>
+                            <div class="stat">
+                                <span class="label">Predicted Final</span>
+                                <span class="value">68 kg</span>
+                            </div>
+                            <div class="stat">
+                                <span class="label">Timeline</span>
+                                <span class="value">12 weeks</span>
+                            </div>
+                            <div class="stat">
+                                <span class="label">Confidence</span>
+                                <span class="value">87%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="demo-output" id="predictionsOutput">
+                    <strong>Progress Predictions:</strong> Using BigQuery ML to forecast your fitness journey with 87% accuracy.
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Voice Commands Demo -->
+        <div class="feature-demo">
+            <div class="feature-demo-header">
+                <div class="feature-demo-title">
+                    <i class="fas fa-microphone"></i>
+                    <div>
+                        <h2>Voice Commands</h2>
+                        <p style="margin: 5px 0 0 0; opacity: 0.9;">Hands-free workout experience</p>
+                    </div>
+                </div>
+                <span class="status-indicator inactive" id="voiceStatus">
+                    <i class="fas fa-circle"></i> Inactive
+                </span>
+            </div>
+            <div class="feature-demo-content">
+                <div class="voice-controls">
+                    <button class="voice-button" id="voiceButton" onclick="demoVoice('toggle')">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <div class="voice-indicator" id="voiceIndicator"></div>
+                </div>
+                
+                <div class="demo-controls">
+                    <button class="demo-btn" onclick="demoVoice('start')">
+                        <i class="fas fa-play"></i> Start Session
+                    </button>
+                    <button class="demo-btn" onclick="demoVoice('simulate')">
+                        <i class="fas fa-comment"></i> Simulate Command
+                    </button>
+                    <button class="demo-btn" onclick="demoVoice('help')">
+                        <i class="fas fa-question"></i> Show Commands
+                    </button>
+                </div>
+                
+                <div class="voice-commands-list" id="voiceCommandsList" style="display: none;">
+                    <div class="voice-command-item">
+                        <div class="command">"Start workout"</div>
+                        <div class="description">Begin your exercise session</div>
+                    </div>
+                    <div class="voice-command-item">
+                        <div class="command">"Count reps"</div>
+                        <div class="description">Count repetitions automatically</div>
+                    </div>
+                    <div class="voice-command-item">
+                        <div class="command">"Set timer for 2 minutes"</div>
+                        <div class="description">Start a workout timer</div>
+                    </div>
+                    <div class="voice-command-item">
+                        <div class="command">"Log water"</div>
+                        <div class="description">Record water intake</div>
+                    </div>
+                </div>
+                
+                <div class="demo-output" id="voiceOutput">
+                    <strong>Voice Commands:</strong> Control your workout hands-free with natural speech recognition.
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. Buddy Finder Demo -->
+        <div class="feature-demo">
+            <div class="feature-demo-header">
+                <div class="feature-demo-title">
+                    <i class="fas fa-users"></i>
+                    <div>
+                        <h2>Buddy Finder</h2>
+                        <p style="margin: 5px 0 0 0; opacity: 0.9;">AI-powered workout partner matching</p>
+                    </div>
+                </div>
+                <span class="status-indicator active" id="buddyStatus">
+                    <i class="fas fa-circle"></i> 12 Matches
+                </span>
+            </div>
+            <div class="feature-demo-content">
+                <div class="demo-controls">
+                    <button class="demo-btn" onclick="demoBuddy('search')">
+                        <i class="fas fa-search"></i> Find Buddies
+                    </button>
+                    <button class="demo-btn" onclick="demoBuddy('nearby')">
+                        <i class="fas fa-map-marker-alt"></i> Find Nearby
+                    </button>
+                    <button class="demo-btn" onclick="demoBuddy('matches')">
+                        <i class="fas fa-heart"></i> View Matches
+                    </button>
+                </div>
+                
+                <div class="buddies-grid" id="buddiesList">
+                    <div class="buddy-card">
+                        <div class="buddy-photo">
+                            <img src="https://ui-avatars.com/api/?name=Sarah+Johnson&background=667eea&color=fff" alt="Sarah Johnson">
+                            <span class="verified-badge">✓</span>
+                        </div>
+                        <div class="buddy-info">
+                            <h3>Sarah Johnson</h3>
+                            <p class="buddy-location">San Francisco, CA</p>
+                            <p class="buddy-fitness">Intermediate • Yoga, Running, Strength</p>
+                            <div class="compatibility-score">
+                                <span class="score">92% match</span>
+                                <div class="distance">2.3km away</div>
+                            </div>
+                            <div class="match-reasons">
+                                <span class="reason-tag">Same fitness level</span>
+                                <span class="reason-tag">Common goals</span>
+                                <span class="reason-tag">Compatible schedule</span>
+                            </div>
+                        </div>
+                        <div class="buddy-actions">
+                            <button class="btn btn-primary">Send Request</button>
+                            <button class="btn btn-secondary">View Profile</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="demo-output" id="buddyOutput">
+                    <strong>Buddy Finder:</strong> AI matches you with compatible workout partners based on 15+ factors.
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript -->
+    <script src="/js/enhanced-features.js"></script>
+    <script>
+        // Demo Functions
+        function demoFormChecker(action) {
+            const output = document.getElementById('formCheckerOutput');
+            const status = document.getElementById('formCheckerStatus');
+            
+            switch(action) {
+                case 'start':
+                    status.innerHTML = '<i class="fas fa-circle"></i> Analyzing';
+                    status.className = 'status-indicator active';
+                    output.innerHTML = '<strong>AI Form Checker:</strong> 🎯 Camera activated. Analyzing your squat form... Keep your knees aligned with your toes!';
+                    break;
+                case 'simulate':
+                    output.innerHTML = '<strong>AI Form Checker:</strong> 📊 Form Score: 85% (B) - Great job! Small adjustment: Keep your chest up and core engaged for better stability.';
+                    break;
+                case 'stop':
+                    status.innerHTML = '<i class="fas fa-circle"></i> Inactive';
+                    status.className = 'status-indicator inactive';
+                    output.innerHTML = '<strong>AI Form Checker:</strong> ✅ Session complete! You completed 15 reps with an average form score of 87%. Well done!';
+                    break;
+            }
+        }
+
+        function demoNotifications(type) {
+            const output = document.getElementById('notificationsOutput');
+            const list = document.getElementById('notificationsList');
+            
+            const notifications = {
+                workout: {
+                    title: "Time to crush your workout! 💪",
+                    body: "You haven't worked out in 2 days. Your body is ready for action!",
+                    class: "workout"
+                },
+                nutrition: {
+                    title: "Hydration check! 💧",
+                    body: "You're at 40% of your water goal. Keep sipping throughout the day!",
+                    class: "nutrition"
+                },
+                motivation: {
+                    title: "You're stronger than you think! 🔥",
+                    body: "Every workout is a step closer to your goals. You've got this!",
+                    class: "motivation"
+                },
+                progress: {
+                    title: "Amazing progress this week! 📈",
+                    body: "You increased your workouts by 25% and hit all your nutrition goals!",
+                    class: "progress"
+                }
+            };
+            
+            const notif = notifications[type];
+            const newNotification = `
+                <div class="notification-item ${notif.class}">
+                    <div class="notification-header">
+                        <span class="notification-title">${notif.title}</span>
+                        <span class="notification-time">Just now</span>
+                    </div>
+                    <div class="notification-body">${notif.body}</div>
+                </div>
+            `;
+            
+            list.insertAdjacentHTML('afterbegin', newNotification);
+            output.innerHTML = `<strong>Smart Notifications:</strong> 🔔 ${type.charAt(0).toUpperCase() + type.slice(1)} notification sent! AI analyzed your patterns to send this at the perfect time.`;
+        }
+
+        function demoChallenges(action) {
+            const output = document.getElementById('challengesOutput');
+            
+            switch(action) {
+                case 'create':
+                    output.innerHTML = '<strong>Social Challenges:</strong> 🏆 Challenge created! "7-Day HIIT Challenge" is now live. Inviting your fitness buddies...';
+                    break;
+                case 'join':
+                    output.innerHTML = '<strong>Social Challenges:</strong> ✅ Joined "Step Master Challenge"! You\'re now competing with 247 other participants. Current rank: #23';
+                    break;
+                case 'leaderboard':
+                    output.innerHTML = '<strong>Social Challenges:</strong> 📊 Leaderboard updated! You moved up 5 positions to #18. Keep pushing to reach the top 10!';
+                    break;
+            }
+        }
+
+        function demoPredictions(type) {
+            const output = document.getElementById('predictionsOutput');
+            
+            const predictions = {
+                weight: '⚖️ Weight Loss Prediction: Based on your current progress, you\'ll reach your goal weight of 68kg in 12 weeks with 87% confidence!',
+                performance: '💪 Performance Forecast: Your strength will improve by 23% over the next 8 weeks. Focus on progressive overload!',
+                goals: '🎯 Goal Achievement: 94% probability of reaching your fitness goals by the target date. You\'re on track!'
+            };
+            
+            output.innerHTML = `<strong>Progress Predictions:</strong> ${predictions[type]}`;
+        }
+
+        function demoVoice(action) {
+            const output = document.getElementById('voiceOutput');
+            const status = document.getElementById('voiceStatus');
+            const button = document.getElementById('voiceButton');
+            const commandsList = document.getElementById('voiceCommandsList');
+            
+            switch(action) {
+                case 'start':
+                    status.innerHTML = '<i class="fas fa-circle"></i> Listening';
+                    status.className = 'status-indicator active';
+                    button.classList.add('active');
+                    output.innerHTML = '<strong>Voice Commands:</strong> 🎤 Voice session started! Say "start workout" to begin or "help" for available commands.';
+                    break;
+                case 'toggle':
+                    if (button.classList.contains('active')) {
+                        button.classList.remove('active');
+                        status.innerHTML = '<i class="fas fa-circle"></i> Inactive';
+                        status.className = 'status-indicator inactive';
+                        output.innerHTML = '<strong>Voice Commands:</strong> 🔇 Voice session ended. Great workout!';
+                    } else {
+                        demoVoice('start');
+                    }
+                    break;
+                case 'simulate':
+                    output.innerHTML = '<strong>Voice Commands:</strong> 🗣️ "Start workout" → ✅ Starting your strength training session. I\'ll count your reps!';
+                    break;
+                case 'help':
+                    commandsList.style.display = commandsList.style.display === 'none' ? 'grid' : 'none';
+                    output.innerHTML = '<strong>Voice Commands:</strong> 📋 Available commands shown above. Try saying any of these phrases!';
+                    break;
+            }
+        }
+
+        function demoBuddy(action) {
+            const output = document.getElementById('buddyOutput');
+            
+            switch(action) {
+                case 'search':
+                    output.innerHTML = '<strong>Buddy Finder:</strong> 🔍 Searching for workout partners... Found 12 highly compatible matches within 5km!';
+                    break;
+                case 'nearby':
+                    output.innerHTML = '<strong>Buddy Finder:</strong> 📍 Found 3 fitness enthusiasts within 1km of your location. Sarah is online now!';
+                    break;
+                case 'matches':
+                    output.innerHTML = '<strong>Buddy Finder:</strong> 💝 Your top match is Sarah Johnson (92% compatibility). You share 4 common fitness goals!';
+                    break;
+            }
+        }
+
+        // Initialize demo
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Enhanced Features Demo loaded');
+            
+            // Simulate some initial activity
+            setTimeout(() => {
+                demoNotifications('workout');
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

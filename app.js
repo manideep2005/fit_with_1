@@ -35,6 +35,13 @@ try {
 const app = express();
 let server, io;
 
+// Add CORS middleware
+const cors = require('cors');
+app.use(cors({
+  origin: ['http://localhost:3001', 'http://localhost:3000', 'http://localhost:3009'],
+  credentials: true
+}));
+
 // Vercel-compatible setup - no Socket.IO for serverless
 if (!process.env.VERCEL) {
   const http = require('http');
@@ -140,6 +147,11 @@ app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('public'));
 
+// Add navigation middleware
+const { validateNavigation, addNavHelpers } = require('./middleware/navMiddleware');
+app.use(validateNavigation);
+app.use(addNavHelpers);
+
 // Ensure proper JSON serialization
 app.set('json spaces', 0);
 app.set('json replacer', null);
@@ -217,15 +229,18 @@ app.use(async (req, res, next) => {
       // ALWAYS use the populated user object as the source of truth
       const user = dbSession.userId;
       req.session.user = {
-        _id: user._id,
+        _id: user._id.toString(),
         email: user.email,
         fullName: user.fullName,
         fitnessId: user.fitnessId, // Get ID from the main user profile
         profilePhoto: user.profilePhoto, // Add profile photo to session
         onboardingCompleted: user.onboardingCompleted,
-        personalInfo: user.personalInfo
+        personalInfo: user.personalInfo,
+        emailVerified: user.emailVerified || true
       };
       console.log('✅ Loaded user from database session:', req.session.user.email);
+    } else {
+      console.log('❌ No database session found for sessionId:', sessionId);
     }
   } catch (error) {
     console.log('❌ Failed to load database session:', error.message);
@@ -238,6 +253,10 @@ console.log('✅ Database-only session system configured');
 
 // Authentication Middleware - Works for Local and Vercel
 const isAuthenticated = async (req, res, next) => {
+  // Add user to req for API routes
+  if (req.session && req.session.user) {
+    req.user = req.session.user;
+  }
   console.log('🔐 AUTH CHECK');
   console.log('📍 URL:', req.url);
   console.log('🌍 Environment:', process.env.NODE_ENV);
@@ -299,7 +318,14 @@ const isAuthenticated = async (req, res, next) => {
     if (req.session && req.session.user && !req.session.user.onboardingCompleted) {
       console.log('⚠️ USER EXISTS BUT ONBOARDING NOT COMPLETE');
       const email = req.session.user.email || '';
-      return res.redirect(`/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(email)}`);
+      // Generate token for onboarding
+      const onboardingToken = Buffer.from(JSON.stringify({
+        email: email,
+        timestamp: Date.now(),
+        purpose: 'onboarding'
+      })).toString('base64');
+      
+      return res.redirect(`/CustomOnboarding?token=${onboardingToken}`);
     }
 
     // No valid authentication found
@@ -312,6 +338,10 @@ const isAuthenticated = async (req, res, next) => {
       cookies: req.headers.cookie?.substring(0, 100) + '...'
     });
     
+    // For API routes, return JSON error
+    if (req.path.startsWith('/api/')) {
+      return res.status(401).json({ success: false, error: 'Authentication required' });
+    }
     return res.redirect('/');
 
   } catch (error) {
@@ -350,14 +380,80 @@ const checkOnboarding = (req, res, next) => {
   // Check if user exists and onboarding is completed
   if (!req.session.user || !req.session.user.onboardingCompleted) {
     const email = req.session.user?.email || '';
-    return res.redirect(`/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(email)}`);
+    
+    if (email) {
+      // Generate token for onboarding
+      const onboardingToken = Buffer.from(JSON.stringify({
+        email: email,
+        timestamp: Date.now(),
+        purpose: 'onboarding'
+      })).toString('base64');
+      
+      return res.redirect(`/CustomOnboarding?token=${onboardingToken}`);
+    } else {
+      return res.redirect('/');
+    }
   }
   next();
 };
 
+// Virtual Doctor API Routes - placed early
+app.get('/api/virtual-doctor-test', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'Virtual doctor API is working',
+    databaseLoaded: Object.keys(medicalDatabase).length > 0,
+    conditionsCount: Object.keys(medicalDatabase).length
+  });
+});
+
+app.post('/api/virtual-doctor-analyze', async (req, res) => {
+  try {
+    const { symptoms } = req.body;
+    
+    if (!symptoms) {
+      return res.status(400).json({ success: false, error: 'Symptoms required' });
+    }
+    
+    if (Object.keys(medicalDatabase).length === 0) {
+      return res.status(500).json({ success: false, error: 'Database not loaded' });
+    }
+    
+    const matches = findMatchingConditions(symptoms);
+    const aiAnalysis = generateAIAnalysis(symptoms, matches);
+    
+    res.json({
+      success: true,
+      matches,
+      aiAnalysis,
+      query: symptoms
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Routes
 app.get('/', (req, res) => {
   res.render('index');
+});
+
+// Dashboard route
+app.get('/dashboard', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    console.log('📊 Dashboard route accessed');
+    console.log('👤 Session user:', req.session.user);
+    
+    const navId = req.query.nav || Date.now().toString();
+    
+    res.render('dashboard', {
+      user: req.session.user,
+      navId: navId
+    });
+  } catch (error) {
+    console.error('Dashboard render error:', error);
+    res.redirect('/');
+  }
 });
 
 // Debug route for session testing (development only)
@@ -385,6 +481,10 @@ if (process.env.NODE_ENV !== 'production') {
 
 // Debug routes - only available in development
 if (process.env.NODE_ENV !== 'production') {
+    app.get('/test-sessions', (req, res) => {
+        res.sendFile(__dirname + '/test-sessions.html');
+    });
+    
     app.get('/debug-session', (req, res) => {
         res.json({
             session: req.session,
@@ -447,6 +547,62 @@ if (process.env.NODE_ENV !== 'production') {
                 stack: error.stack,
                 connection: database.getConnectionStatus()
             });
+        }
+    });
+    
+    app.get('/debug-user-session', (req, res) => {
+        res.json({
+            sessionExists: !!req.session,
+            sessionID: req.sessionID,
+            sessionUser: req.session.user,
+            sessionKeys: Object.keys(req.session || {}),
+            cookies: req.headers.cookie,
+            fullSession: req.session
+        });
+    });
+    
+    app.get('/fix-session', async (req, res) => {
+        try {
+            const email = req.query.email || 'manideep.gonugunta1802@gmail.com';
+            const User = require('./models/User');
+            const UserSession = require('./models/UserSession');
+            
+            const user = await User.findOne({ email: email.toLowerCase().trim() });
+            
+            if (!user) {
+                return res.json({ success: false, error: 'User not found' });
+            }
+            
+            // Set user data in session
+            req.session.user = {
+                _id: user._id.toString(),
+                email: user.email,
+                fullName: user.fullName,
+                fitnessId: user.fitnessId,
+                profilePhoto: user.profilePhoto,
+                onboardingCompleted: user.onboardingCompleted,
+                personalInfo: user.personalInfo,
+                emailVerified: true
+            };
+            
+            // Create database session
+            try {
+                await UserSession.createSession(req.sessionID, user);
+                console.log('✅ Database session created for fix-session');
+            } catch (sessionError) {
+                console.log('⚠️ Database session creation failed:', sessionError.message);
+            }
+            
+            res.json({ 
+                success: true, 
+                message: 'Session fixed successfully!',
+                user: req.session.user,
+                sessionId: req.sessionID,
+                redirectUrl: '/dashboard'
+            });
+        } catch (error) {
+            console.error('Fix session error:', error);
+            res.json({ success: false, error: error.message });
         }
     });
 }
@@ -593,19 +749,43 @@ app.post('/signup', ensureDbConnection, async (req, res) => {
       
       console.log('Session saved successfully');
       
+      // Generate verification token for URL
+      const verificationToken = Buffer.from(JSON.stringify({
+        email: user.email,
+        timestamp: Date.now(),
+        purpose: 'email_verification'
+      })).toString('base64');
+      
       res.json({
         success: true,
-        redirectUrl: `/CustomOnboarding?sessionId=undefined&email=${encodeURIComponent(user.email)}`
+        redirectUrl: `/email-verification-otp?token=${verificationToken}`
       });
     });
 
-    // Send welcome email (async, don't wait for it)
+    // Generate OTP and send verification email
     try {
-      console.log('Attempting to send welcome email...');
-      const emailResult = await sendWelcomeEmail(user.email, user.fullName);
-      console.log('Welcome email result:', emailResult);
+      console.log('Generating email verification OTP...');
+      const { generateOTP } = require('./services/emailService');
+      const otp = generateOTP();
+      const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+      
+      // Update user with OTP
+      const User = require('./models/User');
+      await User.updateOne(
+        { _id: user._id },
+        { 
+          emailVerificationToken: otp,
+          emailVerificationExpires: otpExpires,
+          emailVerified: false
+        }
+      );
+      
+      console.log('Attempting to send email verification OTP...');
+      const { sendEmailVerificationOTP } = require('./services/emailService');
+      const emailResult = await sendEmailVerificationOTP(user.email, user.fullName, otp);
+      console.log('Email verification OTP result:', emailResult);
     } catch (emailError) {
-      console.error('Email sending failed in production, but continuing...', emailError);
+      console.error('Email verification OTP sending failed, but continuing...', emailError);
       // Don't fail signup if email fails
     }
 
@@ -667,14 +847,54 @@ app.post('/login', ensureDbConnection, async (req, res) => {
     // Authenticate user against database
     const user = await UserService.authenticateUser(email.trim(), password);
     
-    // Create database session (our new approach)
-    console.log('🗄️ Creating database session...');
+    // Check if email is verified
+    if (!user.emailVerified) {
+      console.log('User email not verified:', user.email);
+      
+      // Generate and send OTP automatically
+      try {
+        const { generateOTP, sendEmailVerificationOTP } = require('./services/emailService');
+        const otp = generateOTP();
+        const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        
+        // Update user with OTP
+        const User = require('./models/User');
+        await User.updateOne(
+          { _id: user._id },
+          { 
+            emailVerificationToken: otp,
+            emailVerificationExpires: otpExpires
+          }
+        );
+        
+        // Send OTP email
+        await sendEmailVerificationOTP(user.email, user.fullName, otp);
+        console.log('OTP sent automatically for login verification:', user.email);
+      } catch (emailError) {
+        console.error('Failed to send login verification OTP:', emailError);
+      }
+      
+      // Generate verification token for URL
+      const verificationToken = Buffer.from(JSON.stringify({
+        email: user.email,
+        timestamp: Date.now(),
+        purpose: 'email_verification'
+      })).toString('base64');
+      
+      return res.json({
+        success: false,
+        error: 'Please verify your email address before logging in',
+        redirectUrl: `/email-verification-otp?token=${verificationToken}`,
+        requiresVerification: true
+      });
+    }
+    
+    // Create database session with device tracking
+    console.log('🗄️ Creating database session with device tracking...');
     
     try {
-      const UserSession = require('./models/UserSession');
-      // Clean up any existing session first
-      await UserSession.deleteSession(req.sessionID).catch(() => {});
-      await UserSession.createSession(req.sessionID, user);
+      // Use session manager to create session with device info
+      await sessionManager.createSession(req.sessionID, user, req);
       
       // Set user data in session
       req.session.user = {
@@ -740,8 +960,19 @@ app.get('/CustomOnboarding', (req, res) => {
   console.log('Query params:', req.query); // Debug log
   console.log('Session ID:', req.sessionID); // Debug log
   
-  // Allow access if user is in session OR if email is provided in query
-  const email = req.session.user?.email || req.query.email;
+  let email = req.session.user?.email;
+  
+  // If no email in session, try to get from token
+  if (!email && req.query.token) {
+    try {
+      const tokenData = JSON.parse(Buffer.from(req.query.token, 'base64').toString());
+      if (tokenData.purpose === 'onboarding' && tokenData.email) {
+        email = tokenData.email;
+      }
+    } catch (error) {
+      console.error('Invalid onboarding token:', error);
+    }
+  }
   
   if (!email) {
     console.log('No email found, redirecting to home');
@@ -985,7 +1216,8 @@ const protectedRoutes = [
   '/chat',
   '/settings',
   '/subscription',
-  '/payment-success'
+  '/payment-success',
+  '/virtual-doctor'
 ];
 // Test chat route
 app.get('/chat-test', (req, res) => {
@@ -999,23 +1231,26 @@ app.get('/chat', isAuthenticated, validateSession, checkOnboarding, ensureDbConn
     
     console.log(`💬 Accessing chat for user:`, req.session.user?.email);
     
-    // Generate navigation token
-    const navToken = Buffer.from(JSON.stringify({
+    // Generate short navigation ID
+    const { generateNavId, storeNavData } = require('./utils/slugify');
+    const navId = generateNavId(req.session.user.email, '/chat');
+    
+    // Store navigation data
+    storeNavData(navId, {
       email: req.session.user.email || 'unknown',
       fullName: req.session.user.fullName || 'User',
       firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-      timestamp: Date.now(),
       sessionId: req.sessionID || 'no-session',
       route: '/chat',
       onboardingData: req.session.user.onboardingData || null
-    })).toString('base64');
+    });
     
     console.log('✅ Chat data loaded successfully');
     
     res.render('chat', {
       user: req.session.user,
       currentPath: '/chat',
-      navToken: navToken,
+      navId: navId,
       conversations: [], // Client-side will load this
       currentConversation: null,
       currentFriend: null,
@@ -1028,6 +1263,32 @@ app.get('/chat', isAuthenticated, validateSession, checkOnboarding, ensureDbConn
       error: 'Failed to render chat page',
       details: error.message
     });
+  }
+});
+
+// Add new routes to protected routes
+protectedRoutes.push('/gamification', '/virtual-doctor');
+
+// API Routes for Streaks and Gamification
+app.use('/api/streaks', require('./routes/streaks'));
+
+// API route for gamification data
+app.get('/api/gamification-data', isAuthenticated, async (req, res) => {
+  try {
+    const streakService = require('./services/streakService');
+    const streaks = await streakService.getStreakStatus(req.session.user._id);
+    
+    res.json({
+      success: true,
+      data: {
+        streaks,
+        level: Math.floor(((streaks.workout?.current || 0) + (streaks.nutrition?.current || 0) + (streaks.login?.current || 0)) / 10) + 1,
+        totalXP: ((streaks.workout?.current || 0) * 10) + ((streaks.nutrition?.current || 0) * 8) + ((streaks.login?.current || 0) * 5)
+      }
+    });
+  } catch (error) {
+    console.error('Gamification data error:', error);
+    res.status(500).json({ success: false, error: 'Failed to load gamification data' });
   }
 });
 
@@ -1045,23 +1306,26 @@ otherProtectedRoutes.forEach(route => {
         return res.redirect('/');
       }
 
-      // Always generate a fresh navigation token for each page load
-      const navToken = Buffer.from(JSON.stringify({
+      // Use existing navId from query or generate new one
+      const { generateNavId, storeNavData } = require('./utils/slugify');
+      const navId = req.query.nav || generateNavId(req.session.user.email, route);
+      
+      // Store navigation data with short ID
+      storeNavData(navId, {
         email: req.session.user.email || 'unknown',
         fullName: req.session.user.fullName || 'User',
         firstName: req.session.user.onboardingData?.personalInfo?.firstName || '',
-        timestamp: Date.now(), // Fresh timestamp for each navigation
         sessionId: req.sessionID || 'no-session',
-        route: route, // Include current route for debugging
+        route: route,
         onboardingData: req.session.user.onboardingData || null
-      })).toString('base64');
+      });
       
-      console.log(`Generated navToken for ${route}:`, navToken.substring(0, 50) + '...'); // Debug log
+      console.log(`Using navId for ${route}:`, navId); // Debug log
       
       res.render(viewName, { 
         user: req.session.user,
         currentPath: route,
-        navToken: navToken, // Fresh token for navigation links
+        navId: navId, // Navigation ID (from query or generated)
         currentPage: viewName // Add currentPage for sidebar
       });
     } catch (error) {
@@ -1073,6 +1337,213 @@ otherProtectedRoutes.forEach(route => {
       });
     }
   });
+});
+
+// Email Verification Routes
+app.get('/verify-email', (req, res) => {
+  res.render('verify-email');
+});
+
+app.get('/email-verification-pending', (req, res) => {
+  const email = req.query.email;
+  if (!email) {
+    return res.redirect('/');
+  }
+  res.render('email-verification-pending', { email: email });
+});
+
+app.get('/email-verification-otp', (req, res) => {
+  const token = req.query.token;
+  if (!token) {
+    return res.redirect('/');
+  }
+  
+  try {
+    // Decode token to get email
+    const tokenData = JSON.parse(Buffer.from(token, 'base64').toString());
+    const email = tokenData.email;
+    
+    if (!email || tokenData.purpose !== 'email_verification') {
+      return res.redirect('/');
+    }
+    
+    res.render('email-verification-otp', { email: email, token: token });
+  } catch (error) {
+    console.error('Invalid verification token:', error);
+    return res.redirect('/');
+  }
+});
+
+app.post('/api/verify-email', ensureDbConnection, async (req, res) => {
+  try {
+    const { otp, email } = req.body;
+    
+    if (!otp || !email) {
+      return res.status(400).json({
+        success: false,
+        error: 'OTP and email are required'
+      });
+    }
+    
+    // Verify the OTP and update user's email verification status
+    const User = require('./models/User');
+    const user = await User.findOne({ 
+      email: email.toLowerCase().trim(),
+      emailVerificationToken: otp,
+      emailVerificationExpires: { $gt: new Date() }
+    });
+    
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid or expired verification code'
+      });
+    }
+    
+    // Mark email as verified using direct database update to bypass validation
+    const mongoose = require('mongoose');
+    await mongoose.connection.db.collection('users').updateOne(
+      { _id: user._id },
+      { 
+        $set: { emailVerified: true },
+        $unset: { 
+          emailVerificationToken: 1,
+          emailVerificationExpires: 1
+        }
+      }
+    );
+    
+    console.log('Email verified successfully for:', user.email);
+    
+    // Set user data in session
+    req.session.user = {
+      _id: user._id.toString(),
+      email: user.email,
+      fullName: user.fullName,
+      fitnessId: user.fitnessId,
+      profilePhoto: user.profilePhoto,
+      onboardingCompleted: user.onboardingCompleted,
+      personalInfo: user.personalInfo,
+      emailVerified: true
+    };
+    
+    // Create database session
+    try {
+      const UserSession = require('./models/UserSession');
+      await UserSession.createSession(req.sessionID, user);
+      console.log('✅ Database session created after email verification');
+    } catch (sessionError) {
+      console.log('⚠️ Database session creation failed:', sessionError.message);
+    }
+    
+    // Determine redirect URL
+    const redirectUrl = user.onboardingCompleted ? '/dashboard' : '/CustomOnboarding';
+    
+    res.json({
+      success: true,
+      message: 'Email verified successfully',
+      redirectUrl: redirectUrl
+    });
+    
+  } catch (error) {
+    console.error('Email verification error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to verify email'
+    });
+  }
+});
+
+app.post('/api/resend-verification', ensureDbConnection, async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email address is required'
+      });
+    }
+    
+    const User = require('./models/User');
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+    
+    if (user.emailVerified) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email is already verified'
+      });
+    }
+    
+    // Generate new OTP
+    const { generateOTP } = require('./services/emailService');
+    const otp = generateOTP();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    
+    user.emailVerificationToken = otp;
+    user.emailVerificationExpires = otpExpires;
+    await user.save();
+    
+    // Send OTP email
+    const { sendEmailVerificationOTP } = require('./services/emailService');
+    await sendEmailVerificationOTP(user.email, user.fullName, otp);
+    
+    console.log('OTP resent successfully to:', user.email);
+    
+    res.json({
+      success: true,
+      message: 'Verification code sent successfully'
+    });
+    
+  } catch (error) {
+    console.error('Resend verification error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to resend verification code'
+    });
+  }
+});
+
+app.post('/api/check-verification-status', ensureDbConnection, async (req, res) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email address is required'
+      });
+    }
+    
+    const User = require('./models/User');
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+    
+    res.json({
+      success: true,
+      verified: user.emailVerified || false
+    });
+    
+  } catch (error) {
+    console.error('Check verification status error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to check verification status'
+    });
+  }
 });
 
 // Password Reset Routes
@@ -1491,9 +1962,24 @@ app.get('/api/gamification-data', isAuthenticated, ensureDbConnection, async (re
     // Get gamification data using the service
     const gamificationData = await gamificationService.getGamificationData(user._id);
     
+    // Add additional data for the dashboard
+    const enhancedData = {
+      ...gamificationData,
+      user: {
+        fullName: user.fullName,
+        email: user.email,
+        joinDate: user.createdAt
+      },
+      stats: {
+        totalWorkouts: user.workouts?.length || 0,
+        totalNutritionLogs: user.nutritionLogs?.length || 0,
+        daysActive: Math.floor((new Date() - new Date(user.createdAt)) / (1000 * 60 * 60 * 24))
+      }
+    };
+    
     res.json({
       success: true,
-      data: gamificationData
+      data: enhancedData
     });
 
   } catch (error) {
@@ -1717,6 +2203,38 @@ app.post('/api/nutrition/water', isAuthenticated, ensureDbConnection, async (req
     res.status(500).json({
       success: false,
       error: 'Failed to log water intake'
+    });
+  }
+});
+
+// Quick Action APIs
+app.post('/api/quick-actions/water', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { amount = 250 } = req.body;
+    const userEmail = req.session.user.email;
+    
+    const nutritionData = {
+      date: new Date(),
+      meals: [],
+      totalCalories: 0,
+      totalProtein: 0,
+      totalCarbs: 0,
+      totalFat: 0,
+      waterIntake: parseInt(amount)
+    };
+    
+    await UserService.addNutritionLog(userEmail, nutritionData);
+    
+    res.json({
+      success: true,
+      message: `Added ${amount}ml water`,
+      data: { waterAdded: amount }
+    });
+  } catch (error) {
+    console.error('Quick water log error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to log water'
     });
   }
 });
@@ -2096,6 +2614,17 @@ const healthService = require('./services/healthService');
 const chatService = require('./services/chatService');
 chatService.init(io);
 
+// Real-time Chat Service
+const realtimeChatService = require('./services/realtimeChatService');
+const { router: realtimeChatRouter, setupWebSocketServer } = require('./routes/realtimeChat');
+
+// Initialize real-time chat
+if (!process.env.VERCEL) {
+  realtimeChatService.initialize();
+  setupWebSocketServer(server);
+  console.log('✅ Real-time chat system initialized');
+}
+
 // Schedule Service
 const scheduleService = require('./services/scheduleService');
 
@@ -2104,6 +2633,20 @@ const communityService = require('./services/communityService');
 
 // Dynamic Nutrition Service
 const dynamicNutritionService = require('./services/dynamicNutritionService');
+
+// Smart Nutrition Ecosystem Service
+const smartNutritionService = require('./services/smartNutritionService');
+
+// Enhanced Community Service
+const enhancedCommunityService = require('./services/enhancedCommunityService');
+
+// Enhanced Features Services
+const aiFormCheckerService = require('./services/aiFormCheckerService');
+const smartNotificationService = require('./services/smartNotificationService');
+const socialChallengesService = require('./services/socialChallengesService');
+const progressPredictionService = require('./services/progressPredictionService');
+const voiceCommandsService = require('./services/voiceCommandsService');
+const buddyFinderService = require('./services/buddyFinderService');
 
 // Challenge Service
 // Challenge Service - conditional loading
@@ -2120,6 +2663,9 @@ try {
 const settingsRoutes = require('./routes/settings');
 const paymentRoutes = require('./routes/payment');
 
+// Session Management
+const { checkSessionConflict, sessionManager } = require('./middleware/sessionMiddleware');
+
 // Streak Service
 const streakService = require('./services/streakService');
 const { updateWorkoutStreak, updateNutritionStreak } = require('./middleware/streakMiddleware');
@@ -2130,11 +2676,124 @@ if (!process.env.VERCEL) {
   scheduleStreakCheck();
 }
 
+// Add session conflict checking middleware for authenticated routes
+app.use(checkSessionConflict);
+
 // Use API routes
+app.use('/api/sessions', require('./api/sessions'));
+app.use('/api/security', require('./api/security'));
 app.use('/api/settings', settingsRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/payment-new', isAuthenticated, require('./fix-payment-system'));
 app.use('/api/streaks', require('./routes/streaks'));
 app.use('/api/subscription', isAuthenticated, ensureDbConnection, require('./routes/subscription'));
+app.use('/api/enhanced', isAuthenticated, ensureDbConnection, require('./routes/enhancedFeatures'));
+app.use('/api/realtime-chat', isAuthenticated, ensureDbConnection, realtimeChatRouter);
+app.use('/api/community', isAuthenticated, ensureDbConnection, require('./routes/community'));
+
+// Simple admin test route
+app.get('/admin-test', (req, res) => {
+  res.send('<h1>Admin Test Works!</h1><a href="/admin-dashboard-simple">Dashboard</a>');
+});
+
+app.get('/admin-dashboard-simple', async (req, res) => {
+  try {
+    const Admin = require('./models/Admin');
+    const admin = await Admin.findOne({ username: 'admin' });
+    res.send(`
+      <h1>Simple Admin Dashboard</h1>
+      <p>Admin found: ${admin ? 'Yes' : 'No'}</p>
+      <p>Username: ${admin?.username}</p>
+      <p>Email: ${admin?.email}</p>
+      <p>Role: ${admin?.role}</p>
+      <p>Time: ${new Date()}</p>
+    `);
+  } catch (error) {
+    res.send(`<h1>Error</h1><p>${error.message}</p>`);
+  }
+});
+
+// Simple admin login route
+app.post('/admin/login', ensureDbConnection, async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    const Admin = require('./models/Admin');
+    
+    if (username === 'admin' && password === 'admin123') {
+      req.session.admin = {
+        id: 'admin-id',
+        username: 'admin',
+        email: 'admin@localhost.com',
+        role: 'super_admin'
+      };
+      return res.redirect('/admin/dashboard');
+    }
+    
+    res.redirect('/admin/login?error=invalid');
+  } catch (error) {
+    res.redirect('/admin/login?error=server');
+  }
+});
+
+app.get('/admin/dashboard', ensureDbConnection, (req, res) => {
+  if (!req.session.admin) {
+    return res.redirect('/admin/login');
+  }
+  
+  res.send(`
+    <h1>Admin Dashboard</h1>
+    <p>Welcome, ${req.session.admin.username}!</p>
+    <p>Role: ${req.session.admin.role}</p>
+    <p>Time: ${new Date()}</p>
+    <a href="/admin/logout">Logout</a>
+  `);
+});
+
+app.get('/admin/logout', (req, res) => {
+  req.session.admin = null;
+  res.redirect('/admin/login');
+});
+
+// Admin routes
+app.use('/admin', ensureDbConnection, require('./routes/admin'));
+
+// Contact form API
+app.post('/api/contact', ensureDbConnection, async (req, res) => {
+  try {
+    const { name, email, message } = req.body;
+    
+    if (!name || !email || !message) {
+      return res.status(400).json({
+        success: false,
+        error: 'All fields are required'
+      });
+    }
+    
+    const ContactMessage = require('./models/ContactMessage');
+    
+    const contactMessage = new ContactMessage({
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      message: message.trim(),
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+    
+    await contactMessage.save();
+    
+    res.json({
+      success: true,
+      message: 'Your message has been sent successfully!'
+    });
+    
+  } catch (error) {
+    console.error('Contact form error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to send message'
+    });
+  }
+});
 
 // Subscription activation endpoint
 app.post('/api/subscription/activate', isAuthenticated, ensureDbConnection, async (req, res) => {
@@ -2216,7 +2875,7 @@ app.post('/api/subscription/activate', isAuthenticated, ensureDbConnection, asyn
   }
 });
 
-// AI Chat endpoint
+// AI Chat endpoint with hybrid AI service
 app.post('/api/ai-chat', isAuthenticated, async (req, res) => {
   try {
     const { message } = req.body;
@@ -2229,21 +2888,23 @@ app.post('/api/ai-chat', isAuthenticated, async (req, res) => {
       });
     }
 
-    console.log('AI Chat request from:', userContext.email, 'Message:', message);
+    console.log('🤖 AI Chat request from:', userContext.email, 'Message:', message.substring(0, 50) + '...');
 
-    // Get AI response
-    const aiResponse = await aiService.getAIResponse(message.trim(), userContext);
+    // Use hybrid AI service
+    const hybridAiService = require('./services/hybridAiService');
+    const result = await hybridAiService.generateResponse(message.trim(), userContext);
 
-    console.log('AI Response generated:', aiResponse.substring(0, 100) + '...');
+    console.log('✅ AI Response generated by:', result.provider);
 
     res.json({
-      success: true,
-      response: aiResponse,
-      timestamp: new Date().toISOString()
+      success: result.success,
+      response: result.response,
+      provider: result.provider,
+      timestamp: result.timestamp
     });
 
   } catch (error) {
-    console.error('AI Chat error:', error);
+    console.error('❌ AI Chat error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to get AI response',
@@ -2252,7 +2913,7 @@ app.post('/api/ai-chat', isAuthenticated, async (req, res) => {
   }
 });
 
-// Advanced AI-Powered Workout Generation
+// Advanced AI-Powered Workout Generation with Hybrid AI
 app.post('/api/ai-workout-plan', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const { preferences = {} } = req.body;
@@ -2273,15 +2934,14 @@ app.post('/api/ai-workout-plan', isAuthenticated, ensureDbConnection, async (req
       personalInfo: user.personalInfo,
       healthInfo: user.healthInfo,
       workoutHistory: user.workouts || [],
-      availableEquipment: preferences.equipment || [],
-      timeAvailable: preferences.timeAvailable || 30,
-      fitnessLevel: preferences.fitnessLevel || user.fitnessGoals?.activityLevel || 'beginner'
+      onboardingData: user.onboardingData || req.session.user.onboardingData
     };
 
     console.log('🤖 Generating AI workout plan for:', user.email);
 
-    // Generate workout plan using AI service
-    const result = await aiService.generateAdvancedWorkoutPlan(userProfile, preferences);
+    // Use hybrid AI service
+    const hybridAiService = require('./services/hybridAiService');
+    const result = await hybridAiService.generateWorkoutPlan(userProfile, preferences);
 
     if (result.success) {
       res.json({
@@ -2300,7 +2960,7 @@ app.post('/api/ai-workout-plan', isAuthenticated, ensureDbConnection, async (req
     }
 
   } catch (error) {
-    console.error('AI workout generation error:', error);
+    console.error('❌ AI workout generation error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to generate workout plan',
@@ -2456,6 +3116,21 @@ app.get('/api/form-correction/status', isAuthenticated, (req, res) => {
 
 // Virtual Training Service Routes
 const virtualTrainingService = require('./services/virtualTrainingService');
+
+// Virtual Doctor Service
+const virtualDoctorService = require('./services/virtualDoctorService');
+
+// Load medical database for virtual doctor
+let medicalDatabase = {};
+try {
+  const fs = require('fs');
+  const path = require('path');
+  const dbPath = path.join(__dirname, 'public', 'data', 'medical-conditions.json');
+  medicalDatabase = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+  console.log('Medical database loaded:', Object.keys(medicalDatabase).length, 'conditions');
+} catch (error) {
+  console.error('Failed to load medical database:', error);
+}
 
 // Search trainers
 app.get('/api/virtual-training/trainers', isAuthenticated, (req, res) => {
@@ -2639,19 +3314,60 @@ app.get('/api/virtual-training/status', isAuthenticated, (req, res) => {
   }
 });
 
-// AI Health check endpoint
+// AI Health check endpoint with hybrid service
 app.get('/api/ai-health', isAuthenticated, async (req, res) => {
   try {
-    const health = await aiService.healthCheck();
+    const hybridAiService = require('./services/hybridAiService');
+    const health = await hybridAiService.healthCheck();
     res.json({
       success: true,
       health: health
     });
   } catch (error) {
-    console.error('AI Health check error:', error);
+    console.error('❌ AI Health check error:', error);
     res.status(500).json({
       success: false,
       error: 'AI service health check failed'
+    });
+  }
+});
+
+// Daily Insights API
+app.get('/api/insights/daily', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const insightsService = require('./services/insightsService');
+    const user = await UserService.getUserByEmail(req.session.user.email);
+    const insights = insightsService.generateDailyInsights(user);
+    
+    res.json({
+      success: true,
+      insights: insights
+    });
+  } catch (error) {
+    console.error('Daily insights error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get daily insights'
+    });
+  }
+});
+
+// Weekly Report API
+app.get('/api/insights/weekly', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const insightsService = require('./services/insightsService');
+    const user = await UserService.getUserByEmail(req.session.user.email);
+    const report = insightsService.generateWeeklyReport(user);
+    
+    res.json({
+      success: true,
+      report: report
+    });
+  } catch (error) {
+    console.error('Weekly report error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get weekly report'
     });
   }
 });
@@ -5139,6 +5855,137 @@ app.get('/api/nutrition/insights', isAuthenticated, ensureDbConnection, async (r
   }
 });
 
+// ============================================================================
+// SMART NUTRITION ECOSYSTEM API ROUTES
+// ============================================================================
+
+// AI Meal Planning
+app.post('/api/smart-nutrition/meal-plan', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const preferences = req.body;
+    
+    console.log('🍽️ Generating AI meal plan for user:', userId);
+    
+    const result = await smartNutritionService.generateMealPlan(userId, preferences);
+    
+    res.json({
+      success: result.success,
+      mealPlan: result.mealPlan,
+      generatedBy: result.generatedBy,
+      error: result.error
+    });
+  } catch (error) {
+    console.error('AI meal plan error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate meal plan'
+    });
+  }
+});
+
+// Smart Grocery Lists
+app.post('/api/smart-nutrition/grocery-list', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { mealPlan, preferences = {} } = req.body;
+    
+    if (!mealPlan) {
+      return res.status(400).json({
+        success: false,
+        error: 'Meal plan is required'
+      });
+    }
+    
+    console.log('🛒 Generating smart grocery list');
+    
+    const result = smartNutritionService.generateGroceryList(mealPlan, preferences);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Smart grocery list error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate grocery list'
+    });
+  }
+});
+
+// Macro Nutrient Optimization
+app.post('/api/smart-nutrition/optimize-macros', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { currentIntake, goals, activityLevel } = req.body;
+    
+    if (!currentIntake || !goals) {
+      return res.status(400).json({
+        success: false,
+        error: 'Current intake and goals are required'
+      });
+    }
+    
+    console.log('⚖️ Optimizing macros for user');
+    
+    const result = smartNutritionService.optimizeMacros(currentIntake, goals, activityLevel);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Macro optimization error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to optimize macros'
+    });
+  }
+});
+
+// Food Sensitivity Detection
+app.post('/api/smart-nutrition/detect-sensitivities', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { symptoms = [] } = req.body;
+    
+    // Get user's nutrition history
+    const user = await UserService.getUserByEmail(req.session.user.email);
+    const nutritionHistory = user.nutritionLogs || [];
+    
+    console.log('🔍 Detecting food sensitivities for user:', userId);
+    
+    const result = smartNutritionService.detectSensitivities(nutritionHistory, symptoms);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Food sensitivity detection error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to detect sensitivities'
+    });
+  }
+});
+
+// Restaurant Menu Scanner
+app.post('/api/smart-nutrition/scan-menu', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { restaurantName, menuItems = [] } = req.body;
+    
+    if (!restaurantName) {
+      return res.status(400).json({
+        success: false,
+        error: 'Restaurant name is required'
+      });
+    }
+    
+    console.log('📱 Scanning restaurant menu:', restaurantName);
+    
+    const result = smartNutritionService.scanRestaurantMenu(restaurantName, menuItems);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Restaurant menu scan error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to scan menu'
+    });
+  }
+});
+
 
 app.get('/api/challenges/stats', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
@@ -5526,6 +6373,284 @@ app.get('/api/challenges', isAuthenticated, ensureDbConnection, async (req, res)
   } catch (error) {
     console.error('Get challenges error:', error);
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ============================================================================
+// ENHANCED COMMUNITY FEATURES API ROUTES
+// ============================================================================
+
+// Virtual Group Workouts
+app.post('/api/community/virtual-workouts', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const creatorId = req.session.user._id;
+    const workoutData = req.body;
+    
+    console.log('🏋️ Creating virtual workout for user:', creatorId);
+    
+    const result = await enhancedCommunityService.createVirtualWorkout(creatorId, workoutData);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Create virtual workout error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create virtual workout'
+    });
+  }
+});
+
+app.get('/api/community/virtual-workouts', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const filters = req.query;
+    
+    console.log('📋 Getting active virtual workouts');
+    
+    const result = enhancedCommunityService.getActiveWorkouts(filters);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Get virtual workouts error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get virtual workouts'
+    });
+  }
+});
+
+app.post('/api/community/virtual-workouts/:workoutId/join', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { workoutId } = req.params;
+    
+    console.log('👥 User joining virtual workout:', workoutId);
+    
+    const result = await enhancedCommunityService.joinVirtualWorkout(userId, workoutId);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Join virtual workout error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to join virtual workout'
+    });
+  }
+});
+
+app.post('/api/community/virtual-workouts/:workoutId/start', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const creatorId = req.session.user._id;
+    const { workoutId } = req.params;
+    
+    console.log('▶️ Starting virtual workout:', workoutId);
+    
+    const result = await enhancedCommunityService.startVirtualWorkout(workoutId, creatorId);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Start virtual workout error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to start virtual workout'
+    });
+  }
+});
+
+// Fitness Mentorship Program
+app.post('/api/community/mentorship/profile', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const mentorData = req.body;
+    
+    console.log('👨🏫 Creating mentor profile for user:', userId);
+    
+    const result = await enhancedCommunityService.createMentorProfile(userId, mentorData);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Create mentor profile error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create mentor profile'
+    });
+  }
+});
+
+app.get('/api/community/mentorship/mentors', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const filters = req.query;
+    
+    console.log('🔍 Finding mentors with filters:', filters);
+    
+    const result = await enhancedCommunityService.findMentors(filters);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Find mentors error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to find mentors'
+    });
+  }
+});
+
+app.post('/api/community/mentorship/request', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const menteeId = req.session.user._id;
+    const { mentorId, message } = req.body;
+    
+    if (!mentorId || !message) {
+      return res.status(400).json({
+        success: false,
+        error: 'Mentor ID and message are required'
+      });
+    }
+    
+    console.log('📨 Requesting mentorship:', mentorId);
+    
+    const result = await enhancedCommunityService.requestMentorship(menteeId, mentorId, message);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Request mentorship error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to request mentorship'
+    });
+  }
+});
+
+// Challenge Tournaments
+app.post('/api/community/tournaments', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const creatorId = req.session.user._id;
+    const tournamentData = req.body;
+    
+    console.log('🏆 Creating tournament for user:', creatorId);
+    
+    const result = await enhancedCommunityService.createTournament(creatorId, tournamentData);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Create tournament error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create tournament'
+    });
+  }
+});
+
+app.get('/api/community/tournaments', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const filters = req.query;
+    
+    console.log('🏅 Getting active tournaments');
+    
+    const result = enhancedCommunityService.getActiveTournaments(filters);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Get tournaments error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get tournaments'
+    });
+  }
+});
+
+app.post('/api/community/tournaments/:tournamentId/join', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { tournamentId } = req.params;
+    
+    console.log('🎯 User joining tournament:', tournamentId);
+    
+    const result = await enhancedCommunityService.joinTournament(userId, tournamentId);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Join tournament error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to join tournament'
+    });
+  }
+});
+
+// Local Fitness Events
+app.post('/api/community/local-events', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const creatorId = req.session.user._id;
+    const eventData = req.body;
+    
+    console.log('📍 Creating local event for user:', creatorId);
+    
+    const result = await enhancedCommunityService.createLocalEvent(creatorId, eventData);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Create local event error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create local event'
+    });
+  }
+});
+
+app.get('/api/community/local-events', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const { location, radius } = req.query;
+    
+    console.log('🗺️ Finding local events near:', location);
+    
+    const result = await enhancedCommunityService.findLocalEvents(location, radius);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Find local events error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to find local events'
+    });
+  }
+});
+
+// Fitness Dating
+app.post('/api/community/fitness-dating/profile', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const profileData = req.body;
+    
+    console.log('💕 Creating fitness dating profile for user:', userId);
+    
+    const result = await enhancedCommunityService.createDatingProfile(userId, profileData);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Create dating profile error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create dating profile'
+    });
+  }
+});
+
+app.get('/api/community/fitness-dating/matches', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const filters = req.query;
+    
+    console.log('💘 Finding fitness matches for user:', userId);
+    
+    const result = await enhancedCommunityService.findFitnessMatches(userId, filters);
+    
+    res.json(result);
+  } catch (error) {
+    console.error('Find fitness matches error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to find matches'
+    });
   }
 });
 
@@ -5973,4 +7098,593 @@ app.post('/api/send-receipt', isAuthenticated, ensureDbConnection, async (req, r
   }
 });
 
+// Virtual Doctor API Routes
+
+// Test endpoint for virtual doctor
+app.get('/fitness/api/virtual-doctor-test', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'Virtual doctor API is working',
+    databaseLoaded: Object.keys(medicalDatabase).length > 0,
+    conditionsCount: Object.keys(medicalDatabase).length
+  });
+});
+
+// Alternative test endpoint without fitness prefix
+app.get('/api/virtual-doctor-test', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'Virtual doctor API is working',
+    databaseLoaded: Object.keys(medicalDatabase).length > 0,
+    conditionsCount: Object.keys(medicalDatabase).length
+  });
+});
+
+// Virtual doctor symptom analysis endpoint
+app.post('/fitness/api/virtual-doctor-analyze', async (req, res) => {
+  try {
+    console.log('Virtual doctor analyze called with body:', req.body);
+    console.log('Medical database loaded conditions:', Object.keys(medicalDatabase).length);
+    
+    const { symptoms } = req.body;
+    
+    if (!symptoms || typeof symptoms !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: 'Please provide symptoms as a string'
+      });
+    }
+    
+    if (symptoms.length < 3) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please provide more detailed symptom description'
+      });
+    }
+    
+    // Check if database is loaded
+    if (Object.keys(medicalDatabase).length === 0) {
+      console.error('Medical database is empty or failed to load');
+      return res.status(500).json({
+        success: false,
+        error: 'Medical database is not available. Please try again later.'
+      });
+    }
+    
+    // Find matching conditions with advanced scoring
+    const matches = findMatchingConditions(symptoms);
+    console.log('Found matches:', matches.length);
+    
+    // Generate comprehensive AI analysis
+    const aiAnalysis = generateAIAnalysis(symptoms, matches);
+    
+    res.json({
+      success: true,
+      matches,
+      aiAnalysis,
+      query: symptoms,
+      totalConditions: Object.keys(medicalDatabase).length,
+      analysisTimestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Virtual doctor analysis error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error during analysis. Please try again.'
+    });
+  }
+});
+
+// Alternative endpoint without fitness prefix
+app.post('/api/virtual-doctor-analyze', async (req, res) => {
+  try {
+    console.log('Virtual doctor analyze called with body:', req.body);
+    console.log('Medical database loaded conditions:', Object.keys(medicalDatabase).length);
+    
+    const { symptoms } = req.body;
+    
+    if (!symptoms || typeof symptoms !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: 'Please provide symptoms as a string'
+      });
+    }
+    
+    if (symptoms.length < 3) {
+      return res.status(400).json({
+        success: false,
+        error: 'Please provide more detailed symptom description'
+      });
+    }
+    
+    // Check if database is loaded
+    if (Object.keys(medicalDatabase).length === 0) {
+      console.error('Medical database is empty or failed to load');
+      return res.status(500).json({
+        success: false,
+        error: 'Medical database is not available. Please try again later.'
+      });
+    }
+    
+    // Find matching conditions with advanced scoring
+    const matches = findMatchingConditions(symptoms);
+    console.log('Found matches:', matches.length);
+    
+    // Generate comprehensive AI analysis
+    const aiAnalysis = generateAIAnalysis(symptoms, matches);
+    
+    res.json({
+      success: true,
+      matches,
+      aiAnalysis,
+      query: symptoms,
+      totalConditions: Object.keys(medicalDatabase).length,
+      analysisTimestamp: new Date().toISOString()
+    });
+    
+  } catch (error) {
+    console.error('Virtual doctor analysis error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error during analysis. Please try again.'
+    });
+  }
+});
+
+// Helper functions for virtual doctor analysis
+function findMatchingConditions(symptoms) {
+  const matches = [];
+  const symptomWords = symptoms.toLowerCase()
+    .replace(/[^a-z\s]/g, ' ')
+    .split(/\s+/)
+    .filter(word => word.length > 2);
+  
+  for (const [conditionKey, condition] of Object.entries(medicalDatabase)) {
+    let matchScore = 0;
+    let matchedSymptoms = new Set();
+    
+    // Direct symptom matching (highest weight)
+    for (const symptom of condition.symptoms) {
+      const symptomLower = symptom.toLowerCase();
+      for (const word of symptomWords) {
+        if (symptomLower.includes(word) || word.includes(symptomLower.substring(0, Math.min(4, symptomLower.length)))) {
+          matchScore += 3;
+          matchedSymptoms.add(symptom);
+          break;
+        }
+      }
+    }
+    
+    // Condition name matching (medium weight)
+    const conditionName = condition.name.toLowerCase();
+    for (const word of symptomWords) {
+      if (conditionName.includes(word) || word.includes(conditionName.substring(0, Math.min(4, conditionName.length)))) {
+        matchScore += 2;
+      }
+    }
+    
+    // Description matching (lower weight)
+    const description = condition.description.toLowerCase();
+    for (const word of symptomWords) {
+      if (description.includes(word)) {
+        matchScore += 1;
+      }
+    }
+    
+    if (matchScore > 0) {
+      const confidence = Math.min(matchScore / 10, 1); // Normalize to 0-1
+      matches.push({
+        condition,
+        confidence,
+        matchScore,
+        matchedSymptoms: Array.from(matchedSymptoms)
+      });
+    }
+  }
+  
+  // Sort by confidence and return top matches
+  return matches
+    .sort((a, b) => b.confidence - a.confidence)
+    .slice(0, 6);
+}
+
+function generateAIAnalysis(symptoms, matches) {
+  if (matches.length === 0) {
+    return `I couldn't find specific matching conditions for "${symptoms}" in my medical database. This could indicate a rare condition or the symptoms might need to be described differently. I recommend consulting a healthcare professional for proper evaluation.`;
+  }
+  
+  const topMatch = matches[0];
+  const confidence = Math.round(topMatch.confidence * 100);
+  
+  let analysis = `<strong>AI Analysis for "${symptoms}":</strong><br><br>`;
+  
+  // Primary assessment
+  analysis += `The most likely condition based on symptom analysis is <strong>${topMatch.condition.name}</strong> with ${confidence}% confidence. `;
+  
+  if (topMatch.matchedSymptoms.length > 0) {
+    analysis += `Matching symptoms include: ${topMatch.matchedSymptoms.join(', ')}.<br><br>`;
+  }
+  
+  // Additional possibilities
+  if (matches.length > 1) {
+    const otherConditions = matches.slice(1, 4).map(m => {
+      const conf = Math.round(m.confidence * 100);
+      return `${m.condition.name} (${conf}%)`;
+    });
+    analysis += `<strong>Other possibilities:</strong> ${otherConditions.join(', ')}.<br><br>`;
+  }
+  
+  // General recommendations
+  analysis += `<strong>Recommendations:</strong><br>`;
+  analysis += `• Review the detailed condition information below<br>`;
+  analysis += `• Consider the recommended foods and home remedies<br>`;
+  analysis += `• Monitor symptom progression<br>`;
+  analysis += `• Consult a healthcare professional for proper diagnosis<br><br>`;
+  
+  return analysis;
+}
+
+// AI consultation endpoint
+app.post('/api/virtual-doctor/consult', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { message } = req.body;
+    
+    if (!message || message.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Message is required'
+      });
+    }
+
+    // Get user profile for personalized advice
+    const user = await UserService.getUserByEmail(req.session.user.email);
+    const userProfile = {
+      personalInfo: user.personalInfo,
+      fitnessGoals: user.fitnessGoals,
+      healthInfo: user.healthInfo
+    };
+
+    const result = await virtualDoctorService.processConsultation(userId, message.trim(), userProfile);
+    
+    res.json({
+      success: result.success,
+      response: result.response,
+      urgency: result.urgency,
+      error: result.error
+    });
+    
+  } catch (error) {
+    console.error('Virtual doctor consultation error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to process consultation',
+      response: 'I apologize, but I\'m having trouble processing your request right now. Please try again later or consult with a healthcare professional.'
+    });
+  }
+});
+
+// Symptom analysis endpoint
+app.post('/api/virtual-doctor/analyze-symptoms', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { symptoms, additionalInfo } = req.body;
+    
+    if (!symptoms || !Array.isArray(symptoms) || symptoms.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'At least one symptom is required'
+      });
+    }
+
+    const result = await virtualDoctorService.analyzeSymptoms(userId, symptoms, additionalInfo || {});
+    
+    res.json({
+      success: result.success,
+      analysis: result.analysis,
+      response: result.response,
+      error: result.error
+    });
+    
+  } catch (error) {
+    console.error('Symptom analysis error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to analyze symptoms'
+    });
+  }
+});
+
+// Health assessment endpoint
+app.post('/api/virtual-doctor/health-assessment', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const assessmentData = req.body;
+    
+    // Validate required fields
+    const requiredFields = ['age', 'gender', 'exercise', 'sleep', 'smoking', 'alcohol', 'stress'];
+    const missingFields = requiredFields.filter(field => !assessmentData[field]);
+    
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: `Missing required fields: ${missingFields.join(', ')}`
+      });
+    }
+
+    const result = await virtualDoctorService.generateHealthAssessment(userId, assessmentData);
+    
+    // Store assessment in user profile
+    try {
+      const user = await UserService.getUserByEmail(req.session.user.email);
+      if (!user.healthAssessments) user.healthAssessments = [];
+      
+      user.healthAssessments.push({
+        date: new Date(),
+        data: assessmentData,
+        results: result.assessment,
+        score: result.assessment?.overallScore || 0
+      });
+      
+      // Keep only last 10 assessments
+      if (user.healthAssessments.length > 10) {
+        user.healthAssessments = user.healthAssessments.slice(-10);
+      }
+      
+      await user.save();
+    } catch (saveError) {
+      console.error('Error saving health assessment:', saveError);
+      // Don't fail the request if saving fails
+    }
+    
+    res.json({
+      success: result.success,
+      assessment: result.assessment,
+      summary: result.summary,
+      error: result.error
+    });
+    
+  } catch (error) {
+    console.error('Health assessment error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate health assessment'
+    });
+  }
+});
+
+// Get consultation history
+app.get('/api/virtual-doctor/history', isAuthenticated, (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const history = virtualDoctorService.getConsultationHistory(userId);
+    
+    res.json({
+      success: true,
+      history: history.slice(-20) // Return last 20 messages
+    });
+    
+  } catch (error) {
+    console.error('Get consultation history error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get consultation history'
+    });
+  }
+});
+
+// Clear consultation history
+app.delete('/api/virtual-doctor/history', isAuthenticated, (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    virtualDoctorService.clearConsultationHistory(userId);
+    
+    res.json({
+      success: true,
+      message: 'Consultation history cleared'
+    });
+    
+  } catch (error) {
+    console.error('Clear consultation history error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to clear consultation history'
+    });
+  }
+});
+
+// Get user's health assessment history
+app.get('/api/virtual-doctor/assessments', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const user = await UserService.getUserByEmail(req.session.user.email);
+    const assessments = user.healthAssessments || [];
+    
+    res.json({
+      success: true,
+      assessments: assessments.sort((a, b) => new Date(b.date) - new Date(a.date))
+    });
+    
+  } catch (error) {
+    console.error('Get health assessments error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get health assessments'
+    });
+  }
+});
+
+// Session Management API Routes
+
+// Get user's active sessions
+app.get('/api/sessions', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const sessions = await sessionManager.getUserSessions(userId);
+    
+    // Format sessions for frontend
+    const formattedSessions = sessions.map(session => ({
+      sessionId: session.sessionId,
+      deviceInfo: {
+        type: session.deviceInfo?.deviceType || 'unknown',
+        browser: session.deviceInfo?.browser || 'unknown',
+        os: session.deviceInfo?.os || 'unknown',
+        location: session.deviceInfo?.location || 'unknown'
+      },
+      lastActivity: session.lastActivity,
+      createdAt: session.createdAt,
+      isCurrent: session.sessionId === req.sessionID
+    }));
+    
+    res.json({
+      success: true,
+      sessions: formattedSessions,
+      currentSessionId: req.sessionID
+    });
+  } catch (error) {
+    console.error('Get sessions error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get sessions'
+    });
+  }
+});
+
+
+app.post('/api/sessions/revoke', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { sessionId } = req.body;
+    
+    if (!sessionId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Session ID is required'
+      });
+    }
+    
+    if (sessionId === req.sessionID) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot revoke current session'
+      });
+    }
+    
+    const revoked = await sessionManager.revokeSession(sessionId, userId);
+    
+    if (revoked) {
+      res.json({
+        success: true,
+        message: 'Session revoked successfully'
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Session not found or already inactive'
+      });
+    }
+  } catch (error) {
+    console.error('Revoke session error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to revoke session'
+    });
+  }
+});
+
+// Revoke all other sessions (keep current)
+app.post('/api/sessions/revoke-all', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const currentSessionId = req.sessionID;
+    
+    const revokedCount = await sessionManager.revokeAllSessions(userId, currentSessionId);
+    
+    res.json({
+      success: true,
+      message: `${revokedCount} session(s) revoked successfully`,
+      revokedCount
+    });
+  } catch (error) {
+    console.error('Revoke all sessions error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to revoke sessions'
+    });
+  }
+});
+
+// Force logout from all devices including current
+app.post('/api/sessions/logout-all', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    
+    const revokedCount = await sessionManager.revokeAllSessions(userId);
+    
+    // Clear current session
+    req.session.user = null;
+    res.clearCookie('fit-with-ai-session');
+    
+    res.json({
+      success: true,
+      message: `Logged out from all devices. ${revokedCount} session(s) terminated.`,
+      revokedCount,
+      redirectUrl: '/'
+    });
+  } catch (error) {
+    console.error('Logout all error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to logout from all devices'
+    });
+  }
+});
+
+// Check session conflict status
+app.get('/api/sessions/conflict-status', isAuthenticated, (req, res) => {
+  res.json({
+    success: true,
+    hasConflict: !!req.sessionConflict,
+    conflict: req.sessionConflict || null
+  });
+});
+
+// Resolve session conflict (force login)
+app.post('/api/sessions/resolve-conflict', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const currentSessionId = req.sessionID;
+    const { action } = req.body; // 'force_login' or 'cancel'
+    
+    if (action === 'force_login') {
+      // Revoke all other sessions and keep current
+      const revokedCount = await sessionManager.revokeAllSessions(userId, currentSessionId);
+      
+      // Update current session with device info
+      await sessionManager.createSession(currentSessionId, req.session.user, req);
+      
+      res.json({
+        success: true,
+        message: 'Session conflict resolved. Other sessions terminated.',
+        revokedCount
+      });
+    } else {
+      // User chose to cancel, logout current session
+      req.session.user = null;
+      res.clearCookie('fit-with-ai-session');
+      
+      res.json({
+        success: true,
+        message: 'Current session terminated',
+        redirectUrl: '/'
+      });
+    }
+  } catch (error) {
+    console.error('Resolve conflict error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to resolve session conflict'
+    });
+  }
+});
 module.exports = app;

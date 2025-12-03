@@ -370,7 +370,7 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-light sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/dashboard<%= navToken ? '?token=' + navToken : '' %>">
+            <a class="navbar-brand fw-bold" href="/dashboard<%= navId ? '?nav=' + navId : '' %>">
                 <i class="fas fa-dumbbell me-2" style="color: #6C63FF;"></i>Fit With AI
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="border-color: rgba(255,255,255,0.3);">
@@ -379,27 +379,27 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="/dashboard<%= navToken ? '?token=' + navToken : '' %>">
+                        <a class="nav-link" href="/dashboard<%= navId ? '?nav=' + navId : '' %>">
                             <i class="fas fa-home me-1"></i>Dashboard
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/workouts<%= navToken ? '?token=' + navToken : '' %>">
+                        <a class="nav-link" href="/workouts<%= navId ? '?nav=' + navId : '' %>">
                             <i class="fas fa-dumbbell me-1"></i>Workouts
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/progress<%= navToken ? '?token=' + navToken : '' %>">
+                        <a class="nav-link" href="/progress<%= navId ? '?nav=' + navId : '' %>">
                             <i class="fas fa-chart-line me-1"></i>Progress
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="/nutrition<%= navToken ? '?token=' + navToken : '' %>">
+                        <a class="nav-link" href="/nutrition<%= navId ? '?nav=' + navId : '' %>">
                             <i class="fas fa-utensils me-1"></i>Nutrition
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="/nutriscan<%= navToken ? '?token=' + navToken : '' %>">
+                        <a class="nav-link active" href="/nutriscan<%= navId ? '?nav=' + navId : '' %>">
                             <i class="fas fa-qrcode me-1"></i>NutriScan
                         </a>
                     </li>
@@ -410,7 +410,7 @@
                             <i class="fas fa-user-circle me-1"></i><%= user.fullName || 'User' %>
                         </a>
                         <ul class="dropdown-menu" style="background: rgba(26, 26, 46, 0.95); border: 1px solid rgba(255,255,255,0.1);">
-                            <li><a class="dropdown-item" href="/settings<%= navToken ? '?token=' + navToken : '' %>" style="color: white;">Settings</a></li>
+                            <li><a class="dropdown-item" href="/settings<%= navId ? '?nav=' + navId : '' %>" style="color: white;">Settings</a></li>
                             <li><hr class="dropdown-divider" style="border-color: rgba(255,255,255,0.1);"></li>
                             <li><a class="dropdown-item" href="/logout" style="color: white;">Logout</a></li>
                         </ul>
@@ -853,7 +853,7 @@
                         
                         // Show success animation or redirect
                         setTimeout(() => {
-                            window.location.href = '/nutrition<%= navToken ? "?token=" + navToken : "" %>';
+                            window.location.href = '/nutrition<%= navId ? "?nav=" + navId : "" %>';
                         }, 2000);
                     } else {
                         this.updateStatus('Failed to add to nutrition log', 'error');

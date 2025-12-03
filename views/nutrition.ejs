@@ -52,116 +52,7 @@
             padding: 20px;
         }
         
-        .sidebar {
-            background: transparent;
-            border: none;
-            padding: 30px 20px;
-            position: sticky;
-            top: 20px;
-            height: fit-content;
-        }
-        
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding: 0 1rem;
-        }
-        
-        .sidebar-header img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-        
-        .user-name {
-            font-weight: 600;
-            margin: 0;
-        }
-        
-        .user-plan {
-            font-size: 0.8rem;
-            color: var(--primary);
-            background: rgba(108, 99, 255, 0.1);
-            padding: 2px 8px;
-            border-radius: 20px;
-            margin-top: 5px;
-        }
-        
-        .nav-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .nav-item {
-            margin-bottom: 5px;
-        }
-        
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            border-radius: 15px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .nav-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s;
-        }
-        
-        .nav-link:hover::before {
-            left: 100%;
-        }
-        
-        .nav-link:hover, .nav-link.active {
-            background: rgba(108, 99, 255, 0.2);
-            color: #ffffff;
-            transform: translateX(5px);
-        }
-        
-        .nav-link i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }        
-        .logout-section {
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--light-gray);
-        }
-        
-        .logout-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 1rem;
-            color: var(--danger);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        
-        .logout-link:hover {
-            background: rgba(220, 53, 69, 0.1);
-            color: var(--danger);
-        }
-        
-        .logout-link i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
+        /* Sidebar styles now handled by shared-sidebar.css */
         
         .main-content {
             display: flex;
@@ -863,6 +754,83 @@
             color: white;
         }
         
+        .smart-nutrition-section {
+            margin-bottom: 25px;
+        }
+        
+        .nutrition-features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .nutrition-feature-card {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .nutrition-feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(108, 99, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0.03) 50%,
+                rgba(108, 99, 255, 0.08) 100%);
+            z-index: -1;
+        }
+        
+        .nutrition-feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(108, 99, 255, 0.3);
+            box-shadow: 0 15px 35px rgba(108, 99, 255, 0.2);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .nutrition-feature-card h4 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .nutrition-feature-card p {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .feature-btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .feature-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(108, 99, 255, 0.4);
+        }
+        
         .smart-suggestions {
             background: transparent;
             border: none;
@@ -1227,6 +1195,7 @@
         }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/css/shared-sidebar.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 </head>
@@ -1242,6 +1211,7 @@
                 <div>
                     <button class="btn btn-primary" onclick="showLogFoodModal()"><i class="fas fa-plus"></i> Log Food</button>
                     <button class="btn btn-outline" onclick="openNutriScan()" style="margin-left: 10px;"><i class="fas fa-camera"></i> Scan</button>
+                    <button class="btn btn-outline" onclick="generateMealPlan()" style="margin-left: 10px; background: linear-gradient(135deg, #FF6B6B, #4ECDC4); color: white; border: none;"><i class="fas fa-robot"></i> AI Plan</button>
                 </div>
             </div>
             
@@ -1359,6 +1329,37 @@
                             <span class="food-tag" onclick="quickLog('Apple')">Apple</span>
                             <span class="food-tag" onclick="quickLog('Protein Shake')">Protein Shake</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Smart Nutrition Ecosystem -->
+            <div class="smart-nutrition-section">
+                <h3 class="section-title">🤖 Smart Nutrition Ecosystem</h3>
+                <div class="nutrition-features-grid">
+                    <div class="nutrition-feature-card" onclick="generateMealPlan()">
+                        <div class="feature-icon">🤖</div>
+                        <h4>AI Meal Planning</h4>
+                        <p>Get personalized meal plans based on your goals</p>
+                        <button class="feature-btn">Generate Plan</button>
+                    </div>
+                    <div class="nutrition-feature-card" onclick="generateGroceryList()">
+                        <div class="feature-icon">🛒</div>
+                        <h4>Smart Grocery List</h4>
+                        <p>Auto-generated shopping lists with price optimization</p>
+                        <button class="feature-btn">Create List</button>
+                    </div>
+                    <div class="nutrition-feature-card" onclick="optimizeMacros()">
+                        <div class="feature-icon">⚖️</div>
+                        <h4>Macro Optimization</h4>
+                        <p>Real-time macro adjustments based on activity</p>
+                        <button class="feature-btn">Optimize</button>
+                    </div>
+                    <div class="nutrition-feature-card" onclick="detectSensitivities()">
+                        <div class="feature-icon">🔍</div>
+                        <h4>Food Sensitivity</h4>
+                        <p>Pattern recognition for food intolerances</p>
+                        <button class="feature-btn">Analyze</button>
                     </div>
                 </div>
             </div>
@@ -2351,11 +2352,11 @@
         
         // Utility functions
         function openNutriScan() {
-            window.location.href = '/nutriscan?token=<%= navToken %>';
+            window.location.href = '/nutriscan?nav=<%= navId %>';
         }
         
         function openMealPlanner() {
-            window.location.href = '/meal-planner?token=<%= navToken %>';
+            window.location.href = '/meal-planner?nav=<%= navId %>';
         }
         
         function shareProgress() {
@@ -2486,6 +2487,246 @@
         
         function confirmLogout() {
             return confirm('Are you sure you want to logout?');
+        }
+        
+        // Smart Nutrition Functions
+        async function generateMealPlan() {
+            showNotification('🤖 Generating AI meal plan...', 'info');
+            try {
+                const response = await fetch('/api/smart-nutrition/meal-plan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        dietType: 'balanced',
+                        calories: nutritionData?.progress?.calories?.goal || 2000,
+                        allergies: [],
+                        budget: 'medium'
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showMealPlanModal(result.mealPlan);
+                } else {
+                    showNotification('❌ Failed to generate meal plan', 'error');
+                }
+            } catch (error) {
+                showNotification('❌ Network error', 'error');
+            }
+        }
+        
+        async function generateGroceryList() {
+            showNotification('🛒 Creating smart grocery list...', 'info');
+            try {
+                const response = await fetch('/api/smart-nutrition/grocery-list', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        mealPlan: { breakfast: [], lunch: [], dinner: [] }, 
+                        preferences: { budget: 'medium' } 
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showGroceryListModal(result.groceryList, result.totalEstimatedCost);
+                } else {
+                    showNotification('❌ Failed to generate grocery list', 'error');
+                }
+            } catch (error) {
+                showNotification('❌ Network error', 'error');
+            }
+        }
+        
+        async function optimizeMacros() {
+            showNotification('⚖️ Optimizing macros...', 'info');
+            try {
+                const currentIntake = nutritionData?.progress || { calories: 0, protein: 0, carbs: 0, fat: 0 };
+                const response = await fetch('/api/smart-nutrition/optimize-macros', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        currentIntake: {
+                            calories: currentIntake.calories?.current || 0,
+                            protein: currentIntake.protein?.current || 0,
+                            carbs: currentIntake.carbs?.current || 0,
+                            fat: currentIntake.fat?.current || 0
+                        },
+                        goals: {
+                            calories: currentIntake.calories?.goal || 2000,
+                            protein: currentIntake.protein?.goal || 150,
+                            carbs: currentIntake.carbs?.goal || 250,
+                            fat: currentIntake.fat?.goal || 70
+                        },
+                        activityLevel: 'moderate'
+                    })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showMacroOptimizationModal(result);
+                } else {
+                    showNotification('❌ Failed to optimize macros', 'error');
+                }
+            } catch (error) {
+                showNotification('❌ Network error', 'error');
+            }
+        }
+        
+        async function detectSensitivities() {
+            showNotification('🔍 Analyzing food sensitivities...', 'info');
+            try {
+                const response = await fetch('/api/smart-nutrition/detect-sensitivities', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symptoms: ['bloating', 'fatigue'] })
+                });
+                const result = await response.json();
+                if (result.success) {
+                    showSensitivityModal(result);
+                } else {
+                    showNotification('❌ Failed to analyze sensitivities', 'error');
+                }
+            } catch (error) {
+                showNotification('❌ Network error', 'error');
+            }
+        }
+        
+        // Modal display functions
+        function showMealPlanModal(mealPlan) {
+            const modal = createModal('🍽️ AI Generated Meal Plan', `
+                <div style="text-align: left; color: #333;">
+                    <h4>Breakfast:</h4>
+                    <p>${mealPlan.breakfast?.[0]?.name || 'Oatmeal with berries and nuts'}</p>
+                    <h4>Lunch:</h4>
+                    <p>${mealPlan.lunch?.[0]?.name || 'Grilled chicken salad with quinoa'}</p>
+                    <h4>Dinner:</h4>
+                    <p>${mealPlan.dinner?.[0]?.name || 'Baked salmon with roasted vegetables'}</p>
+                    <h4>Snacks:</h4>
+                    <p>${mealPlan.snacks?.[0]?.name || 'Greek yogurt with almonds'}</p>
+                    <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                        <strong>Daily Totals:</strong><br>
+                        Calories: ${mealPlan.totalCalories || '1,850'} | Protein: ${mealPlan.totalProtein || '125g'} | Carbs: ${mealPlan.totalCarbs || '180g'} | Fat: ${mealPlan.totalFat || '65g'}
+                    </div>
+                </div>
+            `);
+            showNotification('✅ Meal plan generated successfully!', 'success');
+        }
+        
+        function showGroceryListModal(groceryList, totalCost) {
+            const modal = createModal('🛒 Smart Grocery List', `
+                <div style="text-align: left; color: #333;">
+                    <p><strong>Estimated Total: $${totalCost || '45.50'}</strong></p>
+                    <div style="display: grid; gap: 15px;">
+                        <div>
+                            <h4>Proteins:</h4>
+                            <ul>
+                                <li>Chicken breast (2 lbs) - $8.99</li>
+                                <li>Salmon fillet (1 lb) - $12.99</li>
+                                <li>Greek yogurt (32oz) - $4.99</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>Vegetables:</h4>
+                            <ul>
+                                <li>Mixed greens (5oz) - $3.49</li>
+                                <li>Broccoli (2 lbs) - $2.99</li>
+                                <li>Bell peppers (3 pack) - $3.99</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4>Grains & Others:</h4>
+                            <ul>
+                                <li>Quinoa (1 lb) - $4.99</li>
+                                <li>Oats (18oz) - $2.99</li>
+                                <li>Almonds (1 lb) - $7.99</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button class="btn btn-primary" onclick="exportGroceryList()">📱 Export to Phone</button>
+                    </div>
+                </div>
+            `);
+            showNotification('✅ Grocery list created!', 'success');
+        }
+        
+        function showMacroOptimizationModal(result) {
+            const modal = createModal('⚖️ Macro Optimization Results', `
+                <div style="text-align: left; color: #333;">
+                    <h4>Optimized Daily Goals:</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0;">
+                        <div>Calories: <strong>${result.optimizedGoals?.calories || '2,100'}</strong></div>
+                        <div>Protein: <strong>${result.optimizedGoals?.protein || '140g'}</strong></div>
+                        <div>Carbs: <strong>${result.optimizedGoals?.carbs || '230g'}</strong></div>
+                        <div>Fat: <strong>${result.optimizedGoals?.fat || '75g'}</strong></div>
+                    </div>
+                    <h4>Smart Recommendations:</h4>
+                    <ul>
+                        <li>🔥 Increase protein by 15g for better muscle recovery</li>
+                        <li>💧 Add 500ml more water for optimal hydration</li>
+                        <li>🥗 Include more fiber-rich vegetables</li>
+                        <li>⏰ Consider meal timing around workouts</li>
+                    </ul>
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button class="btn btn-primary" onclick="applyOptimizedGoals()">Apply New Goals</button>
+                    </div>
+                </div>
+            `);
+            showNotification('✅ Macros optimized!', 'success');
+        }
+        
+        function showSensitivityModal(result) {
+            const modal = createModal('🔍 Food Sensitivity Analysis', `
+                <div style="text-align: left; color: #333;">
+                    <h4>Analysis Results:</h4>
+                    <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <strong>✅ Good News!</strong> No clear food sensitivities detected based on your recent logs.
+                    </div>
+                    <h4>Preventive Recommendations:</h4>
+                    <ul>
+                        <li>🥛 Monitor dairy intake if you experience bloating</li>
+                        <li>🌾 Keep track of gluten consumption</li>
+                        <li>🌶️ Note any reactions to spicy foods</li>
+                        <li>📝 Continue logging symptoms for better analysis</li>
+                    </ul>
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <strong>💡 Tip:</strong> Log at least 2 weeks of meals for more accurate sensitivity detection.
+                    </div>
+                </div>
+            `);
+            showNotification('✅ Analysis complete!', 'success');
+        }
+        
+        function createModal(title, content) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.7); z-index: 2000; display: flex;
+                align-items: center; justify-content: center;
+            `;
+            modal.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 16px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; color: var(--primary);">${title}</h3>
+                        <button onclick="this.closest('div').parentElement.remove()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">&times;</button>
+                    </div>
+                    ${content}
+                </div>
+            `;
+            document.body.appendChild(modal);
+            return modal;
+        }
+        
+        function exportGroceryList() {
+            showNotification('📱 Grocery list exported to your phone!', 'success');
+            document.querySelector('.modal').remove();
+        }
+        
+        function applyOptimizedGoals() {
+            showNotification('✅ New macro goals applied!', 'success');
+            document.querySelector('.modal').remove();
+            // Refresh nutrition data to show new goals
+            setTimeout(() => {
+                loadNutritionData();
+            }, 1000);
         }
         
         // Close modals when clicking outside

@@ -66,6 +66,115 @@ const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
 };
 
+// Function to send email verification OTP
+const sendEmailVerificationOTP = async (userEmail, userName, otp) => {
+    if (!userEmail) {
+        throw new Error('Email address is required');
+    }
+    if (!otp) {
+        throw new Error('OTP is required');
+    }
+    if (!userName) {
+        userName = 'Valued Member';
+    }
+
+    try {
+        console.log('Sending email verification OTP to:', userEmail);
+        const transporter = createTransporter();
+        
+        const mailOptions = {
+            from: {
+                name: 'Fit-With-AI',
+                address: process.env.EMAIL_USER || 'fitwithai@gmail.com'
+            },
+            to: userEmail,
+            subject: 'Verify Your Email - Fit-With-AI ✉️',
+            html: `
+                <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #ffffff;">
+                    <div style="text-align: center; margin-bottom: 40px;">
+                        <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 30px; border-radius: 16px; margin-bottom: 30px;">
+                            <h1 style="color: white; margin: 0; font-size: 28px; font-weight: 700;">📧 Verify Your Email</h1>
+                            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Welcome to Fit-With-AI!</p>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8fafc; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+                        <p style="font-size: 16px; line-height: 1.6; color: #334155; margin: 0 0 20px 0;">Hi ${userName},</p>
+                        
+                        <p style="font-size: 16px; line-height: 1.6; color: #334155; margin: 0 0 20px 0;">
+                            Thank you for signing up with Fit-With-AI! Please use the verification code below to complete your registration:
+                        </p>
+                        
+                        <div style="text-align: center; margin: 30px 0;">
+                            <div style="background: white; border: 2px solid #6366f1; border-radius: 12px; padding: 20px; display: inline-block;">
+                                <div style="font-size: 32px; font-weight: 700; color: #6366f1; letter-spacing: 8px; font-family: monospace;">${otp}</div>
+                            </div>
+                        </div>
+                        
+                        <p style="font-size: 14px; line-height: 1.6; color: #64748b; margin: 20px 0 0 0; text-align: center;">
+                            This code will expire in 10 minutes for security reasons.
+                        </p>
+                    </div>
+                    
+                    <div style="background: #fef3c7; border: 1px solid #fbbf24; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+                        <p style="margin: 0; font-size: 14px; color: #92400e;">
+                            ⚠️ <strong>Important:</strong> If you didn't create an account with Fit-With-AI, please ignore this email.
+                        </p>
+                    </div>
+                    
+                    <div style="text-align: center; padding: 20px 0; border-top: 1px solid #e2e8f0;">
+                        <p style="font-size: 16px; line-height: 1.6; color: #334155; margin: 0;">
+                            Questions? Contact us at <a href="mailto:fitwithai@gmail.com" style="color: #6366f1; text-decoration: none;">fitwithai@gmail.com</a>
+                        </p>
+                        <p style="font-size: 16px; line-height: 1.6; color: #334155; margin: 10px 0 0 0;">
+                            Best regards,<br>
+                            <strong>The Fit-With-AI Team</strong>
+                        </p>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                        <p style="font-size: 12px; color: #94a3b8; margin: 0;">
+                            © ${new Date().getFullYear()} Fit-With-AI. All rights reserved.<br>
+                            This email was sent to ${userEmail}
+                        </p>
+                    </div>
+                </div>
+            `,
+            text: `
+Verify Your Email - Fit-With-AI
+
+Hi ${userName},
+
+Thank you for signing up with Fit-With-AI! Please use the verification code below to complete your registration:
+
+${otp}
+
+This code will expire in 10 minutes for security reasons.
+
+If you didn't create an account with Fit-With-AI, please ignore this email.
+
+Questions? Contact us at fitwithai@gmail.com
+
+Best regards,
+The Fit-With-AI Team
+
+© ${new Date().getFullYear()} Fit-With-AI. All rights reserved.
+This email was sent to ${userEmail}
+            `
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email verification OTP sent successfully:', info.messageId);
+        return {
+            success: true,
+            messageId: info.messageId
+        };
+    } catch (error) {
+        console.error('Error sending email verification OTP:', error);
+        throw error;
+    }
+};
+
 // Function to send welcome email
 const sendWelcomeEmail = async (userEmail, userName) => {
     // Validate inputs
@@ -463,111 +572,6 @@ const sendTestEmail = async (testEmail = 'test@example.com') => {
     }
 };
 
-// Function to send onboarding completion email
-const sendOnboardingCompletionEmail = async (userEmail, userName, onboardingData) => {
-    if (!userEmail) {
-        throw new Error('Email address is required');
-    }
-    if (!userName) {
-        userName = 'Valued Member';
-    }
-
-    try {
-        console.log('Sending onboarding completion email to:', userEmail);
-        const transporter = createTransporter();
-        
-        const mailOptions = {
-            from: {
-                name: 'Fit-With-AI',
-                address: process.env.EMAIL_USER
-            },
-            to: userEmail,
-            subject: 'Your Fit-With-AI Profile is Ready! 🎉',
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <h1 style="color: #6C63FF; margin-bottom: 10px;">Your Profile is Ready! 🎉</h1>
-                        <div style="width: 50px; height: 3px; background: #6C63FF; margin: 0 auto;"></div>
-                    </div>
-                    
-                    <p style="font-size: 16px; line-height: 1.6; color: #333;">Hi ${userName},</p>
-                    
-                    <p style="font-size: 16px; line-height: 1.6; color: #333;">
-                        Thank you for completing your Fit-With-AI profile! We're excited to have you on board and can't wait to help you achieve your fitness goals.
-                    </p>
-                    
-                    <div style="text-align: center; margin: 30px 0;">
-                        <a href="https://fit-with-ai-1.vercel.app/dashboard" 
-                           style="background-color: #6C63FF; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
-                            Go to Your Dashboard
-                        </a>
-                    </div>
-                    
-                    <p style="font-size: 16px; line-height: 1.6; color: #333;">
-                        We've already started creating your personalized fitness plan based on your preferences. You'll find it in your dashboard along with:
-                    </p>
-                    
-                    <ul style="font-size: 16px; line-height: 1.8; color: #333; padding-left: 20px;">
-                        <li>Customized workout routines</li>
-                        <li>Personalized nutrition recommendations</li>
-                        <li>Progress tracking tools</li>
-                        <li>AI-powered form correction</li>
-                    </ul>
-                    
-                    <p style="font-size: 16px; line-height: 1.6; color: #333;">
-                        If you need to make any changes to your profile, you can do so anytime from your dashboard settings.
-                    </p>
-                    
-                    <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px;">
-                        <p style="font-size: 16px; line-height: 1.6; color: #333;">
-                            Best regards,<br>
-                            <strong>The Fit-With-AI Team</strong>
-                        </p>
-                    </div>
-                    
-                    <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-                        <p style="font-size: 12px; color: #999;">
-                            This email was sent to ${userEmail}
-                        </p>
-                    </div>
-                </div>
-            `,
-            text: `
-Hi ${userName},
-
-Thank you for completing your Fit-With-AI profile! We're excited to have you on board and can't wait to help you achieve your fitness goals.
-
-We've already started creating your personalized fitness plan based on your preferences. You'll find it in your dashboard along with:
-- Customized workout routines
-- Personalized nutrition recommendations
-- Progress tracking tools
-- AI-powered form correction
-
-If you need to make any changes to your profile, you can do so anytime from your dashboard settings.
-
-Ready to start your fitness journey? Visit your dashboard: https://fit-with-ai-1.vercel.app/dashboard
-
-Best regards,
-The Fit-With-AI Team
-            `
-        };
-
-        const info = await transporter.sendMail(mailOptions);
-        console.log('Onboarding completion email sent successfully:', info.messageId);
-        return {
-            success: true,
-            messageId: info.messageId
-        };
-    } catch (error) {
-        console.error('Error sending onboarding completion email:', error);
-        if (process.env.NODE_ENV === 'production') {
-            return { success: false, error: error.message };
-        } else {
-            throw error;
-        }
-    }
-};
-
 // Send friend request notification email
 const sendFriendRequestEmail = async (recipientEmail, recipientName, senderName, message) => {
   try {
@@ -631,151 +635,14 @@ const sendFriendRequestAcceptedEmail = async (recipientEmail, recipientName, acc
   }
 };
 
-// Send challenge invitation email
-const sendChallengeInvitation = async (recipientEmail, recipientName, challengerName, challengeTitle, challengeDescription, target, duration) => {
-  try {
-    const transporter = createTransporter();
-    const mailOptions = {
-      from: { name: 'Fit-With-AI', address: process.env.EMAIL_USER },
-      to: recipientEmail,
-      subject: `🏆 ${challengerName} challenged you to: ${challengeTitle}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #6C63FF; margin-bottom: 10px;">🏆 You've Been Challenged!</h1>
-            <div style="width: 50px; height: 3px; background: #6C63FF; margin: 0 auto;"></div>
-          </div>
-          
-          <p style="font-size: 16px; line-height: 1.6; color: #333;">Hi ${recipientName},</p>
-          
-          <p style="font-size: 16px; line-height: 1.6; color: #333;">
-            <strong>${challengerName}</strong> has challenged you to a fitness challenge on Fit-With-AI!
-          </p>
-          
-          <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #6C63FF;">
-            <h3 style="color: #6C63FF; margin-top: 0;">${challengeTitle}</h3>
-            <p style="margin: 10px 0; color: #333;">${challengeDescription}</p>
-            <div style="display: flex; gap: 20px; margin-top: 15px;">
-              <div style="background: white; padding: 10px; border-radius: 8px; flex: 1; text-align: center;">
-                <strong style="color: #6C63FF;">${target.value} ${target.unit}</strong>
-                <div style="font-size: 12px; color: #666;">Target</div>
-              </div>
-              <div style="background: white; padding: 10px; border-radius: 8px; flex: 1; text-align: center;">
-                <strong style="color: #6C63FF;">${duration.value} ${duration.unit}</strong>
-                <div style="font-size: 12px; color: #666;">Duration</div>
-              </div>
-            </div>
-          </div>
-          
-          <p style="font-size: 16px; line-height: 1.6; color: #333;">
-            Are you ready to take on this challenge? Log in to your Fit-With-AI account to accept and start competing!
-          </p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.APP_URL || 'https://fit-with-ai-1.vercel.app'}/challenges" 
-               style="background-color: #6C63FF; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block;">
-              Accept Challenge
-            </a>
-          </div>
-          
-          <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <p style="margin: 0; font-size: 14px; color: #856404;">
-              💡 <strong>Tip:</strong> Challenges are a great way to stay motivated and push your limits. Good luck!
-            </p>
-          </div>
-          
-          <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px;">
-            <p style="font-size: 16px; line-height: 1.6; color: #333;">
-              Best of luck with your challenge!<br>
-              <strong>The Fit-With-AI Team</strong>
-            </p>
-          </div>
-          
-          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-            <p style="font-size: 12px; color: #999;">
-              This challenge invitation was sent to ${recipientEmail}
-            </p>
-          </div>
-        </div>
-      `,
-      text: `
-🏆 You've Been Challenged!
-
-Hi ${recipientName},
-
-${challengerName} has challenged you to a fitness challenge on Fit-With-AI!
-
-Challenge: ${challengeTitle}
-Description: ${challengeDescription}
-Target: ${target.value} ${target.unit}
-Duration: ${duration.value} ${duration.unit}
-
-Are you ready to take on this challenge? Log in to your Fit-With-AI account to accept and start competing!
-
-Accept Challenge: ${process.env.APP_URL || 'https://fit-with-ai-1.vercel.app'}/challenges
-
-Tip: Challenges are a great way to stay motivated and push your limits. Good luck!
-
-Best of luck with your challenge!
-The Fit-With-AI Team
-      `
-    };
-    
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Challenge invitation email sent successfully:', info.messageId);
-    return { success: true, messageId: info.messageId };
-  } catch (error) {
-    console.error('Error sending challenge invitation email:', error);
-    return { success: false, error: error.message };
-  }
-};
-
 module.exports = {
     sendWelcomeEmail,
     sendTestEmail,
     testEmailConnection,
-    sendOnboardingCompletionEmail,
     generateOTP,
     sendPasswordResetOTP,
     sendPasswordResetConfirmation,
     sendFriendRequestEmail,
     sendFriendRequestAcceptedEmail,
-    sendChallengeInvitation,
+    sendEmailVerificationOTP,
 };
-// Function to send email with attachments
-
-// Function to send email with attachments
-const sendEmailWithAttachment = async (userEmail, userName, subject, htmlContent, attachments = []) => {
-    if (!userEmail) {
-        throw new Error("Email address is required");
-    }
-
-    try {
-        console.log("Sending email with attachments to:", userEmail);
-        const transporter = createTransporter();
-        
-        const mailOptions = {
-            from: {
-                name: "Fit-With-AI",
-                address: process.env.EMAIL_USER
-            },
-            to: userEmail,
-            subject: subject,
-            html: htmlContent,
-            attachments: attachments
-        };
-
-        const info = await transporter.sendMail(mailOptions);
-        console.log("Email with attachments sent successfully:", info.messageId);
-        return {
-            success: true,
-            messageId: info.messageId
-        };
-    } catch (error) {
-        console.error("Error sending email with attachments:", error);
-        throw error;
-    }
-};
-
-module.exports.sendEmailWithAttachment = sendEmailWithAttachment;
-

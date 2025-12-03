@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Logs - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: #f5f5f5; }
+        .admin-container { display: flex; min-height: 100vh; }
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+        }
+        .sidebar h2 { text-align: center; margin-bottom: 30px; }
+        .sidebar ul { list-style: none; }
+        .sidebar li a {
+            display: block;
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        .sidebar li a:hover { background: rgba(255,255,255,0.1); }
+        .main-content { flex: 1; padding: 20px; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .filters {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .filter-group { display: flex; flex-direction: column; }
+        .filter-group label { font-size: 12px; color: #666; margin-bottom: 5px; }
+        .filter-group select, .filter-group input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .logs-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .log-entry {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .log-entry:last-child { border-bottom: none; }
+        .log-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+        .log-info { color: #17a2b8; }
+        .log-warning { color: #ffc107; }
+        .log-error { color: #dc3545; }
+        .log-success { color: #28a745; }
+        .log-content { flex: 1; }
+        .log-title { font-weight: 500; margin-bottom: 5px; }
+        .log-details { font-size: 14px; color: #666; }
+        .log-time { font-size: 12px; color: #999; }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        .empty-state i { font-size: 48px; margin-bottom: 15px; color: #ddd; }
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-primary:hover { background: #5a6fd8; }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="sidebar">
+            <h2><i class="fas fa-tachometer-alt"></i> Admin</h2>
+            <ul>
+                <li><a href="/admin/dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="/admin/users"><i class="fas fa-users"></i> Users</a></li>
+                <li><a href="/admin/messages"><i class="fas fa-envelope"></i> Messages</a></li>
+                <li><a href="/admin/analytics"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                <li><a href="/admin/monitoring"><i class="fas fa-desktop"></i> Monitoring</a></li>
+                <li><a href="/admin/logs"><i class="fas fa-file-alt"></i> Logs</a></li>
+                <li><a href="/admin/settings"><i class="fas fa-cog"></i> Settings</a></li>
+                <li><a href="#" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <div class="header">
+                <h1>Activity Logs</h1>
+                <p>System and user activity monitoring</p>
+            </div>
+            
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Level</label>
+                    <select id="levelFilter">
+                        <option value="">All Levels</option>
+                        <option value="info">Info</option>
+                        <option value="warning">Warning</option>
+                        <option value="error">Error</option>
+                        <option value="success">Success</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Date From</label>
+                    <input type="date" id="dateFrom">
+                </div>
+                <div class="filter-group">
+                    <label>Date To</label>
+                    <input type="date" id="dateTo">
+                </div>
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" id="searchFilter" placeholder="Search logs...">
+                </div>
+                <button class="btn btn-primary" onclick="applyFilters()">
+                    <i class="fas fa-filter"></i> Filter
+                </button>
+                <button class="btn btn-primary" onclick="exportLogs()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+            
+            <div class="logs-container">
+                <% if (logs.length === 0) { %>
+                <div class="empty-state">
+                    <i class="fas fa-file-alt"></i>
+                    <h3>No Activity Logs</h3>
+                    <p>Activity logs will appear here as users interact with the system.</p>
+                </div>
+                <% } else { %>
+                    <% logs.forEach(log => { %>
+                    <div class="log-entry">
+                        <div class="log-icon log-<%= log.level %>">
+                            <i class="fas fa-<%= getLogIcon(log.level) %>"></i>
+                        </div>
+                        <div class="log-content">
+                            <div class="log-title"><%= log.title %></div>
+                            <div class="log-details"><%= log.message %></div>
+                            <div class="log-time">
+                                <i class="fas fa-clock"></i> 
+                                <%= new Date(log.timestamp).toLocaleString() %>
+                                <% if (log.user) { %>
+                                | User: <%= log.user.email %>
+                                <% } %>
+                                <% if (log.ip) { %>
+                                | IP: <%= log.ip %>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                    <% }) %>
+                <% } %>
+            </div>
+            
+            <!-- Sample logs for demonstration -->
+            <div class="logs-container" style="margin-top: 20px;">
+                <div class="log-entry">
+                    <div class="log-icon log-success" style="background: #28a745;">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div class="log-content">
+                        <div class="log-title">New User Registration</div>
+                        <div class="log-details">User john.doe@example.com successfully registered</div>
+                        <div class="log-time">
+                            <i class="fas fa-clock"></i> 
+                            <%= new Date().toLocaleString() %>
+                            | IP: 192.168.1.100
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="log-entry">
+                    <div class="log-icon log-info" style="background: #17a2b8;">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <div class="log-content">
+                        <div class="log-title">User Login</div>
+                        <div class="log-details">User jane.smith@example.com logged in successfully</div>
+                        <div class="log-time">
+                            <i class="fas fa-clock"></i> 
+                            <%= new Date(Date.now() - 300000).toLocaleString() %>
+                            | IP: 192.168.1.101
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="log-entry">
+                    <div class="log-icon log-warning" style="background: #ffc107;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="log-content">
+                        <div class="log-title">Failed Login Attempt</div>
+                        <div class="log-details">Multiple failed login attempts from IP 192.168.1.200</div>
+                        <div class="log-time">
+                            <i class="fas fa-clock"></i> 
+                            <%= new Date(Date.now() - 600000).toLocaleString() %>
+                            | IP: 192.168.1.200
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="log-entry">
+                    <div class="log-icon log-error" style="background: #dc3545;">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="log-content">
+                        <div class="log-title">System Error</div>
+                        <div class="log-details">Database connection timeout in user service</div>
+                        <div class="log-time">
+                            <i class="fas fa-clock"></i> 
+                            <%= new Date(Date.now() - 900000).toLocaleString() %>
+                            | Service: UserService
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function applyFilters() {
+            const level = document.getElementById('levelFilter').value;
+            const dateFrom = document.getElementById('dateFrom').value;
+            const dateTo = document.getElementById('dateTo').value;
+            const search = document.getElementById('searchFilter').value;
+            
+            // Build query parameters
+            const params = new URLSearchParams();
+            if (level) params.append('level', level);
+            if (dateFrom) params.append('dateFrom', dateFrom);
+            if (dateTo) params.append('dateTo', dateTo);
+            if (search) params.append('search', search);
+            
+            // Reload page with filters
+            window.location.href = `/admin/logs?${params.toString()}`;
+        }
+        
+        async function exportLogs() {
+            try {
+                const response = await fetch('/admin/api/export-logs');
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `activity-logs-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+            } catch (error) {
+                alert('Failed to export logs');
+            }
+        }
+        
+        async function logout() {
+            const response = await fetch('/admin/logout', { method: 'POST' });
+            if (response.ok) window.location.href = '/admin/login';
+        }
+        
+        // Auto-refresh logs every 30 seconds
+        setInterval(() => {
+            if (!document.hidden) {
+                location.reload();
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

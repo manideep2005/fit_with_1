@@ -1,0 +1,23 @@
+{
+  "name": "fitwith-admin-panel",
+  "version": "1.0.0",
+  "description": "FitWith AI Admin Panel",
+  "main": "api/admin.js",
+  "scripts": {
+    "start": "node admin-ultimate.js",
+    "dev": "nodemon admin-ultimate.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^7.5.0",
+    "bcrypt": "^5.1.0",
+    "nodemailer": "^6.9.0",
+    "dotenv": "^16.3.0",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.8.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
