@@ -2,10 +2,10 @@
   "name": "fitwith-ai-platform",
   "version": "1.0.0",
   "description": "FitWith AI Platform with Ultimate Admin Panel",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js",
+    "start": "node server.js",
+    "dev": "nodemon server.js",
     "admin": "node admin-ultimate.js",
     "build": "echo 'Build complete'",
     "vercel-build": "echo 'Vercel build complete'"
