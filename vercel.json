@@ -2,22 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "app.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "admin-ultimate.js",
+      "src": "index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/admin/(.*)",
-      "dest": "/admin-ultimate.js"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/app.js"
+      "dest": "/index.js"
     }
   ],
   "env": {
