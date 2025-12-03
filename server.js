@@ -6,10 +6,10 @@ console.log('Vercel deployment:', !!process.env.VERCEL);
 // Load environment variables
 require('dotenv').config();
 
-// Always use the full app.js with all features
-console.log('🔧 Loading complete app.js with all features...');
-const app = require('./app');
-console.log('✅ Complete app loaded successfully');
+// Use deployment-safe version that works
+console.log('📦 Loading deployment-safe app version...');
+const app = require('./app-deploy');
+console.log('✅ Deployment app loaded successfully');
 
 // Export for Vercel serverless
 module.exports = app;
