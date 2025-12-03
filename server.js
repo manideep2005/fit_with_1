@@ -1,39 +1,45 @@
-// Minimal server for Vercel deployment
-const express = require('express');
-const path = require('path');
+// Server entry point for deployment
+console.log('🚀 Starting Fit-With-AI server...');
+console.log('Environment:', process.env.NODE_ENV || 'production');
+console.log('Vercel deployment:', !!process.env.VERCEL);
 
-const app = express();
+// Load environment variables
+require('dotenv').config();
 
-// Basic middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
+// Choose the right app version based on environment
+let app;
 
-// Set view engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+  // Use deployment-safe version for production/Vercel
+  console.log('📦 Loading deployment-safe app version...');
+  app = require('./app-deploy');
+} else {
+  // Use full-featured version for local development
+  console.log('🔧 Loading full-featured app version...');
+  try {
+    app = require('./app');
+  } catch (error) {
+    console.log('⚠️ Full app failed to load, falling back to deployment version:', error.message);
+    app = require('./app-deploy');
+  }
+}
 
-// Basic routes
-app.get('/', (req, res) => {
-  res.render('index');
-});
-
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'production',
-    vercel: !!process.env.VERCEL
-  });
-});
-
-// Export for Vercel
+// Export for Vercel serverless
 module.exports = app;
 
-// Start server locally
+// Start server locally (not in Vercel)
 if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+  
+  // For local development, start the server
+  if (typeof app.listen === 'function') {
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+      console.log(`🌐 Local URL: http://localhost:${PORT}`);
+    });
+  } else {
+    console.log('⚠️ App is not an Express server instance');
+  }
+} else {
+  console.log('☁️ Running in Vercel serverless mode');
 }

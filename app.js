@@ -7315,7 +7315,7 @@ function generateAIAnalysis(symptoms, matches) {
     analysis += `<strong>Other possibilities:</strong> ${otherConditions.join(', ')}.<br><br>`;
   }
   
-  // General recommendations
+
   analysis += `<strong>Recommendations:</strong><br>`;
   analysis += `• Review the detailed condition information below<br>`;
   analysis += `• Consider the recommended foods and home remedies<br>`;

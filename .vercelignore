@@ -1,19 +1,10 @@
 node_modules
 .env
 .env.local
-.env.example
+.git
 *.log
-.DS_Store
-.continue
-.qodo
-testing
-testing copy
-signaling-server
-netlify
-*.md
-*.txt
-*.html
-app.js
-websocket-server.js
-*.backup
-*.js.backup
+testing/
+testing copy/
+logs/
+.continue/
+.qodo/
