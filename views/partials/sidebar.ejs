@@ -1,3 +1,20 @@
+<style>
+.sidebar { background: #ffffff !important; border: 1px solid #e2e8f0 !important; border-radius: 12px !important; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important; padding: 30px 20px !important; position: sticky !important; top: 20px !important; height: fit-content !important; }
+.sidebar-header { display: flex !important; align-items: center !important; margin-bottom: 2rem !important; padding: 0 1rem !important; }
+.user-avatar { width: 40px !important; height: 40px !important; border-radius: 50% !important; margin-right: 10px !important; background: #6366f1 !important; color: white !important; display: flex !important; align-items: center !important; justify-content: center !important; font-weight: 600 !important; font-size: 1.2rem !important; flex-shrink: 0 !important; }
+.user-name { font-weight: 600 !important; margin: 0 !important; color: #1e293b !important; font-size: 0.9rem !important; }
+.user-plan { font-size: 0.8rem !important; color: #6366f1 !important; background: rgba(99, 102, 241, 0.1) !important; padding: 2px 8px !important; border-radius: 20px !important; margin-top: 5px !important; display: block !important; }
+.nav-menu { list-style: none !important; padding: 0 !important; margin: 0 !important; }
+.nav-item { margin-bottom: 5px !important; }
+.nav-link { display: flex !important; align-items: center !important; padding: 12px 15px !important; color: #64748b !important; text-decoration: none !important; border-radius: 8px !important; transition: all 0.3s ease !important; font-size: 0.9rem !important; font-weight: 500 !important; }
+.nav-link:hover { background: rgba(99, 102, 241, 0.1) !important; color: #6366f1 !important; }
+.nav-link.active { background: #6366f1 !important; color: white !important; }
+.nav-link i { margin-right: 10px !important; font-size: 1rem !important; width: 16px !important; text-align: center !important; }
+.logout-section { margin-top: 2rem !important; padding-top: 1rem !important; border-top: 1px solid #e2e8f0 !important; }
+.logout-link { display: flex !important; align-items: center !important; padding: 12px 1rem !important; color: #ef4444 !important; text-decoration: none !important; border-radius: 8px !important; transition: all 0.3s ease !important; font-weight: 500 !important; font-size: 0.9rem !important; }
+.logout-link:hover { background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; }
+.logout-link i { margin-right: 10px !important; font-size: 1rem !important; }
+</style>
 <div class="sidebar">
     <div class="sidebar-header">
         <div class="user-avatar"><%= user.fullName.charAt(0).toUpperCase() %></div>
@@ -51,7 +68,7 @@
         </li>
         <li class="nav-item">
             <a href="/meal-planner?nav=<%= navId %>" class="nav-link <%= currentPage === 'meal-planner' ? 'active' : '' %>">
-                <i class="fas fa-calendar-check"></i> meal palnner
+                <i class="fas fa-calendar-check"></i> Meal Planner
             </a>
         </li>
         <li class="nav-item">
