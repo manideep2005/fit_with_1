@@ -41,11 +41,7 @@
             height: auto;
         }
         
-        /* Specific constraints for profile images */
-        img[alt="User Avatar"], img[alt="Profile"] {
-            object-fit: cover;
-            flex-shrink: 0;
-        }
+
         
         .dashboard-container {
             display: grid;
@@ -524,23 +520,7 @@
                         <small class="text-muted">This is the email you use to log in</small>
                     </div>
                     
-                    <div class="form-group">
-                        <label class="form-label">Profile Photo</label>
-                        <div style="display: flex; align-items: center; gap: 20px;">
-                            <img id="profileImage" src="<%= user.profilePhoto ? user.profilePhoto + '?t=' + Date.now() : 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.fullName) + '&background=6C63FF&color=fff' %>" alt="User Avatar" style="width: 80px; height: 80px; min-width: 80px; min-height: 80px; max-width: 80px; max-height: 80px; border-radius: 50%; object-fit: cover; display: block; flex-shrink: 0;" onerror="this.src='https://ui-avatars.com/api/?name=' + encodeURIComponent('<%= user.fullName %>') + '&background=6C63FF&color=fff'">
-                            <div>
-                                <button type="button" class="btn btn-outline" onclick="showPhotoOptions()" style="margin-right: 10px;">
-                                    <i class="fas fa-camera"></i> Change Photo
-                                </button>
-                                <button type="button" class="btn btn-outline" onclick="removeProfilePhoto()">
-                                    <i class="fas fa-trash"></i> Remove
-                                </button>
-                            </div>
-                        </div>
-                        <input type="file" id="photoInput" accept="image/*" style="display: none;" onchange="handlePhotoUpload(event)">
-                        <video id="cameraPreview" style="display: none; width: 300px; height: 200px; border-radius: 8px; margin-top: 10px;"></video>
-                        <canvas id="photoCanvas" style="display: none;"></canvas>
-                    </div>
+
                     
                     <div class="form-group">
                         <label class="form-label">Fitness ID</label>
@@ -1503,187 +1483,7 @@
             return confirm('Are you sure you want to logout?');
         }
 
-        // Profile photo management
-        let cameraStream = null;
 
-        function showPhotoOptions() {
-            const options = [
-                { text: 'Take Photo', action: 'camera' },
-                { text: 'Upload Photo', action: 'upload' },
-                { text: 'Cancel', action: 'cancel' }
-            ];
-
-            const modal = document.createElement('div');
-            modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.5);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 2000;
-            `;
-
-            const content = document.createElement('div');
-            content.style.cssText = `
-                background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(108, 99, 255, 0.08) 100%);
-                backdrop-filter: blur(20px);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                padding: 2rem;
-                border-radius: 12px;
-                text-align: center;
-                min-width: 300px;
-                color: white;
-            `;
-
-            content.innerHTML = `
-                <h3 style="margin-bottom: 1.5rem; color: white;">Choose Photo Option</h3>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button class="btn btn-primary" onclick="startCamera(); closeModal();">📷 Take Photo</button>
-                    <button class="btn btn-outline" onclick="document.getElementById('photoInput').click(); closeModal();">📁 Upload Photo</button>
-                    <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-                </div>
-            `;
-
-            modal.appendChild(content);
-            document.body.appendChild(modal);
-
-            window.closeModal = function() {
-                document.body.removeChild(modal);
-            };
-        }
-
-        async function startCamera() {
-            try {
-                const video = document.getElementById('cameraPreview');
-                video.style.display = 'block';
-                
-                cameraStream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = cameraStream;
-                video.play();
-
-                // Add capture button
-                if (!document.getElementById('captureBtn')) {
-                    const captureBtn = document.createElement('button');
-                    captureBtn.id = 'captureBtn';
-                    captureBtn.className = 'btn btn-primary';
-                    captureBtn.innerHTML = '📸 Capture Photo';
-                    captureBtn.style.marginTop = '10px';
-                    captureBtn.onclick = capturePhoto;
-                    video.parentNode.appendChild(captureBtn);
-
-                    const cancelBtn = document.createElement('button');
-                    cancelBtn.className = 'btn btn-outline';
-                    cancelBtn.innerHTML = 'Cancel';
-                    cancelBtn.style.marginTop = '10px';
-                    cancelBtn.style.marginLeft = '10px';
-                    cancelBtn.onclick = stopCamera;
-                    video.parentNode.appendChild(cancelBtn);
-                }
-            } catch (error) {
-                console.error('Camera access error:', error);
-                showNotification('Camera access denied or not available', 'error');
-            }
-        }
-
-        function capturePhoto() {
-            const video = document.getElementById('cameraPreview');
-            const canvas = document.getElementById('photoCanvas');
-            const ctx = canvas.getContext('2d');
-
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0);
-
-            canvas.toBlob(function(blob) {
-                const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
-                uploadPhotoFile(file);
-                stopCamera();
-            }, 'image/jpeg', 0.8);
-        }
-
-        function stopCamera() {
-            if (cameraStream) {
-                cameraStream.getTracks().forEach(track => track.stop());
-                cameraStream = null;
-            }
-            document.getElementById('cameraPreview').style.display = 'none';
-            const captureBtn = document.getElementById('captureBtn');
-            if (captureBtn) captureBtn.remove();
-        }
-
-        function handlePhotoUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                uploadPhotoFile(file);
-            }
-        }
-
-        async function uploadPhotoFile(file) {
-            try {
-                const formData = new FormData();
-                formData.append('photo', file);
-
-                showToast('Uploading photo...', 'info');
-
-                const response = await fetch('/api/settings/profile-photo', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-                console.log('Upload result:', result);
-
-                if (result.success) {
-                    console.log('Setting image src to:', result.photoUrl);
-                    const img = document.getElementById('profileImage');
-                    img.src = result.photoUrl;
-                    showToast('Photo updated successfully!', 'success');
-                    
-                    // Trigger sidebar avatar update
-                    window.dispatchEvent(new CustomEvent('profilePhotoUpdated', {
-                        detail: { photoUrl: result.photoUrl }
-                    }));
-                    
-                    // Reload page after 1 second to ensure changes persist
-                    setTimeout(() => {
-                        window.location.reload(true);
-                    }, 1000);
-                } else {
-                    showToast('Upload failed: ' + (result.error || 'Unknown error'), 'error');
-                }
-            } catch (error) {
-                console.error('Photo upload error:', error);
-                showToast('Network error. Please try again.', 'error');
-            }
-        }
-
-        async function removeProfilePhoto() {
-            if (!confirm('Are you sure you want to remove your profile photo?')) {
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/settings/profile-photo', {
-                    method: 'DELETE'
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    document.getElementById('profileImage').src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent('<%= user.fullName %>') + '&background=6C63FF&color=fff';
-                    showToast('Photo removed!', 'success');
-                } else {
-                    showToast('Remove failed', 'error');
-                }
-            } catch (error) {
-                console.error('Remove photo error:', error);
-                showToast('Remove failed', 'error');
-            }
-        }
 
         // Update profile information
         async function updateProfile(event) {
@@ -2341,52 +2141,8 @@
         }
     </script>
 
-    <!-- Photo Options Modal Styles -->
-    <style>
-        .photo-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-        }
-        
-        .photo-modal-content {
-            background: linear-gradient(135deg, rgba(108, 99, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 50%, rgba(108, 99, 255, 0.08) 100%);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 2rem;
-            border-radius: 12px;
-            text-align: center;
-            min-width: 300px;
-            color: white;
-        }
-        
-        #cameraPreview {
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-        }
-        
-        .notification {
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-    </style>
+
+
     
     <script src="/js/voice-assistant-siri.js"></script>
     <script src="/js/smart-voice-assistant.js"></script>

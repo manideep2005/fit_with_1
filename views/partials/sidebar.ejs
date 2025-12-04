@@ -1,6 +1,6 @@
 <div class="sidebar">
     <div class="sidebar-header">
-        <img id="sidebar-avatar" src="<%= user.profilePhoto || `https://ui-avatars.com/api/?name=${user.fullName}&background=6C63FF&color=fff` %>" alt="User Avatar">
+        <div class="user-avatar"><%= user.fullName.charAt(0).toUpperCase() %></div>
         <div>
             <h3 class="user-name"><%= user.fullName %></h3>
             <span class="user-plan" id="sidebar-plan">
@@ -114,13 +114,7 @@
             }
         });
         
-        // Listen for profile photo updates
-        window.addEventListener('profilePhotoUpdated', function(event) {
-            const sidebarAvatar = document.getElementById('sidebar-avatar');
-            if (sidebarAvatar && event.detail.photoUrl) {
-                sidebarAvatar.src = event.detail.photoUrl;
-            }
-        });
+
     </script>
     
     <div class="logout-section">

@@ -31,7 +31,7 @@
     padding: 0 1rem;
 }
 
-.sidebar-header img {
+.user-avatar {
     width: 40px;
     height: 40px;
     min-width: 40px;
@@ -40,8 +40,13 @@
     max-height: 40px;
     border-radius: 50%;
     margin-right: 10px;
-    object-fit: cover;
-    display: block;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.2rem;
     flex-shrink: 0;
 }
 
