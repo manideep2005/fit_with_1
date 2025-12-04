@@ -1,0 +1,15 @@
+<!-- Universal Widgets for Fit-With-AI -->
+<script src="/js/universal-widgets.js"></script>
+<script>
+// Ensure widgets are available globally
+window.addEventListener('load', function() {
+    console.log('🎯 Fit-With-AI widgets loaded and ready!');
+    
+    // Show welcome message for voice assistant
+    setTimeout(() => {
+        if (window.simpleVoiceAssistant && typeof window.simpleVoiceAssistant.showNotification === 'function') {
+            window.simpleVoiceAssistant.showNotification('🎤 Voice Assistant ready! Click the mic or say "help"', 'success');
+        }
+    }, 2000);
+});
+</script>

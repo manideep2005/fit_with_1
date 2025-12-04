@@ -8,9 +8,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="/css/voice-assistant.css">
     <link rel="stylesheet" href="/css/webrtc.css">
+    <link rel="stylesheet" href="/css/advanced-chat.css">
     <script src="https://cdn.socket.io/4.8.0/socket.io.min.js"></script>
     <script src="/js/notifications.js"></script>
-    <script src="/js/realtime-chat.js"></script>
+    <script src="/js/advanced-chat.js"></script>
     <style>
         :root {
             --primary: #6366f1;
@@ -821,41 +822,40 @@
     </div>
 
     <script>
+        // Global variables for backward compatibility
         let currentFriend = null;
         let friends = [];
-        let typingTimeout = null;
-        const TYPING_DEBOUNCE_MS = 300;
-        const TYPING_STOP_MS = 1500;
-        const presenceMap = new Map(); // friendId -> { online: bool, lastSeen: ts }
+        
+        // Set global user info for advanced chat
+        window.currentUserId = '<%= user._id %>';
+        window.currentUserName = '<%= user.fullName %>';
+        window.currentUserAvatar = `https://ui-avatars.com/api/?name=${encodeURIComponent('<%= user.fullName %>')}&background=6C63FF&color=fff`;
 
-        // Load friends on page load
+        // Initialize advanced chat system
         document.addEventListener('DOMContentLoaded', function() {
-            loadFriends();
-            initializeSocket();
+            // Initialize notifications first
             initializeNotifications();
             
-            // Enter key to send message
-            const inputEl = document.getElementById('messageInput');
-            inputEl.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
+            // Load friends and initialize socket connection
+            loadFriends();
+            
+            // Advanced chat system will handle everything else
+            console.log('Advanced chat system will initialize automatically');
+            
+            // Setup periodic online status updates
+            setInterval(() => {
+                if (window.advancedChat) {
+                    // Update online status periodically
+                    fetch('/api/chat/online-status')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                console.log('Online users:', data.onlineCount);
+                            }
+                        })
+                        .catch(error => console.log('Status check failed:', error));
                 }
-            });
-            // typing indicator emission (debounced)
-            let lastEmit = 0;
-            inputEl.addEventListener('input', function() {
-                if (!socket || !currentFriend) return;
-                const now = Date.now();
-                if (now - lastEmit > TYPING_DEBOUNCE_MS) {
-                    socket.emit('typing', { to: currentFriend });
-                    lastEmit = now;
-                }
-                if (typingTimeout) clearTimeout(typingTimeout);
-                typingTimeout = setTimeout(() => {
-                    if (socket && currentFriend) socket.emit('stop-typing', { to: currentFriend });
-                }, TYPING_STOP_MS);
-            });
+            }, 30000); // Every 30 seconds
         });
         
         // Initialize notification system
@@ -1136,7 +1136,7 @@
             }
         }
 
-        // Load friends list
+        // Load friends list with enhanced presence data
         async function loadFriends() {
             try {
                 const response = await fetch('/api/chat/friends');
@@ -1145,6 +1145,12 @@
                 if (data.success && data.friends.length > 0) {
                     friends = data.friends;
                     displayFriends(data.friends);
+                    
+                    // Update global friends list for advanced chat
+                    if (window.advancedChat) {
+                        window.advancedChat.friends = data.friends;
+                        window.advancedChat.renderFriendsList();
+                    }
                 } else {
                     document.getElementById('friendsList').innerHTML = `
                         <div class="no-friends">
@@ -1159,57 +1165,136 @@
             }
         }
 
-        // Display friends in sidebar
+        // Display friends in sidebar with enhanced presence
         function displayFriends(friendsList) {
             const friendsHtml = friendsList.map(friend => {
-                const online = presenceMap.get(friend._id)?.online;
+                const presence = friend.presence || { online: false, status: 'offline' };
+                const isOnline = presence.online;
+                const statusText = getStatusText(presence);
+                
                 return `
-                <div class="friend-item" onclick="selectFriend('${friend._id}', '${friend.fullName}')">
-                    <img src="${friend.avatar}" alt="${friend.fullName}" class="friend-avatar">
+                <div class="friend-item" onclick="selectFriend('${friend._id}', '${friend.fullName}')" data-friend-id="${friend._id}">
+                    <div class="friend-avatar-container">
+                        <div class="friend-avatar" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                            ${friend.fullName.charAt(0).toUpperCase()}
+                        </div>
+                        <div class="online-indicator ${isOnline ? 'online' : 'offline'}"></div>
+                    </div>
                     <div class="friend-info">
-                        <h4>${friend.fullName} ${online ? '<span class="presence-dot dot-online" style="margin-left:6px"></span>' : ''}</h4>
-                        <p>${online ? 'Online' : 'Click to chat'}</p>
+                        <div class="friend-header">
+                            <h4>${friend.fullName}</h4>
+                        </div>
+                        <div class="friend-status">
+                            <p class="status-text">${statusText}</p>
+                        </div>
                     </div>
                 </div>`;
             }).join('');
             
             document.getElementById('friendsList').innerHTML = friendsHtml;
         }
+        
+        // Get status text from presence data
+        function getStatusText(presence) {
+            if (presence.online) return 'Online';
+            if (presence.lastSeen) {
+                const lastSeen = new Date(presence.lastSeen);
+                const now = new Date();
+                const diffMs = now - lastSeen;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                const diffDays = Math.floor(diffMs / 86400000);
+                
+                if (diffMins < 1) return 'Just now';
+                if (diffMins < 60) return `${diffMins}m ago`;
+                if (diffHours < 24) return `${diffHours}h ago`;
+                if (diffDays < 7) return `${diffDays}d ago`;
+                return 'Long time ago';
+            }
+            return 'Offline';
+        }
 
-        // Select friend to chat with
+        // Select friend - enhanced with presence updates
         function selectFriend(friendId, friendName) {
-            currentFriend = friendId;
-            document.getElementById('chatTitle').textContent = friendName;
-            document.getElementById('messageInput').disabled = false;
-            document.getElementById('sendBtn').disabled = false;
-            document.getElementById('chatOptions').style.display = 'block';
-            document.getElementById('presenceStatus').style.display = 'flex';
-            updatePresenceHeader(friendId);
+            if (window.advancedChat) {
+                window.advancedChat.selectFriend(friendId, friendName);
+            } else {
+                // Fallback for backward compatibility
+                currentFriend = friendId;
+                document.getElementById('chatTitle').textContent = friendName;
+                document.getElementById('messageInput').disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+                document.getElementById('chatOptions').style.display = 'block';
+                document.getElementById('presenceStatus').style.display = 'flex';
+                
+                // Update presence status
+                updatePresenceForFriend(friendId);
+                
+                // Load messages
+                loadMessages(friendId);
+            }
             
-            // Remove active class from all friends
+            // Update active state
             document.querySelectorAll('.friend-item').forEach(item => {
                 item.classList.remove('active');
             });
-            
-            // Add active class to selected friend
-            event.target.closest('.friend-item').classList.add('active');
-            
-            // Clear unread count when opening a conversation
-            if (window.chatNotifications) {
-                window.chatNotifications.clearUnreadCount();
+            document.querySelector(`[data-friend-id="${friendId}"]`)?.classList.add('active');
+        }
+        
+        // Update presence status for selected friend
+        async function updatePresenceForFriend(friendId) {
+            try {
+                const response = await fetch(`/api/chat/presence/${friendId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    const presence = data.presence;
+                    const presenceDot = document.getElementById('presenceDot');
+                    const presenceText = document.getElementById('presenceText');
+                    
+                    if (presenceDot && presenceText) {
+                        if (presence.online) {
+                            presenceDot.className = 'presence-dot dot-online';
+                            presenceText.textContent = 'Online';
+                        } else {
+                            presenceDot.className = 'presence-dot dot-offline';
+                            if (presence.lastSeen) {
+                                const lastSeen = new Date(presence.lastSeen);
+                                presenceText.textContent = `Last seen ${formatLastSeen(lastSeen)}`;
+                            } else {
+                                presenceText.textContent = 'Offline';
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error updating presence:', error);
             }
+        }
+        
+        // Format last seen time
+        function formatLastSeen(date) {
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
             
-            // Load messages
-            loadMessages(friendId);
+            if (diffMins < 1) return 'just now';
+            if (diffMins < 60) return `${diffMins} minutes ago`;
+            if (diffHours < 24) return `${diffHours} hours ago`;
+            if (diffDays === 1) return 'yesterday';
+            if (diffDays < 7) return `${diffDays} days ago`;
+            return date.toLocaleDateString();
         }
 
-        // Load messages for selected friend
+        // Load messages for selected friend with enhanced status
         async function loadMessages(friendId) {
             try {
                 const response = await fetch(`/api/chat/messages/${friendId}`);
                 const data = await response.json();
                 
-                if (data.success) {
+                if (data.success && data.messages.length > 0) {
                     displayMessages(data.messages);
                 } else {
                     document.getElementById('messagesArea').innerHTML = '<div class="empty-chat"><p>Start your conversation!</p></div>';
@@ -1220,98 +1305,85 @@
             }
         }
 
-        // Display messages
+        // Display messages with enhanced status indicators
         function displayMessages(messages) {
             const messagesHtml = messages.map(message => {
-                const time = new Date(message.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                const time = formatMessageTime(message.createdAt);
                 const statusIcon = message.isSender ? getStatusIcon(message.status) : '';
                 
                 return `
-                    <div class="message ${message.isSender ? 'sent' : 'received'}">
-                        ${message.content}
-                        ${message.isSender ? `
-                            <div class="message-status">
-                                <span class="message-time">${time}</span>
-                                ${statusIcon}
-                            </div>
-                        ` : `
-                            <div class="message-status">
-                                <span class="message-time">${time}</span>
-                            </div>
-                        `}
+                    <div class="message ${message.isSender ? 'sent' : 'received'}" data-message-id="${message._id}">
+                        <div class="message-content">
+                            ${escapeHtml(message.content)}
+                        </div>
+                        <div class="message-meta">
+                            <span class="message-time">${time}</span>
+                            ${statusIcon}
+                        </div>
                     </div>
                 `;
             }).join('');
             
             document.getElementById('messagesArea').innerHTML = messagesHtml;
-            document.getElementById('messagesArea').scrollTop = document.getElementById('messagesArea').scrollHeight;
+            scrollToBottom();
         }
         
-        // Get status icon for messages
+        // Format message time
+        function formatMessageTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return 'now';
+            if (diffMins < 60) return `${diffMins}m`;
+            if (diffHours < 24) return `${diffHours}h`;
+            if (diffDays < 7) return `${diffDays}d`;
+            
+            return date.toLocaleDateString();
+        }
+        
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Scroll to bottom of messages
+        function scrollToBottom() {
+            const messagesArea = document.getElementById('messagesArea');
+            if (messagesArea) {
+                messagesArea.scrollTop = messagesArea.scrollHeight;
+            }
+        }
+        
+        // Get status icon for messages with enhanced states
         function getStatusIcon(status) {
             switch(status) {
+                case 'sending':
+                    return '<i class="fas fa-clock message-status status-sending"></i>';
                 case 'sent':
-                    return '<i class="fas fa-check status-icon status-sent"></i>';
+                    return '<i class="fas fa-check message-status status-sent"></i>';
                 case 'delivered':
-                    return '<i class="fas fa-check-double status-icon status-delivered"></i>';
+                    return '<i class="fas fa-check-double message-status status-delivered"></i>';
                 case 'read':
-                    return '<i class="fas fa-check-double status-icon status-read"></i>';
+                    return '<i class="fas fa-check-double message-status status-read"></i>';
+                case 'queued':
+                    return '<i class="fas fa-hourglass-half message-status status-queued"></i>';
                 default:
-                    return '<i class="fas fa-clock status-icon status-sent"></i>';
+                    return '<i class="fas fa-clock message-status status-sending"></i>';
             }
         }
 
-        // Send message
-        async function sendMessage() {
-            const messageInput = document.getElementById('messageInput');
-            const content = messageInput.value.trim();
-            
-            if (!content || !currentFriend) return;
-            
-            try {
-                const response = await fetch('/api/chat/send', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        receiverId: currentFriend,
-                        content: content
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Add message to UI immediately with status
-                    const messagesArea = document.getElementById('messagesArea');
-                    const time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                    messagesArea.innerHTML += `
-                        <div class="message sent">
-                            ${content}
-                            <div class="message-status">
-                                <span class="message-time">${time}</span>
-                                <i class="fas fa-check status-icon status-sent"></i>
-                            </div>
-                        </div>
-                    `;
-                    messagesArea.scrollTop = messagesArea.scrollHeight;
-                    messageInput.value = '';
-                    
-                    // Update status to delivered after a short delay
-                    setTimeout(() => {
-                        const lastMessage = messagesArea.lastElementChild;
-                        const statusIcon = lastMessage.querySelector('.status-icon');
-                        if (statusIcon) {
-                            statusIcon.className = 'fas fa-check-double status-icon status-delivered';
-                        }
-                    }, 1000);
-                } else {
-                    showToast('Failed to send message: ' + data.error, 'error');
-                }
-            } catch (error) {
-                console.error('Error sending message:', error);
-                showToast('Failed to send message', 'error');
+        // Send message - delegated to advanced chat system
+        function sendMessage() {
+            if (window.advancedChat) {
+                window.advancedChat.sendMessage();
+            } else {
+                console.warn('Advanced chat system not initialized');
             }
         }
 
