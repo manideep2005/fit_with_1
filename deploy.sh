@@ -1,15 +1,15 @@
 #!/bin/bash
-echo "🚀 Deploying Fit-With-AI..."
 
-# Check if vercel is installed
-if ! command -v vercel &> /dev/null; then
-    echo "Installing Vercel CLI..."
-    npm install -g vercel
-fi
+echo "🚀 Starting fresh Vercel deployment..."
 
-# Deploy to Vercel
-echo "📦 Starting deployment..."
-vercel --prod
+# Clear local cache
+echo "🧹 Clearing local cache..."
+rm -rf .vercel
+rm -rf node_modules/.cache
+
+# Force fresh deployment
+echo "📦 Deploying to Vercel..."
+vercel --prod --force
 
 echo "✅ Deployment complete!"
-echo "🌐 Your app should be live at your Vercel URL"
+echo "🔄 If changes still don't appear, wait 2-3 minutes for global CDN propagation"

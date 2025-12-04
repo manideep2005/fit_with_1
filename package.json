@@ -8,7 +8,7 @@
     "dev": "nodemon server.js",
     "admin": "node admin-ultimate.js",
     "build": "echo 'Build complete'",
-    "vercel-build": "echo 'Vercel build complete'"
+    "vercel-build": "echo 'Vercel build complete - $(date)'"
   },
   "dependencies": {
     "axios": "^1.6.0",
