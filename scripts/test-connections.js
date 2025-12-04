@@ -1,5 +1,5 @@
 const { Pool } = require('pg');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+// Google Generative AI removed for deployment simplicity
 require('dotenv').config();
 
 async function testConnections() {

@@ -147,20 +147,31 @@ router.get('/feed', isAuthenticated, async (req, res) => {
     const userId = req.session.user._id;
     const { limit = 20, skip = 0 } = req.query;
     
-    console.log('Getting feed for user:', userId, 'limit:', limit, 'skip:', skip);
+    console.log('📰 Feed API: Getting feed for user:', userId, 'limit:', limit, 'skip:', skip);
+    
+    if (!userId) {
+      console.error('❌ Feed API: No user ID found in session');
+      return res.status(401).json({
+        success: false,
+        error: 'User not authenticated'
+      });
+    }
     
     const posts = await communityService.getUserFeed(userId, parseInt(limit), parseInt(skip));
-    console.log('Found posts:', posts.length);
+    console.log('✅ Feed API: Found posts:', posts.length);
     
     res.json({
       success: true,
-      posts: posts || []
+      posts: posts || [],
+      count: posts.length,
+      hasMore: posts.length === parseInt(limit)
     });
   } catch (error) {
-    console.error('Get user feed error:', error);
+    console.error('❌ Feed API: Get user feed error:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to get user feed'
+      error: 'Failed to get user feed',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
@@ -255,6 +266,72 @@ router.get('/search', isAuthenticated, async (req, res) => {
     res.status(500).json({
       success: false,
       error: 'Failed to search community content'
+    });
+  }
+});
+
+// Debug endpoint for community feed
+router.get('/debug', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const Group = require('../models/Group');
+    const Post = require('../models/Post');
+    
+    // Get user's groups
+    const userGroups = await Group.find({
+      'members.user': userId
+    }).select('_id name members');
+    
+    // Get all posts in user's groups
+    const groupIds = userGroups.map(group => group._id);
+    const posts = await Post.find({ 
+      group: { $in: groupIds },
+      isApproved: true 
+    }).populate('author', 'fullName').populate('group', 'name');
+    
+    // Get all groups (for comparison)
+    const allGroups = await Group.find({}).select('_id name members');
+    const allPosts = await Post.find({}).populate('author', 'fullName').populate('group', 'name');
+    
+    res.json({
+      success: true,
+      debug: {
+        userId: userId,
+        userGroups: userGroups.length,
+        userGroupDetails: userGroups,
+        postsInUserGroups: posts.length,
+        postDetails: posts,
+        totalGroups: allGroups.length,
+        totalPosts: allPosts.length,
+        groupIds: groupIds
+      }
+    });
+  } catch (error) {
+    console.error('Community debug error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Debug failed: ' + error.message
+    });
+  }
+});
+
+// Initialize sample community data
+router.post('/init-sample-data', isAuthenticated, async (req, res) => {
+  try {
+    console.log('Initializing sample community data...');
+    
+    const result = await communityService.createSampleData();
+    
+    res.json({
+      success: true,
+      message: 'Sample community data created successfully',
+      result: result
+    });
+  } catch (error) {
+    console.error('Init sample data error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to initialize sample data: ' + error.message
     });
   }
 });

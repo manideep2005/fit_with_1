@@ -559,6 +559,11 @@
                 console.log('🌍 Loading public groups...');
                 await loadPublicGroups();
                 
+                // Ensure feed tab is properly shown
+                if (currentTab === 'feed') {
+                    showTab('feed');
+                }
+                
                 console.log('✅ Community page initialized successfully');
                 
                 // Debug current state
@@ -566,6 +571,13 @@
                     userGroups: userGroups.length,
                     currentTab: currentTab
                 });
+                
+                // If user has no groups, suggest joining some
+                if (userGroups.length === 0) {
+                    setTimeout(() => {
+                        showNotification('Welcome to the community! Join some groups to see posts in your feed.', 'info');
+                    }, 2000);
+                }
                 
             } catch (error) {
                 console.error('❌ Error initializing community page:', error);
@@ -767,21 +779,38 @@
         // Load user feed
         async function loadFeed() {
             try {
+                console.log('🔄 Loading feed with skip:', feedSkip);
+                
                 const response = await fetch(`/api/community/feed?limit=10&skip=${feedSkip}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                console.log('📰 Feed response:', data);
                 
                 if (data.success) {
-                    displayFeedPosts(data.posts, feedSkip === 0);
-                    feedSkip += data.posts.length;
+                    displayFeedPosts(data.posts || [], feedSkip === 0);
                     
-                    if (data.posts.length === 10) {
+                    const postsLoaded = (data.posts || []).length;
+                    feedSkip += postsLoaded;
+                    
+                    // Show load more button if we got a full page
+                    if (postsLoaded === 10) {
                         document.getElementById('loadMoreFeed').style.display = 'block';
+                    } else {
+                        document.getElementById('loadMoreFeed').style.display = 'none';
                     }
+                    
+                    console.log('✅ Feed loaded successfully:', postsLoaded, 'posts');
                 } else {
-                    console.error('Failed to load feed:', data.error);
+                    console.error('❌ Failed to load feed:', data.error);
+                    displayFeedPosts([], feedSkip === 0);
                 }
             } catch (error) {
-                console.error('Error loading feed:', error);
+                console.error('❌ Error loading feed:', error);
+                displayFeedPosts([], feedSkip === 0);
             }
         }
         
@@ -789,37 +818,51 @@
         function displayFeedPosts(posts, replace = false) {
             const container = document.getElementById('feedPosts');
             
+            console.log('📝 Displaying feed posts:', posts.length, 'replace:', replace);
+            
             if (!posts || (posts.length === 0 && replace)) {
                 container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.7);">
-                        <i class="fas fa-newspaper" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
-                        <h3>No Posts Yet</h3>
-                        <p>Join some groups to see posts in your feed!</p>
+                    <div style="text-align: center; padding: 40px; color: var(--gray-600);">
+                        <i class="fas fa-newspaper" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; color: var(--gray-400);"></i>
+                        <h3 style="color: var(--gray-700); margin-bottom: 1rem;">No Posts Yet</h3>
+                        <p style="color: var(--gray-600); margin-bottom: 2rem;">Join some groups to see posts in your feed!</p>
                         <button class="btn btn-primary" onclick="showTab('discover')">Discover Groups</button>
                     </div>
                 `;
                 return;
             }
             
-            const postsHtml = posts.map(post => `
-                <div class="discussion-item" data-post-id="${post._id}">
-                    <div class="discussion-header">
-                        <span class="discussion-author">${post.author.fullName}</span>
-                        <span class="discussion-group">in ${post.group.name}</span>
-                        <span class="discussion-time">${formatTimeAgo(post.createdAt)}</span>
+            const postsHtml = posts.map(post => {
+                // Safely access nested properties
+                const authorName = post.author?.fullName || 'Unknown User';
+                const groupName = post.group?.name || 'Unknown Group';
+                const postTitle = post.title || 'Untitled Post';
+                const postContent = post.content || '';
+                const totalLikes = post.stats?.totalLikes || 0;
+                const totalComments = post.stats?.totalComments || 0;
+                const postViews = post.views || 0;
+                const postTags = post.tags || [];
+                
+                return `
+                    <div class="discussion-item" data-post-id="${post._id}">
+                        <div class="discussion-header">
+                            <span class="discussion-author">${authorName}</span>
+                            <span class="discussion-group">in ${groupName}</span>
+                            <span class="discussion-time">${formatTimeAgo(post.createdAt)}</span>
+                        </div>
+                        <h4 class="discussion-title">${postTitle}</h4>
+                        <p class="discussion-excerpt">${postContent.substring(0, 200)}${postContent.length > 200 ? '...' : ''}</p>
+                        <div class="discussion-stats">
+                            <span onclick="likePost('${post._id}')" class="like-btn">
+                                <i class="fas fa-heart"></i> <span class="like-count">${totalLikes}</span> likes
+                            </span>
+                            <span><i class="fas fa-comment"></i> ${totalComments} comments</span>
+                            <span><i class="fas fa-eye"></i> ${postViews} views</span>
+                            ${postTags.length > 0 ? `<span class="post-tags">${postTags.map(tag => `#${tag}`).join(' ')}</span>` : ''}
+                        </div>
                     </div>
-                    <h4 class="discussion-title">${post.title}</h4>
-                    <p class="discussion-excerpt">${post.content.substring(0, 200)}${post.content.length > 200 ? '...' : ''}</p>
-                    <div class="discussion-stats">
-                        <span onclick="likePost('${post._id}')" class="like-btn">
-                            <i class="fas fa-heart"></i> <span class="like-count">${post.stats.totalLikes}</span> likes
-                        </span>
-                        <span><i class="fas fa-comment"></i> ${post.stats.totalComments} comments</span>
-                        <span><i class="fas fa-eye"></i> ${post.views} views</span>
-                        ${post.tags && post.tags.length > 0 ? `<span class="post-tags">${post.tags.map(tag => `#${tag}`).join(' ')}</span>` : ''}
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
             
             if (replace) {
                 container.innerHTML = postsHtml;

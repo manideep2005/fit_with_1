@@ -3,8 +3,9 @@
  * Hands-free workout experience with speech recognition and voice responses
  */
 
-const speech = require('@google-cloud/speech');
-const textToSpeech = require('@google-cloud/text-to-speech');
+// Google Cloud Speech APIs removed for deployment simplicity
+// const speech = require('@google-cloud/speech');
+// const textToSpeech = require('@google-cloud/text-to-speech');
 
 class VoiceCommandsService {
     constructor() {

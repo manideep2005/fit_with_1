@@ -4,44 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Progress - Fit-With-AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6C63FF;
-            --secondary: #4D44DB;
-            --accent: #FF6584;
-            --light: #F8F9FA;
-            --dark: #343A40;
-            --success: #28A745;
-            --warning: #FFC107;
-            --danger: #DC3545;
-            --gray: #6C757D;
-            --light-gray: #E9ECEF;
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
         body {
-            font-family: 'Poppins', sans-serif;
-            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: #ffffff;
-            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: var(--gray-700);
+            line-height: 1.6;
             min-height: 100vh;
-            margin: 0;
-            padding: 0;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
         }
         
         .dashboard-container {
@@ -50,6 +44,7 @@
             min-height: 100vh;
             gap: 20px;
             padding: 20px;
+            background: var(--gray-100);
         }
         
         /* Sidebar styles now handled by shared-sidebar.css */
@@ -69,11 +64,8 @@
         
         .page-title {
             font-size: 2rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-weight: 700;
+            color: var(--gray-800);
         }
         
         .time-filters {
@@ -85,9 +77,9 @@
         .time-filter {
             padding: 8px 16px;
             border-radius: 20px;
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: rgba(255, 255, 255, 0.7);
+            background: white;
+            border: 1px solid var(--gray-200);
+            color: var(--gray-600);
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -99,25 +91,18 @@
         }
         
         .progress-card {
-            background: transparent;
-            border: none;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            position: relative;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
         
-        .progress-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            z-index: -1;
+        .progress-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
         
         .card-header {
@@ -131,7 +116,7 @@
             font-size: 1.2rem;
             font-weight: 600;
             margin: 0;
-            color: white;
+            color: var(--gray-800);
         }
         
         .stats-grid {
@@ -142,38 +127,32 @@
         }
         
         .stat-card {
-            background: transparent;
-            border: none;
-            padding: 1.5rem;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 30px;
             text-align: center;
-            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
         
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            border-radius: 12px;
-            z-index: -1;
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
         
         .stat-value {
-            font-size: 2rem;
-            font-weight: 600;
+            font-size: 2.5rem;
+            font-weight: 700;
             color: var(--primary);
-            margin: 10px 0;
+            margin: 15px 0 8px 0;
         }
         
         .stat-label {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9rem;
+            color: var(--gray-600);
+            font-size: 1rem;
+            margin-bottom: 15px;
+            font-weight: 500;
         }
         
         .stat-change {
@@ -182,6 +161,7 @@
             justify-content: center;
             font-size: 0.8rem;
             margin-top: 5px;
+            color: var(--gray-600);
         }
         
         .up {
@@ -206,16 +186,16 @@
         .progress-table th, .progress-table td {
             padding: 12px 15px;
             text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--gray-200);
         }
         
         .progress-table th {
             font-weight: 500;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--gray-600);
         }
         
         .progress-table td {
-            color: white;
+            color: var(--gray-700);
         }
         
         .progress-table tr:last-child td {
@@ -230,28 +210,56 @@
         }
         
         .badge-success {
-            background: rgba(40, 167, 69, 0.1);
+            background: rgba(16, 185, 129, 0.1);
             color: var(--success);
         }
         
         .badge-warning {
-            background: rgba(255, 193, 7, 0.1);
+            background: rgba(245, 158, 11, 0.1);
             color: var(--warning);
         }
         
         .badge-danger {
-            background: rgba(220, 53, 69, 0.1);
+            background: rgba(239, 68, 68, 0.1);
             color: var(--danger);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-outline {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
         }
         
         @media (max-width: 768px) {
             .dashboard-container {
-                flex-direction: column;
-            }
-            
-            .sidebar {
-                width: 100%;
-                padding: 1rem;
+                grid-template-columns: 1fr;
             }
             
             .main-content {
@@ -335,7 +343,7 @@
                 <div class="card-header">
                     <h2 class="card-title">Weekly Activity Overview</h2>
                     <div>
-                        <select class="form-control" style="width: auto; display: inline-block;">
+                        <select class="form-control" style="width: auto; display: inline-block; padding: 8px 12px; border: 1px solid var(--gray-200); border-radius: 8px; background: white; color: var(--gray-700);">
                             <option>Calories</option>
                             <option>Steps</option>
                             <option>Active Minutes</option>

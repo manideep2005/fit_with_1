@@ -4,44 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nutrition - Fit-With-AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6C63FF;
-            --secondary: #4D44DB;
-            --accent: #FF6584;
-            --light: #F8F9FA;
-            --dark: #343A40;
-            --success: #28A745;
-            --warning: #FFC107;
-            --danger: #DC3545;
-            --gray: #6C757D;
-            --light-gray: #E9ECEF;
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
         body {
-            font-family: 'Poppins', sans-serif;
-            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: #ffffff;
-            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: var(--gray-700);
+            line-height: 1.6;
             min-height: 100vh;
-            margin: 0;
-            padding: 0;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
         }
         
         .dashboard-container {
@@ -50,6 +44,7 @@
             min-height: 100vh;
             gap: 20px;
             padding: 20px;
+            background: var(--gray-100);
         }
         
         /* Sidebar styles now handled by shared-sidebar.css */
@@ -69,11 +64,8 @@
         
         .page-title {
             font-size: 2rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-weight: 700;
+            color: var(--gray-800);
         }
         
         .nutrition-summary {
@@ -84,37 +76,32 @@
         }
         
         .nutrition-card {
-            background: transparent;
-            border: none;
-            padding: 1.5rem;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 30px;
             text-align: center;
-            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
         
-        .nutrition-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            border-radius: 12px;
-            z-index: -1;
+        .nutrition-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
         
         .nutrition-value {
-            font-size: 2rem;
-            font-weight: 600;
-            margin: 0.5rem 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 15px 0 8px 0;
+            color: var(--primary);
         }
         
         .nutrition-label {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.9rem;
+            color: var(--gray-600);
+            font-size: 1rem;
+            margin-bottom: 15px;
+            font-weight: 500;
         }
         
         .progress-ring {
@@ -140,6 +127,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             font-weight: 600;
+            color: var(--gray-800);
         }
         
         .macros-section {
@@ -150,47 +138,31 @@
         }
         
         .macros-chart {
-            background: transparent;
-            border: none;
-            padding: 1.5rem;
-            position: relative;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
         
-        .macros-chart::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            border-radius: 12px;
-            z-index: -1;
+        .macros-chart:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
         
         .macros-details {
-            background: transparent;
-            border: none;
-            padding: 1.5rem;
-            position: relative;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
         
-        .macros-details::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            border-radius: 12px;
-            z-index: -1;
+        .macros-details:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
         
         .macro-item {
@@ -213,38 +185,32 @@
         
         .macro-name {
             font-weight: 500;
+            color: var(--gray-700);
         }
         
         .macro-value {
             font-weight: 600;
+            color: var(--gray-800);
         }
         
         .meals-section {
-            background: transparent;
-            border: none;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            position: relative;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
         
-        .meals-section::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            border-radius: 12px;
-            z-index: -1;
+        .meals-section:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
         
         .meal-tabs {
             display: flex;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--gray-200);
             margin-bottom: 1.5rem;
         }
         
@@ -252,6 +218,7 @@
             padding: 10px 20px;
             cursor: pointer;
             border-bottom: 3px solid transparent;
+            color: var(--gray-600);
         }
         
         .meal-tab.active {
@@ -264,7 +231,7 @@
             display: flex;
             justify-content: space-between;
             padding: 15px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--gray-200);
         }
         
         .meal-item:last-child {
@@ -290,35 +257,50 @@
         
         .meal-name {
             font-weight: 500;
+            color: var(--gray-800);
         }
         
         .meal-time {
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--gray-600);
             font-size: 0.8rem;
         }
         
         .meal-calories {
             font-weight: 600;
+            color: var(--gray-800);
         }
         
         .btn {
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-family: 'Poppins', sans-serif;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            border: none;
         }
         
         .btn-primary {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            border: none;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
         }
         
         .btn-outline {
             background: white;
             color: var(--primary);
-            border: 1px solid var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
         }
         
         .quick-actions {
@@ -333,35 +315,21 @@
             flex-direction: column;
             align-items: center;
             padding: 20px;
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: white;
+            border: 1px solid var(--gray-200);
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            color: rgba(255, 255, 255, 0.8);
-            position: relative;
-        }
-        
-        .action-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            border-radius: 12px;
-            z-index: -1;
+            color: var(--gray-600);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
         
         .action-btn:hover {
             background: var(--primary);
             color: white;
-            transform: translateY(-2px);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
         
         .action-btn i {
@@ -400,9 +368,30 @@
             display: flex;
             align-items: flex-start;
             padding: 15px;
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--gray-100);
             border-radius: 8px;
             margin-bottom: 10px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--gray-800);
+        }
+        
+        h2.section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--gray-800);
+        }
+        
+        h3.section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--gray-800);
         }
         
         .insight-item i {
@@ -570,12 +559,12 @@
             transform: translate(-50%, -50%);
             font-size: 1.5rem;
             font-weight: 600;
-            color: white;
+            color: var(--gray-800);
         }
         
         .score-label {
             margin-top: 10px;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--gray-600);
         }
         
         .streak-badges {
@@ -599,27 +588,24 @@
             font-weight: 500;
         }
         
-        .water-tracker {
-            background: transparent;
-            border: none;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            position: relative;
+        .badge[style*="opacity: 0.3"] {
+            background: var(--gray-300);
+            color: var(--gray-600);
         }
         
-        .water-tracker::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(40, 167, 69, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(40, 167, 69, 0.08) 100%);
-            border-radius: 12px;
-            z-index: -1;
+        .water-tracker {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .water-tracker:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
         
         .water-bottle-container {
@@ -631,7 +617,7 @@
         .water-bottle {
             width: 60px;
             height: 120px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
+            border: 3px solid var(--gray-300);
             border-radius: 0 0 30px 30px;
             position: relative;
             overflow: hidden;
@@ -653,7 +639,7 @@
             transform: translateX(-50%);
             font-size: 0.9rem;
             font-weight: 600;
-            color: white;
+            color: var(--gray-700);
         }
         
         .water-controls {
@@ -664,16 +650,16 @@
         
         .water-btn {
             padding: 8px 16px;
-            background: rgba(0, 188, 212, 0.2);
-            border: 1px solid #00bcd4;
-            color: #00bcd4;
+            background: rgba(6, 182, 212, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
             border-radius: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
         
         .water-btn:hover {
-            background: #00bcd4;
+            background: var(--accent);
             color: white;
         }
         
@@ -765,35 +751,20 @@
         }
         
         .nutrition-feature-card {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: white;
+            border: 1px solid var(--gray-200);
             padding: 25px;
             border-radius: 16px;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .nutrition-feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.03) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            z-index: -1;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
         
         .nutrition-feature-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(108, 99, 255, 0.3);
-            box-shadow: 0 15px 35px rgba(108, 99, 255, 0.2);
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
         
         .feature-icon {
@@ -803,13 +774,13 @@
         }
         
         .nutrition-feature-card h4 {
-            color: white;
+            color: var(--gray-800);
             margin-bottom: 10px;
             font-size: 1.2rem;
         }
         
         .nutrition-feature-card p {
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--gray-600);
             margin-bottom: 20px;
             font-size: 0.9rem;
         }
@@ -832,26 +803,18 @@
         }
         
         .smart-suggestions {
-            background: transparent;
-            border: none;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            position: relative;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
         
-        .smart-suggestions::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(255, 101, 132, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(255, 101, 132, 0.08) 100%);
-            border-radius: 12px;
-            z-index: -1;
+        .smart-suggestions:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
         
         .suggestion-cards {
@@ -861,10 +824,10 @@
         }
         
         .suggestion-card {
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--gray-100);
             padding: 20px;
             border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--gray-200);
             position: relative;
             overflow: hidden;
         }
@@ -891,31 +854,23 @@
         .suggestion-text {
             font-weight: 600;
             margin-bottom: 15px;
-            color: white;
+            color: var(--gray-800);
             font-size: 1rem;
         }
         
         .meal-timeline {
-            background: transparent;
-            border: none;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            position: relative;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
         
-        .meal-timeline::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            border-radius: 12px;
-            z-index: -1;
+        .meal-timeline:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
         
         .timeline {
@@ -945,11 +900,11 @@
         
         .timeline-time {
             font-weight: 600;
-            color: white;
+            color: var(--gray-800);
         }
         
         .timeline-meal {
-            color: rgba(255, 255, 255, 0.9);
+            color: var(--gray-700);
         }
         
         .timeline-optimal {
@@ -958,26 +913,18 @@
         }
         
         .nutrition-heatmap {
-            background: transparent;
-            border: none;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            position: relative;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
         
-        .nutrition-heatmap::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            border-radius: 12px;
-            z-index: -1;
+        .nutrition-heatmap:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
         
         .heatmap-calendar {
@@ -1038,7 +985,7 @@
             display: flex;
             align-items: center;
             font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--gray-600);
         }
         
         .legend-item::before {
@@ -1238,7 +1185,7 @@
             
             <!-- Water Intake Tracker -->
             <div class="water-tracker">
-                <h3>💧 Water Intake</h3>
+                <h3 class="section-title">💧 Water Intake</h3>
                 <div class="water-bottle-container">
                     <div class="water-bottle">
                         <div class="water-fill" style="height: 0%;"></div>
@@ -1259,7 +1206,7 @@
             
             <div class="macros-section">
                 <div class="macros-chart">
-                    <h3>Macro Balance Wheel</h3>
+                    <h3 class="section-title">Macro Balance Wheel</h3>
                     <div class="macro-wheel-container">
                         <div class="macro-wheel" id="macroWheel">
                             <div class="wheel-center">
@@ -1274,7 +1221,7 @@
                 </div>
                 
                 <div class="macros-details">
-                    <h3>Macros Breakdown</h3>
+                    <h3 class="section-title">Macros Breakdown</h3>
                     <div class="macro-item">
                         <div class="macro-label">
                             <div class="macro-color" style="background: #6C63FF;"></div>
@@ -1319,7 +1266,7 @@
             
             <!-- Smart Meal Suggestions -->
             <div class="smart-suggestions">
-                <h3>🎯 Smart Suggestions</h3>
+                <h3 class="section-title">🎯 Smart Suggestions</h3>
                 <div class="suggestion-cards" id="suggestionCards">
                     <div class="suggestion-card">
                         <div class="suggestion-icon">🍽️</div>
@@ -1394,7 +1341,7 @@
             
             <!-- Meal Timeline -->
             <div class="meal-timeline">
-                <h3>🕐 Today's Meal Timeline</h3>
+                <h3 class="section-title">🕐 Today's Meal Timeline</h3>
                 <div class="timeline" id="mealTimeline">
                     <div class="timeline-item suggested">
                         <div class="timeline-time">Ready to start?</div>
@@ -2743,5 +2690,36 @@
     <!-- Enhanced Fit-With-AI Voice Assistant -->
     <script src="/js/voice-assistant-enhanced-fitwithai.js"></script>
     <script src="/js/smart-voice-assistant.js"></script>
+    
+    <!-- Gamification Widget -->
+    <script src="/js/gamification-widget.js"></script>
+    <script>
+        // Initialize gamification tracking for nutrition page
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.gamificationWidget) {
+                window.gamificationWidget.trackPageVisit('nutrition');
+            }
+        });
+        
+        // Override nutrition logging to include gamification
+        const originalQuickLog = quickLog;
+        quickLog = async function(foodName) {
+            const result = await originalQuickLog(foodName);
+            if (window.gamificationWidget) {
+                window.gamificationWidget.trackAction('nutrition_log', { food: foodName });
+            }
+            return result;
+        };
+        
+        // Override water logging to include gamification
+        const originalAddWater = addWater;
+        addWater = async function(amount) {
+            const result = await originalAddWater(amount);
+            if (window.gamificationWidget) {
+                window.gamificationWidget.trackAction('water_log', { amount });
+            }
+            return result;
+        };
+    </script>
 </body>
 </html>

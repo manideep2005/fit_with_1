@@ -1,24 +1,18 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+// Google Generative AI removed for deployment simplicity
 
 class GeminiMealPlannerService {
   constructor() {
-    this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-pro' });
-    console.log('✅ Gemini Meal Planner Service initialized');
+    this.isAIEnabled = false;
+    console.log('🍽️ Meal Planner Service initialized (AI disabled)');
   }
 
-  // Generate AI-powered meal plan
+  // Generate AI-powered meal plan (fallback implementation)
   async generateAIMealPlan(healthAssessment) {
     try {
-      console.log('🤖 Generating AI meal plan with Gemini...');
+      console.log('🍽️ Generating meal plan (AI disabled, using fallback)...');
       
-      const prompt = this.createMealPlanPrompt(healthAssessment);
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const aiMealPlan = response.text();
-      
-      // Parse AI response into structured meal plan
-      const structuredPlan = this.parseAIMealPlan(aiMealPlan, healthAssessment);
+      // Use fallback plan generation
+      const structuredPlan = this.createFallbackPlan(healthAssessment);
       
       return {
         success: true,
@@ -28,8 +22,8 @@ class GeminiMealPlannerService {
         shoppingList: structuredPlan.shoppingList
       };
     } catch (error) {
-      console.error('❌ Gemini meal plan generation error:', error);
-      throw new Error('Failed to generate AI meal plan: ' + error.message);
+      console.error('❌ Meal plan generation error:', error);
+      throw new Error('Failed to generate meal plan: ' + error.message);
     }
   }
 
@@ -278,26 +272,11 @@ Make it authentic ${region} cuisine with proper ingredient names and cooking met
     };
   }
 
-  // Generate meal suggestions for specific criteria
+  // Generate meal suggestions for specific criteria (fallback)
   async generateMealSuggestions(criteria) {
     try {
-      const { mealType, region, dietaryRestrictions, calorieTarget } = criteria;
-      
-      const prompt = `
-Suggest 5 ${region} ${mealType} recipes that are:
-- ${dietaryRestrictions?.join(', ') || 'no restrictions'}
-- Around ${calorieTarget} calories
-- Authentic ${region} cuisine
-- Include ingredients, instructions, and nutrition info
-
-Format as JSON array of meal objects.
-`;
-
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const suggestions = response.text();
-      
-      return this.parseMealSuggestions(suggestions, criteria);
+      console.log('🍽️ Generating meal suggestions (fallback mode)...');
+      return this.getFallbackSuggestions(criteria);
     } catch (error) {
       console.error('Error generating meal suggestions:', error);
       return this.getFallbackSuggestions(criteria);
@@ -336,73 +315,36 @@ Format as JSON array of meal objects.
     ];
   }
 
-  // Generate cooking instructions using AI
+  // Generate cooking instructions (fallback)
   async generateCookingInstructions(mealName, ingredients, region) {
     try {
-      const prompt = `
-Generate detailed cooking instructions for "${mealName}" using these ingredients: ${ingredients.join(', ')}.
-This is a ${region} dish. Include:
-1. Prep time and cooking time
-2. Step-by-step instructions
-3. Cooking tips
-4. Serving suggestions
-
-Keep it authentic to ${region} cooking style.
-`;
-
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
+      return `Cook ${mealName} using ${ingredients.join(', ')} according to traditional ${region} methods. Season to taste and serve hot.`;
     } catch (error) {
       console.error('Error generating cooking instructions:', error);
       return 'Cook ingredients according to traditional methods. Season to taste and serve hot.';
     }
   }
 
-  // Get nutritional analysis using AI
+  // Get nutritional analysis (fallback)
   async getNutritionalAnalysis(mealPlan, healthGoals) {
     try {
-      const prompt = `
-Analyze this meal plan nutritionally for someone with goals: ${healthGoals.join(', ')}.
-
-Meal Plan: ${JSON.stringify(mealPlan)}
-
-Provide:
-1. Overall nutritional balance assessment
-2. Recommendations for improvement
-3. Health benefits
-4. Potential concerns
-5. Suggestions for optimization
-
-Be specific and actionable.
-`;
-
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      return response.text();
+      return `Your meal plan provides balanced nutrition for your health goals: ${healthGoals.join(', ')}. Focus on portion control and variety.`;
     } catch (error) {
       console.error('Error getting nutritional analysis:', error);
       return 'Your meal plan provides balanced nutrition for your health goals.';
     }
   }
 
-  // Generate personalized nutrition tips
+  // Generate personalized nutrition tips (fallback)
   async getPersonalizedTips(userProfile) {
     try {
-      const prompt = `
-Generate 5 personalized nutrition tips for:
-- Age: ${userProfile.age}, Gender: ${userProfile.gender}
-- Goals: ${userProfile.fitness_goals?.join(', ')}
-- Medical conditions: ${userProfile.medical_conditions?.join(', ') || 'none'}
-- Activity level: ${userProfile.activity_level}
-- Region: ${userProfile.region}
-
-Make tips specific, actionable, and culturally relevant.
-`;
-
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      return response.text().split('\n').filter(tip => tip.trim());
+      return [
+        'Stay hydrated throughout the day',
+        'Include variety in your meals',
+        'Practice portion control',
+        'Eat mindfully and slowly',
+        'Plan your meals in advance'
+      ];
     } catch (error) {
       console.error('Error generating personalized tips:', error);
       return [

@@ -1499,9 +1499,19 @@
     <!-- Enhanced Fit-With-AI Voice Assistant -->
     <script src="/js/voice-assistant-enhanced-fitwithai.js"></script>
     <script src="/js/navigation.js"></script>
+    
+    <!-- Gamification Widget -->
+    <script src="/js/gamification-widget.js"></script>
     <script>
         // Pass navigation ID to client-side navigation manager
         window.navId = '<%= navId %>';
+        
+        // Initialize gamification tracking for dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.gamificationWidget) {
+                window.gamificationWidget.trackPageVisit('dashboard');
+            }
+        });
     </script>
 </body>
 </html>

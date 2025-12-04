@@ -1836,18 +1836,30 @@ app.post('/api/workouts', isAuthenticated, ensureDbConnection, async (req, res) 
     // Process gamification for workout completion
     let gamificationResults = null;
     try {
-      gamificationResults = await gamificationService.processWorkoutCompletion(updatedUser._id, workoutData);
-      console.log('Gamification results for workout:', gamificationResults);
+      // Ensure user ID exists and is valid
+      if (updatedUser && updatedUser._id) {
+        console.log('Processing gamification for user ID:', updatedUser._id.toString());
+        gamificationResults = await gamificationService.processWorkoutCompletion(updatedUser._id.toString(), workoutData);
+        console.log('Gamification results for workout:', gamificationResults);
+      } else {
+        console.error('Invalid user ID for gamification processing');
+      }
     } catch (gamificationError) {
       console.error('Gamification processing error:', gamificationError);
-      // Don't fail the workout logging if gamification fails
     }
     
     res.json({
       success: true,
       message: 'Workout logged successfully',
       workout: workoutData,
-      gamification: gamificationResults
+      gamification: gamificationResults || {
+        xp: 50,
+        achievements: [],
+        streaks: {},
+        levelUp: false,
+        streakRewards: [],
+        upcomingRewards: []
+      }
     });
 
   } catch (error) {
@@ -1927,14 +1939,20 @@ app.post('/api/nutrition', isAuthenticated, ensureDbConnection, async (req, res)
       console.log('Gamification results for nutrition:', gamificationResults);
     } catch (gamificationError) {
       console.error('Gamification processing error:', gamificationError);
-      // Don't fail the nutrition logging if gamification fails
     }
     
     res.json({
       success: true,
       message: 'Nutrition data logged successfully',
       nutrition: nutritionData,
-      gamification: gamificationResults
+      gamification: gamificationResults || {
+        xp: 25,
+        achievements: [],
+        streaks: {},
+        levelUp: false,
+        streakRewards: [],
+        upcomingRewards: []
+      }
     });
 
   } catch (error) {
@@ -1988,6 +2006,40 @@ app.get('/api/gamification-data', isAuthenticated, ensureDbConnection, async (re
       success: false,
       error: 'Failed to fetch gamification data'
     });
+  }
+});
+
+// Track page visits for gamification
+app.post('/api/gamification/track-visit', isAuthenticated, async (req, res) => {
+  try {
+    const { page } = req.body;
+    const userId = req.session.user._id;
+    
+    await gamificationService.awardXP(userId, 1, `Visited ${page} page`);
+    res.json({ success: true });
+  } catch (error) {
+    res.json({ success: false });
+  }
+});
+
+// Track specific actions for gamification
+app.post('/api/gamification/track-action', isAuthenticated, async (req, res) => {
+  try {
+    const { action, data } = req.body;
+    const userId = req.session.user._id;
+    
+    let xpAmount = 0;
+    switch (action) {
+      case 'nutrition_log': xpAmount = 5; break;
+      case 'water_log': xpAmount = 2; break;
+      case 'workout_complete': xpAmount = 25; break;
+      default: xpAmount = 1;
+    }
+    
+    await gamificationService.awardXP(userId, xpAmount, `Action: ${action}`);
+    res.json({ success: true, xpAwarded: xpAmount });
+  } catch (error) {
+    res.json({ success: false });
   }
 });
 

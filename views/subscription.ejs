@@ -103,7 +103,7 @@
         }
         
         .plan-card.popular {
-            border-color: #6C63FF;
+            border-color: var(--primary);
             transform: scale(1.05);
         }
         
@@ -113,7 +113,7 @@
             top: -10px;
             left: 50%;
             transform: translateX(-50%);
-            background: #6C63FF;
+            background: var(--primary);
             color: white;
             padding: 5px 15px;
             border-radius: 15px;
@@ -124,14 +124,14 @@
         .plan-name {
             font-size: 24px;
             font-weight: 600;
-            color: #333;
+            color: var(--gray-800);
             margin-bottom: 10px;
         }
         
         .plan-price {
             font-size: 36px;
             font-weight: 700;
-            color: #6C63FF;
+            color: var(--primary);
             margin-bottom: 20px;
         }
         
@@ -143,21 +143,21 @@
         
         .plan-features li {
             padding: 8px 0;
-            color: #666;
+            color: var(--gray-600);
         }
         
         .plan-features li i {
-            color: #28a745;
+            color: var(--success);
             margin-right: 10px;
         }
         
         .plan-btn {
             width: 100%;
             padding: 15px;
-            background: #6C63FF;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 50px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
@@ -165,8 +165,8 @@
         }
         
         .plan-btn:hover {
-            background: #5a54d6;
             transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
         }
         
         .payment-modal {
@@ -222,9 +222,9 @@
             margin: 5px;
         }
         
-        .btn-primary { background: #6C63FF; color: white; }
-        .btn-success { background: #28a745; color: white; }
-        .btn-outline { background: transparent; border: 1px solid #6C63FF; color: #6C63FF; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
         
         @media (max-width: 768px) {
             .main-content { margin-left: 0; }
@@ -234,9 +234,12 @@
     </style>
 </head>
 <body>
-    <%- include('partials/sidebar', { user: user, currentPage: 'subscription' }) %>
-    
-    <div class="main-content">
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <%- include('partials/sidebar', { currentPage: 'subscription', navId: navId }) %>
+        
+        <!-- Main Content -->
+        <div class="main-content">
             <div class="page-header">
                 <h1 class="page-title">Subscription</h1>
             </div>
@@ -250,7 +253,7 @@
             <div class="plan-card">
                 <div class="plan-name">Basic Pro</div>
                 <div class="plan-price">₹2</div>
-                <div style="color: #666; margin-bottom: 20px;">per week</div>
+                <div style="color: var(--gray-600); margin-bottom: 20px;">per week</div>
                 <ul class="plan-features">
                     <li><i class="fas fa-check"></i> 100 AI Coach Queries</li>
                     <li><i class="fas fa-check"></i> Detailed Nutrition Tracking</li>
@@ -265,7 +268,7 @@
             <div class="plan-card popular">
                 <div class="plan-name">Premium Pro</div>
                 <div class="plan-price">₹5</div>
-                <div style="color: #666; margin-bottom: 20px;">per month</div>
+                <div style="color: var(--gray-600); margin-bottom: 20px;">per month</div>
                 <ul class="plan-features">
                     <li><i class="fas fa-check"></i> Unlimited AI Coach</li>
                     <li><i class="fas fa-check"></i> Advanced Nutrition</li>
@@ -281,7 +284,7 @@
             <div class="plan-card">
                 <div class="plan-name">Yearly Premium</div>
                 <div class="plan-price">₹50</div>
-                <div style="color: #666; margin-bottom: 20px;">per year <span style="color: #28a745;">(Save 17%)</span></div>
+                <div style="color: var(--gray-600); margin-bottom: 20px;">per year <span style="color: var(--success);">(Save 17%)</span></div>
                 <ul class="plan-features">
                     <li><i class="fas fa-check"></i> All Premium Features</li>
                     <li><i class="fas fa-check"></i> 2 Months Free</li>

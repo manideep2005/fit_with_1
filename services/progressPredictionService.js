@@ -3,7 +3,7 @@
  * Uses BigQuery ML and AI to predict user fitness progress and outcomes
  */
 
-const { BigQuery } = require('@google-cloud/bigquery');
+// Google Cloud BigQuery removed for deployment simplicity
 const ENABLE_BQ = process.env.ENABLE_BQ_PROVISIONING === 'true';
 
 class ProgressPredictionService {

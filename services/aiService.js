@@ -1,30 +1,13 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-
 class AIService {
     constructor() {
-        // Initialize Google AI if API key is available
-        this.geminiApiKey = process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY;
-        
-        if (this.geminiApiKey) {
-            this.genAI = new GoogleGenerativeAI(this.geminiApiKey);
-            this.model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
-            console.log('✅ Google Gemini AI initialized');
-        } else {
-            console.log('⚠️  No Google AI API key found, using fallback system');
-            console.log('💡 Get a free API key at: https://makersuite.google.com/app/apikey');
-        }
+        console.log('✅ AI Service initialized with enhanced fallback system');
+        console.log('💡 Using intelligent rule-based fitness coaching');
     }
 
     // Main method to get AI response
     async getAIResponse(userMessage, userContext = {}) {
         try {
-            // Try Google Gemini first if API key is available
-            if (this.geminiApiKey && this.model) {
-                const response = await this.getGeminiResponse(userMessage, userContext);
-                if (response) return response;
-            }
-
-            // Fallback to enhanced rule-based fitness coach
+            // Use enhanced rule-based fitness coach
             return this.getEnhancedFallbackResponse(userMessage, userContext);
 
         } catch (error) {
@@ -33,94 +16,7 @@ class AIService {
         }
     }
 
-    // Google Gemini API call
-    async getGeminiResponse(userMessage, userContext) {
-        try {
-            const fitnessPrompt = this.createAdvancedFitnessPrompt(userMessage, userContext);
-            
-            console.log('🤖 Sending request to Google Gemini...');
-            
-            const result = await this.model.generateContent(fitnessPrompt);
-            const response = await result.response;
-            const text = response.text();
-            
-            console.log('✅ Received response from Google Gemini');
-            
-            return this.formatAIResponse(text);
-            
-        } catch (error) {
-            console.error('Gemini API error:', error);
-            
-            // Check for specific error types
-            if (error.message.includes('API_KEY_INVALID')) {
-                console.error('❌ Invalid Google AI API Key');
-            } else if (error.message.includes('QUOTA_EXCEEDED')) {
-                console.error('❌ Google AI quota exceeded');
-            }
-            
-            return null;
-        }
-    }
 
-    // Create advanced fitness-focused prompt for Gemini
-    createAdvancedFitnessPrompt(userMessage, userContext) {
-        const context = userContext || {};
-        const userInfo = context.personalInfo || {};
-        const goals = context.fitnessGoals || {};
-        const healthInfo = context.healthInfo || {};
-        
-        let prompt = `You are an expert AI fitness coach and personal trainer with years of experience helping people achieve their fitness goals. You provide personalized, science-based advice that is encouraging, practical, and safe.
-
-USER PROFILE:`;
-        
-        if (userInfo.firstName) {
-            prompt += `\n- Name: ${userInfo.firstName}`;
-        }
-        
-        if (userInfo.age) {
-            prompt += `\n- Age: ${userInfo.age} years old`;
-        }
-        
-        if (userInfo.gender) {
-            prompt += `\n- Gender: ${userInfo.gender}`;
-        }
-        
-        if (userInfo.height && userInfo.weight) {
-            prompt += `\n- Height: ${userInfo.height} cm, Weight: ${userInfo.weight} kg`;
-        }
-        
-        if (goals.primaryGoal) {
-            prompt += `\n- Primary Goal: ${goals.primaryGoal}`;
-        }
-        
-        if (goals.activityLevel) {
-            prompt += `\n- Activity Level: ${goals.activityLevel}`;
-        }
-        
-        if (goals.workoutFrequency) {
-            prompt += `\n- Preferred Workout Frequency: ${goals.workoutFrequency} times per week`;
-        }
-        
-        if (healthInfo.dietaryRestrictions && healthInfo.dietaryRestrictions.length > 0) {
-            prompt += `\n- Dietary Restrictions: ${healthInfo.dietaryRestrictions.join(', ')}`;
-        }
-
-        prompt += `\n\nUSER QUESTION: "${userMessage}"
-
-INSTRUCTIONS:
-- Provide a personalized, helpful response based on the user's profile
-- Be encouraging and motivational
-- Give specific, actionable advice
-- Include safety considerations when relevant
-- Keep responses conversational and friendly
-- If asking for workout plans, provide specific exercises, sets, and reps
-- If asking about nutrition, give practical meal ideas and tips
-- Always consider the user's experience level and goals
-
-Response:`;
-        
-        return prompt;
-    }
 
     // Enhanced rule-based fallback system (completely free but much better)
     getEnhancedFallbackResponse(userMessage, userContext = {}) {
@@ -337,26 +233,13 @@ Response:`;
                 preferences
             );
 
-            let aiResponse = null;
-            if (this.geminiApiKey && this.model) {
-                try {
-                    const result = await this.model.generateContent(workoutPrompt);
-                    const response = await result.response;
-                    aiResponse = response.text();
-                } catch (error) {
-                    console.error('Gemini workout generation error:', error);
-                }
-            }
-
-            // Parse AI response or use intelligent fallback
-            const workoutPlan = aiResponse ? 
-                this.parseAIWorkoutResponse(aiResponse) : 
-                this.generateIntelligentWorkoutFallback(userProfile, preferences);
+            // Use intelligent fallback system
+            const workoutPlan = this.generateIntelligentWorkoutFallback(userProfile, preferences);
 
             return {
                 success: true,
                 workoutPlan: workoutPlan,
-                generatedBy: aiResponse ? 'AI' : 'Intelligent Algorithm',
+                generatedBy: 'Intelligent Algorithm',
                 timestamp: new Date().toISOString()
             };
 
@@ -579,11 +462,9 @@ Format the response as a structured workout plan with clear sections.`;
         return {
             status: 'healthy',
             providers: {
-                gemini: !!this.geminiApiKey,
-                fallback: true
+                intelligentFallback: true
             },
             features: {
-                realAI: !!this.geminiApiKey,
                 enhancedFallback: true,
                 personalizedResponses: true,
                 workoutPlans: true,

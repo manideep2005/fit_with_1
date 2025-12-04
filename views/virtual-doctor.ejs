@@ -4,20 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Virtual Doctor - Fit-With-AI</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-       :root {
-            --primary: #6C63FF;
-            --secondary: #4D44DB;
-            --accent: #FF6584;
-            --light: #F8F9FA;
-            --dark: #343A40;
-            --success: #28A745;
-            --warning: #FFC107;
-            --danger: #DC3545;
-            --gray: #6C757D;
-            --light-gray: #E9ECEF;
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
         }
         
         * {
@@ -27,26 +32,11 @@
         }
         
         body {
-            font-family: 'Poppins', sans-serif;
-            background: radial-gradient(ellipse at top, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            color: #ffffff;
-            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: #ffffff;
+            color: var(--gray-700);
+            line-height: 1.6;
             min-height: 100vh;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
         }
         
         .dashboard-container {
@@ -55,118 +45,7 @@
             min-height: 100vh;
             gap: 20px;
             padding: 20px;
-        }
-        
-        .sidebar {
-            background: transparent;
-            border: none;
-            padding: 30px 20px;
-            position: sticky;
-            top: 20px;
-            height: fit-content;
-        }
-        
-        .sidebar-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 2rem;
-            padding: 0 1rem;
-        }
-        
-        .sidebar-header img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-        
-        .user-name {
-            font-weight: 600;
-            margin: 0;
-        }
-        
-        .user-plan {
-            font-size: 0.8rem;
-            color: var(--primary);
-            background: rgba(108, 99, 255, 0.1);
-            padding: 2px 8px;
-            border-radius: 20px;
-            margin-top: 5px;
-        }
-        
-        .nav-menu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .nav-item {
-            margin-bottom: 5px;
-        }
-        
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            color: rgba(255, 255, 255, 0.7);
-            text-decoration: none;
-            border-radius: 15px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .nav-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s;
-        }
-        
-        .nav-link:hover::before {
-            left: 100%;
-        }
-        
-        .nav-link:hover, .nav-link.active {
-            background: rgba(108, 99, 255, 0.2);
-            color: #ffffff;
-            transform: translateX(5px);
-        }
-        
-        .nav-link i {
-            margin-right: 10px;
-            font-size: 1.2rem;
-        }
-        
-        .logout-section {
-            margin-top: 2rem;
-            padding-top: 1rem;
-            border-top: 1px solid var(--light-gray);
-        }
-        
-        .logout-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 1rem;
-            color: var(--danger);
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-        }
-        
-        .logout-link:hover {
-            background: rgba(220, 53, 69, 0.1);
-            color: var(--danger);
-        }
-        
-        .logout-link i {
-            margin-right: 10px;
-            font-size: 1.2rem;
+            background: var(--gray-100);
         }
         
         .main-content {
@@ -184,35 +63,18 @@
         
         .page-title {
             font-size: 2rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-weight: 700;
+            color: var(--gray-800);
         }
         
         .welcome-card {
-            background: transparent;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             border: none;
             color: white;
             padding: 30px;
             margin-bottom: 25px;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .welcome-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            z-index: -1;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
         
         .welcome-title {
@@ -225,149 +87,26 @@
             margin-bottom: 1.5rem;
         }
         
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-bottom: 25px;
-        }
-        
-        .stat-card {
-            background: transparent;
-            border: none;
-            padding: 30px;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.4s ease;
-        }
-        
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: var(--bg-image);
-            background-size: cover;
-            background-position: center;
-            opacity: 0.15;
-            z-index: -2;
-            transition: all 0.4s ease;
-        }
-        
-        .stat-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.05) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            z-index: -1;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 25px 50px rgba(108, 99, 255, 0.3);
-            border-color: rgba(108, 99, 255, 0.4);
-        }
-        
-        .stat-card:hover::before {
-            opacity: 0.25;
-            transform: scale(1.1);
-        }
-        
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin: 15px 0 8px 0;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
-        .stat-label {
-            color: rgba(255, 255, 255, 0.8);
-            font-size: 1rem;
-            margin-bottom: 15px;
-        }
-        
-        .progress-bar {
-            height: 8px;
-            background: var(--light-gray);
-            border-radius: 4px;
-            margin-top: 10px;
-            overflow: hidden;
-        }
-        
-        .progress-fill {
-            height: 100%;
-            background: var(--primary);
-            border-radius: 4px;
-        }
-        
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        
         .workout-plan {
-            background: transparent;
-            border: none;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
             padding: 30px;
             margin-bottom: 25px;
-            transition: all 0.5s ease;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .workout-plan::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, 
-                rgba(108, 99, 255, 0.1) 0%,
-                rgba(255, 255, 255, 0.03) 50%,
-                rgba(108, 99, 255, 0.08) 100%);
-            z-index: -1;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
         
         .workout-plan:hover {
-            clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px));
-            transform: scale(1.02);
-            box-shadow: 0 20px 40px rgba(108, 99, 255, 0.3);
-        }
-        
-        .workout-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-        
-        .workout-title {
-            font-weight: 600;
-            font-size: 1.2rem;
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
         
         .workout-day {
             display: flex;
             padding: 15px;
-            background: var(--light);
-            border-radius: 8px;
+            background: var(--gray-100);
+            border-radius: 12px;
             margin-bottom: 15px;
             align-items: center;
         }
@@ -379,17 +118,19 @@
         .day-name {
             font-weight: 600;
             min-width: 100px;
+            color: var(--gray-800);
         }
         
         .day-workout {
             flex: 1;
+            color: var(--gray-600);
         }
         
         .day-status {
             width: 24px;
             height: 24px;
             border-radius: 50%;
-            background: var(--light-gray);
+            background: var(--gray-300);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -401,15 +142,17 @@
         }
         
         .nutrition-tip {
-            background: transparent;
-            border: none;
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 16px;
             padding: 30px;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
         
         .nutrition-tip:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(108, 99, 255, 0.2);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
         
         .tip-header {
@@ -422,7 +165,7 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: rgba(108, 99, 255, 0.1);
+            background: rgba(99, 102, 241, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -432,30 +175,44 @@
         
         .tip-title {
             font-weight: 600;
+            color: var(--gray-800);
         }
         
         .tip-content {
-            color: var(--gray);
+            color: var(--gray-600);
         }
         
         .btn {
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-family: 'Poppins', sans-serif;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
+            border: none;
         }
         
         .btn-primary {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            border: none;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
         }
         
         .btn-outline {
             background: white;
             color: var(--primary);
-            border: 1px solid var(--primary);
+            border: 2px solid var(--primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
         }
         
         @keyframes spin {
@@ -476,12 +233,9 @@
             .main-content {
                 padding: 1rem;
             }
-            
-            .stats-grid {
-                grid-template-columns: 1fr 1fr;
-            }
         }
     </style>
+    <link rel="stylesheet" href="/css/shared-sidebar.css">
 </head>
 <body>
     <div class="dashboard-container">
@@ -495,11 +249,11 @@
             </div>
 
             <div class="workout-plan">
-                <h3 style="margin-bottom: 15px; color: #ffffff;">Describe Your Symptoms</h3>
-                <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 20px;">AI-powered symptom analysis using comprehensive medical database</p>
+                <h3 style="margin-bottom: 15px; color: var(--gray-800);">Describe Your Symptoms</h3>
+                <p style="color: var(--gray-600); margin-bottom: 20px;">AI-powered symptom analysis using comprehensive medical database</p>
                 
                 <div style="display: flex; gap: 15px; margin-bottom: 20px;">
-                    <input type="text" style="flex: 1; padding: 15px 20px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 15px; color: #ffffff; font-size: 1rem; outline: none; transition: all 0.3s ease;" id="symptomInput" 
+                    <input type="text" style="flex: 1; padding: 15px 20px; background: white; border: 2px solid var(--gray-200); border-radius: 15px; color: var(--gray-700); font-size: 1rem; outline: none; transition: all 0.3s ease; font-family: 'Inter', sans-serif;" id="symptomInput" 
                            placeholder="Type your symptoms (e.g., 'headache and fever', 'stomach pain', 'cough and sore throat')">
                     <button style="background: linear-gradient(135deg, var(--primary), var(--secondary)); border: none; padding: 15px 25px; border-radius: 15px; color: white; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onclick="searchSymptoms()">
                         <i class="fas fa-search"></i> Analyze
@@ -507,29 +261,29 @@
                 </div>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-                    <div style="background: rgba(108, 99, 255, 0.2); border: 1px solid rgba(108, 99, 255, 0.4); border-radius: 25px; padding: 12px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; color: #ffffff; position: relative; overflow: hidden;" onclick="quickSearch('headache')">
+                    <div style="background: white; border: 2px solid var(--primary); border-radius: 25px; padding: 12px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; color: var(--primary); position: relative; overflow: hidden;" onclick="quickSearch('headache')">
                         <i class="fas fa-head-side-cough"></i> Headache
                     </div>
-                    <div style="background: rgba(108, 99, 255, 0.2); border: 1px solid rgba(108, 99, 255, 0.4); border-radius: 25px; padding: 12px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; color: #ffffff; position: relative; overflow: hidden;" onclick="quickSearch('fever')">
+                    <div style="background: white; border: 2px solid var(--primary); border-radius: 25px; padding: 12px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; color: var(--primary); position: relative; overflow: hidden;" onclick="quickSearch('fever')">
                         <i class="fas fa-thermometer-half"></i> Fever
                     </div>
-                    <div style="background: rgba(108, 99, 255, 0.2); border: 1px solid rgba(108, 99, 255, 0.4); border-radius: 25px; padding: 12px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; color: #ffffff; position: relative; overflow: hidden;" onclick="quickSearch('cough')">
+                    <div style="background: white; border: 2px solid var(--primary); border-radius: 25px; padding: 12px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; color: var(--primary); position: relative; overflow: hidden;" onclick="quickSearch('cough')">
                         <i class="fas fa-lungs"></i> Cough
                     </div>
-                    <div style="background: rgba(108, 99, 255, 0.2); border: 1px solid rgba(108, 99, 255, 0.4); border-radius: 25px; padding: 12px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; color: #ffffff; position: relative; overflow: hidden;" onclick="quickSearch('stomach pain')">
+                    <div style="background: white; border: 2px solid var(--primary); border-radius: 25px; padding: 12px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; color: var(--primary); position: relative; overflow: hidden;" onclick="quickSearch('stomach pain')">
                         <i class="fas fa-stomach"></i> Stomach Pain
                     </div>
-                    <div style="background: rgba(108, 99, 255, 0.2); border: 1px solid rgba(108, 99, 255, 0.4); border-radius: 25px; padding: 12px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; color: #ffffff; position: relative; overflow: hidden;" onclick="quickSearch('fatigue')">
+                    <div style="background: white; border: 2px solid var(--primary); border-radius: 25px; padding: 12px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; color: var(--primary); position: relative; overflow: hidden;" onclick="quickSearch('fatigue')">
                         <i class="fas fa-tired"></i> Fatigue
                     </div>
-                    <div style="background: rgba(108, 99, 255, 0.2); border: 1px solid rgba(108, 99, 255, 0.4); border-radius: 25px; padding: 12px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; color: #ffffff; position: relative; overflow: hidden;" onclick="quickSearch('nausea')">
+                    <div style="background: white; border: 2px solid var(--primary); border-radius: 25px; padding: 12px 20px; text-align: center; cursor: pointer; transition: all 0.3s ease; color: var(--primary); position: relative; overflow: hidden;" onclick="quickSearch('nausea')">
                         <i class="fas fa-dizzy"></i> Nausea
                     </div>
                 </div>
             </div>
 
             <div class="workout-plan" id="resultsSection" style="display: none;">
-                <h3 style="margin-bottom: 20px; color: #ffffff;">
+                <h3 style="margin-bottom: 20px; color: var(--gray-800);">
                     <i class="fas fa-brain"></i> AI Analysis Results
                 </h3>
                 <div id="resultsContainer"></div>
@@ -570,24 +324,13 @@
             // Show loading
             resultsSection.style.display = 'block';
             resultsContainer.innerHTML = `
-                <div style="text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.7);">
-                    <div style="border: 3px solid rgba(255, 255, 255, 0.3); border-top: 3px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
+                <div style="text-align: center; padding: 40px; color: var(--gray-600);">
+                    <div style="border: 3px solid var(--gray-300); border-top: 3px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 15px;"></div>
                     <p>Analyzing symptoms with AI...</p>
                 </div>
             `;
 
             try {
-                // Test API connection first
-                console.log('Testing API connection...');
-                const testResponse = await fetch('/api/virtual-doctor-test');
-                console.log('Test response status:', testResponse.status);
-                
-                if (!testResponse.ok) {
-                    throw new Error('API connection failed');
-                }
-                
-                // Send to backend for AI analysis
-                console.log('Sending symptoms for analysis:', input);
                 const response = await fetch('/api/virtual-doctor-analyze', {
                     method: 'POST',
                     headers: {
@@ -596,9 +339,7 @@
                     body: JSON.stringify({ symptoms: input })
                 });
 
-                console.log('Analysis response status:', response.status);
                 const result = await response.json();
-                console.log('Analysis result:', result);
                 
                 if (result.success) {
                     displayResults(result.matches, result.aiAnalysis);
@@ -607,7 +348,7 @@
                 }
             } catch (error) {
                 console.error('Search error:', error);
-                displayError('Failed to analyze symptoms. Please check console for details.');
+                displayError('Failed to analyze symptoms. Please try again.');
             }
         }
 
@@ -616,7 +357,7 @@
             
             if (!matches || matches.length === 0) {
                 resultsContainer.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.7);">
+                    <div style="text-align: center; padding: 40px; color: var(--gray-600);">
                         <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
                         <h4>No matching conditions found</h4>
                         <p>Try describing your symptoms differently or consult a healthcare professional.</p>
@@ -629,12 +370,12 @@
             
             if (aiAnalysis) {
                 html += `
-                    <div class="workout-day" style="border-left: 4px solid var(--primary); background: rgba(108, 99, 255, 0.1); margin-bottom: 20px;">
+                    <div class="workout-day" style="border-left: 4px solid var(--primary); background: rgba(99, 102, 241, 0.1); margin-bottom: 20px;">
                         <div style="flex: 1;">
                             <div style="font-size: 1.2rem; font-weight: 600; color: var(--primary); margin-bottom: 8px;">
                                 <i class="fas fa-robot"></i> AI Analysis Summary
                             </div>
-                            <div style="color: rgba(255, 255, 255, 0.8);">${aiAnalysis}</div>
+                            <div style="color: var(--gray-700);">${aiAnalysis}</div>
                         </div>
                     </div>
                 `;
@@ -647,67 +388,67 @@
                 html += `
                     <div class="workout-day" style="flex-direction: column; align-items: flex-start; margin-bottom: 15px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 10px;">
-                            <div style="font-size: 1.2rem; font-weight: 600; color: #ffffff;">
+                            <div style="font-size: 1.2rem; font-weight: 600; color: var(--gray-800);">
                                 ${condition.name}
                             </div>
-                            <span style="background: rgba(108, 99, 255, 0.2); border: 1px solid rgba(108, 99, 255, 0.4); color: #ffffff; padding: 4px 12px; border-radius: 15px; font-size: 0.8rem; font-weight: 600;">${confidence}% match</span>
+                            <span style="background: var(--primary); color: white; padding: 4px 12px; border-radius: 15px; font-size: 0.8rem; font-weight: 600;">${confidence}% match</span>
                         </div>
-                        <div style="color: rgba(255, 255, 255, 0.8); margin-bottom: 15px;">${condition.description}</div>
-                        <button style="background: rgba(108, 99, 255, 0.2); border: 1px solid rgba(108, 99, 255, 0.4); color: #ffffff; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;" onclick="toggleDetails('details-${index}')">
+                        <div style="color: var(--gray-600); margin-bottom: 15px;">${condition.description}</div>
+                        <button style="background: white; border: 2px solid var(--primary); color: var(--primary); padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.3s ease;" onclick="toggleDetails('details-${index}')">
                             <i class="fas fa-chevron-down"></i> View Details
                         </button>
                         
                         <div style="display: none; margin-top: 15px; width: 100%;" id="details-${index}">
                             <div style="margin-bottom: 20px;">
-                                <div style="font-weight: 600; color: #ffffff; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                                <div style="font-weight: 600; color: var(--gray-800); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
                                     <i class="fas fa-list-ul"></i> Common Symptoms
                                 </div>
                                 <ul style="list-style: none; padding-left: 15px;">
-                                    ${condition.symptoms.map(symptom => `<li style="color: rgba(255, 255, 255, 0.8); margin-bottom: 5px; position: relative;">• ${symptom}</li>`).join('')}
+                                    ${condition.symptoms.map(symptom => `<li style="color: var(--gray-600); margin-bottom: 5px; position: relative;">• ${symptom}</li>`).join('')}
                                 </ul>
                             </div>
 
                             <div style="margin-bottom: 20px;">
-                                <div style="font-weight: 600; color: #ffffff; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                                <div style="font-weight: 600; color: var(--gray-800); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
                                     <i class="fas fa-utensils"></i> Recommended Foods
                                 </div>
                                 <ul style="list-style: none; padding-left: 15px;">
-                                    ${condition.foods.recommended.map(food => `<li style="color: rgba(255, 255, 255, 0.8); margin-bottom: 5px; position: relative;">• ${food}</li>`).join('')}
+                                    ${condition.foods.recommended.map(food => `<li style="color: var(--gray-600); margin-bottom: 5px; position: relative;">• ${food}</li>`).join('')}
                                 </ul>
                             </div>
 
                             <div style="margin-bottom: 20px;">
-                                <div style="font-weight: 600; color: #ffffff; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                                <div style="font-weight: 600; color: var(--gray-800); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
                                     <i class="fas fa-ban"></i> Foods to Avoid
                                 </div>
                                 <ul style="list-style: none; padding-left: 15px;">
-                                    ${condition.foods.avoid.map(food => `<li style="color: rgba(255, 255, 255, 0.8); margin-bottom: 5px; position: relative;">• ${food}</li>`).join('')}
+                                    ${condition.foods.avoid.map(food => `<li style="color: var(--gray-600); margin-bottom: 5px; position: relative;">• ${food}</li>`).join('')}
                                 </ul>
                             </div>
 
                             <div style="margin-bottom: 20px;">
-                                <div style="font-weight: 600; color: #ffffff; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                                <div style="font-weight: 600; color: var(--gray-800); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
                                     <i class="fas fa-pills"></i> Medications
                                 </div>
                                 <ul style="list-style: none; padding-left: 15px;">
-                                    ${condition.medications.map(med => `<li style="color: rgba(255, 255, 255, 0.8); margin-bottom: 5px; position: relative;">• ${med}</li>`).join('')}
+                                    ${condition.medications.map(med => `<li style="color: var(--gray-600); margin-bottom: 5px; position: relative;">• ${med}</li>`).join('')}
                                 </ul>
                             </div>
 
                             <div style="margin-bottom: 20px;">
-                                <div style="font-weight: 600; color: #ffffff; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                                <div style="font-weight: 600; color: var(--gray-800); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
                                     <i class="fas fa-home"></i> Home Remedies
                                 </div>
                                 <ul style="list-style: none; padding-left: 15px;">
-                                    ${condition.homeRemedies.map(remedy => `<li style="color: rgba(255, 255, 255, 0.8); margin-bottom: 5px; position: relative;">• ${remedy}</li>`).join('')}
+                                    ${condition.homeRemedies.map(remedy => `<li style="color: var(--gray-600); margin-bottom: 5px; position: relative;">• ${remedy}</li>`).join('')}
                                 </ul>
                             </div>
 
                             <div style="margin-bottom: 20px;">
-                                <div style="font-weight: 600; color: #ffffff; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                                <div style="font-weight: 600; color: var(--gray-800); margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
                                     <i class="fas fa-hospital"></i> When to See a Doctor
                                 </div>
-                                <p style="color: #ffc107; font-weight: 500; padding: 15px; background: rgba(255, 193, 7, 0.1); border-radius: 8px; border-left: 4px solid #ffc107;">
+                                <p style="color: var(--warning); font-weight: 500; padding: 15px; background: rgba(245, 158, 11, 0.1); border-radius: 8px; border-left: 4px solid var(--warning);">
                                     ${condition.whenToSeeDoctor}
                                 </p>
                             </div>
@@ -722,8 +463,8 @@
         function displayError(message) {
             const resultsContainer = document.getElementById('resultsContainer');
             resultsContainer.innerHTML = `
-                <div style="text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.7);">
-                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px; color: #ffc107;"></i>
+                <div style="text-align: center; padding: 40px; color: var(--gray-600);">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px; color: var(--warning);"></i>
                     <h4>Analysis Error</h4>
                     <p>${message}</p>
                 </div>

@@ -1,5 +1,4 @@
 const crypto = require('crypto');
-const QRCode = require('qrcode');
 
 class PaymentService {
   constructor() {
@@ -118,15 +117,8 @@ class PaymentService {
         merchantCode: gatewayConfig.merchantId
       });
 
-      // Generate QR code
-      const qrCodeDataURL = await QRCode.toDataURL(upiUrl, {
-        width: 300,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
-        }
-      });
+      // Generate QR code (fallback implementation)
+      const qrCodeDataURL = this.generateFallbackQR(upiUrl);
 
       // Store payment session (in production, use Redis or database)
       const paymentSession = {
@@ -198,6 +190,13 @@ class PaymentService {
     const timestamp = Date.now().toString();
     const random = crypto.randomBytes(4).toString('hex').toUpperCase();
     return `PAY_${timestamp}_${random}`;
+  }
+
+  // Fallback QR generation (without qrcode library)
+  generateFallbackQR(upiUrl) {
+    // Use external QR service as fallback
+    const encodedUrl = encodeURIComponent(upiUrl);
+    return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodedUrl}`;
   }
 
   // Store payment session (mock implementation)

@@ -1,4 +1,4 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+// Google Generative AI removed for deployment simplicity
 
 class GeminiNutritionService {
     constructor() {

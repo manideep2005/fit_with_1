@@ -1,22 +1,10 @@
-const cron = require('node-cron');
 const streakService = require('../services/streakService');
 
-// Run daily at midnight to check expired streaks
+// Fallback implementation without cron
 const scheduleStreakCheck = () => {
-  // Run at 00:01 every day
-  cron.schedule('1 0 * * *', async () => {
-    console.log('Running daily streak check...');
-    try {
-      await streakService.checkExpiredStreaks();
-      console.log('Daily streak check completed successfully');
-    } catch (error) {
-      console.error('Daily streak check failed:', error);
-    }
-  }, {
-    timezone: "America/New_York" // Adjust timezone as needed
-  });
-
-  console.log('Streak check job scheduled for daily execution at midnight');
+  console.log('⏰ Streak check job initialized (cron disabled)');
+  // Optional: Set up simple interval for basic scheduling
+  // setInterval(() => runStreakCheck(), 24 * 60 * 60 * 1000); // Daily
 };
 
 // Manual function to run streak check (for testing)

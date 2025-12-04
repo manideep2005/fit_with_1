@@ -237,12 +237,22 @@ class CommunityService {
 
   async getUserFeed(userId, limit = 20, skip = 0) {
     try {
+      console.log('CommunityService: getUserFeed called for userId:', userId, 'limit:', limit, 'skip:', skip);
+      
       // Get user's groups
       const userGroups = await Group.find({
         'members.user': userId
       }).select('_id');
 
+      console.log('User is member of', userGroups.length, 'groups');
+      
+      if (userGroups.length === 0) {
+        console.log('User has no groups, returning empty feed');
+        return [];
+      }
+
       const groupIds = userGroups.map(group => group._id);
+      console.log('Searching for posts in groups:', groupIds);
 
       const posts = await Post.find({ 
         group: { $in: groupIds },
@@ -255,8 +265,10 @@ class CommunityService {
       .limit(limit)
       .skip(skip);
 
-      return posts;
+      console.log('Found', posts.length, 'posts for user feed');
+      return posts || [];
     } catch (error) {
+      console.error('Error in getUserFeed:', error);
       throw new Error('Failed to get user feed: ' + error.message);
     }
   }
@@ -408,6 +420,59 @@ class CommunityService {
     }
   }
 
+  // Create sample data for testing
+  async createSampleData() {
+    try {
+      console.log('Creating sample community data...');
+      
+      // Create sample groups
+      const sampleGroups = [
+        {
+          name: 'Fitness Beginners',
+          description: 'A supportive community for those just starting their fitness journey',
+          category: 'fitness',
+          privacy: 'public',
+          tags: ['beginners', 'support', 'motivation']
+        },
+        {
+          name: 'Nutrition Enthusiasts',
+          description: 'Share recipes, meal plans, and nutrition tips',
+          category: 'nutrition',
+          privacy: 'public',
+          tags: ['nutrition', 'recipes', 'healthy-eating']
+        },
+        {
+          name: 'Weight Loss Warriors',
+          description: 'Support group for weight loss goals and achievements',
+          category: 'weight-loss',
+          privacy: 'public',
+          tags: ['weight-loss', 'motivation', 'progress']
+        }
+      ];
+      
+      const createdGroups = [];
+      for (const groupData of sampleGroups) {
+        const existingGroup = await Group.findOne({ name: groupData.name });
+        if (!existingGroup) {
+          const group = new Group({
+            ...groupData,
+            creator: null, // Will be set when a user creates it
+            members: [],
+            stats: { totalPosts: 0, totalMembers: 0 }
+          });
+          await group.save();
+          createdGroups.push(group);
+          console.log('Created sample group:', group.name);
+        }
+      }
+      
+      return { success: true, groupsCreated: createdGroups.length };
+    } catch (error) {
+      console.error('Error creating sample data:', error);
+      throw new Error('Failed to create sample data: ' + error.message);
+    }
+  }
+  
   // Moderation
   async reportPost(userId, postId, reason) {
     try {

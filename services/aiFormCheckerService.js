@@ -3,27 +3,11 @@
  * Uses Google Vision API + MediaPipe for real-time form analysis
  */
 
-const vision = require('@google-cloud/vision');
-
 class AIFormCheckerService {
     constructor() {
-        this.visionClient = null;
-        this.initializeVisionAPI();
+        console.log('✅ AI Form Checker initialized with simulation mode');
         this.exerciseModels = this.initializeExerciseModels();
         this.activeSessions = new Map();
-    }
-
-    async initializeVisionAPI() {
-        try {
-            if (process.env.GOOGLE_VISION_API_KEY) {
-                this.visionClient = new vision.ImageAnnotatorClient({
-                    keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS
-                });
-                console.log('✅ Google Vision API initialized');
-            }
-        } catch (error) {
-            console.error('❌ Vision API init failed:', error.message);
-        }
     }
 
     initializeExerciseModels() {
@@ -131,7 +115,8 @@ class AIFormCheckerService {
                 sessionId: sessionId,
                 exercise: exercise.name,
                 instructions: this.getSetupInstructions(exerciseType),
-                realTimeEnabled: !!this.visionClient
+                realTimeEnabled: false,
+                mode: 'simulation'
             };
 
         } catch (error) {
@@ -152,12 +137,8 @@ class AIFormCheckerService {
 
             session.frameCount++;
             
-            let analysis;
-            if (this.visionClient && frameData) {
-                analysis = await this.performVisionAnalysis(frameData, session.exercise);
-            } else {
-                analysis = this.performSimulatedAnalysis(session.exercise);
-            }
+            // Use simulated analysis
+            const analysis = this.performSimulatedAnalysis(session.exercise);
 
             // Update session with analysis
             session.formScores.push(analysis.formScore);
@@ -193,33 +174,7 @@ class AIFormCheckerService {
         }
     }
 
-    async performVisionAnalysis(frameData, exercise) {
-        try {
-            // Convert frame to base64 if needed
-            const imageBuffer = Buffer.isBuffer(frameData) ? frameData : Buffer.from(frameData, 'base64');
-            
-            // Use Vision API for pose detection
-            const [result] = await this.visionClient.objectLocalization({
-                image: { content: imageBuffer }
-            });
 
-            // Analyze pose landmarks (simplified)
-            const formScore = this.calculateFormScore(result, exercise);
-            const corrections = this.detectFormErrors(result, exercise);
-            const repCompleted = this.detectRepCompletion(result, exercise);
-
-            return {
-                formScore: formScore,
-                corrections: corrections,
-                repCompleted: repCompleted,
-                keyPoints: this.extractKeyPoints(result, exercise)
-            };
-
-        } catch (error) {
-            console.error('Vision analysis error:', error);
-            return this.performSimulatedAnalysis(exercise);
-        }
-    }
 
     performSimulatedAnalysis(exercise) {
         // Simulate realistic form analysis
@@ -471,11 +426,11 @@ class AIFormCheckerService {
     // Get service status
     getStatus() {
         return {
-            visionApiEnabled: !!this.visionClient,
+            mode: 'simulation',
             activeSessions: this.activeSessions.size,
             supportedExercises: Object.keys(this.exerciseModels),
             capabilities: [
-                'Real-time form analysis',
+                'Simulated form analysis',
                 'AI-powered corrections',
                 'Rep counting',
                 'Progress tracking',

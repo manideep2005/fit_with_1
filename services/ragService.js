@@ -3,7 +3,7 @@ const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const cheerio = require('cheerio');
 const fs = require('fs').promises;
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+// Google Generative AI removed for deployment simplicity
 
 class RAGService {
   constructor() {

@@ -4,7 +4,6 @@
  */
 
 const notificationService = require('./notificationService');
-const cron = require('node-cron');
 
 class SmartNotificationService {
     constructor() {
@@ -16,27 +15,11 @@ class SmartNotificationService {
     }
 
     initializeScheduledNotifications() {
-        // Morning motivation (8 AM)
-        cron.schedule('0 8 * * *', () => {
-            this.sendMorningMotivation();
-        });
-
-        // Workout reminder (6 PM)
-        cron.schedule('0 18 * * *', () => {
-            this.sendWorkoutReminders();
-        });
-
-        // Weekly progress (Sunday 9 AM)
-        cron.schedule('0 9 * * 0', () => {
-            this.sendWeeklyProgress();
-        });
-
-        // Hydration reminders (every 2 hours, 9 AM - 9 PM)
-        cron.schedule('0 9-21/2 * * *', () => {
-            this.sendHydrationReminders();
-        });
-
-        console.log('✅ Smart notifications scheduled');
+        // Fallback implementation without cron
+        console.log('📱 Smart notifications initialized (cron disabled)');
+        
+        // Optional: Set up simple intervals for basic scheduling
+        // setInterval(() => this.sendMorningMotivation(), 24 * 60 * 60 * 1000); // Daily
     }
 
     async registerUser(userId, preferences = {}) {
