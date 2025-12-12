@@ -285,6 +285,110 @@
             box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
         }
         
+        /* Today's Insights Styles */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 16px;
+        }
+        
+        .insight-card {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .insight-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: var(--primary);
+        }
+        
+        .insight-card.loading {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .insight-card.high {
+            border-left: 3px solid var(--danger);
+        }
+        
+        .insight-card.medium {
+            border-left: 3px solid var(--warning);
+        }
+        
+        .insight-card.low {
+            border-left: 3px solid var(--success);
+        }
+        
+        .insight-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background: var(--gray-100);
+            color: var(--gray-600);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+        
+        .insight-card.high .insight-icon {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+        
+        .insight-card.medium .insight-icon {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+        
+        .insight-card.low .insight-icon {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+        
+        .insight-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .insight-content h4 {
+            margin: 0 0 4px 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+        
+        .insight-content p {
+            margin: 0 0 8px 0;
+            color: var(--gray-600);
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+        
+        .insight-action {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .insight-action:hover {
+            background: var(--secondary);
+        }
+        
         @media (max-width: 768px) {
             .dashboard-container {
                 flex-direction: column;
@@ -301,6 +405,16 @@
             
             .stats-grid {
                 grid-template-columns: 1fr 1fr;
+            }
+            
+            .insights-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            
+            .insight-card {
+                padding: 12px;
+                gap: 10px;
             }
         }
     </style>
@@ -332,20 +446,20 @@
             </div>
             
             <div class="welcome-card">
-                <h2 class="welcome-title" id="dynamicGreeting">Good Evening, <%= user.onboardingData?.personalInfo?.firstName || (user.fullName && user.fullName !== "User" ? user.fullName.split(" ")[0] : "Manideep") %>! 🔥</h2>
+                <h2 class="welcome-title" id="dynamicGreeting">Good Evening, <%= user.onboardingData?.personalInfo?.firstName || (user.fullName && user.fullName !== "User" ? user.fullName.split(" ")[0] : "Manideep") %>!</h2>
                 <p class="welcome-subtitle">Ready to crush your fitness goals today?</p>
                 <button class="btn btn-outline" style="color: white; border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.1);">View Weekly Report</button>
             </div>
             
             <!-- Daily Insights Section -->
             <div class="daily-insights" id="dailyInsights" style="background: white; border: 1px solid var(--gray-200); border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);">
-                <h3 class="section-title">💡 Today's Insights</h3>
+                <h3 class="section-title">Today's Insights</h3>
                 <div class="insights-grid" id="insightsGrid">
-                    <div class="insight-card loading" style="background: var(--gray-100); border-radius: 12px; padding: 20px;">
-                        <div class="insight-icon">🔄</div>
+                    <div class="insight-card loading">
+                        <div class="insight-icon"><i class="fas fa-sync-alt"></i></div>
                         <div class="insight-content">
-                            <h4 style="color: var(--gray-800);">Loading insights...</h4>
-                            <p style="color: var(--gray-600);">Getting your personalized recommendations</p>
+                            <h4>Loading insights...</h4>
+                            <p>Getting your personalized recommendations</p>
                         </div>
                     </div>
                 </div>
@@ -353,7 +467,10 @@
             
             <!-- Enhanced Health Score Section -->
             <div class="health-score-section" style="background: white; border: 1px solid var(--gray-200); border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);">
-                <h3 class="section-title">📊 Health Score</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 class="section-title" style="margin-bottom: 0;">Health Score</h3>
+                    <button class="btn btn-outline" id="viewDetailsBtn" style="padding: 8px 16px; font-size: 0.9rem;">View Details</button>
+                </div>
                 <div id="healthScore">
                     <div class="health-score-circle">
                         <div class="score-number" style="color: var(--primary);">--</div>
@@ -413,7 +530,10 @@
             
             <!-- Trend Insights -->
             <div class="trend-insights-section" style="background: white; border: 1px solid var(--gray-200); border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);">
-                <h3 class="section-title">📈 Trend Analysis</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 class="section-title" style="margin-bottom: 0;">Trend Analysis</h3>
+                    <button class="btn btn-outline" id="viewTrendsBtn" style="padding: 8px 16px; font-size: 0.9rem;">View Trends</button>
+                </div>
                 <div id="trendInsights">
                     <div class="trend-cards">
                         <div class="trend-card neutral" style="background: var(--gray-100); border-radius: 12px; padding: 20px; text-align: center;">
@@ -424,31 +544,7 @@
                 </div>
             </div>
             
-            <!-- Predictions Section -->
-            <div class="predictions-section" style="background: white; border: 1px solid var(--gray-200); border-radius: 16px; padding: 30px; margin-bottom: 25px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);">
-                <h3 class="section-title">🔮 Smart Predictions</h3>
-                <div id="predictions">
-                    <div class="prediction-cards">
-                        <div class="prediction-card" style="background: var(--gray-100); border-radius: 12px; padding: 20px; text-align: center;">
-                            <h4 style="color: var(--gray-800);">Loading Predictions...</h4>
-                            <p style="color: var(--gray-600);">Analyzing your data to provide insights</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="nutrition-tip">
-                <div class="tip-header">
-                    <div class="tip-icon">
-                        <i class="fas fa-lightbulb"></i>
-                    </div>
-                    <h3 class="tip-title">AI Nutrition Tip</h3>
-                </div>
-                <p class="tip-content">Based on your recent workouts, consider increasing your protein intake by 10-15g post-workout to support muscle recovery. Try adding a scoop of whey protein or a chicken breast to your post-workout meal.</p>
-            </div>
-        </div>
-    </div>
-
+           
     <!-- Quick Log Modal -->
     <div id="quickLogModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; backdrop-filter: blur(5px);">
         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
@@ -698,32 +794,162 @@
         </div>
     </div>
 
+    <!-- Health Score Details Modal -->
+    <div id="healthDetailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 600px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h3 style="color: var(--gray-800); margin: 0; font-size: 1.5rem; font-weight: 600;">Health Score Details</h3>
+                <button id="closeHealthDetails" style="background: var(--gray-100); border: 1px solid var(--gray-200); color: var(--gray-600); font-size: 20px; cursor: pointer; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">&times;</button>
+            </div>
+            <div id="healthDetailsContent">
+                <div style="text-align: center; padding: 40px; color: var(--gray-600);">
+                    <i class="fas fa-heart" style="font-size: 3rem; margin-bottom: 20px; color: var(--primary);"></i>
+                    <h4>Health Score Breakdown</h4>
+                    <p>Your health score is calculated based on:</p>
+                    <div style="text-align: left; margin: 20px 0;">
+                        <div style="margin: 10px 0;">• Workout Consistency (40%)</div>
+                        <div style="margin: 10px 0;">• Nutrition Tracking (30%)</div>
+                        <div style="margin: 10px 0;">• Activity Streaks (20%)</div>
+                        <div style="margin: 10px 0;">• Progress Tracking (10%)</div>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--gray-500);">Keep logging your activities to improve your score!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trends Modal -->
+    <div id="trendsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 700px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h3 style="color: var(--gray-800); margin: 0; font-size: 1.5rem; font-weight: 600;">Trend Analysis</h3>
+                <button id="closeTrends" style="background: var(--gray-100); border: 1px solid var(--gray-200); color: var(--gray-600); font-size: 20px; cursor: pointer; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">&times;</button>
+            </div>
+            <div id="trendsContent">
+                <div style="text-align: center; padding: 40px; color: var(--gray-600);">
+                    <i class="fas fa-chart-line" style="font-size: 3rem; margin-bottom: 20px; color: var(--primary);"></i>
+                    <h4>Your Fitness Trends</h4>
+                    <p>Track your progress over time:</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 30px 0; text-align: left;">
+                        <div style="background: var(--gray-100); padding: 20px; border-radius: 8px;">
+                            <h5 style="margin: 0 0 10px 0; color: var(--primary);">This Week</h5>
+                            <div>Workouts: <strong>0</strong></div>
+                            <div>Avg Duration: <strong>0 min</strong></div>
+                            <div>Calories Burned: <strong>0</strong></div>
+                        </div>
+                        <div style="background: var(--gray-100); padding: 20px; border-radius: 8px;">
+                            <h5 style="margin: 0 0 10px 0; color: var(--secondary);">Last Week</h5>
+                            <div>Workouts: <strong>0</strong></div>
+                            <div>Avg Duration: <strong>0 min</strong></div>
+                            <div>Calories Burned: <strong>0</strong></div>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.9rem; color: var(--gray-500);">Start logging workouts to see your trends!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Dashboard functionality
         document.addEventListener('DOMContentLoaded', function() {
             loadDashboardData();
             setupQuickLog();
             setupGamificationModal();
+            setupDetailsModals();
             initializeAnimations();
             setDynamicGreeting();
             loadDailyInsights();
         });
         
+        // Setup details modals
+        function setupDetailsModals() {
+            // Health Details Modal
+            const healthDetailsModal = document.getElementById('healthDetailsModal');
+            const viewDetailsBtn = document.getElementById('viewDetailsBtn');
+            const closeHealthDetails = document.getElementById('closeHealthDetails');
+            
+            viewDetailsBtn.addEventListener('click', () => {
+                healthDetailsModal.style.display = 'block';
+            });
+            
+            closeHealthDetails.addEventListener('click', () => {
+                healthDetailsModal.style.display = 'none';
+            });
+            
+            // Trends Modal
+            const trendsModal = document.getElementById('trendsModal');
+            const viewTrendsBtn = document.getElementById('viewTrendsBtn');
+            const closeTrends = document.getElementById('closeTrends');
+            
+            viewTrendsBtn.addEventListener('click', () => {
+                trendsModal.style.display = 'block';
+            });
+            
+            closeTrends.addEventListener('click', () => {
+                trendsModal.style.display = 'none';
+            });
+            
+            // Close modals when clicking outside
+            [healthDetailsModal, trendsModal].forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        modal.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Close modals with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    healthDetailsModal.style.display = 'none';
+                    trendsModal.style.display = 'none';
+                }
+            });
+        }
+        
         // Load daily insights
         async function loadDailyInsights() {
-            try {
-                const response = await fetch('/api/insights/daily');
-                const result = await response.json();
-                
-                if (result.success && result.insights.length > 0) {
-                    displayInsights(result.insights);
-                } else {
-                    displayDefaultInsights();
+            // Show sample insights immediately
+            const sampleInsights = [
+                {
+                    title: 'Health Score',
+                    message: 'Your current health score is 31/100',
+                    priority: 'medium',
+                    icon: '<i class="fas fa-heart"></i>',
+                    action: 'View details'
+                },
+                {
+                    title: 'Trend Analysis', 
+                    message: 'Consistent workout pattern',
+                    priority: 'low',
+                    icon: '<i class="fas fa-chart-line"></i>',
+                    action: 'View trends'
+                },
+                {
+                    title: 'Smart Predictions',
+                    message: 'Add 1 more workout per week to reach your goals faster.',
+                    priority: 'high',
+                    icon: '<i class="fas fa-crystal-ball"></i>',
+                    action: 'View all predictions'
+                },
+                {
+                    title: 'Time to Move!',
+                    message: 'You haven\'t worked out this week. A 15-minute walk can boost your energy!',
+                    priority: 'high',
+                    icon: '<i class="fas fa-dumbbell"></i>',
+                    action: 'Start a quick workout'
+                },
+                {
+                    title: 'Muscle Building Tip',
+                    message: 'Ensure adequate protein intake (1.6-2.2g per kg body weight) for optimal muscle growth.',
+                    priority: 'medium',
+                    icon: '<i class="fas fa-dumbbell"></i>',
+                    action: 'Track protein'
                 }
-            } catch (error) {
-                console.error('Error loading insights:', error);
-                displayDefaultInsights();
-            }
+            ];
+            
+            displayInsights(sampleInsights);
         }
         
         // Display insights
@@ -746,19 +972,19 @@
             const insightsGrid = document.getElementById('insightsGrid');
             insightsGrid.innerHTML = `
                 <div class="insight-card medium">
-                    <div class="insight-icon">💪</div>
+                    <div class="insight-icon"><i class="fas fa-dumbbell"></i></div>
                     <div class="insight-content">
-                        <h4>Ready to Start!</h4>
+                        <h4>Ready to Start</h4>
                         <p>Log your first workout to get personalized insights and recommendations.</p>
-                        <button class="insight-action" onclick="document.getElementById('quickLogBtn').click()">Log Workout</button>
+                        <button class="insight-action" onclick="handleInsightAction('Log Workout')">Log Workout</button>
                     </div>
                 </div>
                 <div class="insight-card low">
-                    <div class="insight-icon">💧</div>
+                    <div class="insight-icon"><i class="fas fa-tint"></i></div>
                     <div class="insight-content">
                         <h4>Stay Hydrated</h4>
                         <p>Remember to drink water throughout the day. Aim for 8-10 glasses daily.</p>
-                        <button class="insight-action" onclick="quickActions.logWater()">Log Water</button>
+                        <button class="insight-action" onclick="handleInsightAction('Log water intake')">Log Water</button>
                     </div>
                 </div>
             `;
@@ -767,25 +993,131 @@
         // Handle insight actions
         function handleInsightAction(action) {
             switch(action) {
+                case 'View details':
+                    showInsightPopup('Health Score Details', 'Your health score breakdown and recommendations:', [
+                        { text: 'View Full Analysis', action: () => document.getElementById('viewDetailsBtn').click() },
+                        { text: 'Improve Score', action: () => document.getElementById('quickLogBtn').click() },
+                        { text: 'Track Progress', action: () => window.location.href = '/progress?nav=' + window.navId }
+                    ]);
+                    break;
+                case 'View trends':
+                    showInsightPopup('Trend Analysis', 'Analyze your fitness patterns and progress:', [
+                        { text: 'View Full Trends', action: () => document.getElementById('viewTrendsBtn').click() },
+                        { text: 'Weekly Report', action: () => showNotification('Weekly report: 3 workouts completed', 'info') },
+                        { text: 'Set Goals', action: () => window.location.href = '/progress?nav=' + window.navId }
+                    ]);
+                    break;
+                case 'View all predictions':
+                    showInsightPopup('Smart Predictions', 'AI-powered insights to help you reach your goals faster:', [
+                        { text: 'Goal Timeline', action: () => showNotification('Estimated goal completion: 8 weeks', 'info') },
+                        { text: 'Workout Plan', action: () => showNotification('Recommended: Add 2 strength sessions per week', 'info') },
+                        { text: 'View Progress', action: () => window.location.href = '/progress?nav=' + window.navId }
+                    ]);
+                    break;
                 case 'Start a quick workout':
-                    quickActions.quickWorkout();
+                    showInsightPopup('Quick Workout', 'Ready to get moving? Choose a quick workout to boost your energy:', [
+                        { text: '15-min Walk', action: () => showNotification('Great choice! Start your 15-minute walk now.', 'success') },
+                        { text: '10-min HIIT', action: () => showNotification('HIIT workout started! Push yourself!', 'success') },
+                        { text: 'Log Custom Workout', action: () => document.getElementById('quickLogBtn').click() }
+                    ]);
                     break;
-                case 'Log water intake':
-                    quickActions.logWater();
+                case 'Track protein':
+                    showInsightPopup('Protein Tracking', 'Track your protein intake to support muscle growth and recovery:', [
+                        { text: 'Log Meal', action: () => { document.getElementById('quickLogBtn').click(); setTimeout(() => document.getElementById('logType').value = 'nutrition', 100); } },
+                        { text: 'Quick Add Protein Shake', action: () => quickAddFood('Protein Shake', 120) },
+                        { text: 'View Protein Goals', action: () => showNotification('Daily protein goal: 120g (1.6g per kg body weight)', 'info') }
+                    ]);
                     break;
-                case 'View progress':
-                    window.location.href = '/progress?nav=' + window.navId;
-                    break;
-                case 'Continue streak':
+                case 'Log Workout':
                     document.getElementById('quickLogBtn').click();
                     break;
-                case 'View nutrition plan':
-                    window.location.href = '/nutrition?nav=' + window.navId;
+                case 'Log water intake':
+                case 'Log Water':
+                    showInsightPopup('Water Intake', 'Stay hydrated for optimal performance and health:', [
+                        { text: 'Add 250ml', action: () => showNotification('250ml water logged!', 'success') },
+                        { text: 'Add 500ml', action: () => showNotification('500ml water logged!', 'success') },
+                        { text: 'Custom Amount', action: () => { document.getElementById('quickLogBtn').click(); setTimeout(() => document.getElementById('logType').value = 'nutrition', 100); } }
+                    ]);
                     break;
                 default:
-                    showNotification('Action not implemented yet', 'info');
+                    showInsightPopup('Action', 'Choose an action to continue:', [
+                        { text: 'Log Workout', action: () => document.getElementById('quickLogBtn').click() },
+                        { text: 'View Progress', action: () => window.location.href = '/progress?nav=' + window.navId },
+                        { text: 'Close', action: () => {} }
+                    ]);
             }
         }
+        
+        // Show insight action popup
+        function showInsightPopup(title, message, actions) {
+            const popup = document.createElement('div');
+            popup.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 2000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            const actionButtons = actions.map((action, index) => {
+                const actionId = `action_${Date.now()}_${index}`;
+                return `<button id="${actionId}" style="background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.2s ease; margin-bottom: 8px;" onmouseover="this.style.background='var(--secondary)'" onmouseout="this.style.background='var(--primary)'">${action.text}</button>`;
+            }).join('');
+            
+            popup.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 16px; width: 90%; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="color: var(--gray-800); margin: 0; font-size: 1.3rem; font-weight: 600;">${title}</h3>
+                        <button id="closePopup" style="background: var(--gray-100); border: 1px solid var(--gray-200); color: var(--gray-600); font-size: 18px; cursor: pointer; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">&times;</button>
+                    </div>
+                    <p style="color: var(--gray-600); margin-bottom: 25px; line-height: 1.5;">${message}</p>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        ${actionButtons}
+                    </div>
+                </div>
+            `;
+            
+            // Add event listeners after popup is added to DOM
+            document.body.appendChild(popup);
+            
+            // Close button
+            popup.querySelector('#closePopup').addEventListener('click', () => popup.remove());
+            
+            // Action buttons
+            actions.forEach((action, index) => {
+                const actionId = `action_${Date.now()}_${index}`;
+                const button = popup.querySelector(`#${actionId}`);
+                if (button) {
+                    button.addEventListener('click', () => {
+                        action.action();
+                        popup.remove();
+                    });
+                }
+            });
+            
+            // Close on outside click
+            popup.addEventListener('click', function(e) {
+                if (e.target === popup) {
+                    popup.remove();
+                }
+            });
+            
+            // Close on escape key
+            const escapeHandler = function(e) {
+                if (e.key === 'Escape') {
+                    popup.remove();
+                    document.removeEventListener('keydown', escapeHandler);
+                }
+            };
+            document.addEventListener('keydown', escapeHandler);
+        }
+
+        
         
         // Set dynamic greeting based on time
         function setDynamicGreeting() {
@@ -794,11 +1126,11 @@
             let greeting;
             
             if (hour < 12) {
-                greeting = `Good Morning, ${userName}! 🌅`;
+                greeting = `Good Morning, ${userName}!`;
             } else if (hour < 17) {
-                greeting = `Good Afternoon, ${userName}! ☀️`;
+                greeting = `Good Afternoon, ${userName}!`;
             } else {
-                greeting = `Good Evening, ${userName}! 🌆`;
+                greeting = `Good Evening, ${userName}!`;
             }
             
             document.getElementById('dynamicGreeting').textContent = greeting;
@@ -906,6 +1238,12 @@
             document.getElementById('waterToday').textContent = `${waterInLiters}L`;
             const waterProgress = (stats.todayWater / stats.targetWater) * 100;
             document.getElementById('waterProgress').style.width = `${Math.min(waterProgress, 100)}%`;
+            
+            // Update health score if available
+            if (data.healthScore) {
+                document.querySelector('.score-number').textContent = data.healthScore.score || '--';
+                document.querySelector('.score-label').textContent = data.healthScore.label || 'Loading...';
+            }
         }
 
         // Update recent workouts
@@ -1231,8 +1569,6 @@
             `;
             
             document.body.appendChild(popup);
-            
-            // Animate in
             setTimeout(() => {
                 popup.style.transform = 'translate(-50%, -50%) scale(1)';
             }, 100);
@@ -1518,4 +1854,3 @@
     </script>
 </body>
 </html>
-

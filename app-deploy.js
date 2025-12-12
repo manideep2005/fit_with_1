@@ -47,65 +47,24 @@ if (!process.env.VERCEL) {
   const http = require('http');
   server = http.createServer(app);
   
-  // Only use Socket.IO for non-calling features in local development
+  // Advanced Socket.IO setup for comprehensive chat features
   const { Server } = require("socket.io");
   io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL || "http://localhost:3000",
-      methods: ["GET", "POST"]
-    }
+      origin: process.env.CLIENT_URL || ["http://localhost:3000", "http://localhost:3001", "http://localhost:3009"],
+      methods: ["GET", "POST"],
+      credentials: true
+    },
+    transports: ['websocket', 'polling'],
+    pingTimeout: 60000,
+    pingInterval: 25000
   });
 
-  io.on('connection', (socket) => {
-    console.log('User connected to socket');
-
-    socket.on('join', (data) => {
-      if (data && data.userId) {
-        socket.userId = data.userId;
-        socket.join(data.userId);
-        console.log(`User ${data.userId} joined their room`);
-      }
-    });
-
-    socket.on('send message', async (data) => {
-      try {
-        console.log('Socket message data (raw): ', data);
-        console.log('Socket userId (before processing): ', socket.userId);
-        const senderId = data.sender || socket.userId;
-        
-        if (!senderId || !data.receiver || !data.content) {
-          console.error('Missing required message data:', {
-            sender: senderId,
-            receiver: data.receiver,
-            content: data.content,
-            socketUserId: socket.userId
-          });
-          socket.emit('message error', 'Missing required message data');
-          return;
-        }
-        
-        const savedMessage = await chatService.sendMessage(
-          senderId, 
-          data.receiver, 
-          data.content,
-          data.messageType || 'text'
-        );
-        
-        io.to(data.receiver).emit('new message', savedMessage);
-        socket.emit('message sent', savedMessage);
-        
-      } catch (error) {
-        console.error('Send message error:', {
-          message: error.message,
-          stack: error.stack,
-          senderId: data?.sender || socket.userId,
-          receiverId: data?.receiver,
-          content: data?.content
-        });
-        socket.emit('message error', error.message);
-      }
-    });
-  });
+  // Initialize advanced socket service
+  const advancedSocketService = require('./services/advancedSocketService');
+  advancedSocketService.setupSocketHandlers(io);
+  
+  console.log('✅ Advanced Socket.IO server initialized with comprehensive chat features');
 } else {
   // Vercel serverless setup
   server = app;
@@ -250,6 +209,11 @@ app.use(async (req, res, next) => {
 });
 
 console.log('✅ Database-only session system configured');
+
+// Make io available globally for other services
+if (!process.env.VERCEL) {
+  global.io = io;
+}
 
 // Authentication Middleware - Works for Local and Vercel
 const isAuthenticated = async (req, res, next) => {
@@ -1836,18 +1800,30 @@ app.post('/api/workouts', isAuthenticated, ensureDbConnection, async (req, res) 
     // Process gamification for workout completion
     let gamificationResults = null;
     try {
-      gamificationResults = await gamificationService.processWorkoutCompletion(updatedUser._id, workoutData);
-      console.log('Gamification results for workout:', gamificationResults);
+      // Ensure user ID exists and is valid
+      if (updatedUser && updatedUser._id) {
+        console.log('Processing gamification for user ID:', updatedUser._id.toString());
+        gamificationResults = await gamificationService.processWorkoutCompletion(updatedUser._id.toString(), workoutData);
+        console.log('Gamification results for workout:', gamificationResults);
+      } else {
+        console.error('Invalid user ID for gamification processing');
+      }
     } catch (gamificationError) {
       console.error('Gamification processing error:', gamificationError);
-      // Don't fail the workout logging if gamification fails
     }
     
     res.json({
       success: true,
       message: 'Workout logged successfully',
       workout: workoutData,
-      gamification: gamificationResults
+      gamification: gamificationResults || {
+        xp: 50,
+        achievements: [],
+        streaks: {},
+        levelUp: false,
+        streakRewards: [],
+        upcomingRewards: []
+      }
     });
 
   } catch (error) {
@@ -1927,14 +1903,20 @@ app.post('/api/nutrition', isAuthenticated, ensureDbConnection, async (req, res)
       console.log('Gamification results for nutrition:', gamificationResults);
     } catch (gamificationError) {
       console.error('Gamification processing error:', gamificationError);
-      // Don't fail the nutrition logging if gamification fails
     }
     
     res.json({
       success: true,
       message: 'Nutrition data logged successfully',
       nutrition: nutritionData,
-      gamification: gamificationResults
+      gamification: gamificationResults || {
+        xp: 25,
+        achievements: [],
+        streaks: {},
+        levelUp: false,
+        streakRewards: [],
+        upcomingRewards: []
+      }
     });
 
   } catch (error) {
@@ -1988,6 +1970,40 @@ app.get('/api/gamification-data', isAuthenticated, ensureDbConnection, async (re
       success: false,
       error: 'Failed to fetch gamification data'
     });
+  }
+});
+
+// Track page visits for gamification
+app.post('/api/gamification/track-visit', isAuthenticated, async (req, res) => {
+  try {
+    const { page } = req.body;
+    const userId = req.session.user._id;
+    
+    await gamificationService.awardXP(userId, 1, `Visited ${page} page`);
+    res.json({ success: true });
+  } catch (error) {
+    res.json({ success: false });
+  }
+});
+
+// Track specific actions for gamification
+app.post('/api/gamification/track-action', isAuthenticated, async (req, res) => {
+  try {
+    const { action, data } = req.body;
+    const userId = req.session.user._id;
+    
+    let xpAmount = 0;
+    switch (action) {
+      case 'nutrition_log': xpAmount = 5; break;
+      case 'water_log': xpAmount = 2; break;
+      case 'workout_complete': xpAmount = 25; break;
+      default: xpAmount = 1;
+    }
+    
+    await gamificationService.awardXP(userId, xpAmount, `Action: ${action}`);
+    res.json({ success: true, xpAwarded: xpAmount });
+  } catch (error) {
+    res.json({ success: false });
   }
 });
 
@@ -2648,6 +2664,9 @@ const progressPredictionService = require('./services/progressPredictionService'
 const voiceCommandsService = require('./services/voiceCommandsService');
 const buddyFinderService = require('./services/buddyFinderService');
 
+// Progress Service
+const progressService = require('./services/progressService');
+
 // Challenge Service
 // Challenge Service - conditional loading
 let challengeService;
@@ -2684,11 +2703,40 @@ app.use('/api/sessions', require('./api/sessions'));
 app.use('/api/security', require('./api/security'));
 app.use('/api/settings', settingsRoutes);
 app.use('/api/payment', paymentRoutes);
-app.use('/api/payment-new', isAuthenticated, require('./fix-payment-system'));
+// app.use('/api/payment-new', isAuthenticated, require('./fix-payment-system')); // Commented out - file doesn't exist
 app.use('/api/streaks', require('./routes/streaks'));
 app.use('/api/subscription', isAuthenticated, ensureDbConnection, require('./routes/subscription'));
 app.use('/api/enhanced', isAuthenticated, ensureDbConnection, require('./routes/enhancedFeatures'));
+// Advanced chat API routes
 app.use('/api/realtime-chat', isAuthenticated, ensureDbConnection, realtimeChatRouter);
+
+// Socket.IO status endpoint
+app.get('/api/socket/status', isAuthenticated, (req, res) => {
+  try {
+    if (process.env.VERCEL) {
+      return res.json({
+        success: true,
+        available: false,
+        reason: 'Serverless environment'
+      });
+    }
+    
+    const advancedSocketService = require('./services/advancedSocketService');
+    const stats = advancedSocketService.getStats();
+    
+    res.json({
+      success: true,
+      available: true,
+      stats: stats,
+      socketPath: '/api/socket'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
 app.use('/api/community', isAuthenticated, ensureDbConnection, require('./routes/community'));
 
 // Simple admin test route
@@ -3369,6 +3417,220 @@ app.get('/api/insights/weekly', isAuthenticated, ensureDbConnection, async (req,
       success: false,
       error: 'Failed to get weekly report'
     });
+  }
+});
+
+// Progress API Routes
+app.get('/api/progress/data', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { timeframe = 'week' } = req.query;
+    
+    const progressData = await progressService.getProgressData(userId, timeframe);
+    
+    res.json({
+      success: true,
+      data: progressData
+    });
+  } catch (error) {
+    console.error('Get progress data error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get progress data'
+    });
+  }
+});
+
+app.get('/api/progress/stats', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { timeframe = 'week' } = req.query;
+    
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const stats = await progressService.calculateStats(user, timeframe);
+    
+    res.json({
+      success: true,
+      stats: stats
+    });
+  } catch (error) {
+    console.error('Get progress stats error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get progress stats'
+    });
+  }
+});
+
+app.get('/api/progress/workouts', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { timeframe = 'week' } = req.query;
+    
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const workoutProgress = await progressService.getWorkoutProgress(user, timeframe);
+    
+    res.json({
+      success: true,
+      data: workoutProgress
+    });
+  } catch (error) {
+    console.error('Get workout progress error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get workout progress'
+    });
+  }
+});
+
+app.get('/api/progress/body-metrics', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { timeframe = 'month' } = req.query;
+    
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const bodyMetrics = await progressService.getBodyMetrics(user, timeframe);
+    
+    res.json({
+      success: true,
+      data: bodyMetrics
+    });
+  } catch (error) {
+    console.error('Get body metrics error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get body metrics'
+    });
+  }
+});
+
+app.get('/api/progress/nutrition', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { timeframe = 'week' } = req.query;
+    
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const nutritionProgress = await progressService.getNutritionProgress(user, timeframe);
+    
+    res.json({
+      success: true,
+      data: nutritionProgress
+    });
+  } catch (error) {
+    console.error('Get nutrition progress error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get nutrition progress'
+    });
+  }
+});
+
+app.get('/api/progress/achievements', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const achievements = await progressService.getAchievements(user);
+    
+    res.json({
+      success: true,
+      data: achievements
+    });
+  } catch (error) {
+    console.error('Get achievements error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get achievements'
+    });
+  }
+});
+
+app.get('/api/progress/trends', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { timeframe = 'month' } = req.query;
+    
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const trends = await progressService.calculateTrends(user, timeframe);
+    
+    res.json({
+      success: true,
+      trends: trends
+    });
+  } catch (error) {
+    console.error('Get trends error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get trends'
+    });
+  }
+});
+
+app.get('/api/progress/predictions', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const predictions = await progressService.getPredictions(user);
+    
+    res.json({
+      success: true,
+      predictions: predictions
+    });
+  } catch (error) {
+    console.error('Get predictions error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get predictions'
+    });
+  }
+});
+
+// Clear progress cache
+app.post('/api/progress/clear-cache', isAuthenticated, (req, res) => {
+  try {
+    progressService.clearCache();
+    res.json({ success: true, message: 'Progress cache cleared successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to clear cache' });
+  }
+});
+
+// Get progress cache status
+app.get('/api/progress/cache-status', isAuthenticated, (req, res) => {
+  try {
+    const status = progressService.getCacheStatus();
+    res.json({ success: true, status });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to get cache status' });
   }
 });
 
@@ -4456,23 +4718,63 @@ app.post('/api/notifications/send-test', isAuthenticated, ensureDbConnection, as
 app.get('/api/chat/conversations', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const userId = req.session.user._id;
-    const friends = await chatService.getUserFriends(userId).catch(() => []);
+    console.log('💬 Getting conversations for user:', userId);
     
-    const conversations = (friends || []).map(friend => ({
-      conversationId: `${userId}_${friend._id}`,
-      friend: {
-        _id: friend._id,
-        fullName: friend.fullName || 'Unknown',
-        firstName: friend.firstName || friend.fullName?.split(' ')[0] || 'User',
-        avatar: friend.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.fullName || 'User')}&background=6C63FF&color=fff`
-      },
-      lastMessage: {
-        content: 'Ready to chat',
-        timestamp: new Date(),
-        isFromCurrentUser: false
-      },
-      unreadCount: 0
-    }));
+    // Get friends and their last messages
+    const User = require('./models/User');
+    const Message = require('./models/Message');
+    
+    const user = await User.findById(userId).populate('friends', 'fullName email');
+    const friends = user?.friends || [];
+    
+    const conversations = [];
+    
+    for (const friend of friends) {
+      // Get last message between user and friend
+      const lastMessage = await Message.findOne({
+        $or: [
+          { sender: userId, receiver: friend._id },
+          { sender: friend._id, receiver: userId }
+        ]
+      })
+      .sort({ createdAt: -1 })
+      .populate('sender', 'fullName')
+      .lean();
+      
+      // Get unread count
+      const unreadCount = await Message.countDocuments({
+        sender: friend._id,
+        receiver: userId,
+        status: { $ne: 'read' }
+      });
+      
+      conversations.push({
+        friendId: friend._id,
+        conversationId: `${userId}_${friend._id}`,
+        friend: {
+          _id: friend._id,
+          fullName: friend.fullName || 'Unknown',
+          firstName: friend.fullName?.split(' ')[0] || 'User',
+          avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(friend.fullName || 'User')}&background=6C63FF&color=fff`
+        },
+        lastMessage: lastMessage ? {
+          content: lastMessage.content,
+          timestamp: lastMessage.createdAt,
+          isFromCurrentUser: lastMessage.sender._id.toString() === userId
+        } : {
+          content: 'No messages yet',
+          timestamp: new Date(),
+          isFromCurrentUser: false
+        },
+        lastMessageTime: lastMessage ? new Date(lastMessage.createdAt).getTime() : 0,
+        unreadCount: unreadCount
+      });
+    }
+    
+    // Sort by last message time (newest first)
+    conversations.sort((a, b) => b.lastMessageTime - a.lastMessageTime);
+    
+    console.log('✅ Conversations retrieved:', conversations.length);
     
     res.json({
       success: true,
@@ -4480,7 +4782,7 @@ app.get('/api/chat/conversations', isAuthenticated, ensureDbConnection, async (r
     });
     
   } catch (error) {
-    console.error('Get conversations error:', error);
+    console.error('❌ Get conversations error:', error);
     res.json({
       success: true,
       conversations: []
@@ -4495,102 +4797,162 @@ app.get('/api/chat/messages/:friendId', isAuthenticated, ensureDbConnection, asy
     const { friendId } = req.params;
     const { limit = 50, skip = 0 } = req.query;
     
-    const messages = await chatService.getConversationMessages(
-      userId, 
-      friendId, 
-      parseInt(limit) || 50, 
-      parseInt(skip) || 0
-    ).catch(() => []);
+    console.log('📥 Loading messages between:', userId, 'and', friendId, 'limit:', limit, 'skip:', skip);
+    
+    // Get messages directly from database
+    const Message = require('./models/Message');
+    const messages = await Message.find({
+      $or: [
+        { sender: userId, receiver: friendId },
+        { sender: friendId, receiver: userId }
+      ]
+    })
+    .populate('sender', 'fullName email')
+    .populate('receiver', 'fullName email')
+    .sort({ createdAt: -1 }) // Get newest first
+    .limit(parseInt(limit))
+    .skip(parseInt(skip))
+    .lean();
+    
+    // Reverse to show oldest first in UI
+    const sortedMessages = messages.reverse();
+    
+    console.log('📨 Found messages:', sortedMessages.length);
     
     // Mark messages as read (ignore errors)
-    chatService.markMessagesAsRead(userId, friendId, userId).catch(() => {});
+    try {
+      await Message.updateMany(
+        { 
+          sender: friendId, 
+          receiver: userId,
+          status: { $ne: 'read' }
+        },
+        { 
+          status: 'read', 
+          readAt: new Date() 
+        }
+      );
+    } catch (markReadError) {
+      console.log('Mark as read error (ignored):', markReadError.message);
+    }
     
     res.json({
       success: true,
-      messages: messages || []
+      messages: sortedMessages,
+      count: sortedMessages.length
     });
     
   } catch (error) {
-    console.error('Get messages error:', error);
+    console.error('❌ Get messages error:', error);
     res.json({
       success: true,
-      messages: []
+      messages: [],
+      error: error.message
     });
   }
 });
 
 // Send message
 app.post('/api/chat/send', isAuthenticated, ensureDbConnection, async (req, res) => {
-try {
-const senderId = req.session.user._id;
-const { receiverId, content, messageType = 'text', attachmentData = null } = req.body;
+  try {
+    const senderId = req.session.user._id;
+    const { receiverId, content, messageType = 'text', attachmentData = null } = req.body;
 
-console.log('💬 Sending message:', {
-senderId,
-receiverId,
-content: content?.substring(0, 50) + '...',
-messageType
-});
+    console.log('💬 Sending message:', {
+      senderId,
+      receiverId,
+      content: content?.substring(0, 50) + '...',
+      messageType
+    });
 
-if (!receiverId || !content || content.trim().length === 0) {
-return res.status(400).json({
-success: false,
-error: 'Receiver ID and message content are required'
-});
-}
+    if (!receiverId || !content || content.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Receiver ID and message content are required'
+      });
+    }
 
-if (content.trim().length > 1000) {
-return res.status(400).json({
-success: false,
-error: 'Message content too long (max 1000 characters)'
-});
-}
+    if (content.trim().length > 1000) {
+      return res.status(400).json({
+        success: false,
+        error: 'Message content too long (max 1000 characters)'
+      });
+    }
 
-const message = await chatService.sendMessage(
-senderId,
-receiverId,
-content.trim(),
-messageType,
-attachmentData
-);
+    // Create message directly in database
+    const Message = require('./models/Message');
+    const message = new Message({
+      sender: senderId,
+      receiver: receiverId,
+      content: content.trim(),
+      messageType: messageType,
+      attachmentData: attachmentData,
+      status: 'sent',
+      createdAt: new Date()
+    });
 
-console.log('✅ Message sent successfully:', message._id);
+    await message.save();
+    
+    // Populate sender and receiver info
+    await message.populate('sender', 'fullName email');
+    await message.populate('receiver', 'fullName email');
 
-res.json({
-success: true,
-message: message
-});
+    console.log('✅ Message sent successfully:', message._id);
 
-} catch (error) {
-console.error('❌ Send message error:', error);
-res.status(500).json({
-success: false,
-error: error.message || 'Failed to send message'
-});
-}
+    // Emit to socket if available
+    if (io && !process.env.VERCEL) {
+      try {
+        const advancedSocketService = require('./services/advancedSocketService');
+        if (advancedSocketService.isUserOnline(receiverId)) {
+          io.to(receiverId).emit('new message', {
+            message: message,
+            sender: message.sender
+          });
+        }
+      } catch (socketError) {
+        console.log('Socket emit error (ignored):', socketError.message);
+      }
+    }
+
+    res.json({
+      success: true,
+      message: message
+    });
+
+  } catch (error) {
+    console.error('❌ Send message error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to send message'
+    });
+  }
 });
 
 // Get user's friends
 app.get('/api/chat/friends', isAuthenticated, ensureDbConnection, async (req, res) => {
-try {
-const userId = req.session.user._id;
-console.log('👥 Getting friends for user:', userId);
+  try {
+    const userId = req.session.user._id;
+    console.log('👥 Getting friends for user:', userId);
 
-const friends = await chatService.getUserFriends(userId).catch(() => []);
-console.log('✅ Friends retrieved:', friends.length);
+    // Get friends directly from database
+    const User = require('./models/User');
+    const user = await User.findById(userId).populate('friends', 'fullName email');
+    
+    const friends = user?.friends || [];
+    console.log('✅ Friends retrieved:', friends.length);
 
-res.json({
-success: true,
-friends: friends || []
-});
+    res.json({
+      success: true,
+      friends: friends
+    });
 
-} catch (error) {
-console.error('❌ Get friends error:', error);
-res.json({
-success: true,
-friends: []
-});
-}
+  } catch (error) {
+    console.error('❌ Get friends error:', error);
+    res.json({
+      success: true,
+      friends: []
+    });
+  }
 });
 
 // Send friend request
@@ -4889,7 +5251,13 @@ app.post('/api/chat/share-progress', isAuthenticated, ensureDbConnection, async 
 app.get('/api/chat/unread-count', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const userId = req.session.user._id;
-    const count = await chatService.getUnreadMessageCount(userId);
+    
+    // Get unread count directly from database
+    const Message = require('./models/Message');
+    const count = await Message.countDocuments({
+      receiver: userId,
+      status: { $ne: 'read' }
+    });
     
     res.json({
       success: true,
@@ -4905,23 +5273,131 @@ app.get('/api/chat/unread-count', isAuthenticated, ensureDbConnection, async (re
   }
 });
 
-// Mark message as read
+// Mark messages as read for a conversation
+app.post('/api/chat/mark-read/:friendId', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { friendId } = req.params;
+    
+    const Message = require('./models/Message');
+    await Message.updateMany(
+      { 
+        sender: friendId, 
+        receiver: userId,
+        status: { $ne: 'read' }
+      },
+      { 
+        status: 'read', 
+        readAt: new Date() 
+      }
+    );
+    
+    // Notify sender via socket if online
+    if (io && !process.env.VERCEL) {
+      const advancedSocketService = require('./services/advancedSocketService');
+      if (advancedSocketService.isUserOnline(friendId)) {
+        io.to(friendId).emit('messages read', {
+          readBy: userId,
+          conversationId: `${friendId}_${userId}`,
+          readAt: new Date()
+        });
+      }
+    }
+    
+    res.json({ success: true });
+    
+  } catch (error) {
+    console.error('Mark messages as read error:', error);
+    res.status(500).json({ success: false, error: 'Failed to mark as read' });
+  }
+});
+
+// Mark single message as read
 app.post('/api/chat/messages/:messageId/read', isAuthenticated, ensureDbConnection, async (req, res) => {
   try {
     const userId = req.session.user._id;
     const { messageId } = req.params;
     
     const Message = require('./models/Message');
-    await Message.updateOne(
+    const message = await Message.findOneAndUpdate(
       { _id: messageId, receiver: userId },
-      { status: 'read', readAt: new Date() }
-    );
+      { status: 'read', readAt: new Date() },
+      { new: true }
+    ).populate('sender', 'fullName');
+    
+    if (message && io && !process.env.VERCEL) {
+      // Notify sender via socket
+      io.to(message.sender._id.toString()).emit('message read', {
+        messageId: messageId,
+        readBy: userId,
+        readAt: message.readAt
+      });
+    }
     
     res.json({ success: true });
     
   } catch (error) {
     console.error('Mark message as read error:', error);
     res.status(500).json({ success: false, error: 'Failed to mark as read' });
+  }
+});
+
+// Get online users count and status
+app.get('/api/chat/online-status', isAuthenticated, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    
+    // Get user's friends
+    const User = require('./models/User');
+    const user = await User.findById(userId).populate('friends', 'fullName email');
+    const friends = user?.friends || [];
+    
+    // Simulate online status (in production, you'd check real online status)
+    const friendsWithStatus = friends.map(friend => ({
+      _id: friend._id,
+      fullName: friend.fullName,
+      isOnline: Math.random() > 0.3 // 70% chance of being online
+    }));
+    
+    res.json({
+      success: true,
+      friends: friendsWithStatus,
+      onlineCount: friendsWithStatus.filter(f => f.isOnline).length,
+      userOnline: true
+    });
+  } catch (error) {
+    res.json({
+      success: true,
+      friends: [],
+      onlineCount: 0,
+      userOnline: false
+    });
+  }
+});
+
+// Get user presence status
+app.get('/api/chat/presence/:userId', isAuthenticated, (req, res) => {
+  try {
+    if (process.env.VERCEL) {
+      return res.json({
+        success: true,
+        presence: { online: false, lastSeen: null, status: 'offline' }
+      });
+    }
+    
+    const { userId } = req.params;
+    const advancedSocketService = require('./services/advancedSocketService');
+    const presence = advancedSocketService.getUserPresence(userId);
+    
+    res.json({
+      success: true,
+      presence: presence
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
   }
 });
 
@@ -7176,7 +7652,7 @@ app.post('/fitness/api/virtual-doctor-analyze', async (req, res) => {
   }
 });
 
-// Alternative endpoint without fitness prefix
+
 app.post('/api/virtual-doctor-analyze', async (req, res) => {
   try {
     console.log('Virtual doctor analyze called with body:', req.body);

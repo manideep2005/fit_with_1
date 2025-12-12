@@ -308,33 +308,33 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">Calories Burned</div>
-                    <div class="stat-value">2,845</div>
-                    <div class="stat-change up">
-                        <i class="fas fa-arrow-up"></i> 15% from last week
+                    <div class="stat-value">0</div>
+                    <div class="stat-change">
+                        <i class="fas fa-clock"></i> Loading...
                     </div>
                 </div>
                 
                 <div class="stat-card">
                     <div class="stat-label">Active Minutes</div>
-                    <div class="stat-value">87</div>
-                    <div class="stat-change up">
-                        <i class="fas fa-arrow-up"></i> 23% from last week
+                    <div class="stat-value">0</div>
+                    <div class="stat-change">
+                        <i class="fas fa-clock"></i> Loading...
                     </div>
                 </div>
                 
                 <div class="stat-card">
                     <div class="stat-label">Steps</div>
-                    <div class="stat-value">8,742</div>
-                    <div class="stat-change up">
-                        <i class="fas fa-arrow-up"></i> 8% from last week
+                    <div class="stat-value">0</div>
+                    <div class="stat-change">
+                        <i class="fas fa-clock"></i> Loading...
                     </div>
                 </div>
                 
                 <div class="stat-card">
                     <div class="stat-label">Fitness Score</div>
-                    <div class="stat-value">78</div>
-                    <div class="stat-change up">
-                        <i class="fas fa-arrow-up"></i> 5 points this month
+                    <div class="stat-value">0</div>
+                    <div class="stat-change">
+                        <i class="fas fa-clock"></i> Loading...
                     </div>
                 </div>
             </div>
@@ -374,39 +374,10 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Bench Press</td>
-                            <td>135 lbs x 8</td>
-                            <td>145 lbs x 8</td>
-                            <td>+10 lbs</td>
-                            <td><span class="progress-badge badge-success">Excellent</span></td>
-                        </tr>
-                        <tr>
-                            <td>Squats</td>
-                            <td>185 lbs x 6</td>
-                            <td>195 lbs x 5</td>
-                            <td>+10 lbs</td>
-                            <td><span class="progress-badge badge-success">Good</span></td>
-                        </tr>
-                        <tr>
-                            <td>Pull-ups</td>
-                            <td>8 reps</td>
-                            <td>10 reps</td>
-                            <td>+2 reps</td>
-                            <td><span class="progress-badge badge-success">Improved</span></td>
-                        </tr>
-                        <tr>
-                            <td>Running Pace</td>
-                            <td>8:30 min/mile</td>
-                            <td>8:45 min/mile</td>
-                            <td>-0:15</td>
-                            <td><span class="progress-badge badge-warning">Needs work</span></td>
-                        </tr>
-                        <tr>
-                            <td>Plank Time</td>
-                            <td>2:30</td>
-                            <td>2:15</td>
-                            <td>-0:15</td>
-                            <td><span class="progress-badge badge-danger">Declined</span></td>
+                            <td colspan="5" style="text-align: center; padding: 40px; color: var(--gray-600);">
+                                <div style="font-size: 2rem; margin-bottom: 10px;">📊</div>
+                                <div>Loading workout progress...</div>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
@@ -478,19 +449,191 @@
             filter.addEventListener('click', function() {
                 document.querySelectorAll('.time-filter').forEach(f => f.classList.remove('active'));
                 this.classList.add('active');
-                // Here you would load data for the selected time period
+                const timeframe = this.textContent.toLowerCase().replace(' ', '');
+                loadProgressData(timeframe);
             });
+        });
+        
+        // Load progress data dynamically
+        async function loadProgressData(timeframe = 'week') {
+            try {
+                showLoading(true);
+                
+                const response = await fetch(`/api/progress/data?timeframe=${timeframe}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateProgressDisplay(result.data);
+                } else {
+                    console.error('Failed to load progress data:', result.error);
+                    showError('Failed to load progress data');
+                }
+            } catch (error) {
+                console.error('Error loading progress data:', error);
+                showError('Error loading progress data');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        // Update progress display with dynamic data
+        function updateProgressDisplay(data) {
+            // Update stats cards
+            if (data.stats) {
+                updateStatCard('calories', data.stats.caloriesBurned);
+                updateStatCard('minutes', data.stats.activeMinutes);
+                updateStatCard('steps', data.stats.steps);
+                updateStatCard('fitness', data.stats.fitnessScore);
+            }
+            
+            // Update charts
+            if (data.workoutProgress) {
+                updateActivityChart(data.workoutProgress.chartData);
+            }
+            
+            if (data.bodyMetrics) {
+                updateBodyChart(data.bodyMetrics.chartData);
+            }
+            
+            // Update workout progress table
+            if (data.workoutProgress && data.workoutProgress.recentWorkouts) {
+                updateWorkoutTable(data.workoutProgress.recentWorkouts);
+            }
+        }
+        
+        function updateStatCard(type, statData) {
+            const cards = document.querySelectorAll('.stat-card');
+            let targetCard = null;
+            
+            cards.forEach(card => {
+                const label = card.querySelector('.stat-label').textContent.toLowerCase();
+                if ((type === 'calories' && label.includes('calories')) ||
+                    (type === 'minutes' && label.includes('minutes')) ||
+                    (type === 'steps' && label.includes('steps')) ||
+                    (type === 'fitness' && label.includes('fitness'))) {
+                    targetCard = card;
+                }
+            });
+            
+            if (targetCard && statData) {
+                const valueEl = targetCard.querySelector('.stat-value');
+                const changeEl = targetCard.querySelector('.stat-change');
+                
+                if (valueEl) {
+                    valueEl.textContent = statData.value?.toLocaleString() || '0';
+                }
+                
+                if (changeEl && statData.change !== undefined) {
+                    const icon = statData.trend === 'up' ? '↗' : '↘';
+                    const className = statData.trend === 'up' ? 'up' : 'down';
+                    changeEl.innerHTML = `${icon} ${Math.abs(statData.change)}% from last period`;
+                    changeEl.className = `stat-change ${className}`;
+                }
+            }
+        }
+        
+        function updateWorkoutTable(workouts) {
+            const tbody = document.querySelector('.progress-table tbody');
+            if (!tbody || !workouts) return;
+            
+            tbody.innerHTML = workouts.map(workout => {
+                const progress = workout.progress;
+                let progressText = 'No comparison';
+                let badgeClass = 'badge-warning';
+                let badgeText = 'New';
+                
+                if (progress) {
+                    if (progress.trend === 'improved') {
+                        badgeClass = 'badge-success';
+                        badgeText = 'Improved';
+                        progressText = `+${progress.calories} cal`;
+                    } else {
+                        badgeClass = 'badge-warning';
+                        badgeText = 'Declined';
+                        progressText = `${progress.calories} cal`;
+                    }
+                }
+                
+                return `
+                    <tr>
+                        <td>${workout.type || 'General Workout'}</td>
+                        <td>${workout.duration || 0} min</td>
+                        <td>${workout.calories || 0} cal</td>
+                        <td>${progressText}</td>
+                        <td><span class="progress-badge ${badgeClass}">${badgeText}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function showLoading(show) {
+            const loadingEl = document.getElementById('progressLoading');
+            if (show) {
+                if (!loadingEl) {
+                    const loading = document.createElement('div');
+                    loading.id = 'progressLoading';
+                    loading.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(255,255,255,0.8);
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        z-index: 9999;
+                    `;
+                    loading.innerHTML = `
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">📊</div>
+                            <div style="font-size: 1rem; color: var(--primary);">Loading progress data...</div>
+                        </div>
+                    `;
+                    document.body.appendChild(loading);
+                }
+            } else {
+                if (loadingEl) {
+                    loadingEl.remove();
+                }
+            }
+        }
+        
+        function showError(message) {
+            const errorEl = document.createElement('div');
+            errorEl.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--danger);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 8px;
+                z-index: 10000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            errorEl.textContent = message;
+            document.body.appendChild(errorEl);
+            
+            setTimeout(() => {
+                errorEl.remove();
+            }, 5000);
+        }
+        
+        // Load initial data
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProgressData('week');
         });
         
         // Activity Chart
         const activityCtx = document.getElementById('activityChart').getContext('2d');
-        const activityChart = new Chart(activityCtx, {
+        let activityChart = new Chart(activityCtx, {
             type: 'line',
             data: {
                 labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                 datasets: [{
                     label: 'Calories Burned',
-                    data: [2200, 2400, 2800, 2500, 3000, 2900, 2700],
+                    data: [0, 0, 0, 0, 0, 0, 0],
                     borderColor: '#6C63FF',
                     backgroundColor: 'rgba(108, 99, 255, 0.1)',
                     borderWidth: 2,
@@ -508,32 +651,47 @@
                 },
                 scales: {
                     y: {
-                        beginAtZero: false
+                        beginAtZero: true
                     }
                 }
             }
         });
         
+        function updateActivityChart(chartData) {
+            if (!chartData || !activityChart) return;
+            
+            const labels = chartData.map(d => d.label || d.date);
+            const data = chartData.map(d => d.calories || 0);
+            
+            activityChart.data.labels = labels;
+            activityChart.data.datasets[0].data = data;
+            activityChart.update();
+        }
+        
         // Body Measurements Chart
         const bodyCtx = document.getElementById('bodyChart').getContext('2d');
-        const bodyChart = new Chart(bodyCtx, {
-            type: 'bar',
+        let bodyChart = new Chart(bodyCtx, {
+            type: 'line',
             data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                labels: [],
                 datasets: [
                     {
-                        label: 'Weight (lbs)',
-                        data: [175, 172, 170, 168, 166, 165],
-                        backgroundColor: 'rgba(108, 99, 255, 0.7)',
+                        label: 'Weight',
+                        data: [],
+                        backgroundColor: 'rgba(108, 99, 255, 0.1)',
                         borderColor: '#6C63FF',
-                        borderWidth: 1
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
                     },
                     {
                         label: 'Body Fat %',
-                        data: [22, 21, 20, 19.5, 19, 18.5],
-                        backgroundColor: 'rgba(255, 101, 132, 0.7)',
+                        data: [],
+                        backgroundColor: 'rgba(255, 101, 132, 0.1)',
                         borderColor: '#FF6584',
-                        borderWidth: 1
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: false
                     }
                 ]
             },
@@ -547,6 +705,19 @@
                 }
             }
         });
+        
+        function updateBodyChart(chartData) {
+            if (!chartData || !bodyChart) return;
+            
+            const labels = chartData.map(d => d.date);
+            const weightData = chartData.map(d => d.weight).filter(w => w !== null);
+            const bodyFatData = chartData.map(d => d.bodyFat).filter(bf => bf !== null);
+            
+            bodyChart.data.labels = labels;
+            bodyChart.data.datasets[0].data = weightData;
+            bodyChart.data.datasets[1].data = bodyFatData;
+            bodyChart.update();
+        }
 
     </script>
     

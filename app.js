@@ -2664,6 +2664,9 @@ const progressPredictionService = require('./services/progressPredictionService'
 const voiceCommandsService = require('./services/voiceCommandsService');
 const buddyFinderService = require('./services/buddyFinderService');
 
+// Progress Service
+const progressService = require('./services/progressService');
+
 // Challenge Service
 // Challenge Service - conditional loading
 let challengeService;
@@ -2700,7 +2703,7 @@ app.use('/api/sessions', require('./api/sessions'));
 app.use('/api/security', require('./api/security'));
 app.use('/api/settings', settingsRoutes);
 app.use('/api/payment', paymentRoutes);
-app.use('/api/payment-new', isAuthenticated, require('./fix-payment-system'));
+// app.use('/api/payment-new', isAuthenticated, require('./fix-payment-system')); // Commented out - file doesn't exist
 app.use('/api/streaks', require('./routes/streaks'));
 app.use('/api/subscription', isAuthenticated, ensureDbConnection, require('./routes/subscription'));
 app.use('/api/enhanced', isAuthenticated, ensureDbConnection, require('./routes/enhancedFeatures'));
@@ -3414,6 +3417,220 @@ app.get('/api/insights/weekly', isAuthenticated, ensureDbConnection, async (req,
       success: false,
       error: 'Failed to get weekly report'
     });
+  }
+});
+
+// Progress API Routes
+app.get('/api/progress/data', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { timeframe = 'week' } = req.query;
+    
+    const progressData = await progressService.getProgressData(userId, timeframe);
+    
+    res.json({
+      success: true,
+      data: progressData
+    });
+  } catch (error) {
+    console.error('Get progress data error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get progress data'
+    });
+  }
+});
+
+app.get('/api/progress/stats', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { timeframe = 'week' } = req.query;
+    
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const stats = await progressService.calculateStats(user, timeframe);
+    
+    res.json({
+      success: true,
+      stats: stats
+    });
+  } catch (error) {
+    console.error('Get progress stats error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get progress stats'
+    });
+  }
+});
+
+app.get('/api/progress/workouts', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { timeframe = 'week' } = req.query;
+    
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const workoutProgress = await progressService.getWorkoutProgress(user, timeframe);
+    
+    res.json({
+      success: true,
+      data: workoutProgress
+    });
+  } catch (error) {
+    console.error('Get workout progress error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get workout progress'
+    });
+  }
+});
+
+app.get('/api/progress/body-metrics', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { timeframe = 'month' } = req.query;
+    
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const bodyMetrics = await progressService.getBodyMetrics(user, timeframe);
+    
+    res.json({
+      success: true,
+      data: bodyMetrics
+    });
+  } catch (error) {
+    console.error('Get body metrics error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get body metrics'
+    });
+  }
+});
+
+app.get('/api/progress/nutrition', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { timeframe = 'week' } = req.query;
+    
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const nutritionProgress = await progressService.getNutritionProgress(user, timeframe);
+    
+    res.json({
+      success: true,
+      data: nutritionProgress
+    });
+  } catch (error) {
+    console.error('Get nutrition progress error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get nutrition progress'
+    });
+  }
+});
+
+app.get('/api/progress/achievements', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const achievements = await progressService.getAchievements(user);
+    
+    res.json({
+      success: true,
+      data: achievements
+    });
+  } catch (error) {
+    console.error('Get achievements error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get achievements'
+    });
+  }
+});
+
+app.get('/api/progress/trends', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { timeframe = 'month' } = req.query;
+    
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const trends = await progressService.calculateTrends(user, timeframe);
+    
+    res.json({
+      success: true,
+      trends: trends
+    });
+  } catch (error) {
+    console.error('Get trends error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get trends'
+    });
+  }
+});
+
+app.get('/api/progress/predictions', isAuthenticated, ensureDbConnection, async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    
+    const user = await UserService.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    
+    const predictions = await progressService.getPredictions(user);
+    
+    res.json({
+      success: true,
+      predictions: predictions
+    });
+  } catch (error) {
+    console.error('Get predictions error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get predictions'
+    });
+  }
+});
+
+// Clear progress cache
+app.post('/api/progress/clear-cache', isAuthenticated, (req, res) => {
+  try {
+    progressService.clearCache();
+    res.json({ success: true, message: 'Progress cache cleared successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to clear cache' });
+  }
+});
+
+// Get progress cache status
+app.get('/api/progress/cache-status', isAuthenticated, (req, res) => {
+  try {
+    const status = progressService.getCacheStatus();
+    res.json({ success: true, status });
+  } catch (error) {
+    res.status(500).json({ success: false, error: 'Failed to get cache status' });
   }
 });
 
@@ -7435,7 +7652,7 @@ app.post('/fitness/api/virtual-doctor-analyze', async (req, res) => {
   }
 });
 
-// Alternative endpoint without fitness prefix
+
 app.post('/api/virtual-doctor-analyze', async (req, res) => {
   try {
     console.log('Virtual doctor analyze called with body:', req.body);
